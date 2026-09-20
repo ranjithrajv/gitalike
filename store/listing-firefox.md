@@ -105,6 +105,13 @@ AMO has no fixed screenshot size. Upload, in order:
 
 ## Notes for review
 
+- Reviewing needs no account: the skin applies on public pages
+  (`github.com/git/git`, `gitlab.com/gitlab-org/gitlab`) while logged out.
+  Toggle the switches in the toolbar popup; Alt+Shift+G toggles the current
+  site.
+- The extension rewrites the page's own text, labels and CSS tokens locally. It
+  is not a content blocker, intercepts no requests and makes no network
+  requests; switching both switches off reverts every change.
 - This is a listed add-on; `browser_specific_settings.gecko.id` is
   `gitalike@riseup.net`.
 - `strict_min_version` is `142.0`, the first Firefox (desktop 140, Android 142)

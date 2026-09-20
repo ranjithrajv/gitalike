@@ -101,6 +101,26 @@ single purpose.
 https://ranjithrajv.github.io/gitalike/privacy.html
 ```
 
+## Test instructions
+
+```
+No account, credentials or special setup are needed.
+
+1. Install the extension, then open the toolbar popup.
+2. Switch on "Show with the GitLab UI" (skins GitHub) and/or "Show with the
+   GitHub UI" (skins GitLab).
+3. Open https://github.com/git/git or https://gitlab.com/gitlab-org/gitlab —
+   the page is re-skinned immediately, with no reload.
+4. Alt+Shift+G toggles the site you are on; switching both switches off reverts
+   every change.
+
+All-sites access is required because self-hosted GitHub/GitLab instances use
+hostnames that cannot be listed in advance. The extension decides at runtime and
+is inert on any host you have not set up — its scripts are not even loaded
+there. It makes no network requests and runs no remote code; it rewrites the
+page's own text, labels and CSS tokens locally.
+```
+
 ## Graphic assets
 
 | Asset | Requirement | File |
