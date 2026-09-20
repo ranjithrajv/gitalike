@@ -20,6 +20,9 @@ It works on `github.com` and `gitlab.com` out of the box, on the bundled
 self-hosted instance `code.swecha.org`, and on any other instance you point it
 at — **GitHub Enterprise Server** included.
 
+**Live preview:** <https://ranjithrajv.github.io/gitalike/> — swipe between each
+site and its skin.
+
 ## Install
 
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download gitalike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>

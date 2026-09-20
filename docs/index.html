@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Git Same — navigation orientation swipe</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #1f2328;
+        --muted: #59636e;
+        --border: #d1d9e0;
+        --surface: #f6f8fa;
+        --accent: #0969da;
+        --gitlab: #7759c2;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --fg: #f0f6fc;
+          --muted: #9198a1;
+          --border: #3d444d;
+          --surface: #151b23;
+          --accent: #2f81f7;
+          --gitlab: #9c8ad8;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px 20px 64px;
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Noto Sans", Helvetica, Arial, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+      }
+      header, main { max-width: 1024px; margin: 0 auto; }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      p.lede { margin: 0 0 4px; color: var(--muted); }
+      p.lede code {
+        font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+      .card { margin-top: 32px; }
+      .card h2 { font-size: 15px; margin: 0 0 2px; }
+      .card .sub { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
+      .card .sub b.gitlab { color: var(--gitlab); }
+      .card .sub b.github { color: var(--accent); }
+
+      /* --- the swipe --- */
+      .swipe {
+        --x: 50%;
+        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--surface);
+        touch-action: pan-y;
+        user-select: none;
+      }
+      .swipe img {
+        display: block;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+      }
+      .swipe .over {
+        position: absolute;
+        inset: 0;
+        clip-path: inset(0 0 0 var(--x));
+      }
+      .swipe .divider {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--x);
+        width: 2px;
+        margin-left: -1px;
+        background: var(--accent);
+        pointer-events: none;
+      }
+      .swipe .knob {
+        position: absolute;
+        top: 50%;
+        left: var(--x);
+        width: 34px;
+        height: 34px;
+        margin: -17px 0 0 -17px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        font-size: 15px;
+        line-height: 34px;
+        text-align: center;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+      }
+      .swipe input[type="range"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: ew-resize;
+      }
+      .swipe .tag {
+        position: absolute;
+        bottom: 10px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        color: #fff;
+        background: rgb(0 0 0 / 0.6);
+        pointer-events: none;
+      }
+      .swipe .tag.left { left: 10px; }
+      .swipe .tag.right { right: 10px; }
+
+      footer {
+        max-width: 1024px;
+        margin: 40px auto 0;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      footer a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Git Same — navigation orientation</h1>
+      <p class="lede">
+        Live captures of the real project pages at 1280×900. Drag the handle
+        (or use the arrow keys) to swipe between the plain site and the skinned
+        one.
+      </p>
+      <p class="lede">
+        <code>gs-theme-gitlab</code> on a GitHub site · <code>gs-theme-github</code>
+        on a GitLab site.
+      </p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>GitLab project page</h2>
+        <p class="sub">
+          Left: GitLab as it ships — a vertical <b class="gitlab">sidebar</b>.
+          Right: the same page skinned as GitHub — a horizontal
+          <b class="github">top bar</b>.
+        </p>
+        <div class="swipe">
+          <img class="base" src="gitlab-default.png" alt="GitLab project page, default" />
+          <img class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" />
+          <span class="tag left">GitLab default · sidebar</span>
+          <span class="tag right">GitHub skin · top bar</span>
+          <span class="divider"></span>
+          <span class="knob">↔</span>
+          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab project page" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>GitHub project page</h2>
+        <p class="sub">
+          Left: GitHub as it ships — a horizontal <b class="github">tab bar</b>.
+          Right: the same page skinned as GitLab — a vertical
+          <b class="gitlab">sidebar-style column</b>.
+        </p>
+        <div class="swipe">
+          <img class="base" src="github-default.png" alt="GitHub project page, default" />
+          <img class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
+          <span class="tag left">GitHub default · tab bar</span>
+          <span class="tag right">GitLab skin · sidebar column</span>
+          <span class="divider"></span>
+          <span class="knob">↔</span>
+          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub project page" />
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Git Same —
+        <a href="https://github.com/ranjithrajv/gitalike">source on GitHub</a> ·
+        <a href="https://github.com/ranjithrajv/gitalike#install">install</a> ·
+        <a href="https://github.com/ranjithrajv/gitalike/blob/main/docs/UX-PARITY.md">UX parity status</a>
+      </p>
+    </footer>
+
+    <script>
+      for (const swipe of document.querySelectorAll('.swipe')) {
+        const input = swipe.querySelector('input[type="range"]');
+        const set = () => swipe.style.setProperty('--x', `${input.value}%`);
+        input.addEventListener('input', set);
+        set();
+      }
+    </script>
+  </body>
+</html>
