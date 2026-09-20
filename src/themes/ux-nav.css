@@ -247,6 +247,17 @@ html.gs-theme-gitlab
   margin-top: 0 !important;
 }
 
+/* GitLab's Follow is a compact button beside the identity, not GitHub's
+   full-width block. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  .h-card
+  .user-following-container
+  .btn-block {
+  display: inline-block !important;
+  width: auto !important;
+}
+
 /* Avatar left, name and handle beside it: GitLab's profile header shape rather
    than GitHub's full-width avatar stacked above the name. */
 html.gs-theme-gitlab
@@ -477,3 +488,84 @@ html.gs-theme-github
 html.gs-theme-github body[data-page="users:show"] .contextual-nav {
   padding-top: 0 !important;
 }
+
+/* GitHub only shows the side-by-side profile card at `md` and up; below that it
+   stacks, so the restructure is gated the same way. */
+@media (min-width: 768px) {
+
+/* GitHub keeps the identity in a left card under a large avatar, with the
+   content beside it; GitLab uses a top header and a right Info rail. Re-shape a
+   GitLab profile into GitHub's card: the header's identity block and the
+   Achievements/Info/Contact rail form the left column, the README/activity the
+   right. GitLab's profile container holds the header and `.user-profile`
+   directly, so both are dissolved and their children placed on a grid. */
+html.gs-theme-github
+  body[data-page="users:show"]
+  .container-fluid.container-limited:has(> .user-profile-header) {
+  display: grid;
+  grid-template-columns: minmax(200px, 296px) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 24px;
+}
+
+html.gs-theme-github
+  body[data-page="users:show"]
+  .container-fluid.container-limited:has(> .user-profile-header)
+  > :is(.user-profile-header, .user-profile) {
+  display: contents !important;
+}
+
+/* The RSS/actions block is not part of GitHub's card. */
+html.gs-theme-github
+  body[data-page="users:show"]
+  .user-profile-header
+  > div:first-child {
+  display: none !important;
+}
+
+/* Avatar above the name, both left-aligned: GitHub's card header. */
+html.gs-theme-github
+  body[data-page="users:show"]
+  .user-profile-header
+  > div:last-child {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+html.gs-theme-github
+  body[data-page="users:show"]
+  .user-profile-header
+  .user-image
+  img.gl-avatar {
+  width: 260px !important;
+  height: 260px !important;
+}
+
+html.gs-theme-github body[data-page="users:show"] .user-profile-header h1 {
+  font-size: 24px !important;
+  line-height: 1.25 !important;
+}
+
+/* The rail becomes the lower half of the card; the content the right column. */
+html.gs-theme-github
+  body[data-page="users:show"]
+  .user-profile
+  > .user-profile-sidebar {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+html.gs-theme-github
+  body[data-page="users:show"]
+  .user-profile
+  > .user-profile-content {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 0;
+}
+
+} /* @media (min-width: 768px) */

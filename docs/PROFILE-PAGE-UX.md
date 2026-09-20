@@ -118,7 +118,9 @@ Two scoping facts make the profile behave differently from the project page:
   [`themes/ux-nav.css`](../src/themes/ux-nav.css)), and because GitLab's profile
   navigation is a single flat super-sidebar group, it is flattened to one row of
   tabs — the "Profile" heading and the Help menu, which GitHub's profile has no
-  place for, are hidden.
+  place for, are hidden. The identity also moves from a top header with a small
+  avatar into a left card under a large avatar, with the README/activity beside
+  it, which is GitHub's profile shape.
 - **Profile navigation labels are not in `NAV`.** `NAV_SCOPE` includes
   `.super-sidebar`, so the relabelling pass runs there, but `NAV` holds only the
   repository-group labels (Code, Pull requests, …). GitLab's profile items —

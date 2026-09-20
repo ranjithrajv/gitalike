@@ -13,8 +13,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   GitLab-style super-sidebar headed "Profile", and the profile card moves into
   the content as GitLab's header (a 96px avatar beside the name). On a GitLab
   profile shown as GitHub, the profile super-sidebar is flattened to a single
-  row of tabs, dropping GitLab's "Profile" heading and Help menu
-  (`themes/ux-nav.css`).
+  row of tabs, dropping GitLab's "Profile" heading and Help menu, and the
+  identity moves into a left card under a large avatar beside the README and
+  activity (`themes/ux-nav.css`).
 - The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).

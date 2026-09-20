@@ -152,7 +152,9 @@ are dissolved to a page grid (the profile equivalent of the repository
 header/tab wrapper trick above). L→G turns GitLab's `.super-sidebar` into a
 horizontal strip as usual, and because a profile's sidebar is a single flat
 group it is flattened to one row of tabs: the "Profile" heading and the Help
-menu are hidden.
+menu are hidden. The GitLab profile is also re-shaped into GitHub's card: the
+identity (avatar over the name) and the Info/Contact rail move into a left
+column, with the README/activity beside them.
 
 ## References
 
