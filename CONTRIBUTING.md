@@ -51,6 +51,7 @@ node tools/e2e.mjs   # Playwright end-to-end test against the live sites
 npm run lint         # web-ext lint over the Firefox build
 npm run package      # store-ready zips -> dist/artifacts/
 npm run screenshots  # regenerate store/screenshots/
+npm run screenshots:profiles  # refresh the docs/ orientation captures
 npm run clean        # remove dist/
 ```
 
@@ -81,9 +82,9 @@ src/
 ├── popup/               toolbar UI
 └── icons/
 logos/                   editable logo sources, inlined into the themes
-docs/                    UX-PARITY.md — the parity status matrix
+docs/                    the GitHub Pages preview + UX-PARITY.md — the parity matrix
 tests/                   node:test, covers src/lib/ only
-tools/                   store screenshots and the Playwright end-to-end test
+tools/                   store and docs screenshots, and the Playwright end-to-end test
 store/                   submission copy and screenshots
 ```
 

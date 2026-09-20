@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Profile pages get the orientation flip too. On a GitHub profile shown as
+  GitLab, the horizontal profile tab strip becomes a vertical GitLab-style panel
+  in the left rail, with the profile card below it and the content in the right
+  column; GitHub's profile page grid is dissolved to make the rail
+  (`themes/ux-nav.css`).
+- The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
+  profile-page swipes beside the project-page ones, captured with
+  `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).
+
 ## [0.1.1] - 2026-09-20
 
 ### Added

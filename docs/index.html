@@ -138,9 +138,9 @@
     <header>
       <h1>Git Same — navigation orientation</h1>
       <p class="lede">
-        Live captures of the real project pages at 1280×900. Drag the handle
-        (or use the arrow keys) to swipe between the plain site and the skinned
-        one.
+        Live captures of the real project and profile pages at 1280×900. Drag
+        the handle (or use the arrow keys) to swipe between the plain site and
+        the skinned one.
       </p>
       <p class="lede">
         <code>gs-theme-gitlab</code> on a GitHub site · <code>gs-theme-github</code>
@@ -182,6 +182,44 @@
           <span class="divider"></span>
           <span class="knob">↔</span>
           <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub project page" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>GitLab profile page</h2>
+        <p class="sub">
+          Left: GitLab as it ships — a vertical <b class="gitlab">super-sidebar</b>
+          starting at the person's name. Right: the same page skinned as GitHub —
+          the navigation as a horizontal
+          <b class="github">strip</b>.
+        </p>
+        <div class="swipe">
+          <img class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" />
+          <img class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" />
+          <span class="tag left">GitLab default · sidebar</span>
+          <span class="tag right">GitHub skin · top strip</span>
+          <span class="divider"></span>
+          <span class="knob">↔</span>
+          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab profile page" />
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>GitHub profile page</h2>
+        <p class="sub">
+          Left: GitHub as it ships — a horizontal
+          <b class="github">profile tab row</b>. Right: the same page skinned as
+          GitLab — a vertical <b class="gitlab">left rail</b> with the profile
+          card below it.
+        </p>
+        <div class="swipe">
+          <img class="base" src="github-profile-default.png" alt="GitHub profile page, default" />
+          <img class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" />
+          <span class="tag left">GitHub default · tab row</span>
+          <span class="tag right">GitLab skin · left rail</span>
+          <span class="divider"></span>
+          <span class="knob">↔</span>
+          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub profile page" />
         </div>
       </section>
     </main>
