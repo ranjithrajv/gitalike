@@ -2,7 +2,7 @@
   "name": "gitalike",
   "version": "0.1.2",
   "private": true,
-  "description": "Show GitHub with a GitLab UI, and GitLab with a GitHub UI.",
+  "description": "Use any forge, keep your muscle memory. Re-skins GitHub and GitLab as each other, locally.",
   "type": "module",
   "license": "GPL-3.0-or-later",
   "scripts": {

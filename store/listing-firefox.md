@@ -11,13 +11,13 @@ gitalike — GitHub ⇄ GitLab UI
 ## Summary (max 250)
 
 ```
-See GitHub with a GitLab™ UI, and GitLab with a GitHub UI. Re-skins the page and its words to match the other product, locally. No data is collected, and there is no network access at all.
+Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ so each looks and reads like the other, locally. No data is collected, and there is no network access at all. More forges are on the way.
 ```
 
 ## Description
 
 ```
-gitalike re-skins the two big forges so they look — and read — like each other:
+gitalike re-skins the big forges so they look — and read — like each other:
 
     a GitHub-flavoured site + GitLab™ UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
@@ -35,7 +35,8 @@ Search, copy/paste and screen readers keep working.
 
 Works on github.com and gitlab.com out of the box, on the bundled self-hosted
 instance code.swecha.org, and on any other instance you point it at — GitHub
-Enterprise Server and self-hosted GitLab included.
+Enterprise Server and self-hosted GitLab included. More forges are on the way:
+Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut are the next candidates.
 
 Features
 - Two independent switches, one per product.

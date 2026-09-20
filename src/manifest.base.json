@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "gitalike — GitHub ⇄ GitLab UI",
   "short_name": "gitalike",
-  "description": "Show GitHub with a GitLab™-flavoured UI, and GitLab with a GitHub-flavoured UI. Toggle each site from the toolbar or a shortcut.",
+  "description": "Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ as each other, locally; nothing collected.",
   "permissions": ["storage", "scripting"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
