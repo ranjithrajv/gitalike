@@ -198,15 +198,50 @@
   // applied product's menu rather than a mix of both. Runs before paintUnmapped
   // so it sees the clean label, not one with a badge on it.
   function paintNavHide(node, t) {
-    if (!UX.NAV_HIDE[t]) return;
+    const keep = UX.NAV_KEEP[t];
+    const hideList = UX.NAV_HIDE[t];
+    if (!keep && !hideList) return;
+    const seenHref = new Set();
     for (const region of scope(node, UX.NAV_SCOPE)) {
       for (const el of scope(region, 'a,button,summary')) {
         const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
-        if (!UX.navHidden(label, t)) continue;
+        // A whitelist means "show only the applied product's own options";
+        // otherwise hide the ones it has no page for.
+        let hide = keep ? !UX.navKeep(label, t) : UX.navHidden(label, t);
+        // GitLab lists some destinations twice (pinned and in a group); GitHub's
+        // bar lists each once.
+        const href = el.getAttribute('href');
+        if (!hide && href) {
+          if (seenHref.has(href)) hide = true;
+          else seenHref.add(href);
+        }
+        if (!hide) continue;
         const target = el.closest('li') || el;
         if (!hiddenOrig.has(target)) hiddenOrig.set(target, target.style.display);
         if (target.style.display !== 'none') target.style.display = 'none';
       }
+    }
+  }
+
+  // GitLab's "Project information" lists a fixed set of items; GitHub's "About"
+  // sidebar lists a different set (Releases, Packages, Used by, Contributors,
+  // Languages). On the GitLab skin the GitHub-only sections are hidden so the
+  // block shows the items GitLab's project page does.
+  const METADATA_HIDE = ['Releases', 'Packages', 'Used by', 'Contributors', 'Languages'];
+  const metadataHiddenOrig = new Map();
+
+  function paintMetadata(t) {
+    if (t !== 'gitlab') return;
+    const grid = document.querySelector('[class*="CodeViewSidebar-"]');
+    if (!grid) return;
+    for (const section of grid.children) {
+      const heading = section.querySelector('h2, h3');
+      const label = heading ? (heading.textContent || '').trim() : '';
+      if (!METADATA_HIDE.includes(label)) continue;
+      if (!metadataHiddenOrig.has(section)) {
+        metadataHiddenOrig.set(section, section.style.display);
+      }
+      if (section.style.display !== 'none') section.style.display = 'none';
     }
   }
 
@@ -617,6 +652,7 @@
     paintNode(node, t);
     paintOrder(t);
     paintNavGroups(t);
+    paintMetadata(t);
     paintProfileStats(t);
     paintProfileMenu(t);
   }
@@ -657,12 +693,18 @@
       if (order) el.style.order = order;
       else el.style.removeProperty('order');
     }
+    for (const [el, display] of metadataHiddenOrig) {
+      if (!el.isConnected) continue;
+      if (display) el.style.display = display;
+      else el.style.removeProperty('display');
+    }
     textOrig.clear();
     attrOrig.clear();
     refOrig.clear();
     orderOrig.clear();
     markerOrig.clear();
     hiddenOrig.clear();
+    metadataHiddenOrig.clear();
     profileHiddenOrig.clear();
     profileOrderOrig.clear();
     profileContainerCache.key = null;
@@ -775,6 +817,7 @@
       }
       paintOrder(current);
       paintNavGroups(current);
+      paintMetadata(current);
       paintProfileStats(current);
       paintProfileMenu(current);
       const now = Date.now();
