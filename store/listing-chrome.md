@@ -6,7 +6,7 @@ are noted; each draft fits.
 ## Product name (max 45)
 
 ```
-Git Same — GitHub ⇄ GitLab UI
+gitalike — GitHub ⇄ GitLab UI
 ```
 
 ## Short description (max 132)
@@ -26,7 +26,7 @@ See GitHub with a GitLab UI, and GitLab with a GitHub UI. Appearance only: no pa
 ## Detailed description
 
 ```
-Git Same re-skins the two big forges so they look like each other:
+gitalike re-skins the two big forges so they look like each other:
 
     a GitHub-flavoured site + GitLab UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
@@ -47,7 +47,7 @@ Enterprise Server included.
 • No network access at all: both stylesheets are bundled and both logos are
   inline data URIs. Nothing is sent anywhere.
 
-Permissions, plainly: Git Same asks for access to all sites because GitHub
+Permissions, plainly: gitalike asks for access to all sites because GitHub
 Enterprise Server and self-hosted GitLab live on hostnames that cannot be
 listed ahead of time. On every site you have not set up, it does nothing at all.
 
@@ -59,7 +59,7 @@ Not affiliated with GitHub or GitLab.
 **Single purpose description**
 
 ```
-Git Same changes only the visual appearance of GitHub and GitLab pages. It
+gitalike changes only the visual appearance of GitHub and GitLab pages. It
 re-points each site's own CSS design tokens and repaints the logos, so that a
 GitHub site looks like GitLab, or a GitLab site looks like GitHub. It does not
 alter page content or behaviour.

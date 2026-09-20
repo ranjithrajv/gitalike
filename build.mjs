@@ -40,13 +40,13 @@ const TARGETS = {
         // AMO binds the id permanently on first submission, so it must be a
         // string you are happy to keep. This uses the maintainer's mail domain;
         // swap in a domain you control before the first upload if you prefer.
-        id: 'git-same@riseup.net',
+        id: 'gitalike@riseup.net',
         // 142 is the first Firefox (desktop 140, Android 142) that understands
         // data_collection_permissions, so it is the floor that keeps the
         // manifest self-consistent. Nothing in the extension needs anything
         // newer.
         strict_min_version: '142.0',
-        // Required by AMO for new extensions. Git Same sends nothing anywhere —
+        // Required by AMO for new extensions. gitalike sends nothing anywhere —
         // it has no network access at all — so it declares "none".
         data_collection_permissions: {
           required: ['none'],

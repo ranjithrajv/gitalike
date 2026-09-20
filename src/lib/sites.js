@@ -1,5 +1,5 @@
 /**
- * What Git Same knows about hosts, and the two skins it applies.
+ * What gitalike knows about hosts, and the two skins it applies.
  *
  * Loaded as a plain script by the content script, the popup and the background
  * context, so the tables cannot drift between them.
@@ -115,7 +115,7 @@
     return kinds[kindFor(host, added)].theme;
   }
 
-  globalThis.GIT_SAME = {
+  globalThis.GITALIKE = {
     builtin,
     kinds,
     isKind,

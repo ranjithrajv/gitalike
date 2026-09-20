@@ -1,4 +1,4 @@
-# Contributing to Git Same
+# Contributing to gitalike
 
 Thanks for taking a look. It is a small extension with a few firm rules; the
 rest is straightforward. If you only read one section, read
@@ -77,7 +77,7 @@ store/                   submission copy and screenshots
 ```
 
 `src/lib/*` is pure data and side-effect-free helpers published on
-`globalThis.GIT_SAME` / `globalThis.GIT_SAME_UX`, shared by the content scripts,
+`globalThis.GITALIKE` / `globalThis.GITALIKE_UX`, shared by the content scripts,
 the popup, the background and the tests. `src/content/*` is the only code that
 touches a page.
 
@@ -130,7 +130,7 @@ per-host entry to keep in sync.
 
 ## Adding another forge — contributions welcome
 
-Git Same knows two products, GitHub and GitLab, and skins each as the other.
+gitalike knows two products, GitHub and GitLab, and skins each as the other.
 **More forges are wanted.** Forgejo, Gitea, Codeberg, Bitbucket, Sourcehut — none
 are supported today, and this is probably the single most useful thing to help
 with. There are two levels, and the easy one is real work, not a consolation
@@ -155,7 +155,7 @@ const builtin = {
 Add the host to `tests/sites.test.mjs`. Only add vocabulary if the forge uses a
 different word — Forgejo says "Pull request", so there is nothing to do.
 
-You can already point Git Same at any instance without touching the source: the
+You can already point gitalike at any instance without touching the source: the
 popup's **Add a site** flow exists for exactly that. A `builtin` entry just means
 it works out of the box.
 
@@ -208,7 +208,7 @@ easiest bug to ship and the most annoying to live with.
 - 2-space indent, single quotes, semicolons, trailing commas in multi-line
   literals.
 - `src/lib/*` and `src/content/*` are **classic scripts, not ES modules** — they
-  share one scope, so publish through `globalThis.GIT_SAME*` and wrap in an IIFE.
+  share one scope, so publish through `globalThis.GITALIKE*` and wrap in an IIFE.
 - The background context has to work both ways: Chromium runs `background.js` as
   a service worker with `importScripts()`, Firefox loads the files listed in
   `background.scripts` into one scope. Test `npm run build:firefox` and

@@ -1,5 +1,5 @@
 /**
- * Unit tests for src/lib/sites.js — the one piece of Git Same that is pure,
+ * Unit tests for src/lib/sites.js — the one piece of gitalike that is pure,
  * side-effect-free logic and therefore worth locking down.
  *
  * Runs on Node's built-in test runner, so the project keeps its zero-dependency
@@ -8,14 +8,14 @@
  *   npm test        # or: node --test
  *
  * The module under test is a classic script that publishes itself on
- * `globalThis.GIT_SAME`; importing it for its side effect is all that is needed.
+ * `globalThis.GITALIKE`; importing it for its side effect is all that is needed.
  */
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import '../src/lib/sites.js';
 
-const SITES = globalThis.GIT_SAME;
+const SITES = globalThis.GITALIKE;
 const {
   parseHost,
   kindFor,
