@@ -155,6 +155,16 @@
     github: { gp: 'gm', gb: 'gp', gn: 'gt' },
   };
 
+  // Some sites ignore synthetic key events (`event.isTrusted` is false), so the
+  // combo cannot be replayed into them. Where the destination has a real
+  // navigation link, deliver the shortcut as a click on that link instead —
+  // a trusted navigation the site always honours. Keyed by theme + combo, with
+  // the *displayed* label (after translation) to look for.
+  const SHORTCUT_TARGETS = {
+    gitlab: {},
+    github: { gp: 'Pull requests', gb: 'Projects' },
+  };
+
   /* ------------------------------------------------------ pure helpers -- */
 
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -216,6 +226,12 @@
     return (theme === 'gitlab' ? '!' : '#') + match[1];
   }
 
+  /** Does a control's text match a whole label, counter and all? */
+  function labelMatches(text, label) {
+    const normalized = String(text || '').replace(/\s+/g, ' ').trim();
+    return normalized === label || normalized.startsWith(`${label} `);
+  }
+
   /**
    * Indices of `labels`, arranged by their position in `order` (stable for
    * equal ranks). Prefix matching means a label carrying a counter
@@ -248,10 +264,12 @@
     LABEL_SCOPE,
     NAV_RULES,
     SHORTCUTS,
+    SHORTCUT_TARGETS,
     translate,
     translateLabel,
     translateControl,
     refMarker,
+    labelMatches,
     orderIndexes,
     orderItems,
   };

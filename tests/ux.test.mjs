@@ -21,6 +21,7 @@ const {
   translateLabel,
   translateControl,
   refMarker,
+  labelMatches,
   orderIndexes,
   orderItems,
 } = UX;
@@ -32,6 +33,7 @@ describe('module shape', () => {
       translateLabel,
       translateControl,
       refMarker,
+      labelMatches,
       orderIndexes,
       orderItems,
     ]) {
@@ -176,6 +178,17 @@ describe('SHORTCUTS', () => {
     assert.equal(SHORTCUTS.github.gp, 'gm');
     assert.equal(SHORTCUTS.gitlab.gm, 'gp');
   });
+
+  test('click targets only exist for mapped combos, and name a label', () => {
+    const targets = UX.SHORTCUT_TARGETS;
+    for (const theme of ['gitlab', 'github']) {
+      for (const [combo, label] of Object.entries(targets[theme])) {
+        assert.ok(SHORTCUTS[theme][combo], `${theme}: ${combo} is not a mapped combo`);
+        assert.equal(typeof label, 'string');
+        assert.ok(label.length > 0);
+      }
+    }
+  });
 });
 
 describe('refMarker', () => {
@@ -203,6 +216,29 @@ describe('refMarker', () => {
     assert.equal(refMarker('/o/r/blob/main/a.js', 'gitlab'), null);
     assert.equal(refMarker('', 'gitlab'), null);
     assert.equal(refMarker(null, 'gitlab'), null);
+  });
+});
+
+describe('labelMatches', () => {
+  test('matches a whole label', () => {
+    assert.equal(labelMatches('Pull requests', 'Pull requests'), true);
+    assert.equal(labelMatches('  Merge  ', 'Merge'), true);
+  });
+
+  test('matches a label carrying a counter, whitespace and all', () => {
+    assert.equal(labelMatches('Pull requests 387', 'Pull requests'), true);
+    assert.equal(labelMatches('Pull requests\n-', 'Pull requests'), true);
+  });
+
+  test('does not match a longer word', () => {
+    assert.equal(labelMatches('Pull requestsfoo', 'Pull requests'), false);
+    assert.equal(labelMatches('Mergeable', 'Merge'), false);
+  });
+
+  test('rejects empty and unrelated text', () => {
+    assert.equal(labelMatches('', 'Merge'), false);
+    assert.equal(labelMatches(null, 'Merge'), false);
+    assert.equal(labelMatches('Issues', 'Merge'), false);
   });
 });
 

@@ -22,8 +22,9 @@
  *
  * Limitations worth knowing: text updates the site makes *inside* an already
  * processed node are not re-translated (SPA re-renders that replace nodes are),
- * and the keyboard remap dispatches synthetic events, which a site that checks
- * `event.isTrusted` would ignore.
+ * and the keyboard remap falls back to synthetic key events for destinations
+ * with no navigation link — which a site that checks `event.isTrusted` (GitLab)
+ * would ignore, so those combos are delivered as a click where a link exists.
  */
 (() => {
   'use strict';
@@ -279,6 +280,27 @@
     document.dispatchEvent(event);
   }
 
+  function findNavLink(label) {
+    for (const region of document.querySelectorAll(UX.NAV_SCOPE)) {
+      for (const link of region.querySelectorAll('a')) {
+        // labelMatches normalises internal whitespace: a label and its counter
+        // can be separate nodes ("Pull requests\n-"), which a plain trim misses.
+        if (UX.labelMatches(link.textContent, label)) return link;
+      }
+    }
+    return null;
+  }
+
+  function deliver(combo, target) {
+    // A click on the site's own navigation link is trusted, so it works even
+    // where synthetic key events are ignored (GitLab checks isTrusted). Fall
+    // back to replaying the site's own combo for destinations with no link.
+    const label = (UX.SHORTCUT_TARGETS[theme] || {})[combo];
+    const link = label ? findNavLink(label) : null;
+    if (link) link.click();
+    else sendKey(target.slice(1));
+  }
+
   function installKeys() {
     keyHandler = (event) => {
       if (!theme || event.__gsUx || event.ctrlKey || event.metaKey || event.altKey) {
@@ -300,11 +322,11 @@
       if (!combo) return;
       const target = (UX.SHORTCUTS[theme] || {})[combo];
       if (!target) return;
-      // The real `g` already reached the site; swallow this second key and send
-      // the one the site's own product would have used.
+      // The real `g` already reached the site; swallow this second key and
+      // deliver the destination the site's own product would have used.
       event.preventDefault();
       event.stopImmediatePropagation();
-      sendKey(target.slice(1));
+      deliver(combo, target);
     };
     document.addEventListener('keydown', keyHandler, true);
   }

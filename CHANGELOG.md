@@ -65,6 +65,9 @@ switched off.
   carries the other product's wording. Code, inputs, editable regions and
   `[data-gs-ux-skip]` are never touched, and the nav only reorders its own items
   among the slots they already occupy.
+- Keyboard shortcuts are delivered by clicking the site's own navigation link
+  where one exists, because GitLab ignores synthetic key events; `g n`
+  (notifications) has no link and is GitHub-only.
 - The Firefox build declares `data_collection_permissions: none` and requires
   Firefox 142. The Chromium build targets Manifest V3.
 - Verified against the live sites in Chromium, including a signed-in session;

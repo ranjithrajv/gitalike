@@ -219,9 +219,10 @@ source of truth shared by the content script, the popup and the background.
   whole-label match, so search, copy/paste and screen readers keep working — but
   text the site updates *inside* an already-processed node is not re-translated
   until that node is replaced.
-- **The keyboard remap is best-effort.** Mapped `g`-combos are handled by
-  dispatching synthetic key events; a site that checks `event.isTrusted` would
-  ignore them.
+- **The keyboard remap is best-effort.** Where the destination has a navigation
+  link the combo is delivered as a click on that link, because GitLab ignores
+  synthetic key events. `g n` (notifications) has no link, so it only works on
+  GitHub.
 - **GitLab's project sidebar is not reordered.** It is a nested group tree with
   no flat parent, so it is relabelled only. GitHub's flat repo tabs are both
   relabelled and reordered.

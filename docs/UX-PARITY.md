@@ -23,7 +23,7 @@ is the map and the scorecard.
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ❌ 0 rules | `lib/ux.js` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
-| Shortcuts — `SHORTCUTS` | ✅ 3 | ✅ 3 | `lib/ux.js` |
+| Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
 | "Open on the other host" | ❌ | ❌ | not built |
 
 Legend: ✅ done · ❌ not built
@@ -82,20 +82,26 @@ left as `#N`, which is correct in both products.
 
 ## Shortcuts
 
-| On screen | press | the site then runs |
-| --- | --- | --- |
-| G→L | `g m` | GitHub `g p` (pull requests) |
-| G→L | `g p` | GitHub `g b` (projects) |
-| G→L | `g t` | GitHub `g n` (notifications) |
-| L→G | `g p` | GitLab `g m` (merge requests) |
-| L→G | `g b` | GitLab `g p` (projects) |
-| L→G | `g n` | GitLab `g t` (todos) |
+| On screen | press | destination | delivered by |
+| --- | --- | --- | --- |
+| G→L | `g m` | GitHub pull requests | synthetic key (`g p`) |
+| G→L | `g p` | GitHub projects | synthetic key (`g b`) |
+| G→L | `g t` | GitHub notifications | synthetic key (`g n`) |
+| L→G | `g p` | GitLab merge requests | click on the "Pull requests" nav link |
+| L→G | `g b` | GitLab projects | click on the "Projects" nav link |
+| L→G | `g n` | GitLab todos | synthetic key (`g t`) — **not delivered** |
+
+GitHub honours synthetic key events, so the G→L combos replay the site's own
+combo. GitLab rejects them (`event.isTrusted` is false), so the L→G combos that
+have a navigation link are delivered as a **trusted click** on that link
+instead. The one combo with no link — `g n` (notifications ⇄ todos) — still
+falls back to a synthetic key and therefore does not work on GitLab; it is the
+one shortcut that is G→L only.
 
 Deliberately unmapped, in both directions: `g c`, `g i`, `g a`, `g w`, `g s`,
 `g d`, `g g`, and every single key (`t`, `/`, `.`, `?`, `s`). The single keys
 mostly already agree between the products, and the `g`-combos above are the only
-pairs with an unambiguous counterpart. The remap works by dispatching synthetic
-key events, so a site that checks `event.isTrusted` would ignore them.
+pairs with an unambiguous counterpart.
 
 ## Not built
 
@@ -116,6 +122,7 @@ directions.
 
 - **Live**, in Chromium with `dist/chromium` loaded: G→L copy, nav relabel and
   reorder, `#42 → !42`, `g m` navigating to the repo's pull requests, and a clean
-  revert of all of it; L→G copy and nav relabel.
+  revert of all of it; L→G copy, nav relabel, `!42 → #42` (and back on revert),
+  and `g p` navigating to the project's merge requests.
 - **Unit**, `tests/ux.test.mjs`: every table and helper, including the `LABELS`
-  round-trip and `PHRASES` symmetry.
+  round-trip, `PHRASES` symmetry and `labelMatches`.
