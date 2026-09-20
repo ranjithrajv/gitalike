@@ -120,11 +120,15 @@ product's *vocabulary and habits*:
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
 
 It is deliberately conservative. Copy is rewritten only in ordinary page text —
-never inside code, inputs or editable regions — and navigation labels change only
-on an exact whole-label match inside a known nav region, so prose and marketing
-copy are safe. A reference marker is only touched on a link that is *just* a
-number. Every change is recorded, and undone exactly when the skin is switched
-off.
+never inside code, inputs or editable regions — control words like the merge
+button ("Merge pull request" ⇄ "Merge") change only on an exact whole-label match
+on a button, tab, menu item or link, and navigation labels change only on an
+exact whole-label match inside a known nav region, so prose and marketing copy are
+safe. A reference marker is only touched on a link that is *just* a number. Every
+change is recorded, and undone exactly when the skin is switched off.
+
+The full status matrix — what each direction covers, and the few things that are
+deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
 
 ## How it works
 

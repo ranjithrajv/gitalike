@@ -14,9 +14,12 @@ const UX = globalThis.GIT_SAME_UX;
 const {
   PHRASES,
   NAV,
+  LABELS,
+  LABEL_SCOPE,
   SHORTCUTS,
   translate,
   translateLabel,
+  translateControl,
   refMarker,
   orderIndexes,
   orderItems,
@@ -24,12 +27,20 @@ const {
 
 describe('module shape', () => {
   test('publishes the shared surface', () => {
-    for (const fn of [translate, translateLabel, refMarker, orderIndexes, orderItems]) {
+    for (const fn of [
+      translate,
+      translateLabel,
+      translateControl,
+      refMarker,
+      orderIndexes,
+      orderItems,
+    ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, SHORTCUTS]) {
+    for (const table of [PHRASES, NAV, LABELS, SHORTCUTS]) {
       assert.equal(typeof table, 'object');
     }
+    assert.equal(typeof LABEL_SCOPE, 'string');
   });
 
   test('directly maps a phrase to the target product', () => {
@@ -85,6 +96,65 @@ describe('NAV tables', () => {
     for (const theme of ['gitlab', 'github']) {
       for (const [from, to] of Object.entries(NAV[theme])) {
         assert.notEqual(from, to, `${theme}: ${from} -> ${to}`);
+      }
+    }
+  });
+});
+
+describe('LABELS', () => {
+  test('round-trip exactly between the two directions', () => {
+    for (const [from, to] of Object.entries(LABELS.gitlab)) {
+      assert.equal(LABELS.github[to], from, `github["${to}"] should be "${from}"`);
+    }
+    for (const [from, to] of Object.entries(LABELS.github)) {
+      assert.equal(LABELS.gitlab[to], from, `gitlab["${to}"] should be "${from}"`);
+    }
+  });
+
+  test('translateControl maps a whole control label', () => {
+    assert.equal(translateControl('Merge', 'github'), 'Merge pull request');
+    assert.equal(translateControl('Merge pull request', 'gitlab'), 'Merge');
+    assert.equal(translateControl('Squash commits', 'github'), 'Squash and merge');
+    assert.equal(translateControl('Rebase and merge', 'gitlab'), 'Rebase');
+    assert.equal(translateControl('Security and quality', 'gitlab'), 'Security');
+  });
+
+  test('translateControl falls back to the phrase table', () => {
+    assert.equal(translateControl('Pull requests', 'gitlab'), 'Merge requests');
+    assert.equal(translateControl('Discussions', 'gitlab'), 'Discussions');
+  });
+
+  test('the merge and security words are never rewritten in prose', () => {
+    // These moved out of PHRASES into LABELS precisely so that ordinary text
+    // is left alone; only an exact control label is touched.
+    assert.equal(translate('Squash and merge', 'gitlab'), 'Squash and merge');
+    assert.equal(translate('Rebase', 'github'), 'Rebase');
+    assert.equal(translate('Security and quality', 'gitlab'), 'Security and quality');
+    assert.equal(translate('Merge', 'github'), 'Merge');
+  });
+});
+
+describe('table symmetry', () => {
+  test('PHRASES have the same size in both directions', () => {
+    assert.equal(
+      Object.keys(PHRASES.gitlab).length,
+      Object.keys(PHRASES.github).length,
+    );
+  });
+
+  test('every GitHub phrase key is produced by a GitLab phrase', () => {
+    const gitlabValues = new Set(Object.values(PHRASES.gitlab));
+    for (const key of Object.keys(PHRASES.github)) {
+      assert.ok(gitlabValues.has(key), `no GitLab phrase produces "${key}"`);
+    }
+  });
+
+  test('no table maps a label to itself', () => {
+    for (const theme of ['gitlab', 'github']) {
+      for (const table of [PHRASES[theme], LABELS[theme]]) {
+        for (const [from, to] of Object.entries(table)) {
+          assert.notEqual(from, to, `${theme}: ${from} -> ${to}`);
+        }
       }
     }
   });

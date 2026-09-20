@@ -15,6 +15,8 @@
  *     never rewritten;
  *   - navigation labels only change on an exact whole-label match inside a
  *     known navigation region, so marketing copy is safe;
+ *   - control labels ("Merge", "Rebase") only change on an exact whole-label
+ *     match on a button, tab, menu item or link, never in prose;
  *   - the nav is only reordered by moving its items among the slots they
  *     already occupy, so children we do not recognise stay where they are.
  *
@@ -132,6 +134,18 @@
     }
   }
 
+  function paintControls(node, t) {
+    for (const control of scope(node, UX.LABEL_SCOPE)) {
+      for (const text of textNodes(control)) {
+        const label = text.nodeValue.trim();
+        const next = UX.translateControl(label, t);
+        if (next === label) continue;
+        rememberText(text);
+        if (text.nodeValue !== next) text.nodeValue = next;
+      }
+    }
+  }
+
   function paintNav(node, t) {
     const map = UX.NAV[t] || {};
     // NAV_SCOPE selects the navigation *regions*; the labels live on the
@@ -182,6 +196,7 @@
     paintText(node, t);
     paintAttrs(node, t);
     paintRefs(node, t);
+    paintControls(node, t);
     paintNav(node, t);
     paintOrder(t);
     applying = false;
@@ -231,6 +246,7 @@
         paintText(node, current);
         paintAttrs(node, current);
         paintRefs(node, current);
+        paintControls(node, current);
         paintNav(node, current);
       }
       applying = false;

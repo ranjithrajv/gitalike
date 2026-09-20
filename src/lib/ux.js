@@ -28,13 +28,10 @@
     gitlab: {
       'Pull requests': 'Merge requests',
       'Pull request': 'Merge request',
-      'Squash and merge': 'Squash commits',
-      'Rebase and merge': 'Rebase',
       'Go to file': 'Find file',
       Gists: 'Snippets',
       Gist: 'Snippet',
       Insights: 'Analytics',
-      'Security and quality': 'Security',
       Codespaces: 'Workspaces',
       'GitHub Actions': 'CI/CD',
       Dependabot: 'Dependency scanning',
@@ -71,6 +68,37 @@
       'Issue boards': 'Projects',
     },
   };
+
+  // Exact labels on *controls* — buttons, menu items, tabs, links — that name a
+  // GitHub/GitLab feature differently but should never be rewritten in prose.
+  // Kept apart from PHRASES because "Merge" and "Rebase" are ordinary words:
+  // scoping to a control's whole label is what makes them safe. Every entry
+  // round-trips with its counterpart in the other direction.
+  const LABELS = {
+    gitlab: {
+      'Merge pull request': 'Merge',
+      'Squash and merge': 'Squash commits',
+      'Rebase and merge': 'Rebase',
+      'Security and quality': 'Security',
+    },
+    github: {
+      Merge: 'Merge pull request',
+      'Squash commits': 'Squash and merge',
+      Rebase: 'Rebase and merge',
+      Security: 'Security and quality',
+    },
+  };
+
+  // Elements whose whole label the LABELS table may replace.
+  const LABEL_SCOPE = [
+    'a',
+    'button',
+    'summary',
+    'label',
+    '[role="button"]',
+    '[role="tab"]',
+    '[role="menuitem"]',
+  ].join(',');
 
   // Regions whose labels the NAV table is allowed to touch. Verified against
   // the live sites: GitHub's repo tabs live in `nav[aria-label="Repository"]`;
@@ -166,6 +194,15 @@
     return translate(label, theme);
   }
 
+  /** Translate a control's whole label: exact words first, then copy. */
+  function translateControl(label, theme) {
+    const map = LABELS[theme];
+    if (map && Object.prototype.hasOwnProperty.call(map, label)) {
+      return map[label];
+    }
+    return translate(label, theme);
+  }
+
   /**
    * The reference marker a link should show for the given theme. A GitHub
    * `/pull/N` or GitLab `/-/merge_requests/N` link becomes `!N` under the
@@ -206,11 +243,14 @@
   globalThis.GIT_SAME_UX = {
     PHRASES,
     NAV,
+    LABELS,
     NAV_SCOPE,
+    LABEL_SCOPE,
     NAV_RULES,
     SHORTCUTS,
     translate,
     translateLabel,
+    translateControl,
     refMarker,
     orderIndexes,
     orderItems,
