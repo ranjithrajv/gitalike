@@ -106,6 +106,31 @@ try {
   check('G→L reference marker #42 → !42', g.ref === '!42', g.ref);
   check('G→L no-counterpart badge', g.badge === '≠ GitLab', g.badge);
 
+  /* GitHub profile, skinned as GitLab: the tab strip becomes a left rail. */
+  const ghp = await context.newPage();
+  await ghp.goto('https://github.com/torvalds', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await ghp.waitForFunction(
+    () => document.documentElement.classList.contains('gs-theme-gitlab'),
+    null,
+    { timeout: 45000 },
+  );
+  await ghp.waitForTimeout(2500);
+  const gp = await ghp.evaluate(() => {
+    const nav = document.querySelector(
+      'main [data-turbo-frame="user-profile-frame"] nav[aria-label="User profile"]',
+    );
+    const content = document.querySelector('main > .container-xl > .Layout > .Layout-main');
+    return {
+      direction: nav ? getComputedStyle(nav).flexDirection : null,
+      left: nav ? Math.round(nav.getBoundingClientRect().left) : null,
+      contentWidth: content ? Math.round(content.getBoundingClientRect().width) : null,
+    };
+  });
+  await ghp.close();
+  check('G→L profile nav is vertical', gp.direction === 'column', gp.direction);
+  check('G→L profile nav sits in the left rail', gp.left !== null && gp.left < 120, `${gp.left}px`);
+  check('G→L profile content stays wide', gp.contentWidth > 800, `${gp.contentWidth}px`);
+
   /* ------------------------------ GitLab -> GitHub ------------------------------ */
   const gl = await context.newPage();
   await gl.goto('https://gitlab.com/gitlab-org/gitlab', { waitUntil: 'domcontentloaded', timeout: 60000 });

@@ -146,6 +146,11 @@ html.gs-theme-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
   margin-top: 4px;
 }
 
+/* GitHub only shows this desktop profile navigation at `md` and up; below that
+   it keeps its own mobile tab row, so the rail is gated to the same breakpoint
+   (Primer's md is 768px). */
+@media (min-width: 768px) {
+
 /* Profile pages. GitHub's profile navigation is a horizontal tab bar in a
    sticky strip; GitLab's is a vertical sidebar group. Flip it the same way as
    the repo tabs, and move it into the left rail so a GitLab-skinned profile
@@ -271,8 +276,6 @@ html.gs-theme-gitlab
   background-color: var(--gs-canvas-subtle);
   border: 1px solid var(--gs-border);
   border-radius: var(--gs-radius-lg, 8px);
-  position: sticky;
-  top: 16px;
 }
 
 /* GitHub clones overflowing tabs into an options menu once they stop fitting;
@@ -332,6 +335,8 @@ html.gs-theme-gitlab
   > a::after {
   display: none !important;
 }
+
+} /* @media (min-width: 768px) */
 
 /* ---------------------------------------------------------------- L → G -- */
 
