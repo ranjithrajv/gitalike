@@ -53,7 +53,8 @@ node tools/e2e.mjs   # Playwright end-to-end test against the live sites
 npm run lint         # web-ext lint over the Firefox build
 npm run package      # store-ready zips -> dist/artifacts/
 npm run screenshots  # regenerate store/screenshots/
-npm run screenshots:profiles  # refresh the docs/ orientation captures
+npm run screenshots:profiles  # refresh the docs/ profile-page captures
+node tools/project-screenshots.mjs  # refresh the docs/ project-page captures
 npm run clean        # remove dist/
 ```
 

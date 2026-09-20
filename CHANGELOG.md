@@ -42,6 +42,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   claimed the extension never rewrites the page, which stopped being true when
   the copy, reference-marker, navigation and shortcut parity shipped
   (`store/listing-chrome.md`, `store/listing-firefox.md`).
+- The GitHub Pages preview's screenshot pairs were recaptured, so the skinned
+  shots show the gitalike mark. The project-page pairs, previously captured by
+  hand, now have a tool (`tools/project-screenshots.mjs`) matching the profile
+  pairs'.
 
 ## [0.1.1] - 2026-09-20
 
