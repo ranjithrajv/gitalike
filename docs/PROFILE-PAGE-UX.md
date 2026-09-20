@@ -73,14 +73,17 @@ GitLab exposes an **activity RSS feed** and keeps followers/following as
 navigation destinations. Sponsors and Marketplace are the two the skin already
 marks as having no counterpart (see `UNMAPPED`).
 
-### 6. Near-pairs that are not exact pairs
+### 6. Near-pairs the skin now translates
 
-Several labels look like counterparts but are not, which is why they are absent
-from the navigation tables rather than translated: GitHub **Repositories** vs
-GitLab **Personal projects**, GitHub **Stars** vs GitLab **Starred projects**,
-GitLab profile **Snippets** vs GitHub's account-level **Gists**. The account
-dropdown pair `Your gists ⇄ Your snippets` is in `CHROME`, but it is the *menu*
-label, not a profile tab — GitHub has no Snippets/Gists tab on a profile at all.
+Several labels name the same destination without matching word for word. The
+profile navigation translates them anyway: GitHub **Repositories** ⇄ GitLab
+**Personal projects**, GitHub **Stars** ⇄ GitLab **Starred projects**, and GitLab
+**Groups** ⇄ GitHub **Organizations**. GitHub's landing item is **Overview**;
+GitLab's is the account's name, so under a skin each takes the other's label.
+Destinations the applied product has no profile page for — GitLab's Activity and
+Contributed projects, GitLab's Snippets (GitHub keeps Gists in the account menu,
+not on a profile), GitHub's Projects and Packages — are hidden rather than shown
+in the other product's words.
 
 ## Where they agree
 
@@ -94,13 +97,13 @@ label, not a profile tab — GitHub has no Snippets/Gists tab on a profile at al
 
 ## What gitalike maps
 
-The profile page is largely unmapped territory for the vocabulary tables, and
-deliberately so — there is little exact vocabulary to carry across. What does
-apply:
+Most of the profile's vocabulary has no exact counterpart, so the copy tables
+(`PHRASES`, `LABELS`) do not carry it. What applies:
 
 | Surface | GitHub | GitLab | Lives in |
 | --- | --- | --- | --- |
 | Account chrome (dropdown) | Your repositories, Your stars, Your gists, Your organizations | Your projects, Starred projects, Your snippets, Your groups | `CHROME` |
+| Profile navigation | Overview, Repositories, Projects, Packages, Stars | the name, Activity, Groups, Contributed/Personal/Starred projects, Snippets, Followers, Following | `content/ux.js` — relabelled, and hidden where the other product has no page |
 | No counterpart | Sponsors, Marketplace | (GitLab lacks them) | `UNMAPPED` |
 | Reference marker | `#42` | `!42` | `refMarker` |
 | Shortcuts | GitHub's `g`-combos replay | GitLab's, delivered as clicks | `SHORTCUTS`, `SHORTCUT_TARGETS` |
@@ -122,13 +125,12 @@ Two scoping facts make the profile behave differently from the project page:
   place for, are hidden. The identity also moves from a top header with a small
   avatar into a left card under a large avatar, with the README/activity beside
   it, which is GitHub's profile shape.
-- **Profile navigation labels are not in `NAV`.** `NAV_SCOPE` includes
-  `.super-sidebar`, so the relabelling pass runs there, but `NAV` holds only the
-  repository-group labels (Code, Pull requests, …). GitLab's profile items —
-  Activity, Groups, Contributed projects, Personal projects, Starred projects,
-  Snippets, Followers, Following — and GitHub's profile tabs pass through
-  untouched. The near-pairs in §6 are the reason: none is an exact match for a
-  repository label, and several have no clean counterpart.
+- **Profile navigation is mapped in `content/ux.js`, not `NAV`.** `NAV` carries
+  the repository-group labels only, and a profile's destinations are a different
+  set. Each profile menu item therefore takes the applied product's word where
+  the two share a destination, or is hidden where they do not, and the landing
+  item is labelled with the other product's landing (see §6). This is a
+  behaviour the tables cannot express: it needs the page, not just a label.
 
 **Open on the other host** is absent on a profile, in both directions. That is
 correct rather than a gap: a profile is not an `owner/repo` path, and the two

@@ -124,12 +124,24 @@ try {
       direction: nav ? getComputedStyle(nav).flexDirection : null,
       left: nav ? Math.round(nav.getBoundingClientRect().left) : null,
       contentWidth: content ? Math.round(content.getBoundingClientRect().width) : null,
+      nav: nav
+        ? [...nav.querySelectorAll('a')]
+            .filter((a) => getComputedStyle(a).display !== 'none')
+            .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
+        : [],
     };
   });
   await ghp.close();
   check('G→L profile nav is vertical', gp.direction === 'column', gp.direction);
   check('G→L profile nav sits in the left rail', gp.left !== null && gp.left < 120, `${gp.left}px`);
   check('G→L profile content stays wide', gp.contentWidth > 800, `${gp.contentWidth}px`);
+  check(
+    'G→L profile nav reads as GitLab',
+    gp.nav.some((t) => t.startsWith('Personal projects')) &&
+      gp.nav.some((t) => t.startsWith('Starred projects')) &&
+      !gp.nav.some((t) => t.startsWith('Repositories')),
+    gp.nav.join(', '),
+  );
 
   /* ------------------------------ GitLab -> GitHub ------------------------------ */
   const gl = await context.newPage();
@@ -171,15 +183,29 @@ try {
       '.super-sidebar a[data-track-label="followers_menu"]',
     );
     const followerLi = followerLink ? followerLink.closest('li') : null;
+    const nav = document.querySelector('.super-sidebar .gl-scroll-scrim ul');
     return {
       stats: stats ? stats.textContent.replace(/\s+/g, ' ').trim() : null,
       inCard: stats ? Boolean(stats.closest('.user-profile-header')) : false,
       navHidden: followerLi ? getComputedStyle(followerLi).display : null,
+      nav: nav
+        ? [...nav.querySelectorAll('a')]
+            .filter((a) => getComputedStyle(a.closest('li') || a).display !== 'none')
+            .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
+        : [],
     };
   });
   await glp.close();
   check('L→G profile counts sit under the photo', lp.inCard && /followers/i.test(lp.stats || ''), lp.stats);
   check('L→G profile counts leave the navigation', lp.navHidden === 'none', lp.navHidden);
+  check(
+    'L→G profile nav reads as GitHub',
+    lp.nav.includes('Overview') &&
+      lp.nav.includes('Organizations') &&
+      lp.nav.some((t) => t.startsWith('Repositories')) &&
+      !lp.nav.some((t) => t.startsWith('Personal projects')),
+    lp.nav.join(', '),
+  );
 
   await gl.keyboard.press('g');
   await gl.keyboard.press('p');

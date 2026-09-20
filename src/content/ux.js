@@ -327,6 +327,105 @@
     if (!existing) identity.appendChild(box);
   }
 
+  // A profile page's navigation offers different destinations on each product.
+  // Under a skin, each item takes the applied product's word where the two share
+  // a destination, and an item the applied product has no profile page for is
+  // hidden — so the menu reads as one product's, not a mix of both. The landing
+  // item has no shared word: GitHub says "Overview", GitLab shows the account's
+  // name, so each is given the other's landing label.
+  const PROFILE_NAV = {
+    // GitLab profile -> GitHub labels (after the copy/control passes).
+    github: {
+      'Personal projects': 'Repositories',
+      'Starred projects': 'Stars',
+      'Your stars': 'Stars',
+      Groups: 'Organizations',
+      Activity: null,
+      'Contributed projects': null,
+      Snippets: null,
+      Gists: null,
+    },
+    // GitHub profile -> GitLab labels.
+    gitlab: {
+      Repositories: 'Personal projects',
+      Stars: 'Starred projects',
+      Projects: null,
+      Packages: null,
+    },
+  };
+  const profileHiddenOrig = new Map();
+
+  // Relabel one item by replacing the text node that holds its label, so the
+  // icon and any counter are left in place.
+  function setProfileLabel(el, key, to) {
+    for (const text of textNodes(el)) {
+      const current = text.nodeValue.trim();
+      if (!UX.labelMatches(current, key)) continue;
+      rememberText(text);
+      const next = text.nodeValue.replace(current, to);
+      if (text.nodeValue !== next) text.nodeValue = next;
+      return;
+    }
+  }
+
+  function hideProfileItem(el) {
+    const target = el.closest('li') || el;
+    if (!profileHiddenOrig.has(target)) {
+      profileHiddenOrig.set(target, target.style.display);
+    }
+    target.style.setProperty('display', 'none', 'important');
+  }
+
+  function paintProfileNav(t) {
+    const table = PROFILE_NAV[t];
+    if (!table || !document.body) return;
+    const lists =
+      document.body.dataset.page === 'users:show'
+        ? [...document.querySelectorAll('.super-sidebar .gl-scroll-scrim ul')]
+        : [...document.querySelectorAll('nav[aria-label="User profile"]')];
+    if (!lists.length) return;
+    // GitHub's card has no "About"/"Info"/"Contact" headings; GitLab's card
+    // does, so they are dropped rather than left as foreign labels.
+    if (t === 'github') {
+      for (const heading of document.querySelectorAll('.user-profile-sidebar h2')) {
+        const text = (heading.textContent || '').trim();
+        if (text === 'About' || text === 'Info' || text === 'Contact') {
+          hideProfileItem(heading);
+        }
+      }
+    }
+    const name = (
+      (document.querySelector('.h-card .p-name') || {}).textContent || ''
+    ).trim();
+    for (const list of lists) {
+      [...list.querySelectorAll('a')].forEach((el, index) => {
+        // The label without the icon, the counter or any `≠` badge.
+        const label = textNodes(el)
+          .map((n) => n.nodeValue)
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (!label) return;
+        // The landing item: GitHub's "Overview" <-> GitLab's name item.
+        if (t === 'github' && index === 0) {
+          setProfileLabel(el, label, 'Overview');
+          return;
+        }
+        if (t === 'gitlab' && UX.labelMatches(label, 'Overview') && name) {
+          setProfileLabel(el, label, name);
+          return;
+        }
+        for (const key of Object.keys(table)) {
+          if (!UX.labelMatches(label, key)) continue;
+          const to = table[key];
+          if (to) setProfileLabel(el, key, to);
+          else hideProfileItem(el);
+          return;
+        }
+      });
+    }
+  }
+
   // The per-node passes, in one place so a new pass cannot be wired into the
   // initial load but forgotten for the mutations that follow it.
   function paintNode(node, t) {
@@ -345,6 +444,7 @@
     paintOrder(t);
     paintNavGroups(t);
     paintProfileStats(t);
+    paintProfileNav(t);
     applying = false;
   }
 
@@ -370,11 +470,17 @@
     }
     for (const el of document.querySelectorAll('.gs-nav-group')) el.remove();
     for (const el of document.querySelectorAll('[data-gs-profile-stats]')) el.remove();
+    for (const [el, display] of profileHiddenOrig) {
+      if (!el.isConnected) continue;
+      if (display) el.style.display = display;
+      else el.style.removeProperty('display');
+    }
     textOrig.clear();
     attrOrig.clear();
     refOrig.clear();
     orderOrig.clear();
     markerOrig.clear();
+    profileHiddenOrig.clear();
   }
 
   /* -------------------------------------------------------------- boot -- */
@@ -411,6 +517,7 @@
       paintOrder(current);
       paintNavGroups(current);
       paintProfileStats(current);
+      paintProfileNav(current);
     }, 120);
   }
 
