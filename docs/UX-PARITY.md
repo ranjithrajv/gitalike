@@ -25,6 +25,7 @@ is the map and the scorecard.
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
 | Nav orientation | ✅ | ✅ | `themes/ux-nav.css` |
+| Project metadata placement | ✅ | ✅ | `themes/*.css` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
 | Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
 | "Open on the other host" | ✅ | ✅ | `lib/ux.js` + popup |
@@ -125,6 +126,19 @@ product it imitates does.
 GitLab's strip is taller than GitHub's single-row top bar because its navigation
 is grouped; the groups keep GitLab's structure and simply wrap horizontally
 rather than being flattened.
+
+## Description & metadata
+
+GitHub keeps the repository description and metadata in a right-hand "About"
+sidebar; GitLab shows the same information in a full-width "Project information"
+block above the content. Each skin moves it to match the product being imitated:
+
+- **G→L** — GitHub's About sidebar becomes a full-width block above the content
+  (GitHub's `PageLayout` is flex, so its content is made a column and the
+  sidebar pane ordered first), with its sections flowed into columns to stay
+  compact.
+- **L→G** — GitLab's "Project information" block becomes a right column beside
+  the file list, the way GitHub's About reads.
 
 Profile pages get the same treatment. GitLab's profile navigation is a
 `.super-sidebar` group, so L→G turns it into a horizontal strip like any other.

@@ -338,3 +338,40 @@ html.gs-theme-gitlab :is(.Button--primary, .btn-primary) {
 html.gs-theme-gitlab :is(.Button--primary, .btn-primary):hover {
   background-color: var(--gs-accent-hover) !important;
 }
+
+/* GitHub keeps the repository description and metadata in a right-hand "About"
+   sidebar; GitLab shows the same information in a full-width "Project
+   information" block above the content. On the GitLab skin the sidebar moves to
+   the top, so the two products read the same. GitHub's PageLayout is flex-based
+   with the sidebar in a row-reversed pane; the class suffixes are hashed, so the
+   selectors match on the stable prefix. */
+html.gs-theme-gitlab
+  [class*="PageLayoutContent-"]:has(
+    > [class*="PaneWrapper-"] [class*="CodeViewSidebar-"]
+  ) {
+  flex-direction: column !important;
+}
+
+html.gs-theme-gitlab
+  [class*="PaneWrapper-"]:has([class*="CodeViewSidebar-"]) {
+  order: -1 !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  padding-right: 0 !important;
+}
+
+html.gs-theme-gitlab
+  [class*="PaneWrapper-"]:has([class*="CodeViewSidebar-"])
+  > * {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+html.gs-theme-gitlab [class*="CodeViewSidebar-"] {
+  width: 100% !important;
+  /* Flow the sections into columns so the block stays compact, the way GitLab's
+     project information reads, instead of a tall stack. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  column-gap: 24px !important;
+}

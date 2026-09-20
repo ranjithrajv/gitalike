@@ -413,6 +413,10 @@ read.
   variable the token mapping cannot reach, so the primary button is painted
   directly by class (`.Button--primary`). A renamed class means the button
   reverts to GitHub's green.
+- **GitHub's `PageLayout` class suffixes are hashed** (e.g.
+  `PageLayoutContent-BneH9`), so the selectors that move the About sidebar match
+  on the stable prefix (`[class*="PageLayoutContent-"]`). A build that changes
+  the prefix breaks the metadata placement, not the whole skin.
 
 ## Style
 

@@ -342,3 +342,31 @@ html.gs-theme-github :is(.gl-table, .table) thead th {
   background-color: var(--gs-canvas-subtle) !important;
   color: var(--gs-fg) !important;
 }
+
+/* GitLab shows the description and metadata in a full-width "Project
+   information" block above the content; GitHub shows the same in a right-hand
+   "About" sidebar. On the GitHub skin the block becomes a right column beside
+   the file list, so the two products read the same. */
+html.gs-theme-github .project-page-layout:has(.project-page-sidebar-block) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 24px !important;
+}
+
+html.gs-theme-github
+  .project-page-layout:has(.project-page-sidebar-block)
+  > .project-page-layout-sidebar {
+  order: 2 !important;
+  flex: 0 0 296px !important;
+  width: 296px !important;
+  margin-top: 0 !important;
+}
+
+html.gs-theme-github
+  .project-page-layout:has(.project-page-sidebar-block)
+  > .project-page-layout-content {
+  order: 1 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
