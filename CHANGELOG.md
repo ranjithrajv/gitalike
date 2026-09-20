@@ -52,7 +52,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   pairs'.
 - Added the trademark attributions the platforms' brand guidelines ask for —
   GitLab's ™ symbol plus its proprietorship statement, and a GitHub trademark
-  line — to the README and both store listings.
+  line — to the README, both store listings and the extension's manifest
+  description.
 - Performance: content scripts and stylesheets are now registered only for the
   hosts gitalike is set up on, instead of being injected into every page, so an
   unconfigured page parses neither. This adds the `scripting` permission; the
