@@ -152,15 +152,16 @@ html.gs-theme-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
 @media (min-width: 768px) {
 
 /* Profile pages. GitHub's profile navigation is a horizontal tab bar in a
-   sticky strip; GitLab's is a vertical sidebar group. Flip it the same way as
-   the repo tabs, and move it into the left rail so a GitLab-skinned profile
-   reads like GitLab's. GitHub splits the page across two `container-xl`
-   wrappers — the sticky tab strip and the card+content Layout — so both are
-   dissolved to grid items here. */
+   sticky strip; GitLab's is a full-height super-sidebar beside the profile
+   header. Flip it the same way as the repo tabs, and shape the page like
+   GitLab's: the navigation becomes the left rail and the profile card (GitHub's
+   identity column) moves into the content, as GitLab's profile header. GitHub
+   splits the page across two `container-xl` wrappers — the sticky tab strip and
+   the card+content Layout — so both are dissolved to grid items here. */
 html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) {
   display: grid;
   grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
-  align-items: start;
+  align-items: stretch;
   column-gap: 24px;
   row-gap: 16px;
   max-width: 1280px;
@@ -205,7 +206,7 @@ html.gs-theme-gitlab
   display: none !important;
 }
 
-/* The nav panel: top of the left rail. */
+/* The navigation: the left rail, spanning the page like GitLab's super-sidebar. */
 html.gs-theme-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
@@ -213,24 +214,26 @@ html.gs-theme-gitlab
   > .Layout
   > .Layout-main {
   grid-column: 1;
-  grid-row: 1;
+  grid-row: 1 / span 2;
+  align-self: stretch;
   width: 100%;
   min-width: 0;
 }
 
-/* The profile card: below the nav in the left rail. Primer sizes the sidebar
-   for its own 296px column, so it is re-fitted to this one. */
+/* The profile card: GitLab keeps its identity block in the content beside the
+   navigation, so the card moves to the top of the right column and is re-shaped
+   into GitLab's header row. */
 html.gs-theme-gitlab
   main:has(nav[aria-label="User profile"])
   > .container-xl
   > .Layout
   > .Layout-sidebar {
-  grid-column: 1;
-  grid-row: 2;
-  width: 100% !important;
-  max-width: 100% !important;
+  grid-column: 2;
+  grid-row: 1;
+  width: auto !important;
+  max-width: none !important;
   min-width: 0;
-  margin-top: 16px !important;
+  margin-top: 0 !important;
 }
 
 html.gs-theme-gitlab
@@ -241,24 +244,65 @@ html.gs-theme-gitlab
   .h-card {
   width: 100% !important;
   max-width: 100% !important;
+  margin-top: 0 !important;
 }
 
-/* The content: the right column, beside the whole rail. */
+/* Avatar left, name and handle beside it: GitLab's profile header shape rather
+   than GitHub's full-width avatar stacked above the name. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  .h-card
+  .js-profile-editable-replace
+  > .clearfix {
+  display: flex !important;
+  align-items: center;
+  gap: 16px;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  .h-card
+  .js-profile-editable-replace
+  > .clearfix
+  .col-2,
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  .h-card
+  .js-profile-editable-replace
+  > .clearfix
+  .vcard-names-container {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: 100% !important;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  .h-card
+  .js-profile-editable-replace
+  > .clearfix
+  img.avatar-user {
+  width: 96px !important;
+  height: 96px !important;
+}
+
+/* The content: below the header in the right column. */
 html.gs-theme-gitlab
   main:has(nav[aria-label="User profile"])
   > .container-xl
   > .Layout
   > .Layout-main {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 2;
   min-width: 0;
 }
 
-/* The tab row becomes a vertical column of GitLab-style rows in a panel. */
+/* The tab row becomes the full-height super-sidebar column. */
 html.gs-theme-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   .UnderlineNav {
+  height: 100% !important;
   width: 100% !important;
   overflow: visible !important;
 }
@@ -272,10 +316,22 @@ html.gs-theme-gitlab
   align-items: stretch !important;
   gap: 2px !important;
   width: 100% !important;
+  height: 100% !important;
   padding: 8px !important;
   background-color: var(--gs-canvas-subtle);
-  border: 1px solid var(--gs-border);
-  border-radius: var(--gs-radius-lg, 8px);
+  border-right: 1px solid var(--gs-border);
+}
+
+/* GitLab heads a profile's navigation with a "Profile" group label. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  nav[aria-label="User profile"]::before {
+  content: "Profile";
+  display: block;
+  padding: 6px 10px 8px;
+  font-weight: 600;
+  color: var(--gs-fg-muted);
 }
 
 /* GitHub clones overflowing tabs into an options menu once they stop fitting;
@@ -397,4 +453,27 @@ html.gs-theme-github .super-sidebar :is(
 html.gs-theme-github .super-sidebar [data-testid="nav-item-link"] {
   padding-top: 2px !important;
   padding-bottom: 2px !important;
+}
+
+/* A profile's super-sidebar is a single flat group, so under the GitHub UI it
+   becomes one row of tabs like GitHub's: no "Profile" heading, and no Help
+   menu, for which GitHub's profile has no place. GitLab marks a profile page
+   with `data-page="users:show"`; the original `.js-super-sidebar` shell (which
+   carried the panel metadata) is replaced at render time, so the body marker is
+   what survives. */
+html.gs-theme-github
+  body[data-page="users:show"]
+  :is(.super-sidebar-context-header, .super-sidebar-help-center-dropdown) {
+  display: none !important;
+}
+
+html.gs-theme-github
+  body[data-page="users:show"]
+  .contextual-nav
+  > div:has(.super-sidebar-help-center-dropdown) {
+  display: none !important;
+}
+
+html.gs-theme-github body[data-page="users:show"] .contextual-nav {
+  padding-top: 0 !important;
 }

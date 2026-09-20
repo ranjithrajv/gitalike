@@ -140,14 +140,17 @@ block above the content. Each skin moves it to match the product being imitated:
 - **L→G** — GitLab's "Project information" block becomes a right column beside
   the file list, the way GitHub's About reads.
 
-Profile pages get the same treatment. GitLab's profile navigation is a
-`.super-sidebar` group, so L→G turns it into a horizontal strip like any other.
-G→L targets GitHub's profile navigation (`nav[aria-label="User profile"]`)
-separately: the sticky horizontal tab strip becomes a vertical panel in the left
-rail, the profile card moves below it, and the content stays in the right column.
-GitHub splits the profile across two `container-xl` wrappers, so both are
-dissolved to a page grid — the profile equivalent of the repository header/tab
-wrapper trick above.
+Profile pages get the same treatment, shaped like the target product's profile
+rather than just re-oriented. G→L targets GitHub's profile navigation
+(`nav[aria-label="User profile"]`) separately: the sticky horizontal tab strip
+becomes a full-height super-sidebar in the left rail, headed "Profile", and the
+profile card moves into the content as GitLab's header — a 96px avatar beside
+the name. GitHub splits the profile across two `container-xl` wrappers, so both
+are dissolved to a page grid (the profile equivalent of the repository
+header/tab wrapper trick above). L→G turns GitLab's `.super-sidebar` into a
+horizontal strip as usual, and because a profile's sidebar is a single flat
+group it is flattened to one row of tabs: the "Profile" heading and the Help
+menu are hidden.
 
 ## References
 
