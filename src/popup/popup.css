@@ -295,6 +295,35 @@ main {
   transform: translateX(14px);
 }
 
+/* ------------------------------------------------------------ open other -- */
+
+/* Only shown when the current page has a known counterpart (the two public
+   forges); a self-hosted instance has no pair to guess. */
+.open-other {
+  display: block;
+  width: calc(100% - 8px);
+  margin: 4px 4px 8px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.open-other:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.open-other:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 /* ----------------------------------------------------------------- foot -- */
 
 .foot {

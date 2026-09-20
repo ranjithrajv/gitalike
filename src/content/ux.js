@@ -50,6 +50,7 @@
   const attrOrig = new Map();
   const refOrig = new Map();
   const orderOrig = new Map();
+  const orderStamp = new WeakMap();
 
   let theme = null;
   let applying = false;
@@ -166,9 +167,29 @@
     }
   }
 
+  function resolveContainer(rule) {
+    if (rule.container) return document.querySelector(rule.container);
+    if (!rule.scope || !rule.contains) return null;
+    const norm = (el) => (el.textContent || '').replace(/\s+/g, ' ').trim();
+    let best = null;
+    let bestCount = 0;
+    for (const region of document.querySelectorAll(rule.scope)) {
+      for (const el of region.querySelectorAll('ul,ol,div')) {
+        const items = [...el.children].filter((c) => c.matches(rule.item));
+        if (items.length < 2 || items.length <= bestCount) continue;
+        // The container must hold the named item as one of its own children —
+        // exact match, so a longer label ("Code review analytics") never counts.
+        if (![...el.children].some((c) => norm(c) === rule.contains)) continue;
+        best = el;
+        bestCount = items.length;
+      }
+    }
+    return best;
+  }
+
   function paintOrder(t) {
     for (const rule of UX.NAV_RULES[t] || []) {
-      const container = document.querySelector(rule.container);
+      const container = resolveContainer(rule);
       if (!container) continue;
       const children = [...container.children];
       const items = children.filter((c) => c.matches(rule.item));
@@ -182,6 +203,11 @@
       let slot = 0;
       const next = children.map((child) => (itemSet.has(child) ? sorted[slot++] : child));
       if (next.every((child, i) => child === children[i])) continue;
+      // A framework that re-renders its list would undo this and, if we kept
+      // re-applying, thrash. Reorder once, then leave it be for a moment.
+      const now = Date.now();
+      if (orderStamp.has(container) && now - orderStamp.get(container) < 1000) continue;
+      orderStamp.set(container, now);
       if (!orderOrig.has(container)) orderOrig.set(container, children);
       if (domObserver) domObserver.disconnect();
       for (const child of next) container.appendChild(child);

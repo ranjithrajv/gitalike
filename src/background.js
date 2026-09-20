@@ -11,10 +11,11 @@
 // you pull in a sibling file. Firefox runs both scripts listed in the manifest
 // in one shared scope, so there it is already defined and importScripts does
 // not exist.
-if (typeof importScripts === 'function') importScripts('lib/sites.js');
+if (typeof importScripts === 'function') importScripts('lib/sites.js', 'lib/ux.js');
 
 const api = globalThis.browser ?? globalThis.chrome;
 const SITES = globalThis.GIT_SAME;
+const UX = globalThis.GIT_SAME_UX;
 
 const SETTINGS_KEY = 'gitSameSettings';
 const INSTANCES_KEY = 'gitSameInstances';
@@ -62,6 +63,14 @@ async function refreshAllBadges() {
 /* --------------------------------------------------------------- command -- */
 
 api.commands.onCommand.addListener(async (command) => {
+  // Open the current page on the other forge, when the pair is known.
+  if (command === 'open-other-host') {
+    const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+    const url = UX?.otherHostUrl(tab?.url);
+    if (url) await api.tabs.create({ url });
+    return;
+  }
+
   if (command !== 'toggle-site') return;
 
   const [tab] = await api.tabs.query({ active: true, currentWindow: true });

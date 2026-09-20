@@ -16,6 +16,7 @@ const {
   NAV,
   LABELS,
   LABEL_SCOPE,
+  NAV_RULES,
   SHORTCUTS,
   translate,
   translateLabel,
@@ -24,6 +25,7 @@ const {
   labelMatches,
   orderIndexes,
   orderItems,
+  otherHostUrl,
 } = UX;
 
 describe('module shape', () => {
@@ -36,6 +38,7 @@ describe('module shape', () => {
       labelMatches,
       orderIndexes,
       orderItems,
+      otherHostUrl,
     ]) {
       assert.equal(typeof fn, 'function');
     }
@@ -188,6 +191,93 @@ describe('SHORTCUTS', () => {
         assert.ok(label.length > 0);
       }
     }
+  });
+});
+
+describe('NAV_RULES', () => {
+  test('the GitLab group rule resolves its container by scope + contains', () => {
+    const rule = NAV_RULES.github[0];
+    assert.equal(rule.scope, '.super-sidebar');
+    assert.equal(rule.contains, 'Code');
+    assert.ok(Array.isArray(rule.order) && rule.order.length >= 2);
+    assert.equal(rule.item, 'li');
+  });
+
+  test('the GitHub rule targets the flat repo tab list', () => {
+    const rule = NAV_RULES.gitlab[0];
+    assert.match(rule.container, /UnderlineNav-body/);
+    assert.ok(Array.isArray(rule.order) && rule.order.length >= 2);
+  });
+});
+
+describe('otherHostUrl', () => {
+  test('maps a GitHub repo and its PR / issue / file routes', () => {
+    assert.equal(
+      otherHostUrl('https://github.com/git/git'),
+      'https://gitlab.com/git/git',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/git/git/pull/1875'),
+      'https://gitlab.com/git/git/-/merge_requests/1875',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/git/git/issues/12'),
+      'https://gitlab.com/git/git/-/issues/12',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/git/git/tree/main/Documentation'),
+      'https://gitlab.com/git/git/-/tree/main/Documentation',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/git/git/blob/main/README.md'),
+      'https://gitlab.com/git/git/-/blob/main/README.md',
+    );
+  });
+
+  test('maps a GitLab project and its MR / issue / file routes', () => {
+    assert.equal(
+      otherHostUrl('https://gitlab.com/gitlab-org/gitlab'),
+      'https://github.com/gitlab-org/gitlab',
+    );
+    assert.equal(
+      otherHostUrl('https://gitlab.com/gitlab-org/gitlab/-/merge_requests/7'),
+      'https://github.com/gitlab-org/gitlab/pull/7',
+    );
+    assert.equal(
+      otherHostUrl('https://gitlab.com/gitlab-org/gitlab/-/issues/7'),
+      'https://github.com/gitlab-org/gitlab/issues/7',
+    );
+    assert.equal(
+      otherHostUrl('https://gitlab.com/gitlab-org/gitlab/-/tree/master/app'),
+      'https://github.com/gitlab-org/gitlab/tree/master/app',
+    );
+  });
+
+  test('keeps the query string and fragment', () => {
+    assert.equal(
+      otherHostUrl('https://github.com/git/git/pull/1?x=2#discussion'),
+      'https://gitlab.com/git/git/-/merge_requests/1?x=2#discussion',
+    );
+  });
+
+  test('refuses a host with no known pair', () => {
+    assert.equal(otherHostUrl('https://github.acme.com/o/r'), null);
+    assert.equal(otherHostUrl('https://example.com/o/r'), null);
+    assert.equal(otherHostUrl('not a url'), null);
+  });
+
+  test('refuses paths that are not a repository', () => {
+    assert.equal(otherHostUrl('https://github.com/settings'), null);
+    assert.equal(otherHostUrl('https://github.com/orgs/foo'), null);
+    assert.equal(otherHostUrl('https://gitlab.com/dashboard/merge_requests'), null);
+    assert.equal(otherHostUrl('https://github.com'), null);
+  });
+
+  test('refuses a GitLab subgroup, which has no owner/repo form', () => {
+    assert.equal(
+      otherHostUrl('https://gitlab.com/a/b/c/-/merge_requests/1'),
+      null,
+    );
   });
 });
 

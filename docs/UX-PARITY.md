@@ -21,10 +21,10 @@ is the map and the scorecard.
 | Copy — `PHRASES` | ✅ 9 | ✅ 9 | `lib/ux.js` |
 | Control labels — `LABELS` | ✅ 4 | ✅ 4 | `lib/ux.js` |
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
-| Nav reorder — `NAV_RULES` | ✅ 1 rule | ❌ 0 rules | `lib/ux.js` |
+| Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
 | Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
-| "Open on the other host" | ❌ | ❌ | not built |
+| "Open on the other host" | ✅ | ✅ | `lib/ux.js` + popup |
 
 Legend: ✅ done · ❌ not built
 
@@ -67,12 +67,18 @@ region: `Code ⇄ Repository`, `Actions ⇄ CI/CD`, `Pull requests ⇄ Merge req
 
 ## Navigation
 
-Labels are matched in both directions. **Order is only reordered G→L.** GitHub's
-repo tabs are a flat `ul.UnderlineNav-body`, so the items can be moved among the
-slots they already occupy. GitLab's project navigation is a nested group tree
-with no flat parent, so it is relabelled only; reordering it would mean
-flattening GitLab's groups — changing its information architecture rather than
-matching GitHub's.
+Labels are matched in both directions, and both directions reorder. GitHub's repo
+tabs are a flat `ul.UnderlineNav-body`, so the whole set is reordered. GitLab's
+project navigation is a nested group tree — one `ul` per group — so there is no
+single flat list; the one group that maps onto GitHub's repo tabs, the repository
+("Code") group, is reordered in place (Code before Pull requests). GitLab's
+groups themselves keep GitLab's order: flattening them would change GitLab's
+information architecture rather than match GitHub's.
+
+Both reorders move items only among the slots they already occupy and leave
+unrecognised children where they are, so an unfamiliar markup change degrades to
+"no reorder". A reorder is applied once and then left alone for a moment, so a
+framework that re-renders its list cannot make the two of us thrash.
 
 ## References
 
@@ -103,10 +109,19 @@ Deliberately unmapped, in both directions: `g c`, `g i`, `g a`, `g w`, `g s`,
 mostly already agree between the products, and the `g`-combos above are the only
 pairs with an unambiguous counterpart.
 
+## Open on the other host
+
+The popup shows **Open this page on GitLab / GitHub** when the current page is on
+one of the two public forges, and the same action is bound to `Alt`+`Shift`+`O`.
+`otherHostUrl` maps the path between the products — repo root,
+`pull` ⇄ `-/merge_requests`, `issues` ⇄ `-/issues`, `tree` / `blob` / `commits`,
+`releases`, `wiki` ⇄ `-/wikis`, `actions` ⇄ `-/pipelines` — and preserves the
+query and fragment. It returns nothing for a self-hosted host (there is no pair
+to guess) or a path that is not a repository, so the button is simply absent
+there.
+
 ## Not built
 
-- **"Open on the other host"** and cross-product URL translation — the one whole
-  surface still at ❌ in both directions.
 - **Behaviour** behind search, notifications and the merge flow: only their
   labels change, not what they do.
 
@@ -122,7 +137,11 @@ directions.
 
 - **Live**, in Chromium with `dist/chromium` loaded: G→L copy, nav relabel and
   reorder, `#42 → !42`, `g m` navigating to the repo's pull requests, and a clean
-  revert of all of it; L→G copy, nav relabel, `!42 → #42` (and back on revert),
-  and `g p` navigating to the project's merge requests.
+  revert of all of it; L→G copy, nav relabel, the repository group reordered
+  (`Code` before `Pull requests`), `!42 → #42` (and back on revert), and `g p`
+  navigating to the project's merge requests. The popup's "Open this page on
+  GitLab" button resolved `github.com/git/git/pull/1875` to
+  `gitlab.com/git/git/-/merge_requests/1875`, and `open-other-host` was
+  registered alongside `toggle-site`.
 - **Unit**, `tests/ux.test.mjs`: every table and helper, including the `LABELS`
-  round-trip, `PHRASES` symmetry and `labelMatches`.
+  round-trip, `PHRASES` symmetry, `labelMatches` and `otherHostUrl`.

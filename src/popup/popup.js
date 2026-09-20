@@ -16,6 +16,9 @@
   const SITES = globalThis.GIT_SAME;
   if (!SITES) return;
 
+  const UX = globalThis.GIT_SAME_UX;
+  if (!UX) return;
+
   const SETTINGS_KEY = 'gitSameSettings';
   const INSTANCES_KEY = 'gitSameInstances';
   const HINT_DEFAULT = 'Which product is it?';
@@ -29,10 +32,12 @@
   const addHint = document.getElementById('add-hint');
   const addRemove = document.getElementById('add-remove');
   const kindButtons = [...document.querySelectorAll('.add__button[data-kind]')];
+  const openOther = document.getElementById('open-other');
 
   let settings = {};
   let instances = {};
   let host = '';
+  let pageUrl = '';
   let openedOnce = false;
 
   /* ---------------------------------------------------------------- state -- */
@@ -45,8 +50,9 @@
 
   async function currentHost() {
     const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+    pageUrl = tab?.url ?? '';
     try {
-      const url = new URL(tab.url);
+      const url = new URL(pageUrl);
       // chrome://, about:, chrome-extension://, file:// — none of these are
       // hosts we could skin, and `new URL().hostname` would happily invent one.
       if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
@@ -202,6 +208,18 @@
     load().then(render);
   });
 
+  function renderOther() {
+    const other = UX.otherHostUrl(pageUrl);
+    if (!other) {
+      openOther.hidden = true;
+      return;
+    }
+    const target = new URL(other).hostname === 'gitlab.com' ? 'GitLab' : 'GitHub';
+    openOther.textContent = `Open this page on ${target}`;
+    openOther.hidden = false;
+    openOther.onclick = () => api.tabs.create({ url: other });
+  }
+
   async function showShortcut() {
     const el = document.getElementById('shortcut');
     try {
@@ -223,5 +241,6 @@
     await load();
     render();
     await showShortcut();
+    renderOther();
   })();
 })();

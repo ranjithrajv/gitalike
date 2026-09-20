@@ -41,6 +41,13 @@
         "mac": "Alt+Shift+G"
       },
       "description": "Toggle the UI swap for the current site"
+    },
+    "open-other-host": {
+      "suggested_key": {
+        "default": "Alt+Shift+O",
+        "mac": "Alt+Shift+O"
+      },
+      "description": "Open this page on the other host"
     }
   }
 }

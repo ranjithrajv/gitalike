@@ -119,9 +119,11 @@
   // understand stay put.
   //
   // GitHub's repo tabs are a flat `ul.UnderlineNav-body`, so they can be
-  // reordered. GitLab's project navigation is a nested group tree with no flat
-  // parent, so there is no safe reorder rule for that direction — it is
-  // relabelled only.
+  // reordered. GitLab's project navigation is a nested group tree — each group
+  // is its own `ul` — so there is no single flat list to reorder; the one group
+  // that maps onto GitHub's repo tabs, the repository ("Code") group, is
+  // reordered in place. A rule with `scope` + `contains` resolves its container
+  // at runtime (the group whose children include that exact label).
   const NAV_RULES = {
     gitlab: [
       {
@@ -138,7 +140,23 @@
         ],
       },
     ],
-    github: [],
+    github: [
+      {
+        scope: '.super-sidebar',
+        contains: 'Code',
+        item: 'li',
+        order: [
+          'Code',
+          'Issues',
+          'Pull requests',
+          'Actions',
+          'Projects',
+          'Wiki',
+          'Security',
+          'Insights',
+        ],
+      },
+    ],
   };
 
   /* ---------------------------------------------------------- shortcuts -- */
@@ -256,6 +274,90 @@
     return orderIndexes(labels, order).map((index) => labels[index]);
   }
 
+  /* ------------------------------------------------------ other host -- */
+
+  // Only the two public forges have a known counterpart. A self-hosted instance
+  // gives no way to guess its pair, so there the action is simply absent.
+  const HOST_PAIRS = { 'github.com': 'gitlab.com', 'gitlab.com': 'github.com' };
+
+  // First path segments that name a product-wide page, not a repository, so
+  // they are never mistaken for an owner/repo pair.
+  const GITHUB_RESERVED = new Set([
+    'settings', 'notifications', 'explore', 'marketplace', 'orgs', 'users',
+    'login', 'logout', 'signup', 'features', 'about', 'pricing', 'topics',
+    'collections', 'sponsors', 'apps', 'codespaces', 'issues', 'pulls',
+    'search', 'new', 'dashboard', 'account', 'organizations', 'enterprise',
+    'security', 'customer-stories', 'readme', 'sponsors',
+  ]);
+  const GITLAB_RESERVED = new Set([
+    'dashboard', 'explore', 'users', 'admin', 'projects', 'groups', 'help',
+    'search', 'profile', 'public', 'sign_in', 'oauth', 'import', 'invites',
+  ]);
+
+  // Map one product's path onto the other's. Returns null when the path is not
+  // a repository (or is a GitLab group nested too deep for GitHub's owner/repo).
+  function translatePath(pathname, from) {
+    const seg = String(pathname || '').split('/').filter(Boolean);
+
+    if (from === 'github') {
+      if (seg.length < 2 || GITHUB_RESERVED.has(seg[0])) return null;
+      const base = `/${seg[0]}/${seg[1]}`;
+      const [head, ...tail] = seg.slice(2);
+      if (!head) return base;
+      const rest = tail.length ? `/${tail.join('/')}` : '';
+      switch (head) {
+        case 'pull': return `${base}/-/merge_requests${rest}`;
+        case 'pulls': return `${base}/-/merge_requests`;
+        case 'issues': return `${base}/-/issues${rest}`;
+        case 'tree': return `${base}/-/tree${rest}`;
+        case 'blob': return `${base}/-/blob${rest}`;
+        case 'commits': return `${base}/-/commits${rest}`;
+        case 'releases': return `${base}/-/releases${rest}`;
+        case 'wiki': return `${base}/-/wikis${rest}`;
+        case 'actions': return `${base}/-/pipelines${rest}`;
+        default: return base;
+      }
+    }
+
+    // GitLab: the `/-/` marker separates the project path from the route. A
+    // project path deeper than owner/repo (a subgroup) has no GitHub form.
+    const marker = seg.indexOf('-');
+    const project = marker > 0 ? seg.slice(0, marker) : seg.slice(0, 2);
+    const route = marker > 0 ? seg.slice(marker + 1) : seg.slice(2);
+    if (project.length !== 2 || GITLAB_RESERVED.has(project[0])) return null;
+    const base = `/${project[0]}/${project[1]}`;
+    const [head, ...tail] = route;
+    if (!head) return base;
+    const rest = tail.length ? `/${tail.join('/')}` : '';
+    switch (head) {
+      case 'merge_requests': return tail.length ? `${base}/pull${rest}` : `${base}/pulls`;
+      case 'issues': return `${base}/issues${rest}`;
+      case 'tree': return `${base}/tree${rest}`;
+      case 'blob': return `${base}/blob${rest}`;
+      case 'commits': return `${base}/commits${rest}`;
+      case 'releases': return `${base}/releases${rest}`;
+      case 'wikis': return `${base}/wiki${rest}`;
+      case 'pipelines': return `${base}/actions${rest}`;
+      default: return base;
+    }
+  }
+
+  /** The same page on the other forge, or null if there is no known pair. */
+  function otherHostUrl(raw) {
+    let url;
+    try {
+      url = new URL(raw);
+    } catch {
+      return null;
+    }
+    const target = HOST_PAIRS[url.hostname];
+    if (!target) return null;
+    const from = url.hostname === 'github.com' ? 'github' : 'gitlab';
+    const path = translatePath(url.pathname, from);
+    if (!path) return null;
+    return `https://${target}${path}${url.search}${url.hash}`;
+  }
+
   globalThis.GIT_SAME_UX = {
     PHRASES,
     NAV,
@@ -272,5 +374,7 @@
     labelMatches,
     orderIndexes,
     orderItems,
+    translatePath,
+    otherHostUrl,
   };
 })();

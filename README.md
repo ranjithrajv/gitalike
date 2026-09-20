@@ -70,8 +70,10 @@ hosts each switch covers.
 
 **Keyboard:** `Alt` + `Shift` + `G` toggles the current site. It can only toggle
 a site that is already set up — telling GitHub from GitLab is a choice, so the
-first time has to go through the popup. Rebind it at `chrome://extensions/shortcuts`
-(Firefox: `about:addons` → gear → *Manage Extension Shortcuts*).
+first time has to go through the popup. `Alt` + `Shift` + `O` opens the current
+page on the other host (the two public forges only). Rebind either at
+`chrome://extensions/shortcuts` (Firefox: `about:addons` → gear → *Manage
+Extension Shortcuts*).
 
 While a skin is active the toolbar icon shows a small **GL** or **GH** badge.
 
@@ -115,9 +117,10 @@ product's *vocabulary and habits*:
 | Surface    | What changes                                                                                                     |
 | ---------- | ---------------------------------------------------------------------------------------------------------------- |
 | Copy       | "Pull request(s)" ⇄ "Merge request(s)", "Insights" ⇄ "Analytics", "Actions" ⇄ "CI/CD", "Go to file" ⇄ "Find file", "Gists" ⇄ "Snippets", "Codespaces" ⇄ "Workspaces" |
-| Navigation | repo tabs are relabelled ("Code" → "Repository") and reordered into the other product's order                     |
+| Navigation | repo tabs are relabelled ("Code" ⇄ "Repository") and reordered into the other product's order — GitLab's repository group included |
 | References | a pull/merge-request link shows the other product's marker — `#42` ⇄ `!42`                                        |
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
+| Other host | open the same page on the other forge, from the popup or `Alt` + `Shift` + `O`                                     |
 
 It is deliberately conservative. Copy is rewritten only in ordinary page text —
 never inside code, inputs or editable regions — control words like the merge
@@ -223,9 +226,13 @@ source of truth shared by the content script, the popup and the background.
   link the combo is delivered as a click on that link, because GitLab ignores
   synthetic key events. `g n` (notifications) has no link, so it only works on
   GitHub.
-- **GitLab's project sidebar is not reordered.** It is a nested group tree with
-  no flat parent, so it is relabelled only. GitHub's flat repo tabs are both
-  relabelled and reordered.
+- **GitLab's sidebar groups are not restructured.** Its project navigation is a
+  nested group tree, so only the repository ("Code") group is reordered to match
+  GitHub's tab order; the groups themselves keep GitLab's order, because
+  flattening them would change GitLab's information architecture rather than
+  match GitHub's.
+- **"Open on the other host" covers the two public forges only.** A self-hosted
+  instance has no pair to guess, so the action is absent there.
 - **Access to all sites.** The install prompt is the honest one. If that is not
   a trade you want to make, the alternative above is a small change to make.
 - **The stylesheets and UX tables load on every page** — about 24 KB of CSS plus

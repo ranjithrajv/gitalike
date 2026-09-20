@@ -22,6 +22,9 @@ switched off.
   relabelled and reordered, and the other product's `g`-shortcuts work. It skips
   code, inputs, editable regions and `[data-gs-ux-skip]`, and undoes every change
   when the skin is switched off.
+- An "open on the other host" action — a popup button and `Alt`+`Shift`+`O` —
+  that maps the current page onto the other forge (`pull` ⇄
+  `-/merge_requests`, issues, file views and so on), for the two public hosts.
 - Bundled support for `github.com`, `gitlab.com` and `code.swecha.org`, and a
   popup flow for classifying any other instance — GitHub Enterprise Server and
   self-hosted GitLab included — either on the page in front of you or by typing
