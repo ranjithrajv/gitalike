@@ -30,6 +30,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `translatePath` exports; `kinds[*].setting` went too, since it always mirrors
   the kind's key.
 
+### Fixed
+
+- The UX content script now **throttles** its DOM updates instead of debouncing
+  them. A trailing debounce is starved on a page that mutates continuously —
+  GitHub's repo page does — so nodes added while the page keeps changing were
+  never painted. The first mutation now schedules a run and later ones batch
+  into it.
+
 ## [0.1.0] - 2026-09-20
 
 First public release. Git Same re-skins GitHub as GitLab and GitLab as GitHub:

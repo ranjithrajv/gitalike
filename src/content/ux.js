@@ -61,7 +61,6 @@
   let applying = false;
   let domObserver = null;
   let classObserver = null;
-  let debounce = 0;
   let gPending = 0;
   let keyHandler = null;
 
@@ -294,24 +293,33 @@
 
   /* -------------------------------------------------------------- boot -- */
 
+  // Throttle, not debounce. A trailing debounce is starved on a page that
+  // mutates continuously — GitHub's repo page does — so nodes added while the
+  // page keeps changing would never be painted. The first mutation schedules a
+  // run; anything that arrives while it waits is batched into that run.
+  const pending = [];
+  let scheduled = false;
+
   function onMutations(records) {
-    if (!theme || applying) return;
-    const added = [];
+    if (!theme) return;
     for (const record of records) {
       for (const node of record.addedNodes) {
-        if (node.nodeType === 1) added.push(node);
-        else if (node.nodeType === 3 && node.parentElement) added.push(node.parentElement);
+        if (node.nodeType === 1) pending.push(node);
+        else if (node.nodeType === 3 && node.parentElement) {
+          pending.push(node.parentElement);
+        }
       }
     }
-    if (!added.length) return;
-    clearTimeout(debounce);
-    debounce = setTimeout(() => {
+    if (!pending.length || scheduled) return;
+    scheduled = true;
+    setTimeout(() => {
+      scheduled = false;
+      const batch = pending.splice(0);
       if (!theme) return;
       const current = theme;
       applying = true;
-      for (const node of added) {
-        if (!node.isConnected) continue;
-        paintNode(node, current);
+      for (const node of batch) {
+        if (node.isConnected) paintNode(node, current);
       }
       applying = false;
       paintOrder(current);
