@@ -156,6 +156,31 @@ try {
   check('L→G nav relabelled', l.nav.some((t) => t.startsWith('Pull requests')), l.nav.slice(0, 2).join(', '));
   check('L→G no-counterpart badges', l.badges > 0, `${l.badges} badges`);
 
+  /* GitLab profile, skinned as GitHub: counts move under the photo. */
+  const glp = await context.newPage();
+  await glp.goto('https://gitlab.com/dzaporozhets', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await glp.waitForFunction(
+    () => document.documentElement.classList.contains('gs-theme-github'),
+    null,
+    { timeout: 45000 },
+  );
+  await glp.waitForTimeout(3000);
+  const lp = await glp.evaluate(() => {
+    const stats = document.querySelector('[data-gs-profile-stats]');
+    const followerLink = document.querySelector(
+      '.super-sidebar a[data-track-label="followers_menu"]',
+    );
+    const followerLi = followerLink ? followerLink.closest('li') : null;
+    return {
+      stats: stats ? stats.textContent.replace(/\s+/g, ' ').trim() : null,
+      inCard: stats ? Boolean(stats.closest('.user-profile-header')) : false,
+      navHidden: followerLi ? getComputedStyle(followerLi).display : null,
+    };
+  });
+  await glp.close();
+  check('L→G profile counts sit under the photo', lp.inCard && /followers/i.test(lp.stats || ''), lp.stats);
+  check('L→G profile counts leave the navigation', lp.navHidden === 'none', lp.navHidden);
+
   await gl.keyboard.press('g');
   await gl.keyboard.press('p');
   await gl.waitForTimeout(3000);

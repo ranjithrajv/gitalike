@@ -154,7 +154,9 @@ horizontal strip as usual, and because a profile's sidebar is a single flat
 group it is flattened to one row of tabs: the "Profile" heading and the Help
 menu are hidden. The GitLab profile is also re-shaped into GitHub's card: the
 identity (avatar over the name) and the Info/Contact rail move into a left
-column, with the README/activity beside them.
+column, with the README/activity beside them, and the follower/following counts
+are copied out of the navigation to sit under the photo. (GitLab publishes no
+organisation on a profile, so that line cannot be shown.)
 
 ## References
 

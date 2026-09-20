@@ -16,6 +16,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   row of tabs, dropping GitLab's "Profile" heading and Help menu, and the
   identity moves into a left card under a large avatar beside the README and
   activity (`themes/ux-nav.css`).
+- The follower/following counts on a GitLab profile shown as GitHub are copied
+  out of the navigation into the profile card under the photo, where GitHub
+  shows them, with the navigation copies hidden (`content/ux.js`,
+  `themes/ux-nav.css`). GitLab publishes no organisation on a profile, so that
+  line stays absent.
 - The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).

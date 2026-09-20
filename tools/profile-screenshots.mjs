@@ -57,7 +57,9 @@ const OFF = { github: 'off', gitlab: 'off' };
 const PAIRS = [
   {
     name: 'GitLab profile',
-    url: 'https://gitlab.com/sytses',
+    // A profile with bio, location and contact links set, so the card has more
+    // than the name to show — sytses (the example in the docs) has neither.
+    url: 'https://gitlab.com/dzaporozhets',
     setting: { github: 'off', gitlab: 'github' },
     cls: 'gs-theme-github',
     // The profile page's own markers, so the shot is taken after the sidebar
@@ -78,6 +80,19 @@ const PAIRS = [
 ];
 
 const profile = await mkdtemp(join(tmpdir(), 'gs-profile-shots-'));
+
+// Live sites hiccup; a navigation failure should not lose the whole capture.
+async function navigate(page, action) {
+  for (let i = 0; i < 4; i += 1) {
+    try {
+      await action();
+      return;
+    } catch (error) {
+      if (i === 3) throw error;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+}
 
 const context = await chromium.launchPersistentContext(profile, {
   executablePath: CHROME,
@@ -120,7 +135,9 @@ try {
       // content script, then wait out any cached theme the origin had applied.
       await setSettings(OFF);
       await page.waitForTimeout(600);
-      await page.goto(pair.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      await navigate(page, () =>
+        page.goto(pair.url, { waitUntil: 'domcontentloaded', timeout: 60000 }),
+      );
       await page
         .waitForFunction(
           (c) => !document.documentElement.classList.contains(c),
@@ -137,7 +154,9 @@ try {
       // Pass two: the same page with the skin on. Reload so the skin is applied
       // from the first paint, exactly as a visitor would get it.
       await setSettings(pair.setting);
-      await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+      await navigate(page, () =>
+        page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }),
+      );
       await page.waitForFunction(
         (c) => document.documentElement.classList.contains(c),
         pair.cls,

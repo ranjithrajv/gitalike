@@ -24,7 +24,7 @@ different set of destinations. This file is the map of both.
 
 That is not a summary of the products; it is what the two live pages render
 today, checked against [`github.com/torvalds`](https://github.com/torvalds) and
-[`gitlab.com/sytses`](https://gitlab.com/sytses).
+[`gitlab.com/dzaporozhets`](https://gitlab.com/dzaporozhets).
 
 ## Where the UX diverges
 
@@ -105,6 +105,7 @@ apply:
 | Reference marker | `#42` | `!42` | `refMarker` |
 | Shortcuts | GitHub's `g`-combos replay | GitLab's, delivered as clicks | `SHORTCUTS`, `SHORTCUT_TARGETS` |
 | Orientation | horizontal tab row | vertical sidebar group | `themes/ux-nav.css` |
+| Follower/following counts | under the photo | in the navigation | `content/ux.js` — GitLab's are copied into the card |
 
 Two scoping facts make the profile behave differently from the project page:
 
@@ -152,6 +153,9 @@ hosts issue different usernames, so there is no path to map between them.
   into the content as GitLab's header, but GitHub's card keeps its
   followers/achievements/block content flowing down the content column; GitLab's
   separate Info/Contact rail and the name-first landing item are not recreated.
+- **GitLab publishes no organisation on a profile.** Its "Info" block carries
+  location, local time and member-since — but no company — so a GitHub-skinned
+  GitLab profile cannot show the organisation line GitHub's card has.
 - **Sponsors and Marketplace stay GitHub-only.** They are marked `≠ GitLab`, not
   recreated.
 
