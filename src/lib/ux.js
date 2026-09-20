@@ -60,6 +60,7 @@
     gitlab: {
       Code: 'Repository',
       Actions: 'CI/CD',
+      Issues: 'Work items',
       'Pull requests': 'Merge requests',
       Insights: 'Analytics',
       Projects: 'Issue boards',
@@ -67,6 +68,8 @@
     github: {
       Repository: 'Code',
       'CI/CD': 'Actions',
+      'Work items': 'Issues',
+      Pipelines: 'Actions',
       'Merge requests': 'Pull requests',
       Analytics: 'Insights',
       'Issue boards': 'Projects',

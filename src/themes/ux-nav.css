@@ -489,6 +489,97 @@ html.gs-theme-github body[data-page="users:show"] .contextual-nav {
   padding-top: 0 !important;
 }
 
+/* GitHub shows the follower and following counts under the photo rather than as
+   navigation. The content script copies them into the card; the originals are
+   hidden here. */
+html.gs-theme-github
+  body[data-page="users:show"]
+  .super-sidebar
+  li:has(> a[data-track-label="followers_menu"]),
+html.gs-theme-github
+  body[data-page="users:show"]
+  .super-sidebar
+  li:has(> a[data-track-label="following_menu"]) {
+  display: none !important;
+}
+
+html.gs-theme-github [data-gs-profile-stats] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 4px;
+  color: var(--gs-fg-muted);
+  font-size: 14px;
+}
+
+html.gs-theme-github [data-gs-profile-stats] > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  color: inherit !important;
+  font-weight: 400 !important;
+  text-decoration: none !important;
+}
+
+html.gs-theme-github [data-gs-profile-stats] > a:hover {
+  text-decoration: underline !important;
+}
+
+html.gs-theme-github [data-gs-profile-stats] > a + a::before {
+  content: "·";
+  margin-right: 6px;
+  color: var(--gs-fg-muted);
+}
+
+html.gs-theme-github [data-gs-profile-stats] [data-testid="nav-item-start"] {
+  order: 0;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+html.gs-theme-github
+  [data-gs-profile-stats]
+  [data-testid="nav-item-start"]
+  svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* GitHub reads "129 followers": the count first, in lower case. */
+html.gs-theme-github [data-gs-profile-stats] [data-testid="nav-item-end"] {
+  order: 1;
+  display: inline;
+}
+
+html.gs-theme-github [data-gs-profile-stats] [data-testid="pill-badge"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+}
+
+html.gs-theme-github [data-gs-profile-stats] .gl-nav-item-label,
+html.gs-theme-github [data-gs-profile-stats] .nav-item-link-label {
+  order: 2;
+  display: inline !important;
+  padding: 0 !important;
+  text-transform: lowercase;
+}
+
+/* GitLab omits the count at zero; GitHub reads "0 following". */
+html.gs-theme-github
+  [data-gs-profile-stats]
+  a[data-track-label="following_menu"]:not(:has([data-testid="pill-badge"]))
+  .gl-nav-item-label::before {
+  content: "0 ";
+}
+
 /* GitHub only shows the side-by-side profile card at `md` and up; below that it
    stacks, so the restructure is gated the same way. */
 @media (min-width: 768px) {
@@ -569,3 +660,31 @@ html.gs-theme-github
 }
 
 } /* @media (min-width: 768px) */
+
+/* ---------------------------------------------------------------- L → G -- */
+
+/* GitHub's top navigation is a single row of tabs; GitLab's sidebar groups its
+   items. Flatten the groups and show the leaf items as one scrollable row, with
+   GitHub's active-tab underline. */
+html.gs-theme-github .super-sidebar [data-testid="menu-section-button"] {
+  display: none !important;
+}
+
+html.gs-theme-github .super-sidebar [data-testid="menu-section"] {
+  display: contents !important;
+}
+
+html.gs-theme-github .super-sidebar ul {
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+}
+
+html.gs-theme-github .super-sidebar a {
+  padding: 8px 10px !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+html.gs-theme-github .super-sidebar a[aria-current="page"] {
+  border-bottom-color: var(--gs-accent) !important;
+  font-weight: 600 !important;
+}

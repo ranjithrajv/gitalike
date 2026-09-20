@@ -380,13 +380,11 @@ html.gs-theme-gitlab [class*="CodeViewSidebar-"] {
    Build, …); GitHub's repo tabs are flat. On the GitLab skin the tabs are
    gathered under the same headings, inserted by content/ux.js. */
 html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group {
-  margin: 12px 0 2px;
+  margin: 10px 0 2px;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--gs-fg-subtle);
+  color: var(--gs-fg-muted);
 }
 
 html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group:first-child {

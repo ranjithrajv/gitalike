@@ -179,17 +179,16 @@
   function paintNav(node, t) {
     const map = UX.NAV[t] || {};
     // NAV_SCOPE selects the navigation *regions*; the labels live on the
-    // anchors and buttons inside them.
+    // anchors and buttons inside them. Matching per text node (not the whole
+    // control) is what lets a label with a counter — "Work items -", where the
+    // dash is a separate node — still be relabelled.
     for (const region of scope(node, UX.NAV_SCOPE)) {
       for (const el of scope(region, 'a,button,summary')) {
-        const label = (el.textContent || '').trim();
-        if (!Object.prototype.hasOwnProperty.call(map, label)) continue;
         for (const text of textNodes(el)) {
-          if (text.nodeValue.trim() === label) {
-            rememberText(text);
-            if (text.nodeValue !== map[label]) text.nodeValue = map[label];
-            break;
-          }
+          const label = text.nodeValue.trim();
+          if (!Object.prototype.hasOwnProperty.call(map, label)) continue;
+          rememberText(text);
+          if (text.nodeValue !== map[label]) text.nodeValue = map[label];
         }
       }
     }
@@ -291,6 +290,43 @@
     }
   }
 
+  // GitLab keeps the follower/following counts in the profile navigation, but
+  // GitHub shows them under the photo. On a GitLab profile shown as GitHub they
+  // are copied into the card (the originals are hidden in CSS); the copies are
+  // rebuilt only when the counts change, and removed on revert.
+  function paintProfileStats(t) {
+    if (t !== 'github') return;
+    if (!document.body || document.body.dataset.page !== 'users:show') return;
+    const identity = document.querySelector(
+      '.user-profile-header > div:last-child',
+    );
+    if (!identity) return;
+    const links = [
+      ...document.querySelectorAll(
+        '.super-sidebar a[data-track-label="followers_menu"],' +
+          '.super-sidebar a[data-track-label="following_menu"]',
+      ),
+    ];
+    if (!links.length) return;
+    const signature = links
+      .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
+      .join(' | ');
+    const existing = identity.querySelector('[data-gs-profile-stats]');
+    if (existing && existing.dataset.gsSignature === signature) return;
+    const box = existing || document.createElement('div');
+    box.setAttribute('data-gs-profile-stats', '');
+    box.setAttribute('data-gs-ux-skip', '');
+    box.replaceChildren();
+    for (const link of links) {
+      const clone = link.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.setAttribute('data-gs-ux-skip', '');
+      box.appendChild(clone);
+    }
+    box.dataset.gsSignature = signature;
+    if (!existing) identity.appendChild(box);
+  }
+
   // The per-node passes, in one place so a new pass cannot be wired into the
   // initial load but forgotten for the mutations that follow it.
   function paintNode(node, t) {
@@ -308,6 +344,7 @@
     paintNode(node, t);
     paintOrder(t);
     paintNavGroups(t);
+    paintProfileStats(t);
     applying = false;
   }
 
@@ -332,6 +369,7 @@
       if (container.isConnected) for (const el of items) container.appendChild(el);
     }
     for (const el of document.querySelectorAll('.gs-nav-group')) el.remove();
+    for (const el of document.querySelectorAll('[data-gs-profile-stats]')) el.remove();
     textOrig.clear();
     attrOrig.clear();
     refOrig.clear();
@@ -372,6 +410,7 @@
       applying = false;
       paintOrder(current);
       paintNavGroups(current);
+      paintProfileStats(current);
     }, 120);
   }
 
