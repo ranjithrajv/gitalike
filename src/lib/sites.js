@@ -84,12 +84,29 @@
     return isKind(entry) ? entry : null;
   }
 
+  // A bare hostname — no scheme, port, path, query, whitespace or wildcard — is
+  // the only shape that is safe to hand to `scripting.registerContentScripts`
+  // as a match pattern. The instances map is synced user data and could hold
+  // anything, so a key that is not a bare host is ignored rather than turned
+  // into a pattern (a `*` key would otherwise re-broaden injection to all sites).
+  const HOSTNAME_RE = /^[a-z0-9]([a-z0-9._-]*[a-z0-9])?$/;
+  function isHostname(value) {
+    return (
+      typeof value === 'string' &&
+      value.length > 0 &&
+      value.length <= 253 &&
+      HOSTNAME_RE.test(value)
+    );
+  }
+
   /** Every host of a kind: the bundled ones, then the user's, in that order. */
   function hostsFor(kind, added) {
     const hosts = Object.keys(builtin).filter((host) => builtin[host] === kind);
     const extra = added || {};
     for (const host of Object.keys(extra)) {
-      if (extra[host] === kind && hosts.indexOf(host) === -1) hosts.push(host);
+      if (extra[host] === kind && isHostname(host) && hosts.indexOf(host) === -1) {
+        hosts.push(host);
+      }
     }
     return hosts;
   }
@@ -156,6 +173,7 @@
     kindFor,
     hostsFor,
     isBuiltin,
+    isHostname,
     parseHost,
     kindOn,
     themeFor,

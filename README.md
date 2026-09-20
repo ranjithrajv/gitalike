@@ -79,7 +79,9 @@ through `about:debugging`.
 > the design. The extension adds a class to `<html>` on sites you have explicitly
 > set up, does nothing elsewhere, and sends no data anywhere: there are no
 > network requests at all, both stylesheets are bundled, and the logos are inline
-> data URIs. The reasoning is in
+> data URIs. The one thing that does leave the machine is `chrome.storage.sync` —
+> the settings and the hostnames you add are synced by your browser to your
+> account, and nothing read from a page is ever put there. The reasoning is in
 > [CONTRIBUTING.md](CONTRIBUTING.md#why-it-matches-every-site).
 
 ## Use
@@ -196,6 +198,17 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   background registers them for the configured hosts, so an unconfigured page
   parses neither. This is what the `scripting` permission is for; the all-sites
   access the install prompt describes is unchanged.
+- **The skin is cosmetic, and the page can influence it.** Everything gitalike
+  does hangs off `html.gs-theme-*` classes and `data-gs-*` markers on the page
+  itself, so the page can add, remove or spoof them, and it can mark its own
+  content `[data-gs-ux-skip]` to opt out of translation. That is fine for a
+  reskin, but the skin is not a security boundary: do not treat it as a trust
+  signal.
+- **The first-paint cache lives in the page's `localStorage`.** The per-host
+  decision is cached under `gitSame.theme` so a repeat visit does not flash the
+  original theme; it is the only store readable synchronously at
+  `document_start`. Being origin storage, the page can read or overwrite it, but
+  `storage.sync` is reconciled immediately afterwards and wins.
 - **Switches are per product, not per host.** You cannot skin your enterprise
   instance without also skinning `github.com`. With two switches and a handful of
   hosts that seems like the right amount of control; it is the thing to change

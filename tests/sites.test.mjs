@@ -21,6 +21,7 @@ const {
   kindFor,
   hostsFor,
   isBuiltin,
+  isHostname,
   isKind,
   kindOn,
   themeFor,
@@ -40,6 +41,7 @@ describe('module shape', () => {
       kindFor,
       hostsFor,
       isBuiltin,
+      isHostname,
       isKind,
       kindOn,
       themeFor,
@@ -176,6 +178,59 @@ describe('hostsFor', () => {
     assert.deepEqual(hostsFor('github', { 'x.example': 'nonsense' }), [
       'github.com',
     ]);
+  });
+
+  test('ignores stored keys that are not bare hostnames', () => {
+    // A synced instances map is user data. A wildcard key would otherwise be
+    // handed to scripting.registerContentScripts and re-broaden injection.
+    assert.deepEqual(
+      hostsFor('github', {
+        '*': 'github',
+        '*.corp.example': 'github',
+        'evil.com/path': 'github',
+        'evil.com:8080': 'github',
+        'ok.example': 'github',
+      }),
+      ['github.com', 'ok.example'],
+    );
+  });
+});
+
+describe('isHostname', () => {
+  test('accepts a bare hostname', () => {
+    for (const host of [
+      'github.com',
+      'code.swecha.org',
+      'github.acme.com',
+      '127.0.0.1',
+      'localhost',
+      'my_host.example',
+      'a-b.c-d.example',
+    ]) {
+      assert.equal(isHostname(host), true, host);
+    }
+  });
+
+  test('refuses anything that is not a bare host', () => {
+    for (const host of [
+      '',
+      '*',
+      '*.example.com',
+      '*://*/*',
+      'evil.com/path',
+      'evil.com:8080',
+      ' evil.com',
+      'evil.com ',
+      'evil.com?x=1',
+      'evil.com#frag',
+      'https://evil.com',
+      'javascript:alert(1)',
+      null,
+      undefined,
+      42,
+    ]) {
+      assert.equal(isHostname(host), false, String(host));
+    }
   });
 });
 

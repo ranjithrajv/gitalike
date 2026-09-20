@@ -82,6 +82,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   gets its "Plan" heading instead of dropping to the end of the navigation
   (`src/lib/ux.js`).
 
+### Security
+
+- Stored instance hostnames are validated as bare hostnames before they become
+  `scripting.registerContentScripts` match patterns. A synced `gitSameInstances`
+  value that is not a hostname (a `*` or `*.corp.example` key, a path or a port)
+  is ignored, so it can no longer re-broaden injection to all sites
+  (`src/lib/sites.js`, `background.js`).
+
 ## [0.1.1] - 2026-09-20
 
 ### Added

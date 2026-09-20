@@ -94,7 +94,9 @@ function knownHosts(instances) {
   const hosts = [];
   for (const kind of Object.keys(SITES.kinds)) {
     for (const host of SITES.hostsFor(kind, instances)) {
-      if (!hosts.includes(host)) hosts.push(host);
+      // hostsFor already drops non-hostnames; the guard here is belt-and-braces
+      // so a future caller cannot feed a wildcard or path into a match pattern.
+      if (SITES.isHostname(host) && !hosts.includes(host)) hosts.push(host);
     }
   }
   return hosts;

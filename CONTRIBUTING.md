@@ -18,7 +18,9 @@ page exactly.
 **Nothing leaves the browser.** No network requests, no telemetry, no remote
 code. Both stylesheets ship in the bundle and every logo is an inline data URI.
 There is no build-time or runtime dependency for the shipped extension, and we
-would like to keep it that way.
+would like to keep it that way. The only data that leaves the machine is
+`chrome.storage.sync`, which the browser syncs to the user's account — the
+settings and the hostnames they added, never anything read from a page.
 
 **One source of truth per concern.** Hosts, kinds, address parsing and the
 storage schema live in `src/lib/sites.js`; the vocabulary, navigation, keyboard
