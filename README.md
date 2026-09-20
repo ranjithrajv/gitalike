@@ -377,6 +377,7 @@ read.
 ```sh
 npm run build          # dist/chromium + dist/firefox
 npm test               # unit tests for src/lib/*.js (node:test)
+node tools/e2e.mjs     # Playwright end-to-end test against the live sites
 npm run lint           # build:firefox, then validate it with web-ext lint
 npm run package        # store-ready zips -> dist/artifacts/
 npm run screenshots    # store screenshots -> store/screenshots/
@@ -393,8 +394,16 @@ There are no runtime or build dependencies — `build.mjs` uses only Node's
 standard library, and the tests use Node's built-in `node:test`. Two dev
 dependencies exist: [`web-ext`](https://github.com/mozilla/web-ext) for
 `npm run lint` and `npm run package`, and
-[`playwright-core`](https://playwright.dev/) for `npm run screenshots`, which
-drives the system Chromium and downloads no browser of its own.
+[`playwright-core`](https://playwright.dev/) for `npm run screenshots` and
+`node tools/e2e.mjs`, both of which drive the system Chromium and download no
+browser of their own.
+
+`node tools/e2e.mjs` is the end-to-end test: it loads `dist/chromium` unpacked,
+turns both skins on through the extension's own storage, and asserts against the
+live sites — navigation orientation, relabelling, reference markers,
+no-counterpart badges, a keyboard shortcut, and a clean revert. It needs a build
+first (`npm run build:chromium`) and, because it drives live sites, a network
+hiccup can fail a step; the summary names it and the exit code is non-zero.
 
 ## Publishing
 
