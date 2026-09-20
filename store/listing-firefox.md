@@ -85,6 +85,8 @@ unpredictable hostnames can work without a per-site permission prompt. On hosts
 you have not set up, it does nothing.
 ```
 
+Hosted at <https://ranjithrajv.github.io/gitalike/privacy.html>.
+
 ## Data collection
 
 The manifest declares:

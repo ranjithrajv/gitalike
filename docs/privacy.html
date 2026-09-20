@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>gitalike — privacy policy</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #1f2328;
+        --muted: #59636e;
+        --border: #d1d9e0;
+        --surface: #f6f8fa;
+        --accent: #0969da;
+        --gitlab: #7759c2;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --fg: #f0f6fc;
+          --muted: #9198a1;
+          --border: #3d444d;
+          --surface: #151b23;
+          --accent: #2f81f7;
+          --gitlab: #9c8ad8;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px 20px 64px;
+        font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Noto Sans", Helvetica, Arial, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+      }
+      header, main, footer { max-width: 760px; margin: 0 auto; }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      h1 code { font-size: 18px; }
+      p.lede { margin: 0; color: var(--muted); }
+      h2 {
+        font-size: 15px;
+        margin: 32px 0 6px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+      }
+      p, li { margin: 0 0 10px; }
+      ul { padding-left: 22px; }
+      code {
+        font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+      .summary {
+        margin: 20px 0 0;
+        padding: 14px 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .summary p { margin: 0; }
+      footer {
+        margin-top: 40px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+      }
+      a { color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1><code>gitalike</code> — privacy policy</h1>
+      <p class="lede">
+        Effective 21 September 2026 · for the browser extension published as
+        <b>gitalike</b> (this preview site is also called “Git Same”).
+      </p>
+    </header>
+
+    <main>
+      <div class="summary">
+        <p>
+          <b>In one line:</b> gitalike collects nothing and sends nothing. It has
+          no network access. It changes how GitHub and GitLab pages look and
+          read, only on the sites you have explicitly set up, and it stores only
+          your on/off choices and the instances you add.
+        </p>
+      </div>
+
+      <h2>What gitalike is</h2>
+      <p>
+        gitalike is a browser extension that re-skins GitHub-flavoured sites with
+        a GitLab-style interface, and GitLab-flavoured sites with a GitHub-style
+        one. Everything it does happens locally in your browser, on the page in
+        front of you.
+      </p>
+
+      <h2>What it does not do</h2>
+      <ul>
+        <li>
+          <b>No data collection.</b> It does not collect, log, or transmit
+          personal data, browsing history, page content, or usage statistics.
+        </li>
+        <li>
+          <b>No network requests.</b> The extension makes no network requests of
+          any kind. Both stylesheets ship inside the package and the logo is an
+          inline data URI. There is no remote code.
+        </li>
+        <li><b>No analytics, telemetry, or advertising.</b></li>
+        <li>
+          <b>No third parties.</b> Nothing is sold, shared, or disclosed to
+          anyone.
+        </li>
+      </ul>
+
+      <h2>What it stores</h2>
+      <ul>
+        <li>
+          <b>Your choices and instances.</b> The on/off choice for each product
+          and the hostnames you add are saved with the browser’s own synced
+          extension storage (<code>storage.sync</code>). If you have browser sync
+          turned on, your browser (Google or Mozilla) syncs this between your
+          devices; it is never sent to the developer. It contains no page
+          content.
+        </li>
+        <li>
+          <b>A first-paint cache.</b> A small per-site decision — which skin, if
+          any — is cached in the page’s own <code>localStorage</code>, so a
+          repeat visit does not flash the original theme. It is ordinary
+          per-origin storage: the site you are visiting can read it, and it holds
+          no personal data.
+        </li>
+      </ul>
+
+      <h2>What it accesses, and why</h2>
+      <ul>
+        <li>
+          <b>Page content, on the hosts you set up.</b> To make a page read like
+          the other product, the extension rewrites ordinary interface text,
+          labels, attributes and navigation order, and swaps reference markers
+          (<code>#42</code> ⇄ <code>!42</code>). It never touches code, inputs or
+          editable regions. Page content is processed in place and is never
+          stored or transmitted.
+        </li>
+        <li>
+          <b>Host access (all sites).</b> The extension asks for access to all
+          sites because GitHub Enterprise Server and self-hosted GitLab can live
+          on any hostname, which a fixed manifest host list cannot cover. It
+          decides at runtime whether a host is one you set up; on any other host
+          it does nothing, and its scripts are not even loaded.
+        </li>
+        <li>
+          <b><code>scripting</code>.</b> Used to register the content scripts and
+          stylesheets for the hosts you have set up, rather than injecting them
+          into every page.
+        </li>
+        <li>
+          <b><code>storage</code>.</b> Used to save the choices and instances
+          described above.
+        </li>
+      </ul>
+
+      <h2>How to remove it</h2>
+      <p>
+        Remove the extension from your browser’s extension settings; its saved
+        choices and instance list are deleted with it. To clear only the synced
+        data first, remove your added instances and switch both products off in
+        the popup before uninstalling.
+      </p>
+
+      <h2>Children’s privacy</h2>
+      <p>
+        gitalike is a developer and appearance tool, is not directed at children,
+        and collects no data from anyone.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        If this policy changes, the date at the top will change and the new
+        version will be posted on this page.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions or concerns: open an issue at
+        <a href="https://github.com/ranjithrajv/gitalike/issues"
+          >github.com/ranjithrajv/gitalike/issues</a
+        >.
+      </p>
+
+      <h2>About this page</h2>
+      <p>
+        This policy is hosted on GitHub Pages, so visiting it is subject to
+        GitHub’s own privacy practices. The extension itself makes no request to
+        this page or to anywhere else.
+      </p>
+    </main>
+
+    <footer>
+      <p>
+        <a href="./">← back to the preview</a> ·
+        <a href="https://github.com/ranjithrajv/gitalike">source on GitHub</a> ·
+        <a href="https://github.com/ranjithrajv/gitalike/blob/main/LICENSE"
+          >GPL-3.0-or-later</a
+        >
+      </p>
+    </footer>
+  </body>
+</html>

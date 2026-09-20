@@ -95,6 +95,12 @@ nothing.
 code. No data sold or shared. No use of data for purposes unrelated to the
 single purpose.
 
+**Privacy policy URL**
+
+```
+https://ranjithrajv.github.io/gitalike/privacy.html
+```
+
 ## Graphic assets
 
 | Asset | Requirement | File |

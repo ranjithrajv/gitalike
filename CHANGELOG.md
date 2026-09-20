@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A privacy policy is published with the GitHub Pages preview at
+  `docs/privacy.html`, linked from the preview, the README and both store
+  listings. It records what gitalike does not collect, what it stores
+  (`storage.sync` choices and instances, the page-local theme cache), and what
+  it accesses and why (`docs/privacy.html`, `README.md`, `store/`).
 - Store publishing is scripted. `npm run publish:chromium` uploads and submits
   the package with the Chrome Web Store **v2** API (v1 is deprecated and stops
   being supported on 15 October 2026); it is a zero-dependency Node script,

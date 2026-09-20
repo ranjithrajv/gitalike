@@ -227,6 +227,15 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   there. The GitLab app — `/dashboard`, `/explore`, project pages — is where it
   applies.
 
+## Privacy
+
+gitalike collects no data and makes no network requests. It stores only your
+on/off choices and the list of instances you add, in the browser's own synced
+extension storage, and caches the per-site decision in the page's `localStorage`
+so a repeat visit does not flash the original theme. Nothing read from a page is
+stored or sent anywhere. The full policy is at
+<https://ranjithrajv.github.io/gitalike/privacy.html>.
+
 ## Contributing
 
 Bug reports and pull requests are welcome. The developer guide — build, test,
