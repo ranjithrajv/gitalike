@@ -32,9 +32,11 @@ it should only change a navigation label on an exact whole-label match inside a
 known navigation region. Over-eager rewriting breaks search, copy/paste and
 screen readers. When markup is unfamiliar, prefer doing nothing.
 
-**Logos keep their shape and take the other palette.** An octocat stays an
-octocat; it is repainted in GitLab's colours. Do not swap one product's mark for
-the other's. Sources live in `logos/`; see
+**Logos are original; never bundle a vendor's mark.** The mark painted on a
+skinned page is gitalike's own two-way swap arrow (`src/icons/icon.svg`), only
+recoloured to the other product's palette. Never copy a forge's logo — or its
+vector path data — into `logos/` or a theme; recolouring someone else's mark is
+still shipping their artwork. Sources live in `logos/`; see
 [Add or change a logo](#add-or-change-a-logo).
 
 **No new permissions.** The extension already asks for access to all sites (see
@@ -174,9 +176,9 @@ Each theme file has three parts:
 
    Add a line here whenever you find a spot the skin misses.
 
-3. **A logo data URI**, `--gs-tanuki` in the GitLab→GitHub skin and
-   `--gs-octocat` in the GitHub→GitLab one, that repaints the site's own mark in
-   the other brand's palette.
+3. **A logo data URI**, `--gs-mark`, that paints gitalike's own mark in the
+   other product's palette — GitLab's red→orange→yellow in the GitHub→GitLab
+   skin, Primer's ink and accent blue in the GitLab→GitHub one.
 
 Hosts, products and the bundled host list live in `src/lib/sites.js` — one
 source of truth shared by the content script, the popup and the background.
@@ -197,11 +199,15 @@ per-host entry to keep in sync.
 
 ### Add or change a logo
 
+The mark is gitalike's own — the same two-way swap arrow as the toolbar icon —
+so there is no vendor artwork in the tree. Keep it that way: draw an original
+mark rather than copying a forge's.
+
 1. Edit the SVG in `logos/` (these are the editable sources).
-2. Re-encode it as a data URI into the relevant theme variable — `--gs-octocat`
-   in `themes/github-as-gitlab.css`, `--gs-tanuki` in
-   `themes/gitlab-as-github.css`. Injected CSS cannot resolve extension-relative
-   URLs, which is why it is inlined rather than linked.
+2. Re-encode it as a data URI into the relevant theme variable — `--gs-mark` in
+   both `themes/github-as-gitlab.css` and `themes/gitlab-as-github.css`.
+   Injected CSS cannot resolve extension-relative URLs, which is why it is
+   inlined rather than linked.
 3. Check both light and dark: the two palettes are chosen for their background.
 
 ### Add a label translation
@@ -281,6 +287,12 @@ skin and their own vocabulary. That means five files:
 | 3 | `src/lib/sites.js` | a `kinds` entry — `theme`, `badge`, `color`, `other` (its key is the setting name and its `theme` joins `THEMES` automatically) |
 | 4 | `src/popup/popup.html` + `popup.css` | a row for the kind, and its accent colour |
 | 5 | `tests/` | cases for the kind, the host table and the vocabulary |
+
+Whichever forge you add, its logo stays out of the bundle. The theme carries a
+`--gs-mark` and paints gitalike's own mark in that forge's palette — the two
+existing skins are the pattern. Do not paste a forge's logo, or its vector path
+data, into a theme: recolouring someone else's mark is still shipping their
+mark. This covers Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut alike.
 
 **Open an issue about the mapping first.** `kinds` today hardcodes one target per
 kind: `github` is always shown as GitLab, `gitlab` always as GitHub. With a third
@@ -402,9 +414,9 @@ read.
     transparently on the dark bar with *filled* `btn-default` buttons that are
     white. One text colour across the whole bar turns the filled ones
     white-on-white, so those get GitHub's translucent treatment instead.
-  - The `<img>` fallback for the tanuki logo has to be scoped to the top bar:
+  - The `<img>` fallback for the brand logo has to be scoped to the top bar:
     unscoped, `alt*="gitlab"` also matches **project avatars** named "GitLab"
-    and repaints them with a GitHub-coloured tanuki on a white tile.
+    and repaints them with the gitalike mark on a white tile.
 - **GitLab's legacy CSS** does not use custom properties everywhere, so the
   GitLab→GitHub skin leans more on structural selectors and will be the first to
   drift. Self-hosted instances make this worse: `code.swecha.org` runs an older

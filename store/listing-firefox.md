@@ -11,21 +11,27 @@ gitalike — GitHub ⇄ GitLab UI
 ## Summary (max 250)
 
 ```
-See GitHub with a GitLab UI, and GitLab with a GitHub UI. Appearance only — it never rewrites the page or changes what the site does. No data is collected, and there is no network access at all.
+See GitHub with a GitLab UI, and GitLab with a GitHub UI. Re-skins the page and its words to match the other product, locally. No data is collected, and there is no network access at all.
 ```
 
 ## Description
 
 ```
-gitalike re-skins the two big forges so they look like each other:
+gitalike re-skins the two big forges so they look — and read — like each other:
 
     a GitHub-flavoured site + GitLab UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
 
-It changes appearance only. It never rewrites the page, renames buttons or
-changes what the site does — labels still say "Pull request" on GitHub and
-"Merge request" on GitLab, and search, copy/paste and screen readers are
-untouched.
+Beyond colour, it matches the other product's words and habits: "Pull request"
+becomes "Merge request", a #42 reference becomes !42, the repository navigation
+is relabelled and reordered, and the other product's g-shortcuts work. It changes
+nothing about what the site does — no requests are intercepted and no data is
+touched — and every change is reverted the moment you switch a skin off.
+
+The rewriting is conservative by design. Copy is never touched inside code,
+inputs or editable regions; a control label changes only on an exact whole-label
+match; and a feature the other product lacks is marked rather than guessed at.
+Search, copy/paste and screen readers keep working.
 
 Works on github.com and gitlab.com out of the box, on the bundled self-hosted
 instance code.swecha.org, and on any other instance you point it at — GitHub
@@ -36,8 +42,8 @@ Features
 - Add any instance by visiting it, or by typing its address. It is remembered.
 - Alt+Shift+G toggles the site you are on; the toolbar badge shows GL or GH.
 - Light and dark, following the site's own mode.
-- No network access at all: both stylesheets are bundled and both logos are
-  inline data URIs. Nothing is sent anywhere.
+- No network access at all: both stylesheets are bundled and the mark is an
+  inline data URI. Nothing is sent anywhere.
 
 Permissions, plainly: gitalike asks for access to all sites because GitHub
 Enterprise Server and self-hosted GitLab live on hostnames that cannot be

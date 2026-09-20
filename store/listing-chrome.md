@@ -12,7 +12,7 @@ gitalike — GitHub ⇄ GitLab UI
 ## Short description (max 132)
 
 ```
-See GitHub with a GitLab UI, and GitLab with a GitHub UI. Appearance only: no page rewriting, nothing collected.
+See GitHub with a GitLab UI, and GitLab with a GitHub UI. Re-skins the page and its words, locally: nothing collected.
 ```
 
 ## Category
@@ -26,15 +26,21 @@ See GitHub with a GitLab UI, and GitLab with a GitHub UI. Appearance only: no pa
 ## Detailed description
 
 ```
-gitalike re-skins the two big forges so they look like each other:
+gitalike re-skins the two big forges so they look — and read — like each other:
 
     a GitHub-flavoured site + GitLab UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
 
-It changes appearance only. It never rewrites the page, renames buttons or
-changes what the site does — labels still say "Pull request" on GitHub and
-"Merge request" on GitLab, and search, copy/paste and screen readers are
-untouched.
+Beyond colour, it matches the other product's words and habits: "Pull request"
+becomes "Merge request", a #42 reference becomes !42, the repository navigation
+is relabelled and reordered, and the other product's g-shortcuts work. It changes
+nothing about what the site does — no requests are intercepted and no data is
+touched — and every change is reverted the moment you switch a skin off.
+
+The rewriting is conservative by design. Copy is never touched inside code,
+inputs or editable regions; a control label changes only on an exact whole-label
+match; and a feature the other product lacks is marked rather than guessed at.
+Search, copy/paste and screen readers keep working.
 
 Works on github.com and gitlab.com out of the box, on the bundled self-hosted
 instance code.swecha.org, and on any other instance you point it at — GitHub
@@ -44,8 +50,8 @@ Enterprise Server included.
 • Add any instance by visiting it, or by typing its address. It is remembered.
 • Alt+Shift+G toggles the site you are on; the toolbar badge shows GL or GH.
 • Light and dark, following the site's own mode.
-• No network access at all: both stylesheets are bundled and both logos are
-  inline data URIs. Nothing is sent anywhere.
+• No network access at all: both stylesheets are bundled and the mark is an
+  inline data URI. Nothing is sent anywhere.
 
 Permissions, plainly: gitalike asks for access to all sites because GitHub
 Enterprise Server and self-hosted GitLab live on hostnames that cannot be
@@ -59,10 +65,12 @@ Not affiliated with GitHub or GitLab.
 **Single purpose description**
 
 ```
-gitalike changes only the visual appearance of GitHub and GitLab pages. It
-re-points each site's own CSS design tokens and repaints the logos, so that a
-GitHub site looks like GitLab, or a GitLab site looks like GitHub. It does not
-alter page content or behaviour.
+gitalike re-skins GitHub and GitLab pages to look and read like the other
+product. It re-points each site's own CSS design tokens, paints its own mark in
+the other product's palette, and relabels ordinary interface text and navigation
+to the other product's vocabulary, so that a GitHub site reads like GitLab, or a
+GitLab site reads like GitHub. It does not alter what the sites do: no requests
+are intercepted and no data is touched.
 ```
 
 **Permission justifications**

@@ -12,13 +12,17 @@ intercepted, no data is touched — and every change is reverted the moment you
 switch a skin off.
 
 ```
- a GitHub-flavoured site  + GitLab UI  ->  octocat logo, purple accents, light bar
- a GitLab-flavoured site  + GitHub UI  ->  tanuki logo, blue accents, dark bar
+ a GitHub-flavoured site  + GitLab UI  ->  gitalike mark, purple accents, light bar
+ a GitLab-flavoured site  + GitHub UI  ->  gitalike mark, blue accents, dark bar
 ```
 
 It works on `github.com` and `gitlab.com` out of the box, on the bundled
 self-hosted instance `code.swecha.org`, and on any other instance you point it
 at — **GitHub Enterprise Server** included.
+
+gitalike is an independent project. It is not affiliated with, endorsed by or
+sponsored by GitHub, Inc. or GitLab Inc., and it ships none of their artwork:
+the mark it paints on a skinned page is its own.
 
 **Live preview:** <https://ranjithrajv.github.io/gitalike/> — swipe between each
 site and its skin.
@@ -195,10 +199,11 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   first if it turns out not to be.
 - **The shortcut cannot set up a new host**, only toggle one already classified,
   because classifying requires choosing which product it is.
-- **Logos keep their shape; only the palette changes.** A GitLab site skinned as
-  GitHub still shows the tanuki, repainted in GitHub's ink and accent; a GitHub
-  site skinned as GitLab still shows the octocat, repainted across GitLab's
-  red→orange→yellow.
+- **The in-page mark is gitalike's own, in the other product's palette.** The
+  site's brand logo is replaced by gitalike's two-way swap arrow, painted across
+  whichever palette the skin uses — GitLab's red→orange→yellow, or Primer's ink
+  and accent blue. The extension ships no vendor artwork and borrows only the
+  palette; the mark never pretends to be the other product's logo.
 - **`gitlab.com/` redirects.** When you are logged out the root bounces to
   `about.gitlab.com`, a different origin, so there is nothing for the skin to do
   there. The GitLab app — `/dashboard`, `/explore`, project pages — is where it
@@ -209,6 +214,14 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
 Bug reports and pull requests are welcome. The developer guide — build, test,
 the ground rules, and how to add a forge or a translation — is in
 [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Trademarks
+
+GitHub, the Octocat, GitLab and the Tanuki are trademarks of their respective
+owners. gitalike is not affiliated with, endorsed by or sponsored by GitHub,
+Inc. or GitLab Inc. It names those products only to describe what it is
+compatible with, and it redistributes none of their logos or other brand
+artwork — the mark it paints on a page is gitalike's own.
 
 ## License
 

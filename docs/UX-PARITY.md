@@ -17,7 +17,7 @@ is the map and the scorecard.
 | --- | :--: | :--: | --- |
 | Colour tokens | ✅ | ✅ | `themes/*.css` |
 | Structural CSS | ✅ 22 rules | ✅ 14 rules | `themes/*.css` |
-| Logo palette (shape kept) | ✅ | ✅ | `--gs-tanuki` / `--gs-octocat` |
+| Own mark in the other palette | ✅ | ✅ | `--gs-mark` |
 | Copy — `PHRASES` | ✅ 9 | ✅ 9 | `lib/ux.js` |
 | Control labels — `LABELS` | ✅ 4 | ✅ 4 | `lib/ux.js` |
 | Account/menu chrome — `CHROME` | ✅ 4 | ✅ 4 | `lib/ux.js` |

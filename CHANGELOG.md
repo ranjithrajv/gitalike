@@ -32,6 +32,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).
 
+### Changed
+
+- The in-page mark is now gitalike's own two-way swap arrow, recoloured to the
+  other product's palette, instead of a recoloured copy of the other product's
+  logo. The extension no longer bundles GitHub's Octocat or GitLab's Tanuki
+  artwork; only the palette is borrowed (`logos/`, `themes/*.css`).
+- The Chrome Web Store and addons.mozilla.org listings were corrected: they had
+  claimed the extension never rewrites the page, which stopped being true when
+  the copy, reference-marker, navigation and shortcut parity shipped
+  (`store/listing-chrome.md`, `store/listing-firefox.md`).
+
 ## [0.1.1] - 2026-09-20
 
 ### Added
