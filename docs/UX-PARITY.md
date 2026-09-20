@@ -163,8 +163,10 @@ mapping `Repositories` ⇄ `Personal projects`, `Stars` ⇄ `Starred projects` a
 name), and adding the applied product's extra destinations (GitLab's Activity,
 Groups and Snippets land on GitHub's Overview, Organizations and Gists pages).
 GitHub's `Packages` has no user-level GitLab page, so GitLab's menu omits it, as
-GitHub does when there are none. (GitLab publishes no organisation on a profile,
-so that line cannot be shown.)
+GitHub does when there are none. GitHub's public Achievements block is hidden
+under the GitLab UI, since GitLab shows achievements to the owner rather than on
+a public profile. (GitLab publishes no organisation on a profile, so that line
+cannot be shown.)
 
 ## References
 

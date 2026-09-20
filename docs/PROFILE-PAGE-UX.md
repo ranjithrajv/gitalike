@@ -85,7 +85,9 @@ completed with what the source has — GitLab's **Contributed projects** becomes
 GitHub's **Projects** — and GitLab's menu brings **Activity**, **Groups** and
 **Snippets** across to GitHub's Overview, Organizations and Gists pages. GitHub's
 **Packages** has no user-level GitLab page, so GitLab's menu omits it, which is
-what GitHub itself does when there are none.
+what GitHub itself does when there are none. Achievements are shown to a GitLab
+account's owner rather than on its public profile, so GitHub's public
+Achievements block is hidden under the GitLab UI.
 
 ## Where they agree
 

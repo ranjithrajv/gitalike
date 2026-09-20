@@ -129,12 +129,24 @@ try {
             .filter((a) => getComputedStyle(a).display !== 'none')
             .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
         : [],
+      achievements: [...document.querySelectorAll('.h-card .border-top')]
+        .filter((b) => b.querySelector('a[href*="tab=achievements"]'))
+        .map((b) => getComputedStyle(b).display),
+      pinned: document.querySelector('.js-pinned-items-reorder-container')
+        ? getComputedStyle(document.querySelector('.js-pinned-items-reorder-container')).display
+        : null,
     };
   });
   await ghp.close();
   check('G→L profile nav is vertical', gp.direction === 'column', gp.direction);
   check('G→L profile nav sits in the left rail', gp.left !== null && gp.left < 120, `${gp.left}px`);
   check('G→L profile content stays wide', gp.contentWidth > 800, `${gp.contentWidth}px`);
+  check(
+    'G→L profile hides GitHub’s Achievements block',
+    gp.achievements.length > 0 && gp.achievements.every((d) => d === 'none'),
+    gp.achievements.join(', '),
+  );
+  check('G→L profile hides GitHub’s Pinned section', gp.pinned === 'none', gp.pinned);
   check(
     'G→L profile nav is GitLab’s',
     ['Personal projects', 'Contributed projects', 'Starred projects', 'Activity', 'Groups', 'Snippets', 'Followers', 'Following'].every(
@@ -188,6 +200,9 @@ try {
       stats: stats ? stats.textContent.replace(/\s+/g, ' ').trim() : null,
       inCard: stats ? Boolean(stats.closest('.user-profile-header')) : false,
       navHidden: followerLi ? getComputedStyle(followerLi).display : null,
+      localTime: document.querySelector('[data-testid="user-local-time"]')
+        ? getComputedStyle(document.querySelector('[data-testid="user-local-time"]')).display
+        : null,
       nav: nav
         ? [...nav.querySelectorAll('a')]
             .filter((a) => getComputedStyle(a.closest('li') || a).display !== 'none')
@@ -198,6 +213,7 @@ try {
   await glp.close();
   check('L→G profile counts sit under the photo', lp.inCard && /followers/i.test(lp.stats || ''), lp.stats);
   check('L→G profile counts leave the navigation', lp.navHidden === 'none', lp.navHidden);
+  check('L→G profile hides GitLab’s local time', lp.localTime === 'none', lp.localTime);
   check(
     'L→G profile nav is GitHub’s',
     ['Overview', 'Repositories', 'Projects', 'Organizations', 'Stars'].every(

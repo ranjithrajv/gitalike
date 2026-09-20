@@ -27,7 +27,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   "Overview" ⇄ GitLab's account name), and the applied product's extra
   destinations are added — GitLab's Activity, Groups and Snippets point at
   GitHub's Overview, Organizations and Gists. GitHub's "Packages" has no
-  user-level GitLab page, so GitLab's menu omits it (`content/ux.js`).
+  user-level GitLab page, so GitLab's menu omits it, and GitHub's public
+  Achievements block is hidden under the GitLab UI, where GitLab shows
+  achievements only to the owner (`content/ux.js`, `themes/ux-nav.css`).
 - The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).

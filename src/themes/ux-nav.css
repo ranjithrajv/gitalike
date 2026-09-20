@@ -297,6 +297,28 @@ html.gs-theme-gitlab
   height: 96px !important;
 }
 
+/* GitHub-only profile features GitLab has no counterpart for: public
+   achievements (owned, not public, on GitLab), pinned repositories (GitLab has
+   no profile pinning) and sponsoring. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  .h-card
+  .border-top:has(a[href*="tab=achievements"]) {
+  display: none !important;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  .js-pinned-items-reorder-container {
+  display: none !important;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  a[href*="/sponsors"] {
+  display: none !important;
+}
+
 /* The content: below the header in the right column. */
 html.gs-theme-gitlab
   main:has(nav[aria-label="User profile"])
@@ -489,6 +511,28 @@ html.gs-theme-github body[data-page="users:show"] .contextual-nav {
   padding-top: 0 !important;
 }
 
+/* GitLab-only profile bits GitHub does not show: the profile README's "Read
+   more" expander (GitHub renders it in full) and the local-time row. */
+html.gs-theme-github
+  body[data-page="users:show"]
+  .js-read-more-trigger {
+  display: none !important;
+}
+
+html.gs-theme-github
+  body[data-page="users:show"]
+  .profile-readme-wrapper
+  :is(.read-more-container, .read-more-content) {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+html.gs-theme-github
+  body[data-page="users:show"]
+  [data-testid="user-local-time"] {
+  display: none !important;
+}
+
 /* GitHub shows the follower and following counts under the photo rather than as
    navigation. The content script copies them into the card; the originals are
    hidden here. */
@@ -663,28 +707,19 @@ html.gs-theme-github
 
 /* ---------------------------------------------------------------- L → G -- */
 
-/* GitHub's top navigation is a single row of tabs; GitLab's sidebar groups its
-   items. Flatten the groups and show the leaf items as one scrollable row, with
-   GitHub's active-tab underline. */
-html.gs-theme-github .super-sidebar [data-testid="menu-section-button"] {
-  display: none !important;
+/* GitHub's navigation is a dark top bar; GitLab's is a light sidebar. On the
+   GitHub skin the sidebar becomes a dark top strip so it reads as GitHub's bar.
+   Its groups are left intact — flattening them duplicated items and dropped the
+   project navigation. */
+html.gs-theme-github .super-sidebar {
+  background-color: var(--gs-header-bg) !important;
+  color: var(--gs-header-fg) !important;
 }
 
-html.gs-theme-github .super-sidebar [data-testid="menu-section"] {
-  display: contents !important;
-}
-
-html.gs-theme-github .super-sidebar ul {
-  flex-wrap: nowrap !important;
-  overflow-x: auto !important;
-}
-
-html.gs-theme-github .super-sidebar a {
-  padding: 8px 10px !important;
-  border-bottom: 2px solid transparent !important;
+html.gs-theme-github .super-sidebar :is(a, button, span, svg, .gl-icon) {
+  color: var(--gs-header-fg) !important;
 }
 
 html.gs-theme-github .super-sidebar a[aria-current="page"] {
-  border-bottom-color: var(--gs-accent) !important;
   font-weight: 600 !important;
 }
