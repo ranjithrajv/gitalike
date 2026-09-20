@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Git Same</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="head">
+      <svg class="head__mark" viewBox="0 0 128 128" aria-hidden="true">
+        <g fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M28 46h64M74 28l18 18-18 18" stroke="#fca326" />
+          <path d="M100 82H36M54 64 36 82l18 18" stroke="#8b949e" />
+        </g>
+      </svg>
+      <div>
+        <h1>Git Same</h1>
+        <p>Swap the interface, keep the site.</p>
+      </div>
+    </header>
+
+    <main>
+      <!-- One component does both jobs: classify the host you are on, and add
+           one you are not. It auto-opens (and prefills) when the current host
+           needs a decision. -->
+      <section class="add" id="add">
+        <button
+          type="button"
+          class="add__toggle"
+          id="add-toggle"
+          aria-expanded="false"
+          aria-controls="add-body"
+        >
+          <span id="add-summary">Add a site</span>
+          <span class="add__chevron" aria-hidden="true">＋</span>
+        </button>
+
+        <div class="add__body" id="add-body" hidden>
+          <input
+            type="text"
+            id="add-input"
+            class="add__input"
+            placeholder="github.acme.com"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            aria-label="Site address"
+          />
+          <p class="add__hint" id="add-hint">Which product is it?</p>
+          <div class="add__actions">
+            <button type="button" class="add__button" data-kind="github">
+              GitHub
+            </button>
+            <button type="button" class="add__button" data-kind="gitlab">
+              GitLab
+            </button>
+            <button
+              type="button"
+              class="add__button add__button--quiet"
+              id="add-remove"
+              hidden
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <label class="row" data-setting="github">
+        <span class="row__text">
+          <span class="row__site" data-role="hosts">github.com</span>
+          <span class="row__desc">Show with the <b>GitLab</b> UI</span>
+        </span>
+        <input class="switch" type="checkbox" data-setting="github" />
+        <span class="switch__track" aria-hidden="true"><span class="switch__knob"></span></span>
+      </label>
+
+      <label class="row" data-setting="gitlab">
+        <span class="row__text">
+          <span class="row__site" data-role="hosts">gitlab.com</span>
+          <span class="row__desc">Show with the <b>GitHub</b> UI</span>
+        </span>
+        <input class="switch" type="checkbox" data-setting="gitlab" />
+        <span class="switch__track" aria-hidden="true"><span class="switch__knob"></span></span>
+      </label>
+    </main>
+
+    <footer class="foot">
+      <kbd id="shortcut">…</kbd>
+      <span>toggles this site</span>
+    </footer>
+
+    <script src="../lib/sites.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

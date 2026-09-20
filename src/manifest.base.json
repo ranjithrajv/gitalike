@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Git Same — GitHub ⇄ GitLab UI",
+  "short_name": "Git Same",
+  "description": "Show GitHub with a GitLab-flavoured UI, and GitLab with a GitHub-flavoured UI. Toggle each site from the toolbar or a shortcut.",
+  "permissions": ["storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "action": {
+    "default_title": "Git Same",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "css": ["themes/github-as-gitlab.css", "themes/gitlab-as-github.css"],
+      "js": ["lib/sites.js", "content/theme.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "commands": {
+    "toggle-site": {
+      "suggested_key": {
+        "default": "Alt+Shift+G",
+        "mac": "Alt+Shift+G"
+      },
+      "description": "Toggle the UI swap for the current site"
+    }
+  }
+}

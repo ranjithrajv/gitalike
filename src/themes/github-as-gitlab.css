@@ -1,0 +1,327 @@
+/* =====================================================================
+   Git Same — "GitHub, shown with a GitLab UI"
+   Injected on https://github.com/* by the manifest.
+   Entirely inert until the content script adds .gs-theme-gitlab to <html>.
+
+   github.com is built on Primer, and nearly every colour on the page is
+   read from a small set of CSS custom properties. Re-pointing those at the
+   GitLab/Pajamas palette re-skins the whole app from one place. A short
+   structural section at the end handles what tokens cannot reach: the top
+   bar and the logo.
+   ===================================================================== */
+
+/* ------------------------------------------------------------- palette -- */
+
+html.gs-theme-gitlab {
+  color-scheme: light;
+
+  --gs-canvas: #ffffff;
+  --gs-canvas-subtle: #fbfafd;
+  --gs-canvas-inset: #ececef;
+  --gs-canvas-overlay: #ffffff;
+
+  --gs-fg: #28272d;
+  --gs-fg-muted: #737278;
+  --gs-fg-subtle: #89888d;
+
+  --gs-border: #dcdcde;
+  --gs-border-muted: #e8e8eb;
+
+  --gs-link: #1068bf;
+  --gs-accent: #1f75cb;
+  --gs-accent-hover: #0b5cad;
+  --gs-accent-subtle: #e9f3fc;
+
+  --gs-purple: #7759c2;
+  --gs-purple-strong: #6e49cb;
+
+  --gs-success: #108548;
+  --gs-success-subtle: #ecf4ee;
+  --gs-danger: #dd2b0e;
+  --gs-danger-subtle: #fcf1ef;
+  --gs-attention: #ab6100;
+  --gs-attention-subtle: #fdf1dd;
+
+  --gs-header-bg: #fbfafd;
+  --gs-header-fg: #28272d;
+
+  --gs-shadow: 0 1px 2px rgb(31 30 36 / 0.1);
+
+  --gs-radius-sm: 4px;
+  --gs-radius-md: 4px;
+  --gs-radius-lg: 8px;
+
+  --gs-font: "GitLab Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --gs-font-mono: "GitLab Mono", "JetBrains Mono", ui-monospace, SFMono-Regular,
+    Menlo, Consolas, monospace;
+
+  /* GitHub's octocat keeps its shape but takes GitLab's colour scheme — a
+     gradient across the tanuki's own palette (red, orange, yellow). It sits on
+     a light bar, where GitLab's mark is the colourful one. Data URI so nothing
+     depends on how the browser resolves extension-relative URLs in injected
+     CSS. Source: logos/github-octocat-gitlab-colours.svg */
+  --gs-octocat: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cdefs%3E%3ClinearGradient id='gitlab' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e24329'/%3E%3Cstop offset='0.55' stop-color='%23fc6d26'/%3E%3Cstop offset='1' stop-color='%23fca326'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23gitlab)' d='M6.766 11.328c-2.063-.25-3.516-1.734-3.516-3.656 0-.781.281-1.625.75-2.188-.203-.515-.172-1.609.063-2.062.625-.078 1.468.25 1.968.703.594-.187 1.219-.281 1.985-.281.765 0 1.39.094 1.953.265.484-.437 1.344-.765 1.969-.687.218.422.25 1.515.046 2.047.5.593.766 1.39.766 2.203 0 1.922-1.453 3.375-3.547 3.64.531.344.89 1.094.89 1.954v1.625c0 .468.391.734.86.547C13.781 14.359 16 11.53 16 8.03 16 3.61 12.406 0 7.984 0 3.563 0 0 3.61 0 8.031a7.88 7.88 0 0 0 5.172 7.422c.422.156.828-.125.828-.547v-1.25c-.219.094-.5.156-.75.156-1.031 0-1.64-.562-2.078-1.609-.172-.422-.36-.672-.719-.719-.187-.015-.25-.093-.25-.187 0-.188.313-.328.625-.328.453 0 .844.281 1.25.86.313.452.64.655 1.031.655s.641-.14 1-.5c.266-.265.47-.5.657-.656'/%3E%3C/svg%3E");
+}
+
+html.gs-theme-gitlab.gs-dark {
+  color-scheme: dark;
+
+  --gs-canvas: #1f1e24;
+  --gs-canvas-subtle: #28272d;
+  --gs-canvas-inset: #18171d;
+  --gs-canvas-overlay: #2e2c33;
+
+  --gs-fg: #ececef;
+  --gs-fg-muted: #a4a3aa;
+  --gs-fg-subtle: #8b8a91;
+
+  --gs-border: #3d3b44;
+  --gs-border-muted: #2e2c33;
+
+  --gs-link: #7fb8f0;
+  --gs-accent: #428fdc;
+  --gs-accent-hover: #6fb0f0;
+  --gs-accent-subtle: #22303f;
+
+  --gs-purple: #9c8ad8;
+  --gs-purple-strong: #a795e0;
+
+  --gs-success: #91d4a8;
+  --gs-success-subtle: #1f3326;
+  --gs-danger: #f2a29a;
+  --gs-danger-subtle: #3a2320;
+  --gs-attention: #e9be74;
+  --gs-attention-subtle: #332a1a;
+
+  --gs-header-bg: #28272d;
+  --gs-header-fg: #ececef;
+
+  --gs-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+/* -------------------------------------------- Primer tokens -> Pajamas -- */
+
+html.gs-theme-gitlab {
+  /* surfaces */
+  --bgColor-default: var(--gs-canvas) !important;
+  --bgColor-muted: var(--gs-canvas-subtle) !important;
+  --bgColor-inset: var(--gs-canvas-inset) !important;
+  --bgColor-overlay: var(--gs-canvas-overlay) !important;
+  --color-canvas-default: var(--gs-canvas) !important;
+  --color-canvas-subtle: var(--gs-canvas-subtle) !important;
+  --color-canvas-inset: var(--gs-canvas-inset) !important;
+  --color-canvas-overlay: var(--gs-canvas-overlay) !important;
+
+  /* text */
+  --fgColor-default: var(--gs-fg) !important;
+  --fgColor-muted: var(--gs-fg-muted) !important;
+  --fgColor-subtle: var(--gs-fg-subtle) !important;
+  --fgColor-disabled: var(--gs-fg-subtle) !important;
+  --fgColor-accent: var(--gs-link) !important;
+  --fgColor-link: var(--gs-link) !important;
+  --fgColor-success: var(--gs-success) !important;
+  --fgColor-danger: var(--gs-danger) !important;
+  --fgColor-attention: var(--gs-attention) !important;
+  --color-fg-default: var(--gs-fg) !important;
+  --color-fg-muted: var(--gs-fg-muted) !important;
+  --color-fg-subtle: var(--gs-fg-subtle) !important;
+  --color-fg-disabled: var(--gs-fg-subtle) !important;
+  --color-accent-fg: var(--gs-link) !important;
+  --color-success-fg: var(--gs-success) !important;
+  --color-danger-fg: var(--gs-danger) !important;
+  --color-attention-fg: var(--gs-attention) !important;
+
+  /* borders */
+  --borderColor-default: var(--gs-border) !important;
+  --borderColor-muted: var(--gs-border-muted) !important;
+  --borderColor-subtle: var(--gs-border-muted) !important;
+  --color-border-default: var(--gs-border) !important;
+  --color-border-muted: var(--gs-border-muted) !important;
+  --color-border-subtle: var(--gs-border-muted) !important;
+  --color-border-overlay: var(--gs-border) !important;
+
+  /* accent emphasis */
+  --bgColor-accent-emphasis: var(--gs-accent) !important;
+  --bgColor-accent-muted: var(--gs-accent-subtle) !important;
+  --borderColor-accent-emphasis: var(--gs-accent) !important;
+  --color-accent-emphasis: var(--gs-accent) !important;
+  --color-accent-muted: var(--gs-accent) !important;
+  --color-accent-subtle: var(--gs-accent-subtle) !important;
+
+  /* the amber active-tab underline becomes GitLab purple */
+  --color-primer-border-active: var(--gs-purple) !important;
+  --underlineNav-borderColor-active: var(--gs-purple) !important;
+  --underlineNav-iconColor-rest: var(--gs-fg-muted) !important;
+  --color-underlinenav-border-active: var(--gs-purple) !important;
+  --color-underlinenav-text-active: var(--gs-fg) !important;
+
+  /* status emphasis */
+  --bgColor-success-emphasis: var(--gs-success) !important;
+  --bgColor-danger-emphasis: var(--gs-danger) !important;
+  --bgColor-attention-emphasis: var(--gs-attention) !important;
+  --color-success-emphasis: var(--gs-success) !important;
+  --color-success-subtle: var(--gs-success-subtle) !important;
+  --color-danger-emphasis: var(--gs-danger) !important;
+  --color-danger-subtle: var(--gs-danger-subtle) !important;
+  --color-attention-emphasis: var(--gs-attention) !important;
+  --color-attention-subtle: var(--gs-attention-subtle) !important;
+
+  /* primary buttons: GitHub green -> GitLab blue */
+  --button-primary-bgColor-rest: var(--gs-accent) !important;
+  --button-primary-bgColor-hover: var(--gs-accent-hover) !important;
+  --button-primary-bgColor-active: var(--gs-accent-hover) !important;
+  --button-primary-borderColor-rest: transparent !important;
+  --button-primary-borderColor-hover: transparent !important;
+  --color-btn-primary-bg: var(--gs-accent) !important;
+  --color-btn-primary-hover-bg: var(--gs-accent-hover) !important;
+  --color-btn-primary-active-bg: var(--gs-accent-hover) !important;
+  --color-btn-primary-selected-bg: var(--gs-accent-hover) !important;
+  --color-btn-primary-border: transparent !important;
+  --color-btn-primary-hover-border: transparent !important;
+  --color-btn-primary-disabled-bg: var(--gs-fg-subtle) !important;
+
+  /* secondary buttons */
+  --button-default-bgColor-rest: var(--gs-canvas) !important;
+  --button-default-bgColor-hover: var(--gs-canvas-subtle) !important;
+  --button-default-fgColor-rest: var(--gs-fg) !important;
+  --button-default-borderColor-rest: var(--gs-border) !important;
+  --color-btn-bg: var(--gs-canvas) !important;
+  --color-btn-text: var(--gs-fg) !important;
+  --color-btn-border: var(--gs-border) !important;
+  --color-btn-hover-bg: var(--gs-canvas-subtle) !important;
+  --color-btn-hover-border: var(--gs-border) !important;
+  --color-btn-active-bg: var(--gs-canvas-inset) !important;
+  --color-btn-selected-bg: var(--gs-canvas-inset) !important;
+
+  /* form controls */
+  --control-bgColor-rest: var(--gs-canvas) !important;
+  --control-borderColor-rest: var(--gs-border) !important;
+  --control-fgColor-rest: var(--gs-fg) !important;
+  --control-fgColor-placeholder: var(--gs-fg-subtle) !important;
+  --control-checked-bgColor-rest: var(--gs-accent) !important;
+  --color-input-bg: var(--gs-canvas) !important;
+
+  /* header */
+  --color-header-bg: var(--gs-header-bg) !important;
+  --color-header-text: var(--gs-header-fg) !important;
+  --color-header-search-bg: var(--gs-canvas) !important;
+  --color-header-search-border: var(--gs-border) !important;
+
+  /* focus */
+  --focus-outlineColor: var(--gs-accent) !important;
+  --color-focus-outline: var(--gs-accent) !important;
+
+  /* shape + type */
+  --borderRadius-small: var(--gs-radius-sm) !important;
+  --borderRadius-medium: var(--gs-radius-md) !important;
+  --borderRadius-large: var(--gs-radius-lg) !important;
+  --fontStack-sansSerif: var(--gs-font) !important;
+  --fontStack-system: var(--gs-font) !important;
+  --fontStack-monospace: var(--gs-font-mono) !important;
+}
+
+/* --------------------------------------------------------- structural -- */
+
+html.gs-theme-gitlab body {
+  background-color: var(--gs-canvas-subtle) !important;
+  font-family: var(--gs-font) !important;
+}
+
+/* The GitHub mark keeps its shape but is repainted in GitLab's palette. The
+   octicon is an <svg> whose content is a single <path>; hiding it and painting
+   a background image on the element keeps the recolour purely presentational
+   and picks up every instance (header, footer, mobile nav) at once. */
+html.gs-theme-gitlab .octicon-mark-github {
+  background: var(--gs-octocat) center / contain no-repeat !important;
+  color: transparent !important;
+}
+
+html.gs-theme-gitlab .octicon-mark-github :is(path, polygon, circle) {
+  display: none !important;
+}
+
+/* GitLab's top bar is light with a hairline bottom border, where GitHub's is a
+   dark slab. Flipping the surface is the single biggest cue.
+   Signed in, GitHub drops all of the above for a `GlobalNav` header that is
+   already light — but grey, so it reads darker than the page. Matching it here
+   gives it GitLab's bar instead. */
+html.gs-theme-gitlab :is(
+    .AppHeader,
+    .AppHeader-globalBar,
+    .Header,
+    .js-header-wrapper,
+    header[role="banner"],
+    header.GlobalNav,
+    header[aria-label="Global navigation menu"]
+  ) {
+  background-color: var(--gs-header-bg) !important;
+  color: var(--gs-header-fg) !important;
+  border-bottom: 1px solid var(--gs-border) !important;
+  box-shadow: none !important;
+}
+
+/* GitHub's chrome assumes a dark bar: its nav links, CTA labels and the search
+   placeholder are all near-white. Flipping the bar to light has to bring the
+   text with it, nested <span>s included — that is where Primer's marketing
+   header actually keeps the colour. Every element up there sits on a
+   transparent or light background, so there is nothing we need to keep light. */
+html.gs-theme-gitlab :is(
+    .AppHeader,
+    .AppHeader-globalBar,
+    .Header,
+    .js-header-wrapper,
+    header[role="banner"],
+    header.GlobalNav,
+    header[aria-label="Global navigation menu"]
+  )
+  :is(a, button, summary, span, label, p, li, div, input, .AppHeader-navItem) {
+  color: var(--gs-header-fg) !important;
+}
+
+html.gs-theme-gitlab :is(
+    .AppHeader,
+    .AppHeader-globalBar,
+    .Header,
+    .js-header-wrapper,
+    header[role="banner"],
+    header.GlobalNav,
+    header[aria-label="Global navigation menu"]
+  )
+  :is(
+    input,
+    .form-control,
+    .AppHeader-search,
+    .header-search-input,
+    .header-search-wrapper
+  ) {
+  background-color: var(--gs-canvas) !important;
+  border-color: var(--gs-border) !important;
+  color: var(--gs-fg) !important;
+}
+
+/* GitHub's signed-in repo nav moved to `prc-components-UnderlineItem`, so the
+   old `.UnderlineNav-item` rules below no longer reached it. Both are listed;
+   the indicator also still lands via the `--color-primer-border-active` token
+   we re-point at GitLab purple. */
+
+/* Active tab gets GitLab's purple indicator rather than GitHub's amber. */
+html.gs-theme-gitlab
+  :is(.UnderlineNav-item, .UnderlineNav-item--current, .prc-components-UnderlineItem)[aria-current="page"],
+html.gs-theme-gitlab
+  :is(.UnderlineNav-item, .prc-components-UnderlineItem)[role="tab"][aria-selected="true"] {
+  color: var(--gs-fg) !important;
+  font-weight: 600;
+}
+
+html.gs-theme-gitlab
+  :is(.UnderlineNav-item, .UnderlineNav-item--current, .prc-components-UnderlineItem)[aria-current="page"]::after,
+html.gs-theme-gitlab
+  :is(.UnderlineNav-item, .prc-components-UnderlineItem)[role="tab"][aria-selected="true"]::after {
+  background-color: var(--gs-purple) !important;
+}
+
+/* GitLab leans on a slightly softer container radius than Primer's default. */
+html.gs-theme-gitlab :is(.Box, .Box--condensed, .border.rounded-2, .flash) {
+  border-radius: var(--gs-radius-lg);
+}

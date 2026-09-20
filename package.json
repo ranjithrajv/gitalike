@@ -1,0 +1,27 @@
+{
+  "name": "git-same",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Show GitHub with a GitLab UI, and GitLab with a GitHub UI.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:chromium": "node build.mjs chromium",
+    "build:firefox": "node build.mjs firefox",
+    "lint": "npm run build:firefox && web-ext lint --source-dir dist/firefox",
+    "test": "node --test",
+    "package": "npm run package:chromium && npm run package:firefox",
+    "package:chromium": "npm run build:chromium && web-ext build --source-dir dist/chromium --artifacts-dir dist/artifacts/chromium --overwrite-dest",
+    "package:firefox": "npm run build:firefox && web-ext build --source-dir dist/firefox --artifacts-dir dist/artifacts/firefox --overwrite-dest",
+    "screenshots": "node tools/store-screenshots.mjs",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0",
+    "web-ext": "^10.6.0"
+  },
+  "overrides": {
+    "image-size": "^2.0.4"
+  }
+}

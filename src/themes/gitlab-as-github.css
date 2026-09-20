@@ -1,0 +1,344 @@
+/* =====================================================================
+   Git Same — "GitLab, shown with a GitHub UI"
+   Injected on https://gitlab.com/* by the manifest.
+   Entirely inert until the content script adds .gs-theme-github to <html>.
+
+   GitLab is mid-migration to the Pajamas design tokens, which are exposed as
+   --gl-* CSS custom properties: the modern parts of the app read them, the
+   legacy parts still carry compiled colours. So this file does both — it
+   re-points the tokens at the Primer palette, then reaches the older
+   components with structural selectors.
+   ===================================================================== */
+
+/* ------------------------------------------------------------- palette -- */
+
+html.gs-theme-github {
+  color-scheme: light;
+
+  --gs-canvas: #ffffff;
+  --gs-canvas-subtle: #f6f8fa;
+  --gs-canvas-inset: #f6f8fa;
+  --gs-canvas-overlay: #ffffff;
+
+  --gs-fg: #1f2328;
+  --gs-fg-muted: #59636e;
+  --gs-fg-subtle: #818b98;
+
+  --gs-border: #d1d9e0;
+  --gs-border-muted: #d1d9e0;
+
+  --gs-link: #0969da;
+  --gs-accent: #0969da;
+  --gs-accent-hover: #0550ae;
+  --gs-accent-subtle: #ddf4ff;
+
+  --gs-success: #1a7f37;
+  --gs-success-subtle: #dafbe1;
+  --gs-danger: #cf222e;
+  --gs-danger-subtle: #ffebe9;
+  --gs-attention: #9a6700;
+  --gs-attention-subtle: #fff8c5;
+
+  --gs-header-bg: #25292e;
+  --gs-header-fg: #f0f6fc;
+
+  --gs-radius-sm: 4px;
+  --gs-radius-md: 6px;
+  --gs-radius-lg: 8px;
+
+  --gs-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+    Helvetica, Arial, sans-serif;
+  --gs-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* GitLab's tanuki keeps its shape but takes GitHub's colour scheme — a
+     gradient across Primer's dark-mode ink and accent blue. It sits on the
+     dark header, where GitHub's own mark is white. Data URI so nothing depends
+     on how the browser resolves extension-relative URLs in injected CSS.
+     Source: logos/gitlab-tanuki-github-colours.svg */
+  --gs-tanuki: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='gh' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f0f6fc'/%3E%3Cstop offset='1' stop-color='%234493f8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23gh)' d='m23.6004 9.5927-.0337-.0862L20.3.9814a.851.851 0 0 0-.3362-.405.8748.8748 0 0 0-.9997.0539.8748.8748 0 0 0-.29.4399l-2.2055 6.748H7.5375l-2.2057-6.748a.8573.8573 0 0 0-.29-.4412.8748.8748 0 0 0-.9997-.0537.8585.8585 0 0 0-.3362.4049L.4332 9.5015l-.0325.0862a6.0657 6.0657 0 0 0 2.0119 7.0105l.0113.0087.03.0213 4.976 3.7264 2.462 1.8633 1.4995 1.1321a1.0085 1.0085 0 0 0 1.2197 0l1.4995-1.1321 2.4619-1.8633 5.006-3.7489.0125-.01a6.0682 6.0682 0 0 0 2.0094-7.003z'/%3E%3C/svg%3E");
+}
+
+html.gs-theme-github.gs-dark {
+  color-scheme: dark;
+
+  --gs-canvas: #0d1117;
+  --gs-canvas-subtle: #151b23;
+  --gs-canvas-inset: #010409;
+  --gs-canvas-overlay: #151b23;
+
+  --gs-fg: #f0f6fc;
+  --gs-fg-muted: #9198a1;
+  --gs-fg-subtle: #6e7681;
+
+  --gs-border: #3d444d;
+  --gs-border-muted: #3d444d;
+
+  --gs-link: #2f81f7;
+  --gs-accent: #2f81f7;
+  --gs-accent-hover: #4493f8;
+  --gs-accent-subtle: #121d2f;
+
+  --gs-success: #3fb950;
+  --gs-success-subtle: #12261e;
+  --gs-danger: #f85149;
+  --gs-danger-subtle: #25171c;
+  --gs-attention: #d29922;
+  --gs-attention-subtle: #272115;
+
+  --gs-header-bg: #010409;
+  --gs-header-fg: #f0f6fc;
+}
+
+/* ------------------------------------------- Pajamas tokens -> Primer -- */
+
+html.gs-theme-github {
+  /* text */
+  --gl-text-color-default: var(--gs-fg) !important;
+  --gl-text-color-heading: var(--gs-fg) !important;
+  --gl-text-color-strong: var(--gs-fg) !important;
+  --gl-text-color-subtle: var(--gs-fg-muted) !important;
+  --gl-text-color-disabled: var(--gs-fg-subtle) !important;
+  --gl-text-color-link: var(--gs-link) !important;
+  --gl-text-color-success: var(--gs-success) !important;
+  --gl-text-color-danger: var(--gs-danger) !important;
+  --gl-text-color-warning: var(--gs-attention) !important;
+
+  /* deprecated text aliases still used by older components */
+  --gl-text-color: var(--gs-fg) !important;
+  --gl-text-color-secondary: var(--gs-fg-muted) !important;
+  --gl-text-color-tertiary: var(--gs-fg-subtle) !important;
+
+  /* surfaces */
+  --gl-background-color-default: var(--gs-canvas) !important;
+  --gl-background-color-subtle: var(--gs-canvas-subtle) !important;
+  --gl-background-color-strong: var(--gs-canvas-subtle) !important;
+  --gl-background-color-overlap: var(--gs-canvas-overlay) !important;
+  --gl-background-color-section: var(--gs-canvas) !important;
+  --gl-background-color-disabled: var(--gs-canvas-subtle) !important;
+  --gl-background-color: var(--gs-canvas) !important;
+
+  /* borders */
+  --gl-border-color-default: var(--gs-border) !important;
+  --gl-border-color-subtle: var(--gs-border-muted) !important;
+  --gl-border-color-strong: var(--gs-border) !important;
+  --gl-border-color-section: var(--gs-border) !important;
+  --gl-border-color: var(--gs-border) !important;
+
+  /* feedback */
+  --gl-feedback-info-background-color: var(--gs-accent-subtle) !important;
+  --gl-feedback-success-background-color: var(--gs-success-subtle) !important;
+  --gl-feedback-danger-background-color: var(--gs-danger-subtle) !important;
+  --gl-feedback-warning-background-color: var(--gs-attention-subtle) !important;
+  --gl-status-success-background-color: var(--gs-success-subtle) !important;
+  --gl-status-danger-background-color: var(--gs-danger-subtle) !important;
+  --gl-status-warning-background-color: var(--gs-attention-subtle) !important;
+  --gl-status-brand-background-color: var(--gs-accent-subtle) !important;
+  --gl-highlight-target-background-color: var(--gs-accent-subtle) !important;
+
+  /* controls */
+  --gl-control-background-color-default: var(--gs-canvas) !important;
+  --gl-control-border-color-default: var(--gs-border) !important;
+  --gl-control-border-color-focus: var(--gs-accent) !important;
+  --gl-control-placeholder-color: var(--gs-fg-subtle) !important;
+  --gl-control-border-radius: var(--gs-radius-md) !important;
+
+  /* shape */
+  --gl-border-radius-sm: var(--gs-radius-sm) !important;
+  --gl-border-radius-base: var(--gs-radius-md) !important;
+  --gl-border-radius-lg: var(--gs-radius-lg) !important;
+
+  /* the neutral ramp, re-pitched to GitHub's greys */
+  --gl-color-neutral-0: #ffffff !important;
+  --gl-color-neutral-10: #f6f8fa !important;
+  --gl-color-neutral-50: #eff2f5 !important;
+  --gl-color-neutral-100: #e6eaef !important;
+  --gl-color-neutral-200: #d1d9e0 !important;
+  --gl-color-neutral-300: #b7bfc7 !important;
+  --gl-color-neutral-400: #9198a1 !important;
+  --gl-color-neutral-500: #6e7781 !important;
+  --gl-color-neutral-600: #59636e !important;
+  --gl-color-neutral-700: #454c54 !important;
+  --gl-color-neutral-800: #32383f !important;
+  --gl-color-neutral-900: #1f2328 !important;
+  --gl-color-neutral-950: #0d1117 !important;
+
+  /* brand hues */
+  --gl-color-blue-500: #0969da !important;
+  --gl-color-blue-600: #0550ae !important;
+  --gl-color-blue-700: #0550ae !important;
+  --gl-color-purple-500: #8250df !important;
+  --gl-color-green-500: #1a7f37 !important;
+  --gl-color-red-500: #cf222e !important;
+  --gl-color-orange-500: #9a6700 !important;
+}
+
+/* GitLab's primary action buttons are blue; GitHub's are green. "Confirm"
+   buttons play the primary role in GitLab, so they take GitHub's green. */
+html.gs-theme-github :is(
+    .btn-confirm,
+    .gl-button.btn-confirm,
+    .btn.btn-confirm,
+    button[data-testid="base-button"][data-variant="confirm"]
+  ) {
+  background-color: var(--gs-success) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------- structural -- */
+
+html.gs-theme-github body {
+  background-color: var(--gs-canvas) !important;
+  color: var(--gs-fg) !important;
+  font-family: var(--gs-font) !important;
+}
+
+html.gs-theme-github :is(code, pre, .code, .blob-content, .file-content) {
+  font-family: var(--gs-font-mono) !important;
+}
+
+/* GitLab's top bar is light; GitHub's is a dark slab with a translucent
+   search field. That contrast is the loudest signal of the skin. */
+html.gs-theme-github :is(
+    .navbar,
+    .navbar-gitlab,
+    .header-content,
+    .gl-navbar,
+    .super-topbar,
+    .top-bar
+  ) {
+  background-color: var(--gs-header-bg) !important;
+  color: var(--gs-header-fg) !important;
+  border-bottom: 1px solid var(--gs-header-bg) !important;
+  box-shadow: none !important;
+}
+
+html.gs-theme-github
+  :is(.navbar, .navbar-gitlab, .header-content, .super-topbar)
+  :is(a, button, svg, .gl-icon, .gl-button) {
+  color: var(--gs-header-fg) !important;
+}
+
+/* ...but GitLab's top bar mixes two kinds of button. Ghost ones
+   (`…-tertiary`, and the search field) sit transparently on the dark bar and
+   are fine with light text. Filled `btn-default` buttons — "Sign in" among
+   them — have a *white* background, which the rule above turns white-on-white.
+   Give those GitHub's translucent header treatment instead. */
+html.gs-theme-github
+  :is(.navbar, .header-content, .super-topbar)
+  :is(.btn, .gl-button)[class*="btn-default"]:not([class*="-tertiary"]) {
+  background-color: rgb(255 255 255 / 0.1) !important;
+  border-color: rgb(255 255 255 / 0.25) !important;
+  color: var(--gs-header-fg) !important;
+}
+
+/* GitLab's search is a <button> dressed as a field, not an <input>, so it has
+   to be pointed at the same translucent treatment GitHub gives its own. */
+html.gs-theme-github
+  :is(.navbar, .header-content, .super-topbar)
+  :is(
+    input,
+    .gl-form-input,
+    .search-input,
+    [class*="search-button"],
+    [class*="topbar-search"]
+  ) {
+  background-color: rgb(255 255 255 / 0.13) !important;
+  border-color: rgb(255 255 255 / 0.22) !important;
+  color: #ffffff !important;
+}
+
+/* The tanuki keeps its shape but is repainted in GitHub's palette. The mark
+   may be an inline <svg> (hide its shapes, paint a background) or an <img>
+   (swap its content). */
+html.gs-theme-github :is(
+    .tanuki-logo,
+    .tanuki-logo-svg,
+    .gl-logo,
+    [data-testid="tanuki-logo"]
+  ) {
+  background: var(--gs-tanuki) center / contain no-repeat !important;
+  color: transparent !important;
+}
+
+html.gs-theme-github
+  :is(.tanuki-logo, .tanuki-logo-svg, .gl-logo, [data-testid="tanuki-logo"])
+  :is(path, polygon, circle, rect, g, use) {
+  fill: transparent !important;
+  stroke: transparent !important;
+}
+
+/* The brand mark is an <svg class="tanuki-logo"> today; keep a fallback for an
+   <img>, but scope it to the bar the brand lives in. Unscoped, `alt*="gitlab"`
+   also matches *project avatars* called "GitLab" and repaints them with a
+   GitHub-coloured tanuki on a white tile. */
+html.gs-theme-github
+  :is(.super-topbar, .navbar, .header-content)
+  :is(img[src*="tanuki" i], img[alt*="gitlab" i]) {
+  content: var(--gs-tanuki);
+  object-fit: contain;
+}
+
+/* Left navigation: GitHub marks the active item with a blue tint and a
+   heavier weight, where GitLab leans on purple. */
+html.gs-theme-github
+  :is(.super-sidebar, .nav-sidebar, .gl-sidebar, .sidebar-container)
+  :is(a, button)[aria-current="page"],
+html.gs-theme-github
+  :is(.super-sidebar, .nav-sidebar, .gl-sidebar)
+  :is(.is-active, .active, .gl-nav-item.is-active) {
+  background-color: var(--gs-accent-subtle) !important;
+  color: var(--gs-accent) !important;
+  border-radius: var(--gs-radius-md) !important;
+  font-weight: 600 !important;
+}
+
+/* Tabs: GitHub uses a blue underline, GitLab a grey one plus a bottom border. */
+html.gs-theme-github
+  :is(.gl-tabs-nav, .nav-links, .nav-tabs)
+  :is(a, .nav-link, .gl-tab-nav-item).active {
+  color: var(--gs-fg) !important;
+  border-bottom-color: transparent !important;
+  box-shadow: inset 0 -2px 0 var(--gs-accent) !important;
+}
+
+/* Components that were never tokenised. */
+html.gs-theme-github
+  :is(
+    .gl-button,
+    .btn,
+    .gl-form-input,
+    .form-control,
+    .gl-badge,
+    .badge,
+    .gl-card,
+    .card
+  ) {
+  border-radius: var(--gs-radius-md) !important;
+}
+
+html.gs-theme-github :is(.gl-card, .card) {
+  border: 1px solid var(--gs-border) !important;
+  background-color: var(--gs-canvas) !important;
+}
+
+html.gs-theme-github :is(.gl-badge, .badge) {
+  background-color: var(--gs-canvas-subtle) !important;
+  color: var(--gs-fg-muted) !important;
+  border: 1px solid var(--gs-border) !important;
+  font-weight: 500 !important;
+}
+
+html.gs-theme-github :is(.gl-table, .table) {
+  border-color: var(--gs-border) !important;
+}
+
+html.gs-theme-github :is(.gl-table, .table) :is(th, td) {
+  border-color: var(--gs-border) !important;
+}
+
+html.gs-theme-github :is(.gl-table, .table) thead th {
+  background-color: var(--gs-canvas-subtle) !important;
+  color: var(--gs-fg) !important;
+}

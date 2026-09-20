@@ -1,0 +1,7 @@
+dist/
+node_modules/
+
+# Scratch output from the Playwright MCP tool and any Playwright runs.
+.playwright-mcp/
+test-results/
+playwright-report/
