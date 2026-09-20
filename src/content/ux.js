@@ -232,18 +232,90 @@
   const METADATA_HIDE = ['Releases', 'Packages', 'Used by', 'Contributors', 'Languages'];
   const metadataHiddenOrig = new Map();
 
+  // GitHub puts a counter inside the section heading ("Releases240 (240)",
+  // "Contributors2,572 (2,572)"), so the digits and their brackets are stripped
+  // before the label is compared.
+  const sectionLabel = (heading) =>
+    heading
+      ? (heading.textContent || '').replace(/[\d,()]+/g, ' ').replace(/\s+/g, ' ').trim()
+      : '';
+
   function paintMetadata(t) {
     if (t !== 'gitlab') return;
     const grid = document.querySelector('[class*="CodeViewSidebar-"]');
     if (!grid) return;
     for (const section of grid.children) {
       const heading = section.querySelector('h2, h3');
-      const label = heading ? (heading.textContent || '').trim() : '';
+      const label = sectionLabel(heading);
       if (!METADATA_HIDE.includes(label)) continue;
       if (!metadataHiddenOrig.has(section)) {
         metadataHiddenOrig.set(section, section.style.display);
       }
       if (section.style.display !== 'none') section.style.display = 'none';
+    }
+  }
+
+  // Each product heads the repository metadata block differently — GitHub's
+  // "About" sidebar, GitLab's "Project information" block. CSS moves the block;
+  // the heading is renamed here so its label matches the product being imitated.
+  function paintHeadings(t) {
+    const rename = (heading, from, to) => {
+      for (const text of textNodes(heading)) {
+        if (text.nodeValue.trim() !== from) continue;
+        rememberText(text);
+        const next = text.nodeValue.replace(from, to);
+        if (text.nodeValue !== next) text.nodeValue = next;
+        return;
+      }
+    };
+    if (t === 'gitlab') {
+      const grid = document.querySelector('[class*="CodeViewSidebar-"]');
+      if (!grid) return;
+      for (const heading of grid.querySelectorAll('h2, h3')) {
+        if (heading.textContent.trim() === 'About') {
+          rename(heading, 'About', 'Project information');
+        }
+      }
+      return;
+    }
+    const sidebar =
+      document.querySelector('.project-page-sidebar-block') ||
+      document.querySelector('.project-page-layout-sidebar');
+    if (!sidebar) return;
+    for (const heading of sidebar.querySelectorAll('h2, h3')) {
+      if (heading.textContent.trim() === 'Project information') {
+        rename(heading, 'Project information', 'About');
+      }
+    }
+  }
+
+  // GitLab marks the project-name item active on the project overview rather
+  // than the tab GitHub would underline, and its own highlight is a blue pill
+  // rather than GitHub's underline. The page marker is mapped to GitHub's tab
+  // and that tab is marked here; the underline styling lives in the theme.
+  const L2G_ACTIVE = [
+    [/^projects:(show|tree|blob|commits|compare|branches|tags|forks|network)\b/, 'Code'],
+    [/^projects:work_items/, 'Issues'],
+    [/^projects:merge_requests/, 'Pull requests'],
+    [/^projects:(pipelines|jobs|builds|ci)\b/, 'Actions'],
+    [/^projects:boards/, 'Projects'],
+    [/^projects:(security|vulnerabilities)/, 'Security'],
+    [/^projects:wikis/, 'Wiki'],
+    [/^projects:(insights|analytics)/, 'Insights'],
+  ];
+
+  function paintActiveTab(t) {
+    if (t !== 'github') return;
+    const page = (document.body && document.body.dataset.page) || '';
+    const rule = L2G_ACTIVE.find(([re]) => re.test(page));
+    const label = rule ? rule[1] : null;
+    for (const anchor of document.querySelectorAll('.super-sidebar a')) {
+      const text = (anchor.textContent || '').replace(/\s+/g, ' ').trim();
+      if (label && UX.labelMatches(text, label)) {
+        anchor.setAttribute('data-gs-active', '');
+      } else {
+        anchor.removeAttribute('data-gs-active');
+      }
     }
   }
 
@@ -683,6 +755,8 @@
     paintOrder(t);
     paintNavGroups(t);
     paintMetadata(t);
+    paintHeadings(t);
+    paintActiveTab(t);
     paintProfileStats(t);
     paintProfileMenu(t);
   }
@@ -711,6 +785,9 @@
       if (container.isConnected) for (const el of items) container.appendChild(el);
     }
     for (const el of document.querySelectorAll('.gs-nav-group')) el.remove();
+    for (const el of document.querySelectorAll('[data-gs-active]')) {
+      el.removeAttribute('data-gs-active');
+    }
     for (const el of document.querySelectorAll('[data-gs-profile-stats]')) el.remove();
     for (const el of document.querySelectorAll('[data-gs-profile-menu]')) el.remove();
     for (const [el, display] of profileHiddenOrig) {
@@ -848,6 +925,8 @@
       paintOrder(current);
       paintNavGroups(current);
       paintMetadata(current);
+      paintHeadings(current);
+      paintActiveTab(current);
       paintProfileStats(current);
       paintProfileMenu(current);
       const now = Date.now();

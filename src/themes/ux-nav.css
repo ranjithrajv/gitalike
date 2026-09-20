@@ -707,21 +707,42 @@ html.gs-theme-github
 
 /* ---------------------------------------------------------------- L → G -- */
 
-/* GitHub's navigation is a dark top bar; GitLab's is a light sidebar. On the
-   GitHub skin the sidebar becomes a dark top strip so it reads as GitHub's bar.
-   Its groups are left intact — flattening them duplicated items and dropped the
-   project navigation. */
+/* GitLab's sidebar becomes the horizontal strip; GitHub's repo and profile
+   tabs live on a white row under the dark global bar, so the strip is white
+   rather than dark. Its groups are left intact — flattening them duplicated
+   items and dropped the project navigation. */
+html.gs-theme-github .super-sidebar-wrapper,
 html.gs-theme-github .super-sidebar {
-  background-color: var(--gs-header-bg) !important;
-  color: var(--gs-header-fg) !important;
+  background-color: var(--gs-canvas) !important;
+  color: var(--gs-fg) !important;
 }
 
 html.gs-theme-github .super-sidebar :is(a, button, span, svg, .gl-icon) {
-  color: var(--gs-header-fg) !important;
+  color: var(--gs-fg) !important;
 }
 
 html.gs-theme-github .super-sidebar a[aria-current="page"] {
   font-weight: 600 !important;
+}
+
+/* GitHub marks the active tab with a warm underline and a transparent
+   background; GitLab marks it with a blue pill, which is neutralized here. */
+html.gs-theme-github .super-sidebar a {
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 8px 8px 6px !important;
+}
+
+html.gs-theme-github .super-sidebar a:hover {
+  background-color: transparent !important;
+}
+
+html.gs-theme-github
+  .super-sidebar
+  :is(a[aria-current="page"], a.active, a[data-gs-active]) {
+  background-color: transparent !important;
+  border-bottom-color: #fd8c73 !important;
 }
 
 /* GitHub's bar lists its tabs directly; GitLab's sidebar hides them inside
@@ -767,4 +788,46 @@ html.gs-theme-github .super-sidebar ul[data-testid="non-static-items-section"] {
 
 html.gs-theme-github .super-sidebar ul[data-testid="pinned-nav-items"] {
   order: 2 !important;
+}
+
+/* ------------------------------------------------------------- heatmaps -- */
+
+/* GitHub's contribution graph is green; GitLab's activity graph is indigo.
+   Each skin recolours the graph to the imitated product's palette. Level 0 is
+   #eff2f5 on both sides, so only levels 1–4 need repainting. The values are the
+   products' own computed fills. */
+html.gs-theme-gitlab .ContributionCalendar-day[data-level="1"] {
+  fill: #d2dcff !important;
+  background-color: #d2dcff !important;
+}
+
+html.gs-theme-gitlab .ContributionCalendar-day[data-level="2"] {
+  fill: #7992f5 !important;
+  background-color: #7992f5 !important;
+}
+
+html.gs-theme-gitlab .ContributionCalendar-day[data-level="3"] {
+  fill: #4e65cd !important;
+  background-color: #4e65cd !important;
+}
+
+html.gs-theme-gitlab .ContributionCalendar-day[data-level="4"] {
+  fill: #303470 !important;
+  background-color: #303470 !important;
+}
+
+html.gs-theme-github rect.user-contrib-cell[data-level="1"] {
+  fill: #aceebb !important;
+}
+
+html.gs-theme-github rect.user-contrib-cell[data-level="2"] {
+  fill: #4ac26b !important;
+}
+
+html.gs-theme-github rect.user-contrib-cell[data-level="3"] {
+  fill: #2da44e !important;
+}
+
+html.gs-theme-github rect.user-contrib-cell[data-level="4"] {
+  fill: #116329 !important;
 }

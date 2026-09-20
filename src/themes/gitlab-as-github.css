@@ -372,3 +372,13 @@ html.gs-theme-github
   flex: 1 1 auto !important;
   min-width: 0 !important;
 }
+
+/* GitLab's coverage bar and project badges have no counterpart in GitHub's
+   "About" column, so they are dropped rather than left as foreign chrome. The
+   coverage bar is the block's bare `gl-mb-2` child; the badges carry their own
+   test id. */
+html.gs-theme-github
+  .project-page-sidebar-block
+  > :is(div.gl-mb-2, [data-testid="project-badges-content"], .project-badges) {
+  display: none !important;
+}
