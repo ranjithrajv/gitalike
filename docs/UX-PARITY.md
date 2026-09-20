@@ -24,7 +24,7 @@ is the map and the scorecard.
 | No-counterpart markers — `UNMAPPED` | ✅ 3 | ✅ 15 | `lib/ux.js` |
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
-| Nav orientation | ✅ | ❌ | `themes/ux-nav.css` |
+| Nav orientation | ✅ | ✅ | `themes/ux-nav.css` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
 | Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
 | "Open on the other host" | ✅ | ✅ | `lib/ux.js` + popup |
@@ -105,17 +105,21 @@ framework that re-renders its list cannot make the two of us thrash.
 
 ## Navigation orientation
 
-GitHub's app navigation is a horizontal tab row; GitLab's is a vertical sidebar.
-On a GitLab-skinned GitHub site the repo tabs are restyled into a vertical,
-sidebar-style column (`themes/ux-nav.css`), so the orientation matches the
-product being imitated.
+GitHub's app navigation is a horizontal tab row; GitLab's is a vertical sidebar,
+and each skin flips the orientation so the skinned site navigates the way the
+product it imitates does.
 
-The reverse is **not** done. Flattening GitLab's fixed sidebar into a horizontal
-bar was implemented and measured live: GitLab's layout grid does not reflow, and
-the project content collapsed to a ~277px-wide, 12,515px-tall column. A fixed,
-full-height sidebar cannot be laid horizontally without restructuring the host
-page, which breaks at every breakpoint — so `ux-nav.css` carries only the safe
-direction.
+- **G→L** — GitHub's repo tabs (`ul.UnderlineNav-body`) become a vertical,
+  GitLab-sidebar-style column.
+- **L→G** — GitLab's sidebar becomes a horizontal strip. GitLab's page is a grid
+  (`.layout-page.page-with-super-sidebar` is `232px 1032px …`, with the sidebar
+  in column one), so the grid is collapsed to a single column first — without
+  that the content keeps the narrow column and shrinks to ~277px. The sidebar's
+  collapse control is hidden, since it only makes sense on a vertical sidebar.
+
+GitLab's strip is taller than GitHub's single-row top bar because its navigation
+is grouped; the groups keep GitLab's structure and simply wrap horizontally
+rather than being flattened.
 
 ## References
 
@@ -159,8 +163,6 @@ there.
 
 ## Not built
 
-- **L→G navigation orientation** — GitLab's fixed sidebar is not laid
-  horizontally; see Navigation orientation for the measurement behind that.
 - **Behaviour** behind search, notifications and the merge flow: only their
   labels change, not what they do.
 
@@ -183,9 +185,10 @@ and that `PHRASES` stays the same size in both directions.
   `gitlab.com/git/git/-/merge_requests/1875`, and `open-other-host` was
   registered alongside `toggle-site`. Nine `≠ GitHub` badges appeared on
   GitLab-only features, a mapped item carried none, an injected `Discussions`
-  tab was marked `≠ GitLab`, and every badge was removed on switch-off. The G→L
-  repo tabs rendered as a vertical column; the L→G sidebar flip was measured
-  collapsing the content to 277px and so is not applied.
+  tab was marked `≠ GitLab`, and every badge was removed on switch-off. Both
+  orientations rendered correctly: GitHub's repo tabs as a vertical column, and
+  GitLab's sidebar as a horizontal strip with the project content still full
+  width (1231px).
 - **Unit**, `tests/ux.test.mjs`: every table and helper, including the `LABELS`
   and `CHROME` round-trips, `PHRASES` symmetry, `labelMatches`, `otherHostUrl`,
   and that `UNMAPPED` never overlaps a translated label.

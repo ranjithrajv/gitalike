@@ -11,10 +11,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Account/menu chrome is translated too (`CHROME`): "Your repositories" ⇄
   "Your projects", "Your gists" ⇄ "Your snippets", "Your stars" ⇄
   "Starred projects", "Your organizations" ⇄ "Your groups".
-- Navigation orientation is matched one way: on a GitLab-skinned GitHub site the
-  repo tabs become a vertical, GitLab-style column (`themes/ux-nav.css`). The
-  reverse is not applied — flattening GitLab's fixed sidebar was measured
-  collapsing the project content to a ~277px column.
+- Navigation orientation is matched both ways (`themes/ux-nav.css`): GitHub's
+  repo tabs become a vertical, GitLab-style column, and GitLab's sidebar becomes
+  a horizontal top strip (GitLab's page grid is collapsed to one column first,
+  so the content stays full width).
 
 ### Changed
 

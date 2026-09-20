@@ -1,14 +1,13 @@
 /* =====================================================================
    Git Same — navigation orientation.
    GitHub's app navigation is a horizontal tab row; GitLab's is a vertical
-   sidebar. A GitLab-skinned GitHub site flips its repo tabs to a vertical,
-   sidebar-style column.
+   sidebar. Each skin flips the orientation so a skinned site navigates the way
+   the product it is imitating does.
 
-   Only that direction is done. The reverse — flattening GitLab's fixed sidebar
-   into a horizontal bar — was tried and rejected: GitLab's layout grid does not
-   reflow, so the project content collapses to a ~277px column (measured live).
-   A fixed, full-height sidebar cannot be laid horizontally without
-   restructuring the host page, which breaks at every breakpoint.
+   GitLab's layout is a grid — `.layout-page.page-with-super-sidebar` is
+   `232px 1032px …`, the sidebar in column one and the content in column two —
+   so the sidebar cannot simply be made horizontal; the grid has to collapse to
+   one column or the content keeps the narrow column. That is done here.
    ===================================================================== */
 
 /* ---------------------------------------------------------------- G → L -- */
@@ -50,4 +49,65 @@ html.gs-theme-gitlab
    replaces it. */
 html.gs-theme-gitlab nav[aria-label="Repository"] .UnderlineNav-item::after {
   display: none !important;
+}
+
+/* ---------------------------------------------------------------- L → G -- */
+
+/* Collapse GitLab's two-column page grid so the content spans the full width
+   once the sidebar leaves its column. */
+html.gs-theme-github .layout-page.page-with-super-sidebar {
+  display: block !important;
+  padding-left: 0 !important;
+}
+
+html.gs-theme-github .super-sidebar-wrapper {
+  position: static !important;
+  width: 100% !important;
+}
+
+/* The sidebar itself becomes a horizontal strip across the top. */
+html.gs-theme-github .super-sidebar {
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid var(--gs-border) !important;
+}
+
+html.gs-theme-github .super-sidebar :is(.contextual-nav, nav) {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* Lay the navigation lists out as a wrapping row of tabs. */
+html.gs-theme-github .super-sidebar ul {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+html.gs-theme-github .super-sidebar li {
+  width: auto !important;
+}
+
+html.gs-theme-github .super-sidebar a {
+  white-space: nowrap !important;
+}
+
+/* The collapse control only makes sense on a vertical sidebar. */
+html.gs-theme-github .super-sidebar :is(
+    [data-testid*="collapse" i],
+    [aria-label*="collapse" i]
+  ) {
+  display: none !important;
+}
+
+/* The rows were sized for a full-height sidebar; tighten them for a top strip. */
+html.gs-theme-github .super-sidebar [data-testid="nav-item-link"] {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
 }
