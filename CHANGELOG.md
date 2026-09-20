@@ -21,12 +21,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shows them, with the navigation copies hidden (`content/ux.js`,
   `themes/ux-nav.css`). GitLab publishes no organisation on a profile, so that
   line stays absent.
-- Profile menu items are relabelled to the applied product: `Repositories` ⇄
-  `Personal projects`, `Stars` ⇄ `Starred projects`, `Groups` ⇄ `Organizations`,
-  and each landing item takes the other's label (GitHub's "Overview" ⇄ GitLab's
-  account name). A destination the applied product has no profile page for is
-  hidden, so a skinned profile's navigation no longer mixes the two
-  vocabularies (`content/ux.js`).
+- The profile menu is rebuilt as the applied product's: same labels, same order,
+  same options. `Repositories` ⇄ `Personal projects`, `Stars` ⇄ `Starred
+  projects`, `Groups` ⇄ `Organizations`, the landing item swaps (GitHub's
+  "Overview" ⇄ GitLab's account name), and the applied product's extra
+  destinations are added — GitLab's Activity, Groups and Snippets point at
+  GitHub's Overview, Organizations and Gists. GitHub's "Packages" has no
+  user-level GitLab page, so GitLab's menu omits it (`content/ux.js`).
 - The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).

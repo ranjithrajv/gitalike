@@ -56,6 +56,7 @@
   const orderOrig = new Map();
   const orderStamp = new WeakMap();
   const markerOrig = new Map();
+  const hiddenOrig = new Map();
 
   let theme = null;
   let applying = false;
@@ -148,6 +149,22 @@
         if (next === label) continue;
         rememberText(text);
         if (text.nodeValue !== next) text.nodeValue = next;
+      }
+    }
+  }
+
+  // Hide the items the applied product has no page for, so the menu is the
+  // applied product's menu rather than a mix of both. Runs before paintUnmapped
+  // so it sees the clean label, not one with a badge on it.
+  function paintNavHide(node, t) {
+    if (!UX.NAV_HIDE[t]) return;
+    for (const region of scope(node, UX.NAV_SCOPE)) {
+      for (const el of scope(region, 'a,button,summary')) {
+        const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!UX.navHidden(label, t)) continue;
+        const target = el.closest('li') || el;
+        if (!hiddenOrig.has(target)) hiddenOrig.set(target, target.style.display);
+        if (target.style.display !== 'none') target.style.display = 'none';
       }
     }
   }
@@ -327,33 +344,47 @@
     if (!existing) identity.appendChild(box);
   }
 
-  // A profile page's navigation offers different destinations on each product.
-  // Under a skin, each item takes the applied product's word where the two share
-  // a destination, and an item the applied product has no profile page for is
-  // hidden — so the menu reads as one product's, not a mix of both. The landing
-  // item has no shared word: GitHub says "Overview", GitLab shows the account's
-  // name, so each is given the other's landing label.
-  const PROFILE_NAV = {
-    // GitLab profile -> GitHub labels (after the copy/control passes).
-    github: {
-      'Personal projects': 'Repositories',
-      'Starred projects': 'Stars',
-      'Your stars': 'Stars',
-      Groups: 'Organizations',
-      Activity: null,
-      'Contributed projects': null,
-      Snippets: null,
-      Gists: null,
-    },
-    // GitHub profile -> GitLab labels.
-    gitlab: {
-      Repositories: 'Personal projects',
-      Stars: 'Starred projects',
-      Projects: null,
-      Packages: null,
-    },
+  // A profile page's navigation is a different set of destinations on each
+  // product, so it is rebuilt as the applied product's menu — same labels, same
+  // order, same options — rather than shown as a mix. Where the applied product
+  // has no page for an item, the closest real page on the source product is
+  // used: GitLab's activity and contributed-project views are part of GitHub's
+  // Overview, GitHub's organizations are a tab, and gists live on
+  // gist.github.com. GitLab's menu omits Packages, which has no user-level
+  // GitLab page (GitHub itself hides Packages when there are none).
+  const PROFILE_MENU = {
+    // Applied GitHub UI (source GitLab): GitHub's profile tabs, in order.
+    github: (u) => [
+      ['Overview', `/${u}`, '@first'],
+      ['Repositories', `/users/${u}/projects`, 'Personal projects'],
+      ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
+      ['Organizations', `/users/${u}/groups`, 'Groups'],
+      ['Stars', `/users/${u}/starred`, 'Starred projects'],
+    ],
+    // Applied GitLab UI (source GitHub): GitLab's profile destinations, in order.
+    gitlab: (u, name) => [
+      [name, `/${u}`, 'Overview'],
+      ['Activity', `/${u}?tab=overview`, null],
+      ['Groups', `/${u}?tab=organizations`, null],
+      ['Contributed projects', `/${u}?tab=overview`, 'Projects'],
+      ['Personal projects', `/${u}?tab=repositories`, 'Repositories'],
+      ['Starred projects', `/${u}?tab=stars`, 'Stars'],
+      ['Snippets', `https://gist.github.com/${u}`, null],
+      ['Followers', `/${u}?tab=followers`, null],
+      ['Following', `/${u}?tab=following`, null],
+    ],
   };
   const profileHiddenOrig = new Map();
+  const profileOrderOrig = new Map();
+
+  /** The label of an item: its text without the icon, counter or `≠` badge. */
+  function profileLabelOf(el) {
+    return textNodes(el)
+      .map((n) => n.nodeValue)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
   // Relabel one item by replacing the text node that holds its label, so the
   // icon and any counter are left in place.
@@ -370,20 +401,40 @@
 
   function hideProfileItem(el) {
     const target = el.closest('li') || el;
+    // Another pass may already hide it (and own the restore); do not re-store.
+    if (target.style.display === 'none') return;
     if (!profileHiddenOrig.has(target)) {
       profileHiddenOrig.set(target, target.style.display);
     }
     target.style.setProperty('display', 'none', 'important');
   }
 
-  function paintProfileNav(t) {
-    const table = PROFILE_NAV[t];
-    if (!table || !document.body) return;
-    const lists =
-      document.body.dataset.page === 'users:show'
-        ? [...document.querySelectorAll('.super-sidebar .gl-scroll-scrim ul')]
-        : [...document.querySelectorAll('nav[aria-label="User profile"]')];
-    if (!lists.length) return;
+  function rememberOrder(el) {
+    if (!profileOrderOrig.has(el)) profileOrderOrig.set(el, el.style.order);
+  }
+
+  function resetProfileMenu(container) {
+    for (const el of container.querySelectorAll('[data-gs-profile-menu]')) {
+      el.remove();
+    }
+    for (const [el, display] of [...profileHiddenOrig]) {
+      if (!container.contains(el)) continue;
+      if (display) el.style.display = display;
+      else el.style.removeProperty('display');
+      profileHiddenOrig.delete(el);
+    }
+    for (const [el, order] of [...profileOrderOrig]) {
+      if (!container.contains(el)) continue;
+      if (order) el.style.order = order;
+      else el.style.removeProperty('order');
+      profileOrderOrig.delete(el);
+    }
+  }
+
+  function paintProfileMenu(t) {
+    const build = PROFILE_MENU[t];
+    if (!build || !document.body) return;
+
     // GitHub's card has no "About"/"Info"/"Contact" headings; GitLab's card
     // does, so they are dropped rather than left as foreign labels.
     if (t === 'github') {
@@ -394,35 +445,80 @@
         }
       }
     }
+
+    const sourceIsGitlab = t === 'github';
+    const containers = sourceIsGitlab
+      ? [...document.querySelectorAll('.super-sidebar .gl-scroll-scrim ul')]
+      : [...document.querySelectorAll('nav[aria-label="User profile"]')];
+    if (!containers.length) return;
+
+    const user = location.pathname.split('/').filter(Boolean)[0] || '';
+    if (!user) return;
     const name = (
-      (document.querySelector('.h-card .p-name') || {}).textContent || ''
+      (
+        document.querySelector(
+          sourceIsGitlab ? '.user-profile-header h1' : '.h-card .p-name',
+        ) || {}
+      ).textContent || ''
     ).trim();
-    for (const list of lists) {
-      [...list.querySelectorAll('a')].forEach((el, index) => {
-        // The label without the icon, the counter or any `≠` badge.
-        const label = textNodes(el)
-          .map((n) => n.nodeValue)
-          .join(' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (!label) return;
-        // The landing item: GitHub's "Overview" <-> GitLab's name item.
-        if (t === 'github' && index === 0) {
-          setProfileLabel(el, label, 'Overview');
+    if (!sourceIsGitlab && !name) return;
+    const items = build(user, name);
+    const signature = `${t}:${user}`;
+
+    for (const container of containers) {
+      if (container.getAttribute('data-gs-profile-menu-signature') === signature) {
+        continue;
+      }
+      resetProfileMenu(container);
+      container.setAttribute('data-gs-profile-menu-signature', signature);
+
+      const anchors = [...container.querySelectorAll('a')];
+      const used = new Set();
+      items.forEach(([label, href, source], index) => {
+        let anchor = null;
+        if (source === '@first') {
+          anchor = anchors[0] || null;
+        } else if (source) {
+          anchor =
+            anchors.find(
+              (a) => !used.has(a) && UX.labelMatches(profileLabelOf(a), source),
+            ) || null;
+        }
+        if (anchor) {
+          used.add(anchor);
+          const key = source === '@first' ? profileLabelOf(anchor) : source;
+          setProfileLabel(anchor, key, label);
+          anchor.setAttribute('href', href);
+          const holder = sourceIsGitlab ? anchor.closest('li') || anchor : anchor;
+          rememberOrder(holder);
+          holder.style.setProperty('order', String(index));
           return;
         }
-        if (t === 'gitlab' && UX.labelMatches(label, 'Overview') && name) {
-          setProfileLabel(el, label, name);
-          return;
+        const anchorNew = document.createElement('a');
+        anchorNew.textContent = label;
+        anchorNew.setAttribute('href', href);
+        let holder = anchorNew;
+        if (sourceIsGitlab) {
+          holder = document.createElement('li');
+          holder.setAttribute('data-gs-profile-menu', '');
+          holder.appendChild(anchorNew);
+        } else {
+          anchorNew.setAttribute('data-gs-profile-menu', '');
         }
-        for (const key of Object.keys(table)) {
-          if (!UX.labelMatches(label, key)) continue;
-          const to = table[key];
-          if (to) setProfileLabel(el, key, to);
-          else hideProfileItem(el);
-          return;
-        }
+        holder.style.setProperty('order', String(index));
+        container.appendChild(holder);
       });
+
+      for (const child of [...container.children]) {
+        if (child.hasAttribute('data-gs-profile-menu')) continue;
+        const anchor = child.matches('a') ? child : child.querySelector(':scope > a');
+        if (anchor && used.has(anchor)) continue;
+        if (child.style.display === 'none') continue;
+        if (!profileHiddenOrig.has(child)) {
+          profileHiddenOrig.set(child, child.style.display);
+        }
+        child.style.setProperty('display', 'none', 'important');
+      }
     }
   }
 
@@ -434,6 +530,7 @@
     paintRefs(node, t);
     paintControls(node, t);
     paintNav(node, t);
+    paintNavHide(node, t);
     paintUnmapped(node, t);
   }
 
@@ -444,7 +541,7 @@
     paintOrder(t);
     paintNavGroups(t);
     paintProfileStats(t);
-    paintProfileNav(t);
+    paintProfileMenu(t);
     applying = false;
   }
 
@@ -458,6 +555,9 @@
       if (badge.isConnected) badge.remove();
       if (el.isConnected) el.removeAttribute('data-gs-no-equiv');
     }
+    for (const [el, display] of hiddenOrig) {
+      if (el.isConnected) el.style.display = display;
+    }
     for (const [el, store] of attrOrig) {
       if (!el.isConnected) continue;
       for (const attr of Object.keys(store)) el.setAttribute(attr, store[attr]);
@@ -470,17 +570,25 @@
     }
     for (const el of document.querySelectorAll('.gs-nav-group')) el.remove();
     for (const el of document.querySelectorAll('[data-gs-profile-stats]')) el.remove();
+    for (const el of document.querySelectorAll('[data-gs-profile-menu]')) el.remove();
     for (const [el, display] of profileHiddenOrig) {
       if (!el.isConnected) continue;
       if (display) el.style.display = display;
       else el.style.removeProperty('display');
+    }
+    for (const [el, order] of profileOrderOrig) {
+      if (!el.isConnected) continue;
+      if (order) el.style.order = order;
+      else el.style.removeProperty('order');
     }
     textOrig.clear();
     attrOrig.clear();
     refOrig.clear();
     orderOrig.clear();
     markerOrig.clear();
+    hiddenOrig.clear();
     profileHiddenOrig.clear();
+    profileOrderOrig.clear();
   }
 
   /* -------------------------------------------------------------- boot -- */
@@ -517,7 +625,7 @@
       paintOrder(current);
       paintNavGroups(current);
       paintProfileStats(current);
-      paintProfileNav(current);
+      paintProfileMenu(current);
     }, 120);
   }
 

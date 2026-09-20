@@ -73,17 +73,19 @@ GitLab exposes an **activity RSS feed** and keeps followers/following as
 navigation destinations. Sponsors and Marketplace are the two the skin already
 marks as having no counterpart (see `UNMAPPED`).
 
-### 6. Near-pairs the skin now translates
+### 6. The menu is rebuilt as the applied product's
 
-Several labels name the same destination without matching word for word. The
-profile navigation translates them anyway: GitHub **Repositories** ⇄ GitLab
-**Personal projects**, GitHub **Stars** ⇄ GitLab **Starred projects**, and GitLab
-**Groups** ⇄ GitHub **Organizations**. GitHub's landing item is **Overview**;
-GitLab's is the account's name, so under a skin each takes the other's label.
-Destinations the applied product has no profile page for — GitLab's Activity and
-Contributed projects, GitLab's Snippets (GitHub keeps Gists in the account menu,
-not on a profile), GitHub's Projects and Packages — are hidden rather than shown
-in the other product's words.
+Several labels name the same destination without matching word for word, and the
+two products each have destinations the other lacks. Rather than show a mix, the
+profile menu is rebuilt as the applied product's: GitHub **Repositories** ⇄
+GitLab **Personal projects**, GitHub **Stars** ⇄ GitLab **Starred projects**,
+GitLab **Groups** ⇄ GitHub **Organizations**, and the landing item swaps
+(GitHub's **Overview** for GitLab's account name, and back). GitHub's menu is
+completed with what the source has — GitLab's **Contributed projects** becomes
+GitHub's **Projects** — and GitLab's menu brings **Activity**, **Groups** and
+**Snippets** across to GitHub's Overview, Organizations and Gists pages. GitHub's
+**Packages** has no user-level GitLab page, so GitLab's menu omits it, which is
+what GitHub itself does when there are none.
 
 ## Where they agree
 
@@ -103,7 +105,7 @@ Most of the profile's vocabulary has no exact counterpart, so the copy tables
 | Surface | GitHub | GitLab | Lives in |
 | --- | --- | --- | --- |
 | Account chrome (dropdown) | Your repositories, Your stars, Your gists, Your organizations | Your projects, Starred projects, Your snippets, Your groups | `CHROME` |
-| Profile navigation | Overview, Repositories, Projects, Packages, Stars | the name, Activity, Groups, Contributed/Personal/Starred projects, Snippets, Followers, Following | `content/ux.js` — relabelled, and hidden where the other product has no page |
+| Profile navigation | Overview, Repositories, Projects, Packages, Stars | the name, Activity, Groups, Contributed/Personal/Starred projects, Snippets, Followers, Following | `content/ux.js` — rebuilt as the applied product's menu |
 | No counterpart | Sponsors, Marketplace | (GitLab lacks them) | `UNMAPPED` |
 | Reference marker | `#42` | `!42` | `refMarker` |
 | Shortcuts | GitHub's `g`-combos replay | GitLab's, delivered as clicks | `SHORTCUTS`, `SHORTCUT_TARGETS` |
@@ -125,12 +127,14 @@ Two scoping facts make the profile behave differently from the project page:
   place for, are hidden. The identity also moves from a top header with a small
   avatar into a left card under a large avatar, with the README/activity beside
   it, which is GitHub's profile shape.
-- **Profile navigation is mapped in `content/ux.js`, not `NAV`.** `NAV` carries
-  the repository-group labels only, and a profile's destinations are a different
-  set. Each profile menu item therefore takes the applied product's word where
-  the two share a destination, or is hidden where they do not, and the landing
-  item is labelled with the other product's landing (see §6). This is a
-  behaviour the tables cannot express: it needs the page, not just a label.
+- **Profile navigation is rebuilt in `content/ux.js`, not `NAV`.** `NAV` carries
+  the repository labels only, and a profile's destinations are a different set
+  with a different count. The content script therefore replaces the profile menu
+  with the applied product's — same labels, same order, same options — reusing a
+  source item where a destination lines up and adding the rest. Where the
+  applied product has no page for an item the closest real page is used, the
+  landing item takes the other product's label, and the whole menu is restored
+  on switch-off (see §6). This needs the page, not just a label table.
 
 **Open on the other host** is absent on a profile, in both directions. That is
 correct rather than a gap: a profile is not an `owner/repo` path, and the two
