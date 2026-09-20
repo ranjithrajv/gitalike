@@ -46,8 +46,8 @@ jobs:
             echo
             echo "| Asset | Target | How to install |"
             echo "| --- | --- | --- |"
-            echo "| \`gitalike-${version}-chromium.zip\` | Chromium, Chrome, Edge, Brave | Unzip, then **Load unpacked** — or install from the Chrome Web Store. |"
-            echo "| \`gitalike-${version}-firefox.zip\` | Firefox | Unsigned, so it only loads temporarily — see below. |"
+            echo "| \`gitalike-chromium.zip\` | Chromium, Chrome, Edge, Brave | Unzip, then **Load unpacked** — or install from the Chrome Web Store. |"
+            echo "| \`gitalike-firefox.zip\` | Firefox | Unsigned, so it only loads temporarily — see below. |"
             echo
             echo "> The Firefox asset is unsigned and can therefore only be loaded"
             echo "> temporarily via \`about:debugging\`; it disappears when Firefox"
@@ -67,15 +67,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # web-ext names the ZIP after the extension, so both targets produce
-          # gitalike_github_gitlab_ui-<version>.zip. Two assets cannot share a
-          # name (HTTP 422), and gh's `file#label` form only sets the display
-          # label — the underlying asset keeps the filename. So stage both under
-          # distinct names first and let the upload take its name from the file.
-          version="${GITHUB_REF_NAME#v}"
+          # Two things have to be true of the asset names.
+          #
+          # 1. They must be distinct. web-ext names the ZIP after the extension,
+          #    so both targets come out gitalike_github_gitlab_ui-<version>.zip;
+          #    two assets cannot share a name (HTTP 422), and gh's `file#label`
+          #    form only sets the display label, so the underlying asset keeps
+          #    colliding.
+          # 2. They must NOT carry the version. The README links to
+          #    /releases/latest/download/<name>, and that URL only keeps working
+          #    if the name is stable across releases.
+          #
+          # So stage both under a fixed, per-target name and upload those.
           mkdir -p dist/release
-          cp "$(ls dist/artifacts/chromium/*.zip)" "dist/release/gitalike-${version}-chromium.zip"
-          cp "$(ls dist/artifacts/firefox/*.zip)" "dist/release/gitalike-${version}-firefox.zip"
+          cp "$(ls dist/artifacts/chromium/*.zip)" dist/release/gitalike-chromium.zip
+          cp "$(ls dist/artifacts/firefox/*.zip)" dist/release/gitalike-firefox.zip
           ls -l dist/release
 
           gh release create "$GITHUB_REF_NAME" \

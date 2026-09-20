@@ -22,6 +22,32 @@ at — **GitHub Enterprise Server** included.
 
 ## Install
 
+<a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download gitalike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>
+<a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"><img alt="Download gitalike for Firefox" src="https://img.shields.io/badge/Download-Firefox-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
+
+Both links follow the newest release. The asset names deliberately carry no
+version number, so `/releases/latest/download/...` keeps working as releases
+pile up.
+
+**Chromium** (also loads in Chrome, Edge and Brave, which share the API)
+
+1. Unzip `gitalike-chromium.zip`
+2. Go to `chrome://extensions` — that is Chromium's own URL scheme, not a typo
+3. Turn on **Developer mode**
+4. **Load unpacked** → choose the unzipped folder
+
+**Firefox**
+
+`gitalike-firefox.zip` is unsigned, so Firefox will only load it **temporarily** —
+it is gone when the browser restarts. A permanent install comes from
+addons.mozilla.org.
+
+1. Go to `about:debugging#/runtime/this-firefox`
+2. **Load Temporary Add-on…** → choose `gitalike-firefox.zip` itself; it does not
+   need unzipping
+
+### From source
+
 The extension is built from `src/` into `dist/<browser>`. There is a build step
 because Chromium and Firefox declare their Manifest V3 background context
 differently (Chromium wants a service worker, Firefox wants an event page).
@@ -33,18 +59,8 @@ npm run build:chromium
 npm run build:firefox
 ```
 
-**Chromium** (also loads in Chrome, Edge and Brave, which share the API)
-
-1. `npm run build:chromium`
-2. Go to `chrome://extensions` — that is Chromium's own URL scheme, not a typo
-3. Turn on **Developer mode**
-4. **Load unpacked** → choose `dist/chromium`
-
-**Firefox**
-
-1. `npm run build:firefox`
-2. Go to `about:debugging#/runtime/this-firefox`
-3. **Load Temporary Add-on…** → choose `dist/firefox/manifest.json`
+The built targets load the same way as above — `dist/chromium` as an unpacked
+extension, or `dist/firefox/manifest.json` through `about:debugging`.
 
 > **About the permission prompt.** Chromium will warn that gitalike can "read and
 > change all your data on all websites". That is accurate, and it is the price of
