@@ -101,7 +101,7 @@ reads its colours from a handful of CSS custom properties:
   `--bgColor-*`, `--borderColor-*`, plus the legacy `--color-*` names)
 - GitLab → [Pajamas](https://design.gitlab.com/) (`--gl-*`)
 
-So Git Same mostly re-points those properties at the other design system's
+So gitalike mostly re-points those properties at the other design system's
 palette, then fixes up a few structural things the tokens cannot reach (the top
 bar, the logo, active-tab accents, navigation orientation). The stylesheets and
 two classes do the visual half; a second content script does the copy,
@@ -441,7 +441,7 @@ To cut a release:
 ```sh
 npm test && npm run lint
 node tools/e2e.mjs
-npm run package              # dist/artifacts/*/git_same_github_gitlab_ui-X.Y.Z.zip
+npm run package              # dist/artifacts/*/gitalike_github_gitlab_ui-X.Y.Z.zip
 npm run screenshots          # refresh store/screenshots/
 ```
 

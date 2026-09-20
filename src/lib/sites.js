@@ -1,5 +1,5 @@
 /**
- * What Git Same knows about hosts, the skins it applies, and the storage schema
+ * What gitalike knows about hosts, the skins it applies, and the storage schema
  * it reads them from.
  *
  * Loaded as a plain script by the content script, the popup and the background
@@ -46,7 +46,7 @@
   const isKind = (value) => value === 'github' || value === 'gitlab';
 
   /**
-   * The storage keys Git Same owns, kept beside the schema that gives them
+   * The storage keys gitalike owns, kept beside the schema that gives them
    * meaning (the `settings` map is keyed by kind, the `instances` map by host).
    * Every context reads the same pair through `stateFrom`.
    */
@@ -145,7 +145,7 @@
     return kind && kindOn(kind, settings) ? kinds[kind].theme : null;
   }
 
-  globalThis.GIT_SAME = {
+  globalThis.GITALIKE = {
     kinds,
     THEMES,
     SETTINGS_KEY,

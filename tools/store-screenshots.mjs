@@ -80,7 +80,7 @@ try {
   // cannot drift if the storage schema is renamed.
   await popupPage.evaluate(() =>
     chrome.storage.sync.set({
-      [globalThis.GIT_SAME.SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' },
+      [globalThis.GITALIKE.SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' },
     }),
   );
 
