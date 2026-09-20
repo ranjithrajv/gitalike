@@ -372,10 +372,10 @@ html.gs-theme-gitlab
 
 html.gs-theme-gitlab [class*="CodeViewSidebar-"] {
   width: 100% !important;
-  /* Flow the sections into columns so the block stays compact, the way GitLab's
-     project information reads, instead of a tall stack. */
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
-  column-gap: 24px !important;
+  /* GitLab's "Project information" is one full-width column with the sections
+     stacked, so the block is aligned the way GitLab's is rather than flowed
+     into columns. */
+  grid-template-columns: minmax(0, 1fr) !important;
 }
 
 /* GitLab has no equivalent of GitHub's top bar — its navigation is the sidebar
