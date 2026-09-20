@@ -155,17 +155,27 @@
       {
         container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
         item: 'li',
-        // GitLab's sidebar order: Plan, then Code, then Build, then the rest.
+        // GitLab's sidebar order: Manage, Plan, Code, Build, Deploy, Monitor,
+        // Analyze, then Settings.
         order: [
+          'Members',
           'Issues',
           'Issue boards',
           'Wiki',
+          'Milestones',
+          'Labels',
           'Merge requests',
           'Repository',
+          'Branches',
+          'Commits',
+          'Tags',
           'CI/CD',
           'Releases',
-          'Security',
+          'Packages',
+          'Environments',
+          'Incidents',
           'Analytics',
+          'Security',
           'Settings',
         ],
       },
@@ -195,15 +205,24 @@
   // listed here stands alone, with no heading.
   const NAV_GROUPS = {
     gitlab: {
+      Members: 'Manage',
       Issues: 'Plan',
       'Issue boards': 'Plan',
       Wiki: 'Plan',
+      Milestones: 'Plan',
+      Labels: 'Plan',
       'Merge requests': 'Code',
       Repository: 'Code',
+      Branches: 'Code',
+      Commits: 'Code',
+      Tags: 'Code',
       'CI/CD': 'Build',
       Releases: 'Deploy',
-      Security: 'Secure',
+      Packages: 'Deploy',
+      Environments: 'Deploy',
+      Incidents: 'Monitor',
       Analytics: 'Analyze',
+      Security: 'Secure',
     },
   };
 
@@ -245,6 +264,8 @@
       Marketplace: 'GitLab',
     },
     github: {
+      'Feature catalog': 'GitHub',
+      Activity: 'GitHub',
       Epics: 'GitHub',
       Iterations: 'GitHub',
       Requirements: 'GitHub',
