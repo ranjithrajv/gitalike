@@ -734,3 +734,37 @@ html.gs-theme-github .super-sidebar [data-testid="menu-section-button"] {
 html.gs-theme-github .super-sidebar [data-testid="menu-section"] {
   display: contents !important;
 }
+
+/* GitHub's bar is one row of tabs; GitLab splits the same items across several
+   stacked blocks (static, pinned, groups), so the kept items landed on two rows
+   with Code alone on the second. Flatten those blocks and order them as GitHub
+   does: Code, then Issues, Pull requests, Actions. */
+html.gs-theme-github .super-sidebar [data-testid="nav-container"] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+}
+
+html.gs-theme-github .super-sidebar [data-testid="nav-container"] > div,
+html.gs-theme-github .super-sidebar [data-testid="nav-container"] > div > div,
+html.gs-theme-github
+  .super-sidebar
+  [data-testid="nav-container"]
+  > div
+  > div
+  > div {
+  display: contents !important;
+}
+
+html.gs-theme-github .super-sidebar ul[data-testid="static-items-section"] {
+  order: 0 !important;
+}
+
+html.gs-theme-github .super-sidebar ul[data-testid="non-static-items-section"] {
+  order: 1 !important;
+}
+
+html.gs-theme-github .super-sidebar ul[data-testid="pinned-nav-items"] {
+  order: 2 !important;
+}

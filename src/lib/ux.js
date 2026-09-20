@@ -438,12 +438,17 @@
 
   /**
    * Is this nav item one the applied product's own project menu shows? True when
-   * the theme has no whitelist (then everything is kept).
+   * the theme has no whitelist (then everything is kept). A label may carry a
+   * counter ("Pull requests -", "Pull requests 387") but not extra words, so
+   * "Actions analytics" does not count as "Actions".
    */
   function navKeep(label, theme) {
     const list = NAV_KEEP[theme];
     if (!list) return true;
-    return list.some((key) => labelMatches(label, key));
+    return list.some((key) => {
+      if (label === key) return true;
+      return new RegExp(`^${escapeRe(key)}\\s+[\\d,.-]+$`).test(label);
+    });
   }
 
   /**
