@@ -190,9 +190,10 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
 - **Access to all sites.** The install prompt is the honest one; if that is not a
   trade you want to make, the alternative is described in
   [CONTRIBUTING.md](CONTRIBUTING.md#why-it-matches-every-site).
-- **The stylesheets and UX tables load on every page** — about 24 KB of CSS plus
-  the vocabulary tables, parsed and unused on sites you have not set up. Inert,
-  but not free.
+- **The content scripts and stylesheets load only on hosts you have set up.** The
+  background registers them for the configured hosts, so an unconfigured page
+  parses neither. This is what the `scripting` permission is for; the all-sites
+  access the install prompt describes is unchanged.
 - **Switches are per product, not per host.** You cannot skin your enterprise
   instance without also skinning `github.com`. With two switches and a handful of
   hosts that seems like the right amount of control; it is the thing to change

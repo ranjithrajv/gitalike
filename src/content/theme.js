@@ -8,12 +8,18 @@
  *   html.gs-theme-github   a GitLab-flavoured site, skinned as GitHub
  *   html.gs-dark           ...and the site is currently in dark mode
  *
- * Both stylesheets are injected on every page by the manifest; which one shows
- * is decided purely by these classes, so the extension is inert everywhere the
- * user has not set a site up.
+ * The stylesheets are registered alongside this script, for the hosts the
+ * extension is set up on; which one shows is decided purely by these classes,
+ * so the extension stays inert everywhere the user has not set a site up.
  */
 (() => {
   'use strict';
+
+  // A page can receive this script both from the registered content script and
+  // from the one-off injection used when its host is added while it is open;
+  // only the first needs to wire anything up.
+  if (globalThis.__gitalikeTheme) return;
+  globalThis.__gitalikeTheme = true;
 
   const api = globalThis.browser ?? globalThis.chrome;
   if (!api?.storage?.sync) return;

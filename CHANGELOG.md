@@ -46,6 +46,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shots show the gitalike mark. The project-page pairs, previously captured by
   hand, now have a tool (`tools/project-screenshots.mjs`) matching the profile
   pairs'.
+- Performance: content scripts and stylesheets are now registered only for the
+  hosts gitalike is set up on, instead of being injected into every page, so an
+  unconfigured page parses neither. This adds the `scripting` permission; the
+  all-sites access is unchanged (`manifest.base.json`, `background.js`).
+- Performance: the UX content script's whole-body mutation observer is attached
+  only while a skin is on and torn down when it is switched off; phrase
+  translation is a single alternation pass instead of one per phrase; copy and
+  control-label rewrites share one traversal; the mutation batch is de-duplicated
+  by ancestor; the navigation, group and profile-menu containers are cached; and
+  the undo ledger drops nodes the framework has discarded (`src/lib/ux.js`,
+  `content/ux.js`, `content/theme.js`).
+- Performance: the toolbar badge refresh reads synced state once for all tabs and
+  writes only when the badge actually changes (`background.js`).
 
 ## [0.1.1] - 2026-09-20
 

@@ -3,7 +3,7 @@
   "name": "gitalike — GitHub ⇄ GitLab UI",
   "short_name": "gitalike",
   "description": "Show GitHub with a GitLab-flavoured UI, and GitLab with a GitHub-flavoured UI. Toggle each site from the toolbar or a shortcut.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "scripting"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "gitalike",
@@ -21,24 +21,6 @@
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
   },
-  "content_scripts": [
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "css": [
-        "themes/github-as-gitlab.css",
-        "themes/gitlab-as-github.css",
-        "themes/ux-markers.css",
-        "themes/ux-nav.css"
-      ],
-      "js": [
-        "lib/sites.js",
-        "lib/ux.js",
-        "content/theme.js",
-        "content/ux.js"
-      ],
-      "run_at": "document_start"
-    }
-  ],
   "commands": {
     "toggle-site": {
       "suggested_key": {

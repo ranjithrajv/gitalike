@@ -87,6 +87,13 @@ describe('module shape', () => {
     assert.equal(translate('', 'gitlab'), '');
   });
 
+  test('an unknown theme is left unchanged, not emptied', () => {
+    // Guards the empty-table path: a single alternation with no keys would
+    // otherwise match the empty string everywhere.
+    assert.equal(translate('Pull requests', 'bitbucket'), 'Pull requests');
+    assert.equal(translate('Merge requests', null), 'Merge requests');
+  });
+
   test('a theme only ever applies its own direction', () => {
     // GitHub's word under the GitHub theme is unchanged.
     assert.equal(translate('Pull request', 'github'), 'Pull request');

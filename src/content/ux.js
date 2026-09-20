@@ -35,6 +35,12 @@
   const UX = globalThis.GITALIKE_UX;
   if (!SITES || !UX || typeof document === 'undefined') return;
 
+  // A page can receive this script both from the registered content script and
+  // from the one-off injection used when its host is added while it is open;
+  // only the first needs to wire anything up.
+  if (globalThis.__gitalikeUx) return;
+  globalThis.__gitalikeUx = true;
+
   const root = document.documentElement;
   // Which themes exist is derived from the shared `kinds` table, not listed here.
   const THEMES = SITES.THEMES;
@@ -57,13 +63,16 @@
   const orderStamp = new WeakMap();
   const markerOrig = new Map();
   const hiddenOrig = new Map();
+  // A NAV_RULES rule resolves to one container; keep it while that container is
+  // still in the page so later mutation flushes do not re-scan the document.
+  const navContainer = new WeakMap();
 
   let theme = null;
-  let applying = false;
   let domObserver = null;
   let classObserver = null;
   let gPending = 0;
   let keyHandler = null;
+  let lastSweep = 0;
 
   const themeOf = () =>
     THEMES.find((name) => root.classList.contains(`gs-theme-${name}`)) || null;
@@ -74,8 +83,46 @@
     const out = [];
     if (!node) return out;
     if (node.nodeType === 1 && node.matches(selector)) out.push(node);
-    if (node.querySelectorAll) out.push(...node.querySelectorAll(selector));
+    if (node.querySelectorAll) {
+      // A loop rather than a spread: querySelectorAll can return thousands of
+      // nodes, and spreading that many arguments risks the call stack.
+      for (const el of node.querySelectorAll(selector)) out.push(el);
+    }
     return out;
+  }
+
+  // A subtree the walker must not descend into at all: an editable region or
+  // anything the site has marked, exactly what the old closest() test caught.
+  function isSkipped(el) {
+    return el.isContentEditable || el.matches(SKIP_SELECTOR);
+  }
+
+  /**
+   * Visit every translatable text node under `root`, carrying whether it sits
+   * inside a control (UX.LABEL_SCOPE). One traversal replaces the separate
+   * "translate the copy" and "translate the control label" walks. Skip regions
+   * are pruned per element instead of asking closest() per text node; elements
+   * that only skip their *own* text (kbd, samp, …) still have their descendants
+   * visited, matching the original per-parent check.
+   */
+  function walkText(root, visit) {
+    if (!root || root.nodeType !== 1) return;
+    const stack = [[root, false]];
+    while (stack.length) {
+      const [el, inherited] = stack.pop();
+      if (isSkipped(el)) continue;
+      const control = inherited || el.matches(UX.LABEL_SCOPE);
+      const skipOwnText = SKIP_TAGS.has(el.tagName);
+      for (let child = el.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType === 3) {
+          if (!skipOwnText && child.nodeValue && child.nodeValue.trim()) {
+            visit(child, control);
+          }
+        } else if (child.nodeType === 1) {
+          stack.push([child, control]);
+        }
+      }
+    }
   }
 
   function textNodes(node) {
@@ -104,12 +151,23 @@
 
   /* -------------------------------------------------------------- paints -- */
 
-  function paintText(node, t) {
-    for (const text of textNodes(node)) {
+  // Copy and control labels in one traversal. A text node inside a control
+  // (UX.LABEL_SCOPE) gets the exact whole-label translation, which falls back to
+  // phrase translation; everything else gets phrase translation. This is the
+  // same result the old two-pass sequence produced — phrase translation first,
+  // then the control lookup on the translated value — because no phrase's output
+  // is also a control key.
+  function paintCopy(node, t) {
+    walkText(node, (text, isControl) => {
       const original = rememberText(text);
-      const next = UX.translate(original, t);
-      if (next !== text.nodeValue) text.nodeValue = next;
-    }
+      let value = UX.translate(original, t);
+      if (isControl) {
+        const label = value.trim();
+        const exact = UX.translateControl(label, t);
+        if (exact !== label) value = exact;
+      }
+      if (value !== text.nodeValue) text.nodeValue = value;
+    });
   }
 
   function paintAttrs(node, t) {
@@ -138,18 +196,6 @@
       if (!/^[#!]?\d+$/.test(current)) continue;
       if (!refOrig.has(anchor)) refOrig.set(anchor, anchor.textContent);
       if (current !== marker) anchor.textContent = marker;
-    }
-  }
-
-  function paintControls(node, t) {
-    for (const control of scope(node, UX.LABEL_SCOPE)) {
-      for (const text of textNodes(control)) {
-        const label = text.nodeValue.trim();
-        const next = UX.translateControl(label, t);
-        if (next === label) continue;
-        rememberText(text);
-        if (text.nodeValue !== next) text.nodeValue = next;
-      }
     }
   }
 
@@ -233,9 +279,19 @@
     return best;
   }
 
+  // The resolved container for a rule, cached while it is still in the page.
+  // Falls back to a full-document scan only when it is missing or was replaced.
+  function containerFor(rule) {
+    const cached = navContainer.get(rule);
+    if (cached && cached.isConnected) return cached;
+    const found = resolveContainer(rule);
+    if (found) navContainer.set(rule, found);
+    return found;
+  }
+
   function paintOrder(t) {
     for (const rule of UX.NAV_RULES[t] || []) {
-      const container = resolveContainer(rule);
+      const container = containerFor(rule);
       if (!container) continue;
       const children = [...container.children];
       const items = children.filter(
@@ -257,11 +313,12 @@
       if (orderStamp.has(container) && now - orderStamp.get(container) < 1000) continue;
       orderStamp.set(container, now);
       if (!orderOrig.has(container)) orderOrig.set(container, children);
-      if (domObserver) domObserver.disconnect();
-      for (const child of next) container.appendChild(child);
-      if (domObserver) {
-        domObserver.observe(document.body, { childList: true, subtree: true });
-      }
+      // One replaceChildren instead of a re-append per child: fewer layout
+      // passes, and the observer never sees the intermediate order.
+      const watching = Boolean(domObserver);
+      if (watching) unwatchBody();
+      container.replaceChildren(...next);
+      if (watching) watchBody();
     }
   }
 
@@ -271,39 +328,40 @@
   // back through the mutation observer.
   function paintNavGroups(t) {
     if (!UX.NAV_GROUPS[t]) return;
-    for (const region of document.querySelectorAll(UX.NAV_SCOPE)) {
-      const ul = region.querySelector('ul.UnderlineNav-body');
-      if (!ul) continue;
-      const items = [...ul.children].filter(
-        (c) => c.matches('li') && !c.classList.contains('gs-nav-group'),
+    // The group headings apply to the same list paintOrder resolves, so reuse
+    // that container instead of re-scanning every NAV_SCOPE region per flush.
+    const rule = (UX.NAV_RULES[t] || []).find((r) => r.container);
+    const ul = rule ? containerFor(rule) : null;
+    if (!ul) return;
+    const items = [...ul.children].filter(
+      (c) => c.matches('li') && !c.classList.contains('gs-nav-group'),
+    );
+    const desired = [];
+    let last = null;
+    for (const li of items) {
+      const label = (li.textContent || '').replace(/\s+/g, ' ').trim();
+      const group = UX.navGroupFor(label, t);
+      if (group && group !== last) {
+        desired.push({ group, before: li });
+        last = group;
+      }
+    }
+    const current = [...ul.querySelectorAll(':scope > .gs-nav-group')];
+    const ok =
+      current.length === desired.length &&
+      current.every(
+        (el, i) =>
+          el.textContent === desired[i].group &&
+          el.nextElementSibling === desired[i].before,
       );
-      const desired = [];
-      let last = null;
-      for (const li of items) {
-        const label = (li.textContent || '').replace(/\s+/g, ' ').trim();
-        const group = UX.navGroupFor(label, t);
-        if (group && group !== last) {
-          desired.push({ group, before: li });
-          last = group;
-        }
-      }
-      const current = [...ul.querySelectorAll(':scope > .gs-nav-group')];
-      const ok =
-        current.length === desired.length &&
-        current.every(
-          (el, i) =>
-            el.textContent === desired[i].group &&
-            el.nextElementSibling === desired[i].before,
-        );
-      if (ok) continue;
-      for (const el of current) el.remove();
-      for (const entry of desired) {
-        const heading = document.createElement('li');
-        heading.className = 'gs-nav-group';
-        heading.setAttribute('data-gs-ux-skip', '');
-        heading.textContent = entry.group;
-        ul.insertBefore(heading, entry.before);
-      }
+    if (ok) return;
+    for (const el of current) el.remove();
+    for (const entry of desired) {
+      const heading = document.createElement('li');
+      heading.className = 'gs-nav-group';
+      heading.setAttribute('data-gs-ux-skip', '');
+      heading.textContent = entry.group;
+      ul.insertBefore(heading, entry.before);
     }
   }
 
@@ -431,13 +489,37 @@
     }
   }
 
+  // The containers are looked up on every flush; keep them while they are still
+  // in the page so a continuously-mutating profile does not re-scan the document.
+  const profileContainerCache = { key: null, list: [] };
+
+  function profileMenuContainers(sourceIsGitlab) {
+    const key = sourceIsGitlab ? 'gitlab-source' : 'github-source';
+    if (
+      profileContainerCache.key === key &&
+      profileContainerCache.list.length &&
+      profileContainerCache.list.every((el) => el.isConnected)
+    ) {
+      return profileContainerCache.list;
+    }
+    profileContainerCache.key = key;
+    profileContainerCache.list = sourceIsGitlab
+      ? [...document.querySelectorAll('.super-sidebar .gl-scroll-scrim ul')]
+      : [...document.querySelectorAll('nav[aria-label="User profile"]')];
+    return profileContainerCache.list;
+  }
+
   function paintProfileMenu(t) {
     const build = PROFILE_MENU[t];
     if (!build || !document.body) return;
 
+    const sourceIsGitlab = t === 'github';
+    const containers = profileMenuContainers(sourceIsGitlab);
+    if (!containers.length) return;
+
     // GitHub's card has no "About"/"Info"/"Contact" headings; GitLab's card
     // does, so they are dropped rather than left as foreign labels.
-    if (t === 'github') {
+    if (sourceIsGitlab) {
       for (const heading of document.querySelectorAll('.user-profile-sidebar h2')) {
         const text = (heading.textContent || '').trim();
         if (text === 'About' || text === 'Info' || text === 'Contact') {
@@ -445,12 +527,6 @@
         }
       }
     }
-
-    const sourceIsGitlab = t === 'github';
-    const containers = sourceIsGitlab
-      ? [...document.querySelectorAll('.super-sidebar .gl-scroll-scrim ul')]
-      : [...document.querySelectorAll('nav[aria-label="User profile"]')];
-    if (!containers.length) return;
 
     const user = location.pathname.split('/').filter(Boolean)[0] || '';
     if (!user) return;
@@ -525,10 +601,9 @@
   // The per-node passes, in one place so a new pass cannot be wired into the
   // initial load but forgotten for the mutations that follow it.
   function paintNode(node, t) {
-    paintText(node, t);
+    paintCopy(node, t);
     paintAttrs(node, t);
     paintRefs(node, t);
-    paintControls(node, t);
     paintNav(node, t);
     paintNavHide(node, t);
     paintUnmapped(node, t);
@@ -536,13 +611,11 @@
 
   function paintAll(t, node = document.body) {
     if (!node) return;
-    applying = true;
     paintNode(node, t);
     paintOrder(t);
     paintNavGroups(t);
     paintProfileStats(t);
     paintProfileMenu(t);
-    applying = false;
   }
 
   /* ------------------------------------------------------------- revert -- */
@@ -589,6 +662,56 @@
     hiddenOrig.clear();
     profileHiddenOrig.clear();
     profileOrderOrig.clear();
+    profileContainerCache.key = null;
+    profileContainerCache.list = [];
+  }
+
+  // Drop the entries the framework has discarded, so the undo ledger cannot hold
+  // a detached subtree alive. A node is restored before it is forgotten: if the
+  // site later re-attaches it, it comes back with the site's own text and the
+  // normal paint records it again, so a revert stays exact.
+  function forgetDetached() {
+    for (const [node, value] of textOrig) {
+      if (node.isConnected) continue;
+      node.nodeValue = value;
+      textOrig.delete(node);
+    }
+    for (const [el, store] of attrOrig) {
+      if (el.isConnected) continue;
+      for (const attr of Object.keys(store)) el.setAttribute(attr, store[attr]);
+      attrOrig.delete(el);
+    }
+    for (const [el, value] of refOrig) {
+      if (el.isConnected) continue;
+      el.textContent = value;
+      refOrig.delete(el);
+    }
+    for (const [el, display] of hiddenOrig) {
+      if (el.isConnected) continue;
+      el.style.display = display;
+      hiddenOrig.delete(el);
+    }
+    for (const [container] of orderOrig) {
+      if (!container.isConnected) orderOrig.delete(container);
+    }
+    for (const [badge, el] of markerOrig) {
+      if (badge.isConnected) continue;
+      badge.remove();
+      el.removeAttribute('data-gs-no-equiv');
+      markerOrig.delete(badge);
+    }
+    for (const [el, display] of profileHiddenOrig) {
+      if (el.isConnected) continue;
+      if (display) el.style.display = display;
+      else el.style.removeProperty('display');
+      profileHiddenOrig.delete(el);
+    }
+    for (const [el, order] of profileOrderOrig) {
+      if (el.isConnected) continue;
+      if (order) el.style.order = order;
+      else el.style.removeProperty('order');
+      profileOrderOrig.delete(el);
+    }
   }
 
   /* -------------------------------------------------------------- boot -- */
@@ -598,15 +721,28 @@
   // page keeps changing would never be painted. The first mutation schedules a
   // run; anything that arrives while it waits is batched into that run.
   const pending = [];
+  const pendingSet = new Set();
   let scheduled = false;
+
+  // Queue a node for the next flush, skipping one an already-queued ancestor
+  // will paint anyway. Keeps a large re-render from walking the same subtree
+  // once per added child.
+  function enqueue(node) {
+    if (pendingSet.has(node)) return;
+    for (let el = node.parentElement; el; el = el.parentElement) {
+      if (pendingSet.has(el)) return;
+    }
+    pending.push(node);
+    pendingSet.add(node);
+  }
 
   function onMutations(records) {
     if (!theme) return;
     for (const record of records) {
       for (const node of record.addedNodes) {
-        if (node.nodeType === 1) pending.push(node);
+        if (node.nodeType === 1) enqueue(node);
         else if (node.nodeType === 3 && node.parentElement) {
-          pending.push(node.parentElement);
+          enqueue(node.parentElement);
         }
       }
     }
@@ -615,18 +751,54 @@
     setTimeout(() => {
       scheduled = false;
       const batch = pending.splice(0);
+      pendingSet.clear();
       if (!theme) return;
       const current = theme;
-      applying = true;
+      // Paint only the top-most node of each added subtree; a queued descendant
+      // of an already-painted node has been covered.
+      const done = new Set();
       for (const node of batch) {
-        if (node.isConnected) paintNode(node, current);
+        if (!node.isConnected) continue;
+        let covered = false;
+        for (let el = node.parentElement; el; el = el.parentElement) {
+          if (done.has(el)) {
+            covered = true;
+            break;
+          }
+        }
+        if (covered) continue;
+        done.add(node);
+        paintNode(node, current);
       }
-      applying = false;
       paintOrder(current);
       paintNavGroups(current);
       paintProfileStats(current);
       paintProfileMenu(current);
+      const now = Date.now();
+      if (now - lastSweep > 3000) {
+        lastSweep = now;
+        forgetDetached();
+      }
     }, 120);
+  }
+
+  /* ------------------------------------------------------- body watching -- */
+
+  const BODY_MUTATIONS = { childList: true, subtree: true };
+
+  // Attached only while a skin is on. On every other page the expensive
+  // whole-body childList observer is never created, so the extension stays
+  // inert where it has not been set up.
+  function watchBody() {
+    if (domObserver || !document.body) return;
+    domObserver = new MutationObserver(onMutations);
+    domObserver.observe(document.body, BODY_MUTATIONS);
+  }
+
+  function unwatchBody() {
+    if (!domObserver) return;
+    domObserver.disconnect();
+    domObserver = null;
   }
 
   function syncTheme() {
@@ -634,7 +806,12 @@
     if (next === theme) return;
     if (theme) revertAll();
     theme = next;
-    if (theme && document.body) paintAll(theme);
+    if (theme) {
+      watchBody();
+      if (document.body) paintAll(theme);
+    } else {
+      unwatchBody();
+    }
   }
 
   /* --------------------------------------------------------- shortcuts -- */
@@ -706,20 +883,22 @@
   }
 
   function start() {
-    if (domObserver) return;
+    if (classObserver) return;
     if (!document.body) {
       document.addEventListener('DOMContentLoaded', start, { once: true });
       return;
     }
-    // Observers first, so the very first paint can already disconnect/reconnect
-    // around its own navigation reorder.
-    domObserver = new MutationObserver(onMutations);
-    domObserver.observe(document.body, { childList: true, subtree: true });
+    // The root observer is cheap and has to exist before the theme can change;
+    // the body observer is the expensive one and only runs while a skin is on
+    // (see watchBody), so an unclassified page carries neither.
     classObserver = new MutationObserver(syncTheme);
     classObserver.observe(root, { attributes: true, attributeFilter: ['class'] });
     installKeys();
     theme = themeOf();
-    if (theme) paintAll(theme);
+    if (theme) {
+      watchBody();
+      paintAll(theme);
+    }
   }
 
   start();

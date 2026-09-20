@@ -39,8 +39,9 @@ vector path data — into `logos/` or a theme; recolouring someone else's mark i
 still shipping their artwork. Sources live in `logos/`; see
 [Add or change a logo](#add-or-change-a-logo).
 
-**No new permissions.** The extension already asks for access to all sites (see
-[Why it matches every site](#why-it-matches-every-site) for the reason). Adding
+**Keep permissions minimal.** The extension asks for access to all sites, plus
+`scripting` to register the content scripts and stylesheets for the hosts it is
+set up on (see [Why it matches every site](#why-it-matches-every-site)). Adding
 another permission needs a very good argument.
 
 ## Getting set up
@@ -113,7 +114,7 @@ reference, navigation and keyboard half, driven by the tables in
 `src/lib/ux.js`.
 
 ```
-content script (document_start, every http/https page)
+content script (document_start, registered for the configured hosts only)
   ├─ reads the cached decision from this origin's localStorage -> applies it now
   ├─ reconciles with chrome.storage.sync                       -> keeps the cache warm
   ├─ mirrors the site's dark mode                              -> html.gs-dark
@@ -126,7 +127,7 @@ ux content script (inert unless a theme class is present)
   ├─ marks features the other product lacks    -> a .gs-no-equiv badge
   └─ remaps the other product's g-combos       recording everything so it reverts
 
-stylesheet (injected everywhere, inert unless the class is present)
+stylesheet (registered for the configured hosts, inert unless the class is present)
   html.gs-theme-gitlab { ... }   re-skins GitHub-flavoured sites
   html.gs-theme-github { ... }   re-skins GitLab-flavoured sites
   html.gs-dark         { ... }   dark palette for whichever skin is on
@@ -140,15 +141,21 @@ prefix at all. A manifest match pattern cannot wildcard a host's middle —
 `https://github.*/*` is not valid — so there is no host list to write at build
 time.
 
-The alternative would be `optional_host_permissions` plus
-`scripting.registerContentScripts`, asking for one origin the first time you
-visit it. That keeps the install prompt clean, at the cost of a permission
-dialog every time someone points the extension at a new instance. This build
-takes the other trade: match the whole web, decide at runtime, and never prompt.
+So the extension declares access to all sites, but does not *inject* into all of
+them. `background.js` keeps `scripting.registerContentScripts` scoped to the
+hosts it knows — the bundled ones plus whatever the user added — and re-registers
+when the set changes. An unconfigured page therefore never parses the content
+scripts or the stylesheets.
 
-The extension is inert everywhere it has not been set up, because every
-stylesheet is scoped to `html.gs-theme-*` classes that only get added on
-classified hosts.
+The alternative would be `optional_host_permissions`, asking for one origin the
+first time you visit it. That keeps the install prompt clean, at the cost of a
+permission dialog every time someone points the extension at a new instance.
+This build takes the other trade: request all-sites access once, decide at
+runtime, and never prompt.
+
+The extension is inert everywhere it has not been set up: the scripts are only
+registered on classified hosts, and every stylesheet is scoped to
+`html.gs-theme-*` classes that only get added there.
 
 ## Common tasks
 

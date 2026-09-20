@@ -1,9 +1,10 @@
 /**
  * gitalike — background context.
  *
- * A service worker on Chromium, an event page on Firefox. Its only jobs are the
- * keyboard command and the per-tab toolbar badge; the reskin itself is done by
- * the content script and its stylesheets.
+ * A service worker on Chromium, an event page on Firefox. It handles the
+ * keyboard command, the per-tab toolbar badge, and registering the content
+ * scripts and stylesheets for the configured hosts; the reskin itself is done
+ * by the content script and its stylesheets.
  */
 'use strict';
 
@@ -29,29 +30,164 @@ async function readState() {
   return SITES.stateFrom(await api.storage.sync.get(SITES.STORAGE_KEYS));
 }
 
-async function refreshBadge(tabId, url) {
+// What each tab is already showing, so a refresh that changes nothing does not
+// call the action API again. The service worker may be torn down between
+// events; an empty cache just means one redundant write.
+const shownBadge = new Map();
+
+async function refreshBadge(tabId, url, state) {
   if (tabId == null) return;
 
+  const { settings, instances } = state ?? (await readState());
   const host = hostOf(url);
-  const { settings, instances } = await readState();
   const kind = host ? SITES.kindFor(host, instances) : null;
   const on = SITES.kindOn(kind, settings);
   const meta = on ? SITES.kinds[kind] : null;
+  const text = on ? meta.badge : '';
+  const title = on ? `gitalike — showing the ${meta.other} UI` : 'gitalike';
 
-  await api.action.setBadgeText({ tabId, text: on ? meta.badge : '' });
-  if (on) {
-    await api.action.setBadgeBackgroundColor({ tabId, color: meta.color });
-  }
-  await api.action.setTitle({
-    tabId,
-    title: on ? `gitalike — showing the ${meta.other} UI` : 'gitalike',
-  });
+  const previous = shownBadge.get(tabId);
+  if (previous && previous.text === text && previous.title === title) return;
+  shownBadge.set(tabId, { text, title });
+
+  await api.action.setBadgeText({ tabId, text });
+  if (on) await api.action.setBadgeBackgroundColor({ tabId, color: meta.color });
+  await api.action.setTitle({ tabId, title });
 }
 
 async function refreshAllBadges() {
-  // Every tab, since a configured instance can be any host.
+  // One storage read for every tab, rather than one per tab.
+  const state = await readState();
   const tabs = await api.tabs.query({});
-  await Promise.all(tabs.map((tab) => refreshBadge(tab.id, tab.url)));
+  await Promise.all(tabs.map((tab) => refreshBadge(tab.id, tab.url, state)));
+}
+
+/* --------------------------------------------------- content scripts -- */
+
+// The content scripts and stylesheets are registered for exactly the hosts the
+// extension has been set up on, instead of being injected into all of them by
+// the manifest. An unconfigured page then never parses the vocabulary or the
+// two stylesheets. Registering needs no new host permission: the extension
+// already declares access to all sites.
+const SCRIPT_ID = 'gitalike-ux';
+const CSS_ID = 'gitalike-theme';
+const CONTENT_JS = [
+  'lib/sites.js',
+  'lib/ux.js',
+  'content/theme.js',
+  'content/ux.js',
+];
+const CONTENT_CSS = [
+  'themes/github-as-gitlab.css',
+  'themes/gitlab-as-github.css',
+  'themes/ux-markers.css',
+  'themes/ux-nav.css',
+];
+
+const hostPattern = (host) => `*://${host}/*`;
+const patternHost = (pattern) => pattern.replace(/^\*:\/\//, '').replace(/\/\*$/, '');
+
+// Every host the extension knows, bundled and user-added, de-duplicated. Only
+// hosts that classify as a kind are returned, so junk in the instances map can
+// never register an injection where the extension does nothing.
+function knownHosts(instances) {
+  const hosts = [];
+  for (const kind of Object.keys(SITES.kinds)) {
+    for (const host of SITES.hostsFor(kind, instances)) {
+      if (!hosts.includes(host)) hosts.push(host);
+    }
+  }
+  return hosts;
+}
+
+// Is the registration already exactly what we would write? Then leave it alone,
+// which keeps a service-worker wake on an ordinary tab switch from churning the
+// registry. A browser that reports the definitions differently just fails the
+// comparison and re-registers, which is harmless.
+function sameDefinition(previous, patterns) {
+  if (!patterns.length) return previous.length === 0;
+  if (previous.length !== 2) return false;
+  const want = patterns.join('\n');
+  const js = previous.find((entry) => entry.id === SCRIPT_ID);
+  const css = previous.find((entry) => entry.id === CSS_ID);
+  return Boolean(
+    js &&
+      css &&
+      (js.matches || []).join('\n') === want &&
+      (css.matches || []).join('\n') === want &&
+      (js.js || []).join('\n') === CONTENT_JS.join('\n') &&
+      (css.css || []).join('\n') === CONTENT_CSS.join('\n'),
+  );
+}
+
+async function injectIntoOpenTabs(hosts) {
+  const tabs = await api.tabs.query({});
+  for (const tab of tabs) {
+    if (tab.id == null || !hosts.has(hostOf(tab.url))) continue;
+    try {
+      // A host added while its page is already open: inject now so the skin
+      // appears without a reload, the way the static injection used to.
+      await api.scripting.insertCSS({ target: { tabId: tab.id }, files: CONTENT_CSS });
+      await api.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: CONTENT_JS,
+      });
+    } catch {
+      /* a restricted page (chrome://, the store) — nothing to inject into */
+    }
+  }
+}
+
+async function registerContentScripts(injectNew) {
+  if (!api.scripting?.registerContentScripts) return;
+
+  const { instances } = await readState();
+  const patterns = knownHosts(instances).map(hostPattern);
+
+  // What was registered before unregistering, so a newly added host can be
+  // injected into the tab that is already open on it.
+  let previous = [];
+  try {
+    previous = await api.scripting.getRegisteredContentScripts({
+      ids: [SCRIPT_ID, CSS_ID],
+    });
+  } catch {
+    previous = [];
+  }
+  const before = new Set(previous.flatMap((entry) => entry.matches || []));
+
+  if (sameDefinition(previous, patterns)) return;
+
+  try {
+    await api.scripting.unregisterContentScripts({ ids: [SCRIPT_ID, CSS_ID] });
+  } catch {
+    /* nothing registered yet */
+  }
+
+  if (patterns.length) {
+    await api.scripting.registerContentScripts([
+      { id: SCRIPT_ID, matches: patterns, js: CONTENT_JS, runAt: 'document_start' },
+      { id: CSS_ID, matches: patterns, css: CONTENT_CSS, runAt: 'document_start' },
+    ]);
+  }
+
+  if (injectNew) {
+    const added = new Set(
+      patterns.filter((pattern) => !before.has(pattern)).map(patternHost),
+    );
+    if (added.size) await injectIntoOpenTabs(added);
+  }
+}
+
+// Install, startup and a settings change can all ask for this at once; run them
+// in order so a register and an unregister never overlap.
+let registration = Promise.resolve();
+
+function syncContentScripts({ injectNew = false } = {}) {
+  registration = registration
+    .then(() => registerContentScripts(injectNew))
+    .catch(() => {});
+  return registration;
 }
 
 /* --------------------------------------------------------------- command -- */
@@ -96,12 +232,29 @@ api.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
+api.tabs.onRemoved.addListener((tabId) => shownBadge.delete(tabId));
+
 api.storage.onChanged.addListener((changes, area) => {
   if (area !== 'sync') return;
+  if (changes[SITES.INSTANCES_KEY]) {
+    // A host was added or removed: re-scope the registration, and inject into
+    // any already-open tab on a host that was just added.
+    syncContentScripts({ injectNew: true });
+  }
   if (changes[SITES.SETTINGS_KEY] || changes[SITES.INSTANCES_KEY]) {
     refreshAllBadges();
   }
 });
 
-api.runtime.onInstalled.addListener(refreshAllBadges);
-api.runtime.onStartup.addListener(refreshAllBadges);
+api.runtime.onInstalled.addListener(() => {
+  syncContentScripts({ injectNew: true });
+  refreshAllBadges();
+});
+api.runtime.onStartup.addListener(() => {
+  syncContentScripts();
+  refreshAllBadges();
+});
+
+// The worker can start for any event; make sure the configured hosts are
+// registered even when neither install nor startup fired this session.
+syncContentScripts();

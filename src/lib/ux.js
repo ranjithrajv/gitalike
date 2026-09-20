@@ -319,20 +319,25 @@
 
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-  // Compile each theme's rules once, longest key first.
+  // Compile each theme's phrases into one alternation, longest key first. JS
+  // tries the alternatives left to right at a given position, so the longest
+  // phrase still wins; the whole string is scanned once rather than once per
+  // phrase. The replacement is looked up in the map, so a rewritten phrase is
+  // never fed back through another rule.
   const compiled = {};
   function rulesFor(theme) {
     if (!compiled[theme]) {
       const map = PHRASES[theme] || {};
-      compiled[theme] = Object.keys(map)
-        .sort((a, b) => b.length - a.length)
-        .map((key) => [
-          new RegExp(
-            `(?<![\\p{L}\\p{N}])${escapeRe(key)}(?![\\p{L}\\p{N}])`,
-            'gu',
-          ),
-          map[key],
-        ]);
+      const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+      compiled[theme] = keys.length
+        ? [
+            new RegExp(
+              `(?<![\\p{L}\\p{N}])(?:${keys.map(escapeRe).join('|')})(?![\\p{L}\\p{N}])`,
+              'gu',
+            ),
+            map,
+          ]
+        : [null, map];
     }
     return compiled[theme];
   }
@@ -340,9 +345,9 @@
   /** Rewrite one string of page copy for the given theme. Never partial-word. */
   function translate(text, theme) {
     if (!text) return text;
-    let out = text;
-    for (const [re, value] of rulesFor(theme)) out = out.replace(re, value);
-    return out;
+    const [re, map] = rulesFor(theme);
+    if (!re) return text;
+    return text.replace(re, (match) => map[match]);
   }
 
   // An own-property lookup that treats a prototype key ("constructor") as a
