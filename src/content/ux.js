@@ -509,6 +509,11 @@
     if (!build || !document.body) return;
 
     const sourceIsGitlab = t === 'github';
+    // GitLab's profile menu lives in the super sidebar — which every project
+    // page has too — so only rebuild it on an actual profile page. Without this
+    // the project sidebar's static, pinned and group sections each got GitHub's
+    // profile menu, tripling it and hiding the project navigation.
+    if (sourceIsGitlab && document.body.dataset.page !== 'users:show') return;
     const containers = profileMenuContainers(sourceIsGitlab);
     if (!containers.length) return;
 
