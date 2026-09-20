@@ -167,41 +167,61 @@ const add = (name, failures, warnings = []) => {
   if (tmp) await rm(tmp, { recursive: true, force: true });
 }
 
-// --- Version lockstep -------------------------------------------------------
+// --- Package lockfile -------------------------------------------------------
 //
 // The version lives in package.json and is stamped onto both generated
 // manifests, but package-lock.json carries its own copy. Letting the two drift
 // makes `npm ci` and the store builds disagree about what they are shipping.
+// Dependencies are the other half: `npm ci` installs strictly from the lock, so
+// a dependency added to package.json but not to the lock ships a build without
+// it. Description-only edits are exempt — there the lock has nothing to say.
 {
   const failures = [];
+  const parse = (buf) => {
+    try {
+      return JSON.parse(buf.toString('utf8'));
+    } catch {
+      return null; // Malformed JSON is reported by the staged-files check.
+    }
+  };
   const lock = blobs.has('package-lock.json')
     ? blobs.get('package-lock.json')
     : tryRead(join(root, 'package-lock.json'));
   const pkg = blobs.has('package.json')
     ? blobs.get('package.json')
     : tryRead(join(root, 'package.json'));
+  const head = run('git', ['show', 'HEAD:package.json'], { maxBuffer: 64 * 1024 * 1024 });
+  const p = pkg && parse(pkg);
+  const l = lock && parse(lock);
+  const previous = head.status === 0 ? parse(head.stdout) : null;
 
-  if (staged.includes('package.json') && !staged.includes('package-lock.json') && lock) {
-    failures.push('package.json is staged without package-lock.json — stage the lockfile too');
-  }
+  if (p && l) {
+    const locked = l.packages?.['']?.version ?? l.version;
+    if (l.version !== p.version || locked !== p.version) {
+      failures.push(
+        `package-lock.json is at ${l.version}/${locked} but package.json is at ` +
+          `${p.version} — run \`npm install\` to resync`,
+      );
+    }
 
-  if (pkg && lock) {
-    try {
-      const p = JSON.parse(pkg.toString('utf8'));
-      const l = JSON.parse(lock.toString('utf8'));
-      const locked = l.packages?.['']?.version ?? l.version;
-      if (l.version !== p.version || locked !== p.version) {
-        failures.push(
-          `package-lock.json is at ${l.version}/${locked} but package.json is at ` +
-            `${p.version} — run \`npm install\` to resync`,
-        );
+    const DEP_FIELDS = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'];
+    for (const field of DEP_FIELDS) {
+      const now = JSON.stringify(p[field] ?? {});
+      const inLock = JSON.stringify(l.packages?.['']?.[field] ?? {});
+      if (now !== inLock) {
+        failures.push(`${field} differ from package-lock.json — run \`npm install\` to resync`);
+      } else if (
+        previous &&
+        staged.includes('package.json') &&
+        !staged.includes('package-lock.json') &&
+        JSON.stringify(previous[field] ?? {}) !== now
+      ) {
+        failures.push(`${field} changed but package-lock.json is not staged`);
       }
-    } catch {
-      // Malformed JSON is already reported by the staged-files check.
     }
   }
 
-  add('version lockstep', failures);
+  add('package lockfile', failures);
 }
 
 // --- Changelog reminder -----------------------------------------------------
