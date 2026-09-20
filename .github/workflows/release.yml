@@ -9,23 +9,28 @@ on:
     tags:
       - 'v*'
 
-# gh release create needs to write to the repo.
-permissions:
-  contents: write
-
 jobs:
   release:
     runs-on: ubuntu-latest
+    # gh release create needs to write to the repo; nothing else in this job
+    # does, so the token is scoped here rather than at the workflow level.
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      # Actions are pinned to a full commit SHA (with the version in a comment)
+      # so a retagged or compromised release cannot run in a job that holds a
+      # write-scoped token.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
           cache: npm
 
       - name: Install
-        run: npm ci
+        # Neither dev dependency needs a lifecycle script; skip them so a
+        # compromised package cannot execute at install time.
+        run: npm ci --ignore-scripts
 
       - name: Test
         run: npm test

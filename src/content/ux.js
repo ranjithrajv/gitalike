@@ -216,7 +216,9 @@
           else seenHref.add(href);
         }
         if (!hide) continue;
-        const target = el.closest('li') || el;
+        // A group toggle is a button whose `li` holds the group's items; hiding
+        // the `li` would take the items with it, so only the button goes.
+        const target = el.tagName === 'BUTTON' ? el : el.closest('li') || el;
         if (!hiddenOrig.has(target)) hiddenOrig.set(target, target.style.display);
         if (target.style.display !== 'none') target.style.display = 'none';
       }
@@ -395,6 +397,34 @@
     }
   }
 
+  // cloneNode(true) copies a page subtree, including inline `on*` handlers and
+  // any <script> — and a cloned <script> runs when it is inserted. The source is
+  // the page itself, so this is not an escalation, but the copy is rebuilt clean
+  // rather than trusted: script-bearing elements are dropped and event/handler
+  // attributes stripped.
+  function cloneClean(node) {
+    const clone = node.cloneNode(true);
+    for (const el of clone.querySelectorAll(
+      'script,style,link,base,meta,iframe,object,embed',
+    )) {
+      el.remove();
+    }
+    for (const el of [clone, ...clone.querySelectorAll('*')]) {
+      for (const attr of [...el.attributes]) {
+        const name = attr.name.toLowerCase();
+        if (name.startsWith('on') || name === 'srcdoc') {
+          el.removeAttribute(attr.name);
+        } else if (
+          (name === 'href' || name === 'xlink:href' || name === 'src') &&
+          /^\s*(javascript|data):/i.test(attr.value)
+        ) {
+          el.removeAttribute(attr.name);
+        }
+      }
+    }
+    return clone;
+  }
+
   // GitLab keeps the follower/following counts in the profile navigation, but
   // GitHub shows them under the photo. On a GitLab profile shown as GitHub they
   // are copied into the card (the originals are hidden in CSS); the copies are
@@ -423,7 +453,7 @@
     box.setAttribute('data-gs-ux-skip', '');
     box.replaceChildren();
     for (const link of links) {
-      const clone = link.cloneNode(true);
+      const clone = cloneClean(link);
       clone.removeAttribute('id');
       clone.setAttribute('data-gs-ux-skip', '');
       box.appendChild(clone);

@@ -25,6 +25,11 @@ const BASE_MANIFEST = 'manifest.base.json';
 
 const { version } = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 
+// Only the files the extension actually loads should reach the bundle. Drop
+// editor/OS junk and source maps that happen to sit in src/, so a stray backup
+// or debug artifact cannot be shipped to the stores.
+const SHIPPED_JUNK = /(^|\/)\.[^/]+$|\.(map|swp|swo|bak|orig|tmp|log)$|~$/;
+
 const TARGETS = {
   chromium: (manifest) => ({
     ...manifest,
@@ -77,7 +82,8 @@ for (const target of targets) {
 
   await cp(SRC, out, {
     recursive: true,
-    filter: (source) => source !== join(SRC, BASE_MANIFEST),
+    filter: (source) =>
+      source !== join(SRC, BASE_MANIFEST) && !SHIPPED_JUNK.test(source),
   });
 
   const base = JSON.parse(await readFile(join(SRC, BASE_MANIFEST), 'utf8'));

@@ -1,0 +1,40 @@
+name: CI
+
+# Run the same checks the release does, on every push and pull request, so a
+# broken test or lint is caught before a tag rather than after it.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# CI only reads the repository.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to a full commit SHA; see release.yml for why.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Test
+        run: npm test
+
+      # Builds the Firefox target and validates it with web-ext.
+      - name: Lint the extension
+        run: npm run lint
+
+      - name: Audit runtime dependencies
+        # The shipped extension has no runtime dependencies, so this passes
+        # today; it is here to fail the build if one is ever added with a known
+        # vulnerability.
+        run: npm audit --omit=dev --audit-level=high

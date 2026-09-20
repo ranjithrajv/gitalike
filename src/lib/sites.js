@@ -66,10 +66,19 @@
    * `storage.sync.get(STORAGE_KEYS)` so that the defaults live in one place.
    * @returns {{settings: object, instances: object}}
    */
+  // Only a plain object is a usable map. Synced storage is user data and could
+  // hold anything; a string or array would otherwise be iterated key by key (and
+  // a primitive would throw when the background writes back to it).
+  function plainObject(value) {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+  }
+
   function stateFrom(stored) {
     return {
-      settings: stored?.[SETTINGS_KEY] ?? {},
-      instances: stored?.[INSTANCES_KEY] ?? {},
+      settings: plainObject(stored?.[SETTINGS_KEY]) ? stored[SETTINGS_KEY] : {},
+      instances: plainObject(stored?.[INSTANCES_KEY])
+        ? stored[INSTANCES_KEY]
+        : {},
     };
   }
 
@@ -90,11 +99,15 @@
   // anything, so a key that is not a bare host is ignored rather than turned
   // into a pattern (a `*` key would otherwise re-broaden injection to all sites).
   const HOSTNAME_RE = /^[a-z0-9]([a-z0-9._-]*[a-z0-9])?$/;
+  // Keys that are valid-looking hostnames but name an object property, so a
+  // stored entry could confuse a prototype-key lookup. No real host uses them.
+  const RESERVED_HOSTS = new Set(['__proto__', 'constructor', 'prototype']);
   function isHostname(value) {
     return (
       typeof value === 'string' &&
       value.length > 0 &&
       value.length <= 253 &&
+      !RESERVED_HOSTS.has(value) &&
       HOSTNAME_RE.test(value)
     );
   }

@@ -89,6 +89,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   value that is not a hostname (a `*` or `*.corp.example` key, a path or a port)
   is ignored, so it can no longer re-broaden injection to all sites
   (`src/lib/sites.js`, `background.js`).
+- Synced settings and instances that are not plain objects are discarded, so a
+  tampered value cannot be iterated as a map or throw when written back
+  (`src/lib/sites.js`).
+- The follower/following copies on a GitLab profile shown as GitHub are rebuilt
+  from sanitized clones: script-bearing elements and `on*`/`srcdoc`/`javascript:`
+  attributes are stripped before insertion (`content/ux.js`).
+- The one-off injection used when a host is added re-reads the tab immediately
+  before injecting, so a navigation between the query and the injection cannot
+  land the scripts on a different origin (`background.js`).
+- The popup warns when a site is added from an `http://` address or while the
+  current page is plain `http` (`popup.js`).
+- The build no longer copies editor/OS junk or source maps that happen to sit in
+  `src/` into the store bundle (`build.mjs`).
+- CI pins `actions/checkout` and `actions/setup-node` to full commit SHAs, scopes
+  the release token to its job, installs with `npm ci --ignore-scripts`, and adds
+  a pull-request workflow that runs the tests, `web-ext lint` and a runtime
+  dependency audit (`.github/workflows/`).
 
 ## [0.1.1] - 2026-09-20
 

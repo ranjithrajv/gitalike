@@ -130,7 +130,9 @@ is the point when the address is one you would have to look up:
 1. Open the popup and click **Add a site**.
 2. Paste the address. A bare host (`github.acme.com`) and a full URL
    (`https://GitHub.Acme.com/pulls?q=1`) both work. Only the hostname is kept,
-   because a port or path would never match the host you actually land on.
+   because a port or path would never match the host you actually land on. An
+   `http://` address is accepted but flagged — the skin still applies, though the
+   connection is not encrypted.
 3. Choose **GitHub** or **GitLab**.
 
 Anything that is not a web address is refused rather than stored, including

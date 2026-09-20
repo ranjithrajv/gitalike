@@ -128,7 +128,11 @@ async function injectIntoOpenTabs(hosts) {
     if (tab.id == null || !hosts.has(hostOf(tab.url))) continue;
     try {
       // A host added while its page is already open: inject now so the skin
-      // appears without a reload, the way the static injection used to.
+      // appears without a reload, the way the static injection used to. Re-read
+      // the tab first — it may have navigated since the query, and injection
+      // targets whatever is loaded now, not the URL that matched.
+      const current = await api.tabs.get(tab.id).catch(() => null);
+      if (!current || !hosts.has(hostOf(current.url))) continue;
       await api.scripting.insertCSS({ target: { tabId: tab.id }, files: CONTENT_CSS });
       await api.scripting.executeScript({
         target: { tabId: tab.id },
@@ -188,7 +192,11 @@ let registration = Promise.resolve();
 function syncContentScripts({ injectNew = false } = {}) {
   registration = registration
     .then(() => registerContentScripts(injectNew))
-    .catch(() => {});
+    .catch((error) => {
+      // If registration fails the extension is silently inert; leave a trace in
+      // the background console rather than swallowing it.
+      console.warn('gitalike: content-script registration failed', error);
+    });
   return registration;
 }
 

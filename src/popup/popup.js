@@ -36,7 +36,11 @@
   let instances = {};
   let host = '';
   let pageUrl = '';
+  let pageProtocol = '';
   let openedOnce = false;
+
+  const HINT_INSECURE = (name) =>
+    `${name} is on http:// — the connection is not encrypted.`;
 
   /* ---------------------------------------------------------------- state -- */
 
@@ -50,11 +54,13 @@
     pageUrl = tab?.url ?? '';
     try {
       const url = new URL(pageUrl);
+      pageProtocol = url.protocol;
       // chrome://, about:, chrome-extension://, file:// — none of these are
       // hosts we could skin, and `new URL().hostname` would happily invent one.
       if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
       return url.hostname.toLowerCase();
     } catch {
+      pageProtocol = '';
       return '';
     }
   }
@@ -104,6 +110,12 @@
     if (host && !known && addInput.value === '') addInput.value = host;
     if (added && addInput.value === '') addInput.value = host;
 
+    // Flag a site served over plain http: the skin still applies, but the page
+    // could have been altered in transit.
+    if (pageProtocol === 'http:' && host && !known) {
+      hint(HINT_INSECURE(host), false);
+    }
+
     // Open automatically the first time there is a decision waiting, then
     // respect whatever the user does with the toggle.
     if (!openedOnce && (host === '' || !known || added)) {
@@ -146,9 +158,14 @@
       return;
     }
 
+    // Read the input before clearing it: an explicit http:// URL, or the plain
+    // http page we are on, both mean the same warning.
+    const insecure =
+      /^http:\/\//i.test(addInput.value.trim()) ||
+      (hostname === host && pageProtocol === 'http:');
     await addHost(hostname, kind);
     addInput.value = '';
-    hint(HINT_DEFAULT, false);
+    hint(insecure ? HINT_INSECURE(hostname) : HINT_DEFAULT, false);
   }
 
   addToggle.addEventListener('click', () => setOpen(addBody.hidden));

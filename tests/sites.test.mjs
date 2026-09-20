@@ -225,6 +225,10 @@ describe('isHostname', () => {
       'evil.com#frag',
       'https://evil.com',
       'javascript:alert(1)',
+      // Valid-looking but name an object property.
+      '__proto__',
+      'constructor',
+      'prototype',
       null,
       undefined,
       42,
@@ -275,6 +279,18 @@ describe('stateFrom', () => {
       settings: { github: 'gitlab' },
       instances: {},
     });
+  });
+
+  test('rejects a stored value that is not a plain object', () => {
+    // Synced storage is user data: a string or array must not be iterated as a
+    // map, and a primitive must not be written back to.
+    for (const junk of ['github', 42, true, ['github'], null]) {
+      assert.deepEqual(
+        stateFrom({ [SETTINGS_KEY]: junk, [INSTANCES_KEY]: junk }),
+        { settings: {}, instances: {} },
+        String(junk),
+      );
+    }
   });
 });
 
