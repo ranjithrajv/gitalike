@@ -376,6 +376,18 @@ html.gs-theme-gitlab [class*="CodeViewSidebar-"] {
   column-gap: 24px !important;
 }
 
+/* GitLab has no equivalent of GitHub's top bar — its navigation is the sidebar
+   alone — so on the GitLab skin the header is hidden and the sidebar carries
+   the navigation. */
+html.gs-theme-gitlab :is(
+    header[role="banner"],
+    header.GlobalNav,
+    .AppHeader,
+    .js-header-wrapper
+  ) {
+  display: none !important;
+}
+
 /* GitLab's project sidebar gathers its items under group headings (Plan, Code,
    Build, …); GitHub's repo tabs are flat. On the GitLab skin the tabs are
    gathered under the same headings, inserted by content/ux.js. */
