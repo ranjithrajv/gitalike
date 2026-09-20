@@ -15,6 +15,7 @@ const {
   PHRASES,
   NAV,
   NAV_GROUPS,
+  NAV_HIDE,
   LABELS,
   CHROME,
   UNMAPPED,
@@ -27,6 +28,7 @@ const {
   refMarker,
   labelMatches,
   navGroupFor,
+  navHidden,
   orderIndexes,
   otherHostUrl,
   hostProduct,
@@ -41,13 +43,14 @@ describe('module shape', () => {
       refMarker,
       labelMatches,
       navGroupFor,
+      navHidden,
       orderIndexes,
       otherHostUrl,
       hostProduct,
     ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, NAV_GROUPS, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
+    for (const table of [PHRASES, NAV, NAV_GROUPS, NAV_HIDE, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
@@ -423,6 +426,25 @@ describe('NAV_GROUPS', () => {
       assert.equal(typeof group, 'string');
       assert.ok(group.length > 0);
     }
+  });
+});
+
+describe('NAV_HIDE', () => {
+  test('hides the items the applied product has no page for', () => {
+    assert.equal(navHidden('Feature catalog', 'github'), true);
+    assert.equal(navHidden('Iterations', 'github'), true);
+    assert.equal(navHidden('Discussions', 'gitlab'), true);
+    assert.equal(navHidden('Sponsors', 'gitlab'), true);
+  });
+
+  test('keeps items the applied product does have', () => {
+    assert.equal(navHidden('Repository', 'github'), false);
+    assert.equal(navHidden('Pull requests', 'github'), false);
+    assert.equal(navHidden('Feature catalog', 'gitlab'), false);
+  });
+
+  test('a label carrying a counter still matches', () => {
+    assert.equal(navHidden('Iterations 3', 'github'), true);
   });
 });
 

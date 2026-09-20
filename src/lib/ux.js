@@ -226,6 +226,37 @@
     },
   };
 
+  // Menu items the *applied* product has no page for, by their displayed label
+  // (after translation). They are hidden rather than marked, so the navigation
+  // is the applied product's menu and not a mix of both.
+  const NAV_HIDE = {
+    // GitLab's sidebar items with no GitHub counterpart.
+    github: [
+      'Feature catalog',
+      'Activity',
+      'Epics',
+      'Iterations',
+      'Requirements',
+      'Test cases',
+      'Artifacts',
+      'Terraform modules',
+      'Model registry',
+      'Model experiments',
+      'Service Desk',
+      'Incidents',
+      'Error tracking',
+      'On-call schedules',
+      'Alert management',
+      'Value stream analytics',
+      'Pipeline schedules',
+      'Locked files',
+      'Repository graph',
+      'Compare revisions',
+    ],
+    // GitHub's items with no GitLab counterpart.
+    gitlab: ['Discussions', 'Sponsors', 'Marketplace'],
+  };
+
   /* ---------------------------------------------------------- shortcuts -- */
 
   // Two-key `g` combos. Keyed by the theme being applied; each entry maps the
@@ -366,6 +397,13 @@
     return null;
   }
 
+  /** Does the applied product have no page for this nav item? */
+  function navHidden(label, theme) {
+    const list = NAV_HIDE[theme];
+    if (!list) return false;
+    return list.some((key) => labelMatches(label, key));
+  }
+
   /**
    * Indices of `labels`, arranged by their position in `order` (stable for
    * equal ranks). Prefix matching means a label carrying a counter
@@ -496,6 +534,7 @@
     PHRASES,
     NAV,
     NAV_GROUPS,
+    NAV_HIDE,
     LABELS,
     CHROME,
     UNMAPPED,
@@ -510,6 +549,7 @@
     refMarker,
     labelMatches,
     navGroupFor,
+    navHidden,
     orderIndexes,
     otherHostUrl,
     hostProduct,
