@@ -151,21 +151,16 @@
 
   /* -------------------------------------------------------------- paints -- */
 
-  // Copy and control labels in one traversal. A text node inside a control
-  // (UX.LABEL_SCOPE) gets the exact whole-label translation, which falls back to
-  // phrase translation; everything else gets phrase translation. This is the
-  // same result the old two-pass sequence produced — phrase translation first,
-  // then the control lookup on the translated value — because no phrase's output
-  // is also a control key.
+  // Copy and control labels in one traversal. Inside a control (UX.LABEL_SCOPE)
+  // the *original* whole label is matched first, so a label that also contains a
+  // phrase ("Merge pull request") gets its exact word ("Merge") rather than being
+  // mangled by phrase translation first. Everything else is phrase-translated.
   function paintCopy(node, t) {
     walkText(node, (text, isControl) => {
       const original = rememberText(text);
-      let value = UX.translate(original, t);
-      if (isControl) {
-        const label = value.trim();
-        const exact = UX.translateControl(label, t);
-        if (exact !== label) value = exact;
-      }
+      const value = isControl
+        ? UX.controlLabel(original.trim(), t) ?? UX.translate(original, t)
+        : UX.translate(original, t);
       if (value !== text.nodeValue) text.nodeValue = value;
     });
   }

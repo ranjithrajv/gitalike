@@ -24,6 +24,7 @@ const {
   SHORTCUTS,
   translate,
   translateControl,
+  controlLabel,
   noEquivalentFor,
   refMarker,
   labelMatches,
@@ -167,6 +168,27 @@ describe('CHROME', () => {
   });
 });
 
+describe('controlLabel', () => {
+  test('returns the exact whole-label replacement, or null', () => {
+    assert.equal(controlLabel('Merge pull request', 'gitlab'), 'Merge');
+    assert.equal(controlLabel('Your projects', 'github'), 'Your repositories');
+    assert.equal(controlLabel('Pull requests', 'gitlab'), null);
+    assert.equal(controlLabel('not a label', 'gitlab'), null);
+  });
+
+  test('an exact control label wins over phrase translation', () => {
+    // "Merge pull request" contains the phrase "pull request": if phrase
+    // translation runs first it becomes "Merge merge request" and the exact
+    // entry is missed. The whole-label lookup has to run on the original.
+    assert.equal(translate('Merge pull request', 'gitlab'), 'Merge merge request');
+    assert.equal(
+      controlLabel('Merge pull request', 'gitlab') ??
+        translate('Merge pull request', 'gitlab'),
+      'Merge',
+    );
+  });
+});
+
 describe('table symmetry', () => {
   test('PHRASES have the same size in both directions', () => {
     assert.equal(
@@ -235,6 +257,18 @@ describe('NAV_RULES', () => {
     const rule = NAV_RULES.gitlab[0];
     assert.match(rule.container, /UnderlineNav-body/);
     assert.ok(Array.isArray(rule.order) && rule.order.length >= 2);
+  });
+
+  test('the repo order ranks the *displayed* labels', () => {
+    const order = NAV_RULES.gitlab[0].order;
+    // "Issues" is shown as "Work items"; ranking on the source label would drop
+    // it to the end of the nav.
+    assert.ok(order.includes('Work items'));
+    assert.ok(!order.includes('Issues'));
+    assert.deepEqual(
+      orderIndexes(['CI/CD', 'Work items', 'Repository', 'Merge requests'], order),
+      [1, 3, 2, 0],
+    );
   });
 });
 
@@ -413,7 +447,10 @@ describe('NAV_GROUPS', () => {
   test('gathers repo tabs under GitLab group headings', () => {
     assert.equal(navGroupFor('Merge requests', 'gitlab'), 'Code');
     assert.equal(navGroupFor('Repository', 'gitlab'), 'Code');
-    assert.equal(navGroupFor('Issues', 'gitlab'), 'Plan');
+    // The displayed label is "Work items" (NAV renames Issues), so the group
+    // table is keyed by that, not by the source label.
+    assert.equal(navGroupFor('Work items', 'gitlab'), 'Plan');
+    assert.equal(navGroupFor('Issues', 'gitlab'), null);
     assert.equal(navGroupFor('Issue boards', 'gitlab'), 'Plan');
     assert.equal(navGroupFor('CI/CD', 'gitlab'), 'Build');
     assert.equal(navGroupFor('Analytics', 'gitlab'), 'Analyze');

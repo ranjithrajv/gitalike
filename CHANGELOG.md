@@ -60,6 +60,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Performance: the toolbar badge refresh reads synced state once for all tabs and
   writes only when the badge actually changes (`background.js`).
 
+### Fixed
+
+- A control label that also contains a translated phrase is no longer mangled:
+  the exact whole-label lookup now runs on the original text before phrase
+  translation, so GitHub's "Merge pull request" button shows GitLab's "Merge"
+  rather than "Merge merge request" (`src/lib/ux.js`, `content/ux.js`).
+- The repo navigation's order and group tables now name the displayed label
+  "Work items" (GitHub's "Issues" under the GitLab UI), so it sorts in place and
+  gets its "Plan" heading instead of dropping to the end of the navigation
+  (`src/lib/ux.js`).
+
 ## [0.1.1] - 2026-09-20
 
 ### Added

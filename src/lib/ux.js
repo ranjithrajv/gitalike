@@ -159,7 +159,7 @@
         // Analyze, then Settings.
         order: [
           'Members',
-          'Issues',
+          'Work items',
           'Issue boards',
           'Wiki',
           'Milestones',
@@ -206,7 +206,7 @@
   const NAV_GROUPS = {
     gitlab: {
       Members: 'Manage',
-      Issues: 'Plan',
+      'Work items': 'Plan',
       'Issue boards': 'Plan',
       Wiki: 'Plan',
       Milestones: 'Plan',
@@ -359,13 +359,22 @@
       : null;
   }
 
+  /**
+   * The exact replacement for a control's whole label — the LABELS/CHROME word
+   * for it — or null when no whole label matches.
+   *
+   * Callers must test the *original* label with this before falling back to
+   * `translate`: if phrase translation runs first, a label that contains a
+   * phrase ("Merge pull request") is mangled to "Merge merge request" and the
+   * exact entry can no longer be found.
+   */
+  function controlLabel(label, theme) {
+    return lookup(LABELS[theme], label) ?? lookup(CHROME[theme], label);
+  }
+
   /** Translate a control's whole label: exact words first, then copy. */
   function translateControl(label, theme) {
-    return (
-      lookup(LABELS[theme], label) ??
-      lookup(CHROME[theme], label) ??
-      translate(label, theme)
-    );
+    return controlLabel(label, theme) ?? translate(label, theme);
   }
 
   /** The product that lacks this feature, or null if it has a counterpart. */
@@ -550,6 +559,7 @@
     SHORTCUT_TARGETS,
     translate,
     translateControl,
+    controlLabel,
     noEquivalentFor,
     refMarker,
     labelMatches,
