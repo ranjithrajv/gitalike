@@ -1,6 +1,6 @@
 # gitalike
 
-See GitHub with a GitLab™ interface, and GitLab with a GitHub interface.
+Use any forge, keep your muscle memory.
 
 gitalike is a small browser extension that re-skins the two big forges so they
 look — and read — like each other. It repaints the interface from the other
@@ -19,6 +19,14 @@ switch a skin off.
 It works on `github.com` and `gitlab.com` out of the box, on the bundled
 self-hosted instance `code.swecha.org`, and on any other instance you point it
 at — **GitHub Enterprise Server** included.
+
+gitalike starts with the two big forges, GitHub and GitLab, and grows from
+there. More are on the way — Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut
+are the obvious next candidates. A forge that already speaks one of the two
+dialects needs only to be classified as that kind of site, so it can be a
+one-line change; until then, any instance works today through the popup's
+**Add a site** flow. If you would like to help add one, see
+[CONTRIBUTING.md](CONTRIBUTING.md#adding-another-forge--contributions-welcome).
 
 gitalike is an independent project. It is not affiliated with, endorsed by or
 sponsored by GitHub, Inc. or GitLab Inc., and it ships none of their artwork:
