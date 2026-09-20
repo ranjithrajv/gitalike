@@ -307,10 +307,43 @@ html.gs-theme-gitlab
   display: none !important;
 }
 
+/* GitLab's profile has a "Personal projects" section; GitHub's pinned
+   repositories are the closest thing to it, so they are kept and relabelled by
+   content/ux.js rather than hidden. */
+
+/* GitLab keeps the organization, location and contact links in a right-hand
+   "About / Info / Contact" rail beside the identity. content/ux.js clones them
+   into `[data-gs-profile-rail]`; the header becomes a two-column grid so the
+   rail sits beside the identity rather than under it. */
 html.gs-theme-gitlab
   main:has(nav[aria-label="User profile"])
-  .js-pinned-items-reorder-container {
-  display: none !important;
+  .js-profile-editable-replace {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 296px);
+  column-gap: 24px;
+  align-items: start;
+}
+
+html.gs-theme-gitlab [data-gs-profile-rail] {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  color: var(--gs-fg-muted);
+  font-size: 14px;
+}
+
+html.gs-theme-gitlab [data-gs-profile-rail] .gs-profile-rail-heading {
+  margin: 16px 0 4px;
+  color: var(--gs-fg);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+html.gs-theme-gitlab [data-gs-profile-rail] .gs-profile-rail-heading:first-child {
+  margin-top: 0;
+}
+
+html.gs-theme-gitlab [data-gs-profile-rail] .vcard-detail {
+  margin: 0 0 4px;
 }
 
 html.gs-theme-gitlab

@@ -268,12 +268,34 @@
         return;
       }
     };
+    // A heading whose label carries a trailing counter or hidden word ("Pinned
+    // Loading") is matched by its prefix.
+    const renamePrefix = (heading, from, to) => {
+      for (const text of textNodes(heading)) {
+        if (!text.nodeValue.trim().startsWith(from)) continue;
+        rememberText(text);
+        const next = text.nodeValue.replace(from, to);
+        if (text.nodeValue !== next) text.nodeValue = next;
+        return;
+      }
+    };
     if (t === 'gitlab') {
       const grid = document.querySelector('[class*="CodeViewSidebar-"]');
-      if (!grid) return;
-      for (const heading of grid.querySelectorAll('h2, h3')) {
-        if (heading.textContent.trim() === 'About') {
-          rename(heading, 'About', 'Project information');
+      if (grid) {
+        for (const heading of grid.querySelectorAll('h2, h3')) {
+          if (heading.textContent.trim() === 'About') {
+            rename(heading, 'About', 'Project information');
+          }
+        }
+      }
+      // GitLab's profile shows a "Personal projects" section; GitHub's pinned
+      // repositories are the closest thing to it.
+      for (const heading of document.querySelectorAll('h2')) {
+        // The heading's words are separate nodes split by newlines ("Pinned"
+        // then a hidden "Loading"), so whitespace is normalized before matching.
+        const text = heading.textContent.replace(/\s+/g, ' ').trim();
+        if (text === 'Pinned' || text.startsWith('Pinned ')) {
+          renamePrefix(heading, 'Pinned', 'Personal projects');
         }
       }
       return;
@@ -317,6 +339,59 @@
         anchor.removeAttribute('data-gs-active');
       }
     }
+  }
+
+  // GitLab keeps the organization, location and contact links in a right-hand
+  // "About / Info / Contact" rail beside the identity; GitHub stacks them under
+  // the avatar. On the GitLab skin they are cloned into a rail built here and
+  // the originals are hidden, so the card reads like GitLab's profile.
+  function paintProfileRail(t) {
+    if (t !== 'gitlab') return;
+    if (!document.querySelector('nav[aria-label="User profile"]')) return;
+    const editable = document.querySelector('.js-profile-editable-replace');
+    if (!editable) return;
+    const details = [...editable.querySelectorAll('.vcard-detail')].filter(
+      (d) => !d.closest('[data-gs-profile-rail]'),
+    );
+    const user = location.pathname.split('/').filter(Boolean)[0] || '';
+    const signature = `${user}:${details.map((d) => d.textContent.trim()).join('|')}`;
+    let rail = editable.querySelector('[data-gs-profile-rail]');
+    if (rail && rail.getAttribute('data-gs-signature') === signature) return;
+    if (rail) rail.remove();
+    for (const [el, display] of profileRailHidden) {
+      if (!el.isConnected) continue;
+      if (display) el.style.display = display;
+      else el.style.removeProperty('display');
+    }
+    profileRailHidden.clear();
+    if (!details.length) return;
+    rail = document.createElement('div');
+    rail.setAttribute('data-gs-profile-rail', '');
+    rail.setAttribute('data-gs-ux-skip', '');
+    rail.setAttribute('data-gs-signature', signature);
+    const groups = { About: [], Info: [], Contact: [] };
+    // The `itemprop` sits on the detail element itself, not a descendant.
+    const has = (d, sel) => d.matches(sel) || !!d.querySelector(sel);
+    const groupOf = (d) =>
+      has(d, '[itemprop="worksFor"], .p-org')
+        ? 'About'
+        : has(d, '[itemprop="homeLocation"], .p-label')
+          ? 'Info'
+          : 'Contact';
+    for (const d of details) groups[groupOf(d)].push(d);
+    for (const [name, list] of Object.entries(groups)) {
+      if (!list.length) continue;
+      const heading = document.createElement('h3');
+      heading.className = 'gs-profile-rail-heading';
+      heading.textContent = name;
+      rail.appendChild(heading);
+      for (const d of list) {
+        rail.appendChild(d.cloneNode(true));
+        if (!profileRailHidden.has(d)) profileRailHidden.set(d, d.style.display);
+        d.style.setProperty('display', 'none', 'important');
+      }
+    }
+    editable.appendChild(rail);
   }
 
   function paintUnmapped(node, t) {
@@ -566,6 +641,7 @@
   };
   const profileHiddenOrig = new Map();
   const profileOrderOrig = new Map();
+  const profileRailHidden = new Map();
 
   /** The label of an item: its text without the icon, counter or `≠` badge. */
   function profileLabelOf(el) {
@@ -757,6 +833,7 @@
     paintMetadata(t);
     paintHeadings(t);
     paintActiveTab(t);
+    paintProfileRail(t);
     paintProfileStats(t);
     paintProfileMenu(t);
   }
@@ -790,6 +867,13 @@
     }
     for (const el of document.querySelectorAll('[data-gs-profile-stats]')) el.remove();
     for (const el of document.querySelectorAll('[data-gs-profile-menu]')) el.remove();
+    for (const el of document.querySelectorAll('[data-gs-profile-rail]')) el.remove();
+    for (const [el, display] of profileRailHidden) {
+      if (!el.isConnected) continue;
+      if (display) el.style.display = display;
+      else el.style.removeProperty('display');
+    }
+    profileRailHidden.clear();
     for (const [el, display] of profileHiddenOrig) {
       if (!el.isConnected) continue;
       if (display) el.style.display = display;
@@ -927,6 +1011,7 @@
       paintMetadata(current);
       paintHeadings(current);
       paintActiveTab(current);
+      paintProfileRail(current);
       paintProfileStats(current);
       paintProfileMenu(current);
       const now = Date.now();
