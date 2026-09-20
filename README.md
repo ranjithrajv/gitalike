@@ -3,8 +3,13 @@
 See GitHub with a GitLab interface, and GitLab with a GitHub interface.
 
 Git Same is a small browser extension that re-skins the two big forges so they
-look like each other. It changes **appearance only** — it never rewrites the
-page, renames buttons, or touches what the site actually does.
+look — and read — like each other. It repaints the interface from the other
+product's design tokens, then matches its *words and habits*: copy is rewritten
+("Pull request" becomes "Merge request"), reference markers are swapped, the
+repo navigation is relabelled and reordered, and the other product's
+`g`-shortcuts work. It never changes what the site *does* — no requests are
+intercepted, no data is touched — and every change is reverted the moment you
+switch a skin off.
 
 ```
  a GitHub-flavoured site  + GitLab UI  ->  octocat logo, purple accents, light bar
@@ -102,6 +107,25 @@ already set up and cannot be removed.
 
 To undo, open the popup on that host and choose **Remove**.
 
+## UX parity
+
+The skin is not only colour. While a skin is on, Git Same also matches the other
+product's *vocabulary and habits*:
+
+| Surface    | What changes                                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| Copy       | "Pull request(s)" ⇄ "Merge request(s)", "Insights" ⇄ "Analytics", "Actions" ⇄ "CI/CD", "Go to file" ⇄ "Find file", "Gists" ⇄ "Snippets", "Codespaces" ⇄ "Workspaces" |
+| Navigation | repo tabs are relabelled ("Code" → "Repository") and reordered into the other product's order                     |
+| References | a pull/merge-request link shows the other product's marker — `#42` ⇄ `!42`                                        |
+| Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
+
+It is deliberately conservative. Copy is rewritten only in ordinary page text —
+never inside code, inputs or editable regions — and navigation labels change only
+on an exact whole-label match inside a known nav region, so prose and marketing
+copy are safe. A reference marker is only touched on a link that is *just* a
+number. Every change is recorded, and undone exactly when the skin is switched
+off.
+
 ## How it works
 
 Both sites are built on design-token systems, and almost everything on the page
@@ -113,7 +137,9 @@ reads its colours from a handful of CSS custom properties:
 
 So Git Same mostly re-points those properties at the other design system's
 palette, then fixes up a few structural things the tokens cannot reach (the top
-bar, the logo, active-tab accents). Two stylesheets, two classes.
+bar, the logo, active-tab accents). Two stylesheets and two classes do the
+visual half; a second content script does the copy, reference, navigation and
+keyboard half, driven by the tables in `src/lib/ux.js`.
 
 ```
 content script (document_start, every http/https page)
@@ -121,6 +147,12 @@ content script (document_start, every http/https page)
   ├─ reconciles with chrome.storage.sync                       -> keeps the cache warm
   ├─ mirrors the site's dark mode                              -> html.gs-dark
   └─ reacts to storage + DOM changes
+
+ux content script (inert unless a theme class is present)
+  ├─ rewrites page copy and nav labels        -> src/lib/ux.js tables
+  ├─ rewrites # / ! reference markers          by the link's href
+  ├─ reorders the repo navigation              into the other product's order
+  └─ remaps the other product's g-combos       recording everything so it reverts
 
 stylesheet (injected everywhere, inert unless the class is present)
   html.gs-theme-gitlab { ... }   re-skins GitHub-flavoured sites
@@ -176,13 +208,24 @@ source of truth shared by the content script, the popup and the background.
 
 ## Known limitations
 
-- **Appearance only.** Labels still say "Pull request" on GitHub and "Merge
-  request" on GitLab, and icons keep their original meaning. This is deliberate:
-  text rewriting tends to break search, copy/paste, and screen readers.
+- **UX parity is conservative, not exhaustive.** Only the vocabulary that maps
+  cleanly is rewritten ("Pull request" ⇄ "Merge request"); product-specific
+  concepts with no counterpart are left alone. Copy is never touched inside
+  code, inputs or editable regions, and nav labels change only on an exact
+  whole-label match, so search, copy/paste and screen readers keep working — but
+  text the site updates *inside* an already-processed node is not re-translated
+  until that node is replaced.
+- **The keyboard remap is best-effort.** Mapped `g`-combos are handled by
+  dispatching synthetic key events; a site that checks `event.isTrusted` would
+  ignore them.
+- **GitLab's project sidebar is not reordered.** It is a nested group tree with
+  no flat parent, so it is relabelled only. GitHub's flat repo tabs are both
+  relabelled and reordered.
 - **Access to all sites.** The install prompt is the honest one. If that is not
   a trade you want to make, the alternative above is a small change to make.
-- **Both stylesheets load on every page** — about 24 KB of CSS, parsed and
-  unused on sites you have not set up. It is inert, not free.
+- **The stylesheets and UX tables load on every page** — about 24 KB of CSS plus
+  the vocabulary tables, parsed and unused on sites you have not set up. Inert,
+  but not free.
 - **Switches are per product, not per host.** You cannot skin your enterprise
   instance without also skinning `github.com`. With two switches and a handful of
   hosts that seems like the right amount of control; it is the thing to change
@@ -233,6 +276,11 @@ Covered:
 - light **and** dark palettes, on both skins
 - each logo repainted in the other palette, including that no ghost logo is left
   behind
+- **UX parity, both directions**: copy rewritten (`Pull requests 387` →
+  `Merge requests 387`), repo tabs relabelled and reordered (`Code` →
+  `Repository`, and `Insights` moved before `Security`), an injected `#42` link
+  becoming `!42`, `g m` navigating to the repo's pull requests, and a clean
+  revert of every one of those changes when the skin is switched off
 - both toolbar badges, and the `Alt`+`Shift`+`G` binding
 - re-skinning an already-open tab with no reload, and a clean revert
 - the popup, including that it lists every configured host
@@ -305,7 +353,7 @@ read.
 
 ```sh
 npm run build          # dist/chromium + dist/firefox
-npm test               # unit tests for src/lib/sites.js (node:test)
+npm test               # unit tests for src/lib/*.js (node:test)
 npm run lint           # build:firefox, then validate it with web-ext lint
 npm run package        # store-ready zips -> dist/artifacts/
 npm run screenshots    # store screenshots -> store/screenshots/

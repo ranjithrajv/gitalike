@@ -6,15 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] - 2026-09-20
 
-First public release. Git Same re-skins GitHub as GitLab and GitLab as GitHub —
-appearance only: it never rewrites the page, renames buttons, or changes what the
-site does.
+First public release. Git Same re-skins GitHub as GitLab and GitLab as GitHub:
+it repaints the interface from the other product's design tokens, then matches
+its words and habits. It never changes what the site *does* — no requests are
+intercepted, no data is touched — and every change is reverted when a skin is
+switched off.
 
 ### Added
 
 - Two skins, driven by a class on `<html>`: `gs-theme-gitlab` on
   GitHub-flavoured sites and `gs-theme-github` on GitLab-flavoured ones, plus a
   dark palette for either.
+- A UX layer carrying what CSS cannot: copy is translated ("Pull request"
+  becomes "Merge request"), reference markers are swapped, the repo navigation is
+  relabelled and reordered, and the other product's `g`-shortcuts work. It skips
+  code, inputs, editable regions and `[data-gs-ux-skip]`, and undoes every change
+  when the skin is switched off.
 - Bundled support for `github.com`, `gitlab.com` and `code.swecha.org`, and a
   popup flow for classifying any other instance — GitHub Enterprise Server and
   self-hosted GitLab included — either on the page in front of you or by typing
@@ -53,8 +60,11 @@ site does.
 
 ### Notes
 
-- **Appearance only.** Labels still say "Pull request" on GitHub and "Merge
-  request" on GitLab, and icons keep their original meaning.
+- **Text is rewritten.** Labels, copy and reference markers are translated, and
+  the repo nav is relabelled and reordered, so a label copied out of the page
+  carries the other product's wording. Code, inputs, editable regions and
+  `[data-gs-ux-skip]` are never touched, and the nav only reorders its own items
+  among the slots they already occupy.
 - The Firefox build declares `data_collection_permissions: none` and requires
   Firefox 142. The Chromium build targets Manifest V3.
 - Verified against the live sites in Chromium, including a signed-in session;

@@ -25,7 +25,12 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "css": ["themes/github-as-gitlab.css", "themes/gitlab-as-github.css"],
-      "js": ["lib/sites.js", "content/theme.js"],
+      "js": [
+        "lib/sites.js",
+        "lib/ux.js",
+        "content/theme.js",
+        "content/ux.js"
+      ],
       "run_at": "document_start"
     }
   ],
