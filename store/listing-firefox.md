@@ -5,7 +5,7 @@ Paste-ready copy for the AMO developer hub. Character limits are noted.
 ## Name (max 50)
 
 ```
-Git Same — GitHub ⇄ GitLab UI
+gitalike — GitHub ⇄ GitLab UI
 ```
 
 ## Summary (max 250)
@@ -17,7 +17,7 @@ See GitHub with a GitLab UI, and GitLab with a GitHub UI. Appearance only — it
 ## Description
 
 ```
-Git Same re-skins the two big forges so they look like each other:
+gitalike re-skins the two big forges so they look like each other:
 
     a GitHub-flavoured site + GitLab UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
@@ -39,7 +39,7 @@ Features
 - No network access at all: both stylesheets are bundled and both logos are
   inline data URIs. Nothing is sent anywhere.
 
-Permissions, plainly: Git Same asks for access to all sites because GitHub
+Permissions, plainly: gitalike asks for access to all sites because GitHub
 Enterprise Server and self-hosted GitLab live on hostnames that cannot be
 listed ahead of time. On every site you have not set up, it does nothing at all.
 
@@ -63,7 +63,7 @@ github, gitlab, theme, appearance, user-interface
 ## Privacy policy
 
 ```
-Git Same collects no data and makes no network requests. It stores only your
+gitalike collects no data and makes no network requests. It stores only your
 on/off choices and the list of instances you add, in Firefox's own synced
 extension storage; that data stays within your browser profile and Mozilla
 Sync, and is never sent to the developer or anyone else.
@@ -92,7 +92,7 @@ AMO has no fixed screenshot size. Upload, in order:
 ## Notes for review
 
 - This is a listed add-on; `browser_specific_settings.gecko.id` is
-  `git-same@riseup.net`.
+  `gitalike@riseup.net`.
 - `strict_min_version` is `142.0`, the first Firefox (desktop 140, Android 142)
   that understands `data_collection_permissions`.
 - There is a build step (`build.mjs`), but it only copies `src/` and generates

@@ -1,5 +1,5 @@
 {
-  "name": "git-same",
+  "name": "gitalike",
   "version": "0.1.0",
   "private": true,
   "description": "Show GitHub with a GitLab UI, and GitLab with a GitHub UI.",

@@ -3,7 +3,7 @@
 
   The path is GitHub's own mark; the fill is a gradient across GitLab's tanuki
   palette — red (#e24329), orange (#fc6d26) and yellow (#fca326). It lands on
-  the light bar Git Same gives a GitHub-flavoured site, where GitLab's mark is
+  the light bar gitalike gives a GitHub-flavoured site, where GitLab's mark is
   the colourful one.
 
   Baked into src/themes/github-as-gitlab.css as --gs-octocat.

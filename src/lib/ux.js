@@ -1,12 +1,12 @@
 /**
- * Git Same — the UX tables.
+ * gitalike — the UX tables.
  *
- * The skin is not only colour: the point of Git Same is that a GitHub site
+ * The skin is not only colour: the point of gitalike is that a GitHub site
  * *reads* like GitLab (and the other way round), so this file carries the
  * vocabulary, reference and keyboard differences between the two products.
  *
  * It is pure data plus side-effect-free helpers, published on
- * `globalThis.GIT_SAME_UX` so the content script and the unit tests share one
+ * `globalThis.GITALIKE_UX` so the content script and the unit tests share one
  * source of truth. No DOM is touched here; `content/ux.js` does that.
  *
  * Every table is keyed by the theme being *applied*:
@@ -256,7 +256,7 @@
     return orderIndexes(labels, order).map((index) => labels[index]);
   }
 
-  globalThis.GIT_SAME_UX = {
+  globalThis.GITALIKE_UX = {
     PHRASES,
     NAV,
     LABELS,

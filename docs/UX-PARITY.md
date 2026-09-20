@@ -1,6 +1,6 @@
 # UX parity
 
-What Git Same matches between GitHub and GitLab beyond colour, and where the two
+What gitalike matches between GitHub and GitLab beyond colour, and where the two
 directions still differ. The tables themselves live in `src/lib/ux.js`; this file
 is the map and the scorecard.
 

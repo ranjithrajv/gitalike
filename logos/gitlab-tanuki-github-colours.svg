@@ -3,7 +3,7 @@
 
   The path is GitLab's own mark; the fill is a gradient across Primer's
   dark-mode ink (#f0f6fc) and accent blue (#4493f8). It lands on the dark
-  header Git Same gives a GitLab-flavoured site, where GitHub's own mark is
+  header gitalike gives a GitLab-flavoured site, where GitHub's own mark is
   white — so this is best previewed on a dark background.
 
   Baked into src/themes/gitlab-as-github.css as --gs-tanuki.

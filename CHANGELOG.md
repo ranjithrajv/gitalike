@@ -1,12 +1,12 @@
 # Changelog
 
-All notable changes to Git Same are documented here. The format is based on
+All notable changes to gitalike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] - 2026-09-20
 
-First public release. Git Same re-skins GitHub as GitLab and GitLab as GitHub:
+First public release. gitalike re-skins GitHub as GitLab and GitLab as GitHub:
 it repaints the interface from the other product's design tokens, then matches
 its words and habits. It never changes what the site *does* — no requests are
 intercepted, no data is touched — and every change is reverted when a skin is
