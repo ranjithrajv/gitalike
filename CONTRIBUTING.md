@@ -494,6 +494,43 @@ npm run screenshots          # refresh store/screenshots/
 Bump `version` in `package.json` (the only place it is written), add a
 `CHANGELOG.md` entry, then commit and tag `vX.Y.Z`.
 
+### Publishing to the stores
+
+Both stores are optional and off by default; a release that is not published is
+still a normal GitHub release with the ZIPs attached.
+
+**Chrome Web Store** — `npm run publish:chromium` uploads and submits the
+package using the **v2** API (v1 is deprecated and stops being supported on
+15 October 2026). Credentials come from the environment, never the command
+line:
+
+```sh
+export CWS_CLIENT_ID=...        # OAuth2 client id
+export CWS_CLIENT_SECRET=...    # OAuth2 client secret
+export CWS_REFRESH_TOKEN=...    # refresh token, scope .../auth/chromewebstore
+export CWS_PUBLISHER_ID=...     # publisher id
+export CWS_ITEM_ID=...          # extension id
+npm run publish:chromium
+```
+
+`--dry-run` validates the inputs without contacting the store; `--staged`,
+`--deploy-percentage N`, `--skip-review` and `--no-publish` map onto the API's
+publish options. The refresh token is minted once: enable the Chrome Web Store
+API in a Google Cloud project, create an OAuth client, then use the OAuth
+playground with the `https://www.googleapis.com/auth/chromewebstore` scope.
+
+**Firefox / AMO** — `npm run sign:firefox` builds and signs an unlisted package
+with `web-ext sign`, reading `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET`.
+
+**In CI**, both are gated on a repository *variable* so the credentials stay
+scoped to the single step that uses them:
+
+- variable `CWS_PUBLISH=true` plus secrets `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`,
+  `CWS_REFRESH_TOKEN`, `CWS_PUBLISHER_ID`, `CWS_ITEM_ID`;
+- variable `AMO_SIGN=true` plus secrets `AMO_API_KEY`, `AMO_API_SECRET`.
+
+With neither set, the release job just builds and attaches the ZIPs.
+
 ## Reporting an issue
 
 The most useful report includes:

@@ -43,6 +43,50 @@ jobs:
       - name: Package the store ZIPs
         run: npm run package
 
+      # Store publishing is opt-in and gated on a repository *variable* (not a
+      # secret), so the credentials can be scoped to the single step that needs
+      # them instead of the whole job's environment.
+      - name: Sign the Firefox build for AMO
+        if: ${{ vars.AMO_SIGN == 'true' }}
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: npm run sign:firefox
+
+      - name: Stage the release assets
+        run: |
+          # Two things have to be true of the asset names.
+          #
+          # 1. They must be distinct. web-ext names the ZIP after the extension,
+          #    so both targets come out with the same name; two assets cannot
+          #    share a name (HTTP 422), and gh's `file#label` form only sets the
+          #    display label, so the underlying asset keeps colliding.
+          # 2. They must NOT carry the version. The README links to
+          #    /releases/latest/download/<name>, and that URL only keeps working
+          #    if the name is stable across releases.
+          #
+          # So stage them under a fixed, per-target name. `ls -t` takes the
+          # newest if an artifacts directory ever holds more than one package.
+          mkdir -p dist/release
+          cp "$(ls -t dist/artifacts/chromium/*.zip | head -1)" dist/release/gitalike-chromium.zip
+          cp "$(ls -t dist/artifacts/firefox/*.zip | head -1)" dist/release/gitalike-firefox.zip
+          if [ -f dist/artifacts/firefox-signed/*.xpi ]; then
+            cp dist/artifacts/firefox-signed/*.xpi dist/release/gitalike-firefox-signed.xpi
+          fi
+          ls -l dist/release
+
+      - name: Publish to the Chrome Web Store
+        if: ${{ vars.CWS_PUBLISH == 'true' }}
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CWS_ITEM_ID: ${{ secrets.CWS_ITEM_ID }}
+        # The staged package, so the exact bytes that are attached to the
+        # release are the bytes the store receives.
+        run: node tools/publish-chromium.mjs --source dist/release/gitalike-chromium.zip
+
       - name: Build the release notes
         run: |
           version="${GITHUB_REF_NAME#v}"
@@ -53,6 +97,9 @@ jobs:
             echo "| --- | --- | --- |"
             echo "| \`gitalike-chromium.zip\` | Chromium, Chrome, Edge, Brave | Unzip, then **Load unpacked** — or install from the Chrome Web Store. |"
             echo "| \`gitalike-firefox.zip\` | Firefox | Unsigned, so it only loads temporarily — see below. |"
+            if [ -f dist/artifacts/firefox-signed/*.xpi ]; then
+              echo "| \`gitalike-firefox-signed.xpi\` | Firefox | Signed, so it installs permanently. |"
+            fi
             echo
             echo "> The Firefox asset is unsigned and can therefore only be loaded"
             echo "> temporarily via \`about:debugging\`; it disappears when Firefox"
@@ -72,24 +119,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Two things have to be true of the asset names.
-          #
-          # 1. They must be distinct. web-ext names the ZIP after the extension,
-          #    so both targets come out gitalike_github_gitlab_ui-<version>.zip;
-          #    two assets cannot share a name (HTTP 422), and gh's `file#label`
-          #    form only sets the display label, so the underlying asset keeps
-          #    colliding.
-          # 2. They must NOT carry the version. The README links to
-          #    /releases/latest/download/<name>, and that URL only keeps working
-          #    if the name is stable across releases.
-          #
-          # So stage both under a fixed, per-target name and upload those.
-          mkdir -p dist/release
-          cp "$(ls dist/artifacts/chromium/*.zip)" dist/release/gitalike-chromium.zip
-          cp "$(ls dist/artifacts/firefox/*.zip)" dist/release/gitalike-firefox.zip
-          ls -l dist/release
-
+          # A glob that matches nothing would be passed through literally and
+          # make gh fail, so build the asset list explicitly.
+          assets=(dist/release/*.zip)
+          if [ -f dist/release/gitalike-firefox-signed.xpi ]; then
+            assets+=(dist/release/gitalike-firefox-signed.xpi)
+          fi
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --notes-file release-notes.md \
-            dist/release/*.zip
+            "${assets[@]}"

@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Store publishing is scripted. `npm run publish:chromium` uploads and submits
+  the package with the Chrome Web Store **v2** API (v1 is deprecated and stops
+  being supported on 15 October 2026); it is a zero-dependency Node script,
+  `tools/publish-chromium.mjs`, and reads its credentials from the environment.
+  `npm run sign:firefox` signs an unlisted package for addons.mozilla.org with
+  `web-ext sign`. The release workflow runs either only when the matching
+  repository variable (`CWS_PUBLISH`, `AMO_SIGN`) is set, keeping the store
+  credentials scoped to a single step (`.github/workflows/release.yml`,
+  `tools/publish-chromium.mjs`).
 - Profile pages get the orientation flip, shaped like the target product. On a
   GitHub profile shown as GitLab, the horizontal tab strip becomes a full-height
   GitLab-style super-sidebar headed "Profile", and the profile card moves into

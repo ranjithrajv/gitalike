@@ -14,6 +14,8 @@
     "package": "npm run package:chromium && npm run package:firefox",
     "package:chromium": "npm run build:chromium && web-ext build --source-dir dist/chromium --artifacts-dir dist/artifacts/chromium --overwrite-dest",
     "package:firefox": "npm run build:firefox && web-ext build --source-dir dist/firefox --artifacts-dir dist/artifacts/firefox --overwrite-dest",
+    "publish:chromium": "node tools/publish-chromium.mjs",
+    "sign:firefox": "npm run build:firefox && web-ext sign --source-dir dist/firefox --artifacts-dir dist/artifacts/firefox-signed --channel unlisted",
     "screenshots": "node tools/store-screenshots.mjs",
     "screenshots:profiles": "node tools/profile-screenshots.mjs",
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
