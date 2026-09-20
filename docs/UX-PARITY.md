@@ -157,16 +157,19 @@ menu are hidden. The GitLab profile is also re-shaped into GitHub's card: the
 identity (avatar over the name) and the Info/Contact rail move into a left
 column, with the README/activity beside them, and the follower/following counts
 are copied out of the navigation to sit under the photo. The profile menu itself
-is rebuilt as the applied product's — same labels, same order, same options —
-mapping `Repositories` ⇄ `Personal projects`, `Stars` ⇄ `Starred projects` and
-`Groups` ⇄ `Organizations`, swapping the landing item (`Overview` ⇄ the account
-name), and adding the applied product's extra destinations (GitLab's Activity,
-Groups and Snippets land on GitHub's Overview, Organizations and Gists pages).
-GitHub's `Packages` has no user-level GitLab page, so GitLab's menu omits it, as
-GitHub does when there are none. GitHub's public Achievements block is hidden
-under the GitLab UI, since GitLab shows achievements to the owner rather than on
-a public profile. (GitLab publishes no organisation on a profile, so that line
-cannot be shown.)
+is rebuilt as the applied product's — same labels, same order, same options.
+Under the GitHub skin it is exactly GitHub's profile menu (`Overview`,
+`Repositories`, `Projects`, `Packages`, `Stars`), mapping Repositories ⇄
+Personal projects and Stars ⇄ Starred projects and pointing Packages at GitLab's
+user packages route; GitLab's Activity, Groups, Snippets, Followers and
+Following have no GitHub profile tab and are dropped. Under the GitLab skin it is
+exactly GitLab's destinations (the account name, `Activity`, `Groups`,
+`Contributed projects`, `Personal projects`, `Starred projects`, `Snippets`,
+`Followers`, `Following`), with GitHub's Activity, Groups and Snippets landing
+on GitLab's Activity, Groups and Snippets. GitHub's public Achievements block is
+hidden under the GitLab UI, since GitLab shows achievements to the owner rather
+than on a public profile. (GitLab publishes no organisation on a profile, so
+that line cannot be shown.)
 
 ## References
 

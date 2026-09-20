@@ -77,17 +77,21 @@ marks as having no counterpart (see `UNMAPPED`).
 
 Several labels name the same destination without matching word for word, and the
 two products each have destinations the other lacks. Rather than show a mix, the
-profile menu is rebuilt as the applied product's: GitHub **Repositories** ⇄
-GitLab **Personal projects**, GitHub **Stars** ⇄ GitLab **Starred projects**,
-GitLab **Groups** ⇄ GitHub **Organizations**, and the landing item swaps
-(GitHub's **Overview** for GitLab's account name, and back). GitHub's menu is
-completed with what the source has — GitLab's **Contributed projects** becomes
-GitHub's **Projects** — and GitLab's menu brings **Activity**, **Groups** and
-**Snippets** across to GitHub's Overview, Organizations and Gists pages. GitHub's
-**Packages** has no user-level GitLab page, so GitLab's menu omits it, which is
-what GitHub itself does when there are none. Achievements are shown to a GitLab
-account's owner rather than on its public profile, so GitHub's public
-Achievements block is hidden under the GitLab UI.
+profile menu is rebuilt as the applied product's. Under the **GitHub** skin the
+menu is exactly GitHub's profile page — **Overview, Repositories, Projects,
+Packages, Stars** — with GitLab's *Personal projects* as **Repositories**, its
+*Contributed projects* as **Projects**, its *Starred projects* as **Stars**, the
+landing item swapped (GitHub's **Overview** ⇄ GitLab's account name), and
+**Packages** pointed at GitLab's user packages route. GitLab's items with no
+GitHub profile tab — Activity, Groups, Snippets, Followers, Following — do not
+appear there. Under the **GitLab** skin the menu is exactly GitLab's profile
+destinations — the account name, **Activity, Groups, Contributed projects,
+Personal projects, Starred projects, Snippets, Followers, Following** — with
+GitHub's Overview, Repositories, Projects and Stars remapped, and GitHub's
+Activity, Groups and Snippets brought across to GitLab's own Activity, Groups and
+Snippets. Achievements are shown to a GitLab account's owner rather than on its
+public profile, so GitHub's public Achievements block is hidden under the GitLab
+UI.
 
 ## Where they agree
 

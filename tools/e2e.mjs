@@ -216,7 +216,7 @@ try {
   check('L→G profile hides GitLab’s local time', lp.localTime === 'none', lp.localTime);
   check(
     'L→G profile nav is GitHub’s',
-    ['Overview', 'Repositories', 'Projects', 'Organizations', 'Stars'].every(
+    ['Overview', 'Repositories', 'Projects', 'Packages', 'Stars'].every(
       (label) => lp.nav.some((t) => t.startsWith(label)),
     ) && !lp.nav.some((t) => t.startsWith('Personal projects')),
     lp.nav.join(', '),
