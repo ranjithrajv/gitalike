@@ -1,6 +1,6 @@
 {
   "name": "gitalike",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Show GitHub with a GitLab UI, and GitLab with a GitHub UI.",
   "type": "module",

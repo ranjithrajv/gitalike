@@ -4,7 +4,7 @@ All notable changes to gitalike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.2] - 2026-09-21
 
 ### Added
 
@@ -43,12 +43,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   name) and Packages pointed at GitLab's user packages route; GitLab's Activity,
   Groups, Snippets, Followers and Following are dropped. Under the GitLab skin it
   is exactly GitLab's destinations, with GitHub's Activity, Groups and Snippets
-  landing on GitLab's own. GitHub's public Achievements block is hidden under the
-  GitLab UI, where GitLab shows achievements only to the owner
-  (`content/ux.js`, `themes/ux-nav.css`).
+  landing on GitLab's own. GitHub's public Achievements block, Pinned repositories
+  and Sponsor links are hidden under the GitLab UI (achievements are owner-only
+  there, and GitLab has no pinning or sponsoring), and GitLab's README "Read
+  more" clip and local-time row are removed under the GitHub UI, which shows the
+  README in full and no local time (`content/ux.js`, `themes/ux-nav.css`).
 - The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).
+- Project pages get the orientation flip too, shaped like the target product. On
+  the GitLab skin, GitHub's repo tabs become a real left sidebar with GitLab's
+  group headings (Plan, Code, Build, Deploy, …), the items take GitLab's words
+  ("Work items", "Pipelines") and GitLab's order, GitLab-only items on GitHub
+  carry a `≠ GitHub` marker, and GitHub's top bar is hidden, since GitLab
+  navigates from the sidebar alone. On the GitHub skin, GitLab's stacked project
+  blocks are flattened into GitHub's single aligned tab row, showing only
+  GitHub's own options — Code, Issues, Pull requests, Actions, Projects, Wiki,
+  Security, Insights, Settings (`src/lib/ux.js`, `src/content/ux.js`,
+  `src/themes/ux-nav.css`, `src/themes/github-as-gitlab.css`).
 - A pre-commit gate runs the same checks CI does plus the cheap ones it does
   not: staged blobs are scanned for merge conflict markers, CRLF, missing
   final newlines, invalid JSON, syntax errors, oversized files and leaked
@@ -92,6 +104,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `content/ux.js`, `content/theme.js`).
 - Performance: the toolbar badge refresh reads synced state once for all tabs and
   writes only when the badge actually changes (`background.js`).
+- The repository description and metadata now sit where the imitated product
+  puts it: GitHub's right-hand "About" sidebar becomes GitLab's full-width
+  "Project information" block above the content on the GitLab skin, and GitLab's
+  block becomes GitHub's right-hand About column on the GitHub skin. GitHub's
+  extra metadata sections — Releases, Packages, Used by, Contributors, Languages
+  — are hidden on the GitLab skin, where GitLab's project page lists a fixed,
+  smaller set (`src/content/ux.js`, `src/themes/ux-nav.css`,
+  `src/themes/github-as-gitlab.css`).
+- Documented the project-page parity notes (`docs/PROJECT-PAGE-UX.md`), the
+  companion to the profile-page notes.
 
 ### Fixed
 
@@ -103,6 +125,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   "Work items" (GitHub's "Issues" under the GitLab UI), so it sorts in place and
   gets its "Plan" heading instead of dropping to the end of the navigation
   (`src/lib/ux.js`).
+- The profile menu no longer rebuilds on project pages. It had selected the
+  project sidebar's pinned and group sections as well, injecting GitHub's profile
+  menu three times and hiding the project navigation; it is now gated to GitLab
+  profile pages, like the follower/following copy, and the GitHub-skin strip
+  takes GitHub's dark bar colour rather than GitLab's light sidebar one
+  (`content/ux.js`).
+- The G→L profile rail is gated to GitHub's desktop breakpoint, so mobile keeps
+  GitHub's own profile tab row (`themes/ux-nav.css`).
 - `package-lock.json` had drifted from `package.json` (`0.1.0` after the `0.1.1`
   release). It is back in lockstep, and the pre-commit gate now fails when the
   two disagree.
