@@ -122,6 +122,8 @@ product's *vocabulary and habits*:
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
 | Other host | open the same page on the other forge, from the popup or `Alt` + `Shift` + `O`                                     |
 | No counterpart | a feature the other product lacks is marked `≠ GitLab` / `≠ GitHub` instead of pretending it exists             |
+| Orientation | GitHub's repo tabs become a vertical, GitLab-style column; GitLab's sidebar is left vertical (flattening it breaks the page) |
+| Account chrome | "Your repositories" ⇄ "Your projects", "Your gists" ⇄ "Your snippets", "Your stars" ⇄ "Starred projects", "Your organizations" ⇄ "Your groups" |
 
 It is deliberately conservative. Copy is rewritten only in ordinary page text —
 never inside code, inputs or editable regions — control words like the merge
@@ -232,6 +234,10 @@ source of truth shared by the content script, the popup and the background.
   GitHub's tab order; the groups themselves keep GitLab's order, because
   flattening them would change GitLab's information architecture rather than
   match GitHub's.
+- **GitLab's sidebar is not laid horizontally.** GitHub's repo tabs are flipped
+  to a vertical column, but the reverse — flattening GitLab's fixed sidebar into
+  a top bar — was measured collapsing the project content to a ~277px column, so
+  it is not applied.
 - **"Open on the other host" covers the two public forges only.** A self-hosted
   instance has no pair to guess, so the action is absent there.
 - **A feature with no counterpart is marked, not hidden.** GitLab-only features

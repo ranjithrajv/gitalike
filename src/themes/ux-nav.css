@@ -1,0 +1,53 @@
+/* =====================================================================
+   Git Same — navigation orientation.
+   GitHub's app navigation is a horizontal tab row; GitLab's is a vertical
+   sidebar. A GitLab-skinned GitHub site flips its repo tabs to a vertical,
+   sidebar-style column.
+
+   Only that direction is done. The reverse — flattening GitLab's fixed sidebar
+   into a horizontal bar — was tried and rejected: GitLab's layout grid does not
+   reflow, so the project content collapses to a ~277px column (measured live).
+   A fixed, full-height sidebar cannot be laid horizontally without
+   restructuring the host page, which breaks at every breakpoint.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------- G → L -- */
+
+/* GitHub's repo tabs become a vertical, GitLab-sidebar-style column. */
+html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 2px !important;
+  width: 100%;
+  max-width: 260px;
+}
+
+html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
+  display: block !important;
+  width: 100%;
+}
+
+html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
+  display: block !important;
+  width: 100%;
+  padding: 6px 12px !important;
+  border: 0 !important;
+  border-radius: var(--gs-radius-md, 6px) !important;
+  text-align: left !important;
+}
+
+html.gs-theme-gitlab
+  nav[aria-label="Repository"]
+  ul.UnderlineNav-body
+  a[aria-current="page"] {
+  background-color: var(--gs-accent-subtle) !important;
+  color: var(--gs-accent) !important;
+  font-weight: 600 !important;
+}
+
+/* The active-tab underline belongs to the horizontal form; the tint above
+   replaces it. */
+html.gs-theme-gitlab nav[aria-label="Repository"] .UnderlineNav-item::after {
+  display: none !important;
+}

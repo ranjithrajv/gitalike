@@ -20,9 +20,11 @@ is the map and the scorecard.
 | Logo palette (shape kept) | ✅ | ✅ | `--gs-tanuki` / `--gs-octocat` |
 | Copy — `PHRASES` | ✅ 9 | ✅ 9 | `lib/ux.js` |
 | Control labels — `LABELS` | ✅ 4 | ✅ 4 | `lib/ux.js` |
-| No-counterpart markers — `UNMAPPED` | ✅ 2 | ✅ 15 | `lib/ux.js` |
+| Account/menu chrome — `CHROME` | ✅ 4 | ✅ 4 | `lib/ux.js` |
+| No-counterpart markers — `UNMAPPED` | ✅ 3 | ✅ 15 | `lib/ux.js` |
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
+| Nav orientation | ✅ | ❌ | `themes/ux-nav.css` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
 | Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
 | "Open on the other host" | ✅ | ✅ | `lib/ux.js` + popup |
@@ -66,6 +68,11 @@ are safe to translate. Every entry round-trips:
 region: `Code ⇄ Repository`, `Actions ⇄ CI/CD`, `Pull requests ⇄ Merge requests`,
 `Insights ⇄ Analytics`, `Projects ⇄ Issue boards`.
 
+`CHROME` covers the account and menu chrome the two products name differently —
+`Your repositories ⇄ Your projects`, `Your gists ⇄ Your snippets`,
+`Your stars ⇄ Starred projects`, `Your organizations ⇄ Your groups` — again as
+whole control labels only, so a bare "Settings" (the repo tab) is never touched.
+
 ## No counterpart
 
 Some features have no equivalent in the other product. Rather than leave them
@@ -95,6 +102,20 @@ Both reorders move items only among the slots they already occupy and leave
 unrecognised children where they are, so an unfamiliar markup change degrades to
 "no reorder". A reorder is applied once and then left alone for a moment, so a
 framework that re-renders its list cannot make the two of us thrash.
+
+## Navigation orientation
+
+GitHub's app navigation is a horizontal tab row; GitLab's is a vertical sidebar.
+On a GitLab-skinned GitHub site the repo tabs are restyled into a vertical,
+sidebar-style column (`themes/ux-nav.css`), so the orientation matches the
+product being imitated.
+
+The reverse is **not** done. Flattening GitLab's fixed sidebar into a horizontal
+bar was implemented and measured live: GitLab's layout grid does not reflow, and
+the project content collapsed to a ~277px-wide, 12,515px-tall column. A fixed,
+full-height sidebar cannot be laid horizontally without restructuring the host
+page, which breaks at every breakpoint — so `ux-nav.css` carries only the safe
+direction.
 
 ## References
 
@@ -138,16 +159,18 @@ there.
 
 ## Not built
 
+- **L→G navigation orientation** — GitLab's fixed sidebar is not laid
+  horizontally; see Navigation orientation for the measurement behind that.
 - **Behaviour** behind search, notifications and the merge flow: only their
   labels change, not what they do.
 
 ## Extending
 
-Add to `PHRASES` for prose, `LABELS` for a control label, `NAV` for a nav label,
-`SHORTCUTS` for a `g`-combo. Keep control words in `LABELS`, not `PHRASES` — the
-control scope is what makes an ordinary word safe. The tests enforce that every
-`LABELS` entry round-trips and that `PHRASES` stays the same size in both
-directions.
+Add to `PHRASES` for prose, `LABELS` for a control label, `CHROME` for account
+chrome, `NAV` for a nav label, `SHORTCUTS` for a `g`-combo. Keep control words in
+`LABELS`/`CHROME`, not `PHRASES` — the control scope is what makes an ordinary
+word safe. The tests enforce that every `LABELS` and `CHROME` entry round-trips
+and that `PHRASES` stays the same size in both directions.
 
 ## Verification
 
@@ -160,7 +183,9 @@ directions.
   `gitlab.com/git/git/-/merge_requests/1875`, and `open-other-host` was
   registered alongside `toggle-site`. Nine `≠ GitHub` badges appeared on
   GitLab-only features, a mapped item carried none, an injected `Discussions`
-  tab was marked `≠ GitLab`, and every badge was removed on switch-off.
+  tab was marked `≠ GitLab`, and every badge was removed on switch-off. The G→L
+  repo tabs rendered as a vertical column; the L→G sidebar flip was measured
+  collapsing the content to 277px and so is not applied.
 - **Unit**, `tests/ux.test.mjs`: every table and helper, including the `LABELS`
-  round-trip, `PHRASES` symmetry, `labelMatches`, `otherHostUrl`, and that
-  `UNMAPPED` never overlaps a translated label.
+  and `CHROME` round-trips, `PHRASES` symmetry, `labelMatches`, `otherHostUrl`,
+  and that `UNMAPPED` never overlaps a translated label.

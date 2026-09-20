@@ -109,11 +109,13 @@
       'Your repositories': 'Your projects',
       'Your gists': 'Your snippets',
       'Your stars': 'Starred projects',
+      'Your organizations': 'Your groups',
     },
     github: {
       'Your projects': 'Your repositories',
       'Your snippets': 'Your gists',
       'Starred projects': 'Your stars',
+      'Your groups': 'Your organizations',
     },
   };
 
@@ -211,6 +213,7 @@
     gitlab: {
       Discussions: 'GitLab',
       Sponsors: 'GitLab',
+      Marketplace: 'GitLab',
     },
     github: {
       Epics: 'GitHub',
@@ -272,7 +275,11 @@
 
   /** Translate a control's whole label: exact words first, then copy. */
   function translateControl(label, theme) {
-    return lookup(LABELS[theme], label) ?? translate(label, theme);
+    return (
+      lookup(LABELS[theme], label) ??
+      lookup(CHROME[theme], label) ??
+      translate(label, theme)
+    );
   }
 
   /** The product that lacks this feature, or null if it has a counterpart. */
@@ -429,6 +436,7 @@
     PHRASES,
     NAV,
     LABELS,
+    CHROME,
     UNMAPPED,
     NAV_SCOPE,
     LABEL_SCOPE,

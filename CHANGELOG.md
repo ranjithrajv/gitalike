@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Account/menu chrome is translated too (`CHROME`): "Your repositories" ⇄
+  "Your projects", "Your gists" ⇄ "Your snippets", "Your stars" ⇄
+  "Starred projects", "Your organizations" ⇄ "Your groups".
+- Navigation orientation is matched one way: on a GitLab-skinned GitHub site the
+  repo tabs become a vertical, GitLab-style column (`themes/ux-nav.css`). The
+  reverse is not applied — flattening GitLab's fixed sidebar was measured
+  collapsing the project content to a ~277px column.
+
 ### Changed
 
 - Internal tidy-up, no behaviour change. The storage schema (`STORAGE_KEYS`,

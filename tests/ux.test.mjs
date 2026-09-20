@@ -15,6 +15,7 @@ const {
   PHRASES,
   NAV,
   LABELS,
+  CHROME,
   UNMAPPED,
   LABEL_SCOPE,
   NAV_RULES,
@@ -43,7 +44,7 @@ describe('module shape', () => {
     ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, LABELS, UNMAPPED, SHORTCUTS]) {
+    for (const table of [PHRASES, NAV, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
@@ -121,6 +122,29 @@ describe('LABELS', () => {
     assert.equal(translate('Rebase', 'github'), 'Rebase');
     assert.equal(translate('Security and quality', 'gitlab'), 'Security and quality');
     assert.equal(translate('Merge', 'github'), 'Merge');
+  });
+});
+
+describe('CHROME', () => {
+  test('round-trips between the two directions', () => {
+    for (const [from, to] of Object.entries(CHROME.gitlab)) {
+      assert.equal(CHROME.github[to], from, `github["${to}"] should be "${from}"`);
+    }
+    for (const [from, to] of Object.entries(CHROME.github)) {
+      assert.equal(CHROME.gitlab[to], from, `gitlab["${to}"] should be "${from}"`);
+    }
+  });
+
+  test('translateControl maps account/menu chrome', () => {
+    assert.equal(translateControl('Your repositories', 'gitlab'), 'Your projects');
+    assert.equal(translateControl('Your projects', 'github'), 'Your repositories');
+    assert.equal(translateControl('Your gists', 'gitlab'), 'Your snippets');
+    assert.equal(translateControl('Starred projects', 'github'), 'Your stars');
+  });
+
+  test('chrome wording is never rewritten in prose', () => {
+    assert.equal(translate('Your repositories', 'gitlab'), 'Your repositories');
+    assert.equal(translate('Your projects', 'github'), 'Your projects');
   });
 });
 

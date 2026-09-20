@@ -27,7 +27,8 @@
       "css": [
         "themes/github-as-gitlab.css",
         "themes/gitlab-as-github.css",
-        "themes/ux-markers.css"
+        "themes/ux-markers.css",
+        "themes/ux-nav.css"
       ],
       "js": [
         "lib/sites.js",
