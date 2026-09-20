@@ -19,8 +19,6 @@
   const UX = globalThis.GIT_SAME_UX;
   if (!UX) return;
 
-  const SETTINGS_KEY = 'gitSameSettings';
-  const INSTANCES_KEY = 'gitSameInstances';
   const HINT_DEFAULT = 'Which product is it?';
 
   const rows = [...document.querySelectorAll('.row')];
@@ -43,9 +41,8 @@
   /* ---------------------------------------------------------------- state -- */
 
   async function load() {
-    const stored = await api.storage.sync.get([SETTINGS_KEY, INSTANCES_KEY]);
-    settings = stored?.[SETTINGS_KEY] ?? {};
-    instances = stored?.[INSTANCES_KEY] ?? {};
+    const stored = await api.storage.sync.get(SITES.STORAGE_KEYS);
+    ({ settings, instances } = SITES.stateFrom(stored));
   }
 
   async function currentHost() {
@@ -61,13 +58,6 @@
       return '';
     }
   }
-
-  /**
-   * Accepts what people actually paste. Normalisation lives in the shared lib
-   * so the popup, the background and the tests all agree on it.
-   * @returns {string|null} normalised hostname, or null if unusable
-   */
-  const parseHost = (value) => SITES.parseHost(value);
 
   /* --------------------------------------------------------------- render -- */
 
@@ -86,8 +76,7 @@
 
     for (const row of rows) {
       const kind = row.dataset.setting;
-      const meta = SITES.kinds[kind];
-      const on = settings[meta.setting] === meta.theme;
+      const on = SITES.kindOn(kind, settings);
 
       row.querySelector('.switch').checked = on;
       row.classList.toggle('row--on', on);
@@ -131,22 +120,21 @@
   /* -------------------------------------------------------------- actions -- */
 
   async function addHost(hostname, kind) {
-    const meta = SITES.kinds[kind];
     await api.storage.sync.set({
-      [INSTANCES_KEY]: { ...instances, [hostname]: kind },
+      [SITES.INSTANCES_KEY]: { ...instances, [hostname]: kind },
       // Asking to show a site implies showing it — don't make it a second click.
-      [SETTINGS_KEY]: { ...settings, [meta.setting]: meta.theme },
+      [SITES.SETTINGS_KEY]: { ...settings, [kind]: SITES.kinds[kind].theme },
     });
   }
 
   async function removeHost(hostname) {
     const next = { ...instances };
     delete next[hostname];
-    await api.storage.sync.set({ [INSTANCES_KEY]: next });
+    await api.storage.sync.set({ [SITES.INSTANCES_KEY]: next });
   }
 
   async function submit(kind) {
-    const hostname = parseHost(addInput.value);
+    const hostname = SITES.parseHost(addInput.value);
     if (!hostname) {
       hint('That does not look like a web address.', true);
       addInput.focus();
@@ -176,14 +164,14 @@
   addInput.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter') return;
     // One field, two possible answers — so Enter takes the host's real product.
-    const hostname = parseHost(addInput.value);
+    const hostname = SITES.parseHost(addInput.value);
     const kind = hostname ? SITES.kindFor(hostname, instances) : null;
     if (kind) submit(kind);
     else hint('Pick GitHub or GitLab.', false);
   });
 
   addRemove.addEventListener('click', async () => {
-    const hostname = parseHost(addInput.value);
+    const hostname = SITES.parseHost(addInput.value);
     if (!hostname) return;
     await removeHost(hostname);
     addInput.value = '';
@@ -191,11 +179,11 @@
 
   for (const input of switches) {
     input.addEventListener('change', () => {
-      const meta = SITES.kinds[input.dataset.setting];
+      const kind = input.dataset.setting;
       api.storage.sync.set({
-        [SETTINGS_KEY]: {
+        [SITES.SETTINGS_KEY]: {
           ...settings,
-          [meta.setting]: input.checked ? meta.theme : 'off',
+          [kind]: input.checked ? SITES.kinds[kind].theme : 'off',
         },
       });
     });
@@ -204,7 +192,7 @@
   // The other surfaces (shortcut, another window) can change this underneath us.
   api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
-    if (!changes[SETTINGS_KEY] && !changes[INSTANCES_KEY]) return;
+    if (!changes[SITES.SETTINGS_KEY] && !changes[SITES.INSTANCES_KEY]) return;
     load().then(render);
   });
 
@@ -214,7 +202,8 @@
       openOther.hidden = true;
       return;
     }
-    const target = new URL(other).hostname === 'gitlab.com' ? 'GitLab' : 'GitHub';
+    // Which product the target host is lives with the host-pair table, not here.
+    const target = UX.hostProduct(other);
     openOther.textContent = `Open this page on ${target}`;
     openOther.hidden = false;
     openOther.onclick = () => api.tabs.create({ url: other });

@@ -4,6 +4,22 @@ All notable changes to Git Same are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Internal tidy-up, no behaviour change. The storage schema (`STORAGE_KEYS`,
+  `stateFrom`), the theme list (`THEMES`) and the on/off predicate (`kindOn`)
+  now live once in `src/lib/sites.js` instead of being repeated by the content
+  script, popup, background and screenshot tool. `THEMES` is derived from
+  `kinds`, and the GitHub → GitLab route table from its inverse, so the two
+  directions cannot drift. The UX content script's per-node passes moved behind
+  one `paintNode`, and which product a forge host is (`hostProduct`) moved next
+  to the host-pair table. Dead surface was dropped: `isOn`, `translateLabel`
+  and `orderItems` (none had a production caller) and the `builtin` /
+  `translatePath` exports; `kinds[*].setting` went too, since it always mirrors
+  the kind's key.
+
 ## [0.1.0] - 2026-09-20
 
 First public release. Git Same re-skins GitHub as GitLab and GitLab as GitHub:

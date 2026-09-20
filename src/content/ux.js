@@ -31,11 +31,13 @@
 (() => {
   'use strict';
 
+  const SITES = globalThis.GIT_SAME;
   const UX = globalThis.GIT_SAME_UX;
-  if (!UX || typeof document === 'undefined') return;
+  if (!SITES || !UX || typeof document === 'undefined') return;
 
   const root = document.documentElement;
-  const THEMES = ['gitlab', 'github'];
+  // Which themes exist is derived from the shared `kinds` table, not listed here.
+  const THEMES = SITES.THEMES;
 
   const SKIP_TAGS = new Set([
     'SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'CODE', 'PRE', 'KBD', 'SAMP',
@@ -244,15 +246,21 @@
     }
   }
 
-  function paintAll(t, node = document.body) {
-    if (!node) return;
-    applying = true;
+  // The per-node passes, in one place so a new pass cannot be wired into the
+  // initial load but forgotten for the mutations that follow it.
+  function paintNode(node, t) {
     paintText(node, t);
     paintAttrs(node, t);
     paintRefs(node, t);
     paintControls(node, t);
     paintNav(node, t);
     paintUnmapped(node, t);
+  }
+
+  function paintAll(t, node = document.body) {
+    if (!node) return;
+    applying = true;
+    paintNode(node, t);
     paintOrder(t);
     applying = false;
   }
@@ -303,12 +311,7 @@
       applying = true;
       for (const node of added) {
         if (!node.isConnected) continue;
-        paintText(node, current);
-        paintAttrs(node, current);
-        paintRefs(node, current);
-        paintControls(node, current);
-        paintNav(node, current);
-        paintUnmapped(node, current);
+        paintNode(node, current);
       }
       applying = false;
       paintOrder(current);

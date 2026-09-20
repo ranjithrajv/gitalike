@@ -100,6 +100,23 @@
     '[role="menuitem"]',
   ].join(',');
 
+  // Account/menu chrome, where the two products name the same thing differently
+  // but the wording is too generic to translate in prose (a bare "Settings"
+  // means the repo tab, not preferences). Like LABELS, whole control labels
+  // only, and every pair round-trips.
+  const CHROME = {
+    gitlab: {
+      'Your repositories': 'Your projects',
+      'Your gists': 'Your snippets',
+      'Your stars': 'Starred projects',
+    },
+    github: {
+      'Your projects': 'Your repositories',
+      'Your snippets': 'Your gists',
+      'Starred projects': 'Your stars',
+    },
+  };
+
   // Regions whose labels the NAV table is allowed to touch. Verified against
   // the live sites: GitHub's repo tabs live in `nav[aria-label="Repository"]`;
   // GitLab's project navigation is the `.super-sidebar`.
@@ -244,29 +261,23 @@
     return out;
   }
 
-  /** Translate an app-navigation label: exact single words first, then copy. */
-  function translateLabel(label, theme) {
-    const map = NAV[theme];
-    if (map && Object.prototype.hasOwnProperty.call(map, label)) {
-      return map[label];
-    }
-    return translate(label, theme);
+  // An own-property lookup that treats a prototype key ("constructor") as a
+  // miss, so a label can never match inherited state. Shared by every exact
+  // table so the guard is written once.
+  function lookup(map, label) {
+    return map && Object.prototype.hasOwnProperty.call(map, label)
+      ? map[label]
+      : null;
   }
 
   /** Translate a control's whole label: exact words first, then copy. */
   function translateControl(label, theme) {
-    const map = LABELS[theme];
-    if (map && Object.prototype.hasOwnProperty.call(map, label)) {
-      return map[label];
-    }
-    return translate(label, theme);
+    return lookup(LABELS[theme], label) ?? translate(label, theme);
   }
 
   /** The product that lacks this feature, or null if it has a counterpart. */
   function noEquivalentFor(label, theme) {
-    const map = UNMAPPED[theme];
-    if (map && Object.prototype.hasOwnProperty.call(map, label)) return map[label];
-    return null;
+    return lookup(UNMAPPED[theme], label);
   }
 
   /**
@@ -307,16 +318,25 @@
       .map((entry) => entry.index);
   }
 
-  /** `labels` reordered — `orderItems` built on `orderIndexes`. */
-  function orderItems(labels, order) {
-    return orderIndexes(labels, order).map((index) => labels[index]);
-  }
-
   /* ------------------------------------------------------ other host -- */
 
   // Only the two public forges have a known counterpart. A self-hosted instance
-  // gives no way to guess its pair, so there the action is simply absent.
-  const HOST_PAIRS = { 'github.com': 'gitlab.com', 'gitlab.com': 'github.com' };
+  // gives no way to guess its pair, so there the action is simply absent. Each
+  // entry carries everything that is known about the host in one place: which
+  // product it is (`from`), its counterpart (`host`) and how to name it.
+  const HOST_PAIRS = {
+    'github.com': { from: 'github', host: 'gitlab.com', product: 'GitHub' },
+    'gitlab.com': { from: 'gitlab', host: 'github.com', product: 'GitLab' },
+  };
+
+  /** Parse a URL, or null when the string is not one. */
+  function parseUrl(raw) {
+    try {
+      return new URL(raw);
+    } catch {
+      return null;
+    }
+  }
 
   // First path segments that name a product-wide page, not a repository, so
   // they are never mistaken for an owner/repo pair.
@@ -332,68 +352,77 @@
     'search', 'profile', 'public', 'sign_in', 'oauth', 'import', 'invites',
   ]);
 
+  // The route segment each forge uses for the same page. Only the GitHub side
+  // is written down; the GitLab side is derived as its inverse, so a route can
+  // never be added to one direction and forgotten in the other.
+  const GITHUB_ROUTES = {
+    pull: 'merge_requests',
+    issues: 'issues',
+    tree: 'tree',
+    blob: 'blob',
+    commits: 'commits',
+    releases: 'releases',
+    wiki: 'wikis',
+    actions: 'pipelines',
+  };
+  const GITLAB_ROUTES = Object.fromEntries(
+    Object.entries(GITHUB_ROUTES).map(([github, gitlab]) => [gitlab, github]),
+  );
+
   // Map one product's path onto the other's. Returns null when the path is not
   // a repository (or is a GitLab group nested too deep for GitHub's owner/repo).
   function translatePath(pathname, from) {
     const seg = String(pathname || '').split('/').filter(Boolean);
+    const gitlab = from !== 'github';
 
-    if (from === 'github') {
+    // GitLab marks the project path off from the route with `/-/`; GitHub has
+    // no marker, so the route begins at the third segment.
+    let base;
+    let route;
+    if (gitlab) {
+      const marker = seg.indexOf('-');
+      const project = marker > 0 ? seg.slice(0, marker) : seg.slice(0, 2);
+      if (project.length !== 2 || GITLAB_RESERVED.has(project[0])) return null;
+      base = `/${project[0]}/${project[1]}`;
+      route = marker > 0 ? seg.slice(marker + 1) : seg.slice(2);
+    } else {
       if (seg.length < 2 || GITHUB_RESERVED.has(seg[0])) return null;
-      const base = `/${seg[0]}/${seg[1]}`;
-      const [head, ...tail] = seg.slice(2);
-      if (!head) return base;
-      const rest = tail.length ? `/${tail.join('/')}` : '';
-      switch (head) {
-        case 'pull': return `${base}/-/merge_requests${rest}`;
-        case 'pulls': return `${base}/-/merge_requests`;
-        case 'issues': return `${base}/-/issues${rest}`;
-        case 'tree': return `${base}/-/tree${rest}`;
-        case 'blob': return `${base}/-/blob${rest}`;
-        case 'commits': return `${base}/-/commits${rest}`;
-        case 'releases': return `${base}/-/releases${rest}`;
-        case 'wiki': return `${base}/-/wikis${rest}`;
-        case 'actions': return `${base}/-/pipelines${rest}`;
-        default: return base;
-      }
+      base = `/${seg[0]}/${seg[1]}`;
+      route = seg.slice(2);
     }
 
-    // GitLab: the `/-/` marker separates the project path from the route. A
-    // project path deeper than owner/repo (a subgroup) has no GitHub form.
-    const marker = seg.indexOf('-');
-    const project = marker > 0 ? seg.slice(0, marker) : seg.slice(0, 2);
-    const route = marker > 0 ? seg.slice(marker + 1) : seg.slice(2);
-    if (project.length !== 2 || GITLAB_RESERVED.has(project[0])) return null;
-    const base = `/${project[0]}/${project[1]}`;
     const [head, ...tail] = route;
     if (!head) return base;
+
+    // The merge-request list and detail pages name different segments on each
+    // side (`pulls` vs `pull`), so those two forms are resolved first.
+    if (!gitlab && head === 'pulls') return `${base}/-/merge_requests`;
+    if (gitlab && head === 'merge_requests' && !tail.length) return `${base}/pulls`;
+
+    const to = gitlab ? GITLAB_ROUTES[head] : GITHUB_ROUTES[head];
+    if (!to) return base;
     const rest = tail.length ? `/${tail.join('/')}` : '';
-    switch (head) {
-      case 'merge_requests': return tail.length ? `${base}/pull${rest}` : `${base}/pulls`;
-      case 'issues': return `${base}/issues${rest}`;
-      case 'tree': return `${base}/tree${rest}`;
-      case 'blob': return `${base}/blob${rest}`;
-      case 'commits': return `${base}/commits${rest}`;
-      case 'releases': return `${base}/releases${rest}`;
-      case 'wikis': return `${base}/wiki${rest}`;
-      case 'pipelines': return `${base}/actions${rest}`;
-      default: return base;
-    }
+    return gitlab ? `${base}/${to}${rest}` : `${base}/-/${to}${rest}`;
   }
 
   /** The same page on the other forge, or null if there is no known pair. */
   function otherHostUrl(raw) {
-    let url;
-    try {
-      url = new URL(raw);
-    } catch {
-      return null;
-    }
-    const target = HOST_PAIRS[url.hostname];
-    if (!target) return null;
-    const from = url.hostname === 'github.com' ? 'github' : 'gitlab';
-    const path = translatePath(url.pathname, from);
+    const url = parseUrl(raw);
+    const pair = url && HOST_PAIRS[url.hostname];
+    if (!pair) return null;
+    const path = translatePath(url.pathname, pair.from);
     if (!path) return null;
-    return `https://${target}${path}${url.search}${url.hash}`;
+    return `https://${pair.host}${path}${url.search}${url.hash}`;
+  }
+
+  /**
+   * The product a forge URL belongs to — 'GitHub', 'GitLab' — or null when the
+   * host is not one of the two known forges. Lets the popup label the "open on
+   * the other host" action without hardcoding which host is which.
+   */
+  function hostProduct(raw) {
+    const url = parseUrl(raw);
+    return (url && HOST_PAIRS[url.hostname]?.product) ?? null;
   }
 
   globalThis.GIT_SAME_UX = {
@@ -407,14 +436,12 @@
     SHORTCUTS,
     SHORTCUT_TARGETS,
     translate,
-    translateLabel,
     translateControl,
     noEquivalentFor,
     refMarker,
     labelMatches,
     orderIndexes,
-    orderItems,
-    translatePath,
     otherHostUrl,
+    hostProduct,
   };
 })();

@@ -1,5 +1,6 @@
 /**
- * What Git Same knows about hosts, and the two skins it applies.
+ * What Git Same knows about hosts, the skins it applies, and the storage schema
+ * it reads them from.
  *
  * Loaded as a plain script by the content script, the popup and the background
  * context, so the tables cannot drift between them.
@@ -24,18 +25,17 @@
 
   /**
    * A "kind" is which product a site is. The skin applied is always the other
-   * one, so the kind decides the theme, the badge and which setting drives it.
+   * one, so the kind decides the theme, the badge and the setting that drives
+   * it — the setting is the kind's own key, so it is not repeated here.
    */
   const kinds = {
     github: {
-      setting: 'github',
       theme: 'gitlab',
       badge: 'GL',
       color: '#7759c2',
       other: 'GitLab',
     },
     gitlab: {
-      setting: 'gitlab',
       theme: 'github',
       badge: 'GH',
       color: '#24292f',
@@ -44,6 +44,34 @@
   };
 
   const isKind = (value) => value === 'github' || value === 'gitlab';
+
+  /**
+   * The storage keys Git Same owns, kept beside the schema that gives them
+   * meaning (the `settings` map is keyed by kind, the `instances` map by host).
+   * Every context reads the same pair through `stateFrom`.
+   */
+  const SETTINGS_KEY = 'gitSameSettings';
+  const INSTANCES_KEY = 'gitSameInstances';
+  const STORAGE_KEYS = [SETTINGS_KEY, INSTANCES_KEY];
+
+  /**
+   * Every theme name, derived from `kinds` so a new kind contributes its theme
+   * once instead of also having to be remembered in each context's `THEMES`.
+   * @type {string[]}
+   */
+  const THEMES = Object.values(kinds).map((meta) => meta.theme);
+
+  /**
+   * The two stored maps with their defaults applied. Takes the raw result of
+   * `storage.sync.get(STORAGE_KEYS)` so that the defaults live in one place.
+   * @returns {{settings: object, instances: object}}
+   */
+  function stateFrom(stored) {
+    return {
+      settings: stored?.[SETTINGS_KEY] ?? {},
+      instances: stored?.[INSTANCES_KEY] ?? {},
+    };
+  }
 
   /**
    * The kind a host belongs to: bundled table first, then whatever the user
@@ -101,29 +129,35 @@
     return hostname || null;
   }
 
-  /** Is the skin switched on for this host? null when the host is unknown. */
-  function isOn(host, settings, added) {
-    const kind = kindFor(host, added);
-    if (!kind) return null;
+  /**
+   * Is this kind's skin switched on? The predicate the popup rows, the badge
+   * and `themeFor` all share, so "on" is defined exactly once. The setting is
+   * stored under the kind's own name.
+   */
+  function kindOn(kind, settings) {
     const meta = kinds[kind];
-    return Boolean(settings) && settings[meta.setting] === meta.theme;
+    return Boolean(meta) && Boolean(settings) && settings[kind] === meta.theme;
   }
 
   /** The theme to apply for this host — 'gitlab', 'github', or null for none. */
   function themeFor(host, settings, added) {
-    if (!isOn(host, settings, added)) return null;
-    return kinds[kindFor(host, added)].theme;
+    const kind = kindFor(host, added);
+    return kind && kindOn(kind, settings) ? kinds[kind].theme : null;
   }
 
   globalThis.GIT_SAME = {
-    builtin,
     kinds,
+    THEMES,
+    SETTINGS_KEY,
+    INSTANCES_KEY,
+    STORAGE_KEYS,
+    stateFrom,
     isKind,
     kindFor,
     hostsFor,
     isBuiltin,
     parseHost,
-    isOn,
+    kindOn,
     themeFor,
   };
 })();

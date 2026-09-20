@@ -17,9 +17,6 @@ const api = globalThis.browser ?? globalThis.chrome;
 const SITES = globalThis.GIT_SAME;
 const UX = globalThis.GIT_SAME_UX;
 
-const SETTINGS_KEY = 'gitSameSettings';
-const INSTANCES_KEY = 'gitSameInstances';
-
 function hostOf(url) {
   try {
     return new URL(url).hostname;
@@ -28,21 +25,18 @@ function hostOf(url) {
   }
 }
 
-async function readMaps() {
-  const stored = await api.storage.sync.get([SETTINGS_KEY, INSTANCES_KEY]);
-  return {
-    settings: stored?.[SETTINGS_KEY] ?? {},
-    instances: stored?.[INSTANCES_KEY] ?? {},
-  };
+async function readState() {
+  return SITES.stateFrom(await api.storage.sync.get(SITES.STORAGE_KEYS));
 }
 
 async function refreshBadge(tabId, url) {
   if (tabId == null) return;
 
   const host = hostOf(url);
-  const { settings, instances } = await readMaps();
-  const on = host ? SITES.isOn(host, settings, instances) === true : false;
-  const meta = on ? SITES.kinds[SITES.kindFor(host, instances)] : null;
+  const { settings, instances } = await readState();
+  const kind = host ? SITES.kindFor(host, instances) : null;
+  const on = SITES.kindOn(kind, settings);
+  const meta = on ? SITES.kinds[kind] : null;
 
   await api.action.setBadgeText({ tabId, text: on ? meta.badge : '' });
   if (on) {
@@ -77,18 +71,16 @@ api.commands.onCommand.addListener(async (command) => {
   const host = hostOf(tab?.url);
   if (!host || tab.id == null) return;
 
-  const { settings, instances } = await readMaps();
+  const { settings, instances } = await readState();
   const kind = SITES.kindFor(host, instances);
   // An unrecognised host needs a choice of UI, which only the popup can offer.
   if (!kind) return;
 
   const meta = SITES.kinds[kind];
-  settings[meta.setting] = SITES.isOn(host, settings, instances)
-    ? 'off'
-    : meta.theme;
+  settings[kind] = SITES.kindOn(kind, settings) ? 'off' : meta.theme;
 
   // storage.onChanged fans this out to the content scripts and the badges.
-  await api.storage.sync.set({ [SETTINGS_KEY]: settings });
+  await api.storage.sync.set({ [SITES.SETTINGS_KEY]: settings });
 });
 
 /* ---------------------------------------------------------------- badges -- */
@@ -106,7 +98,9 @@ api.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 api.storage.onChanged.addListener((changes, area) => {
   if (area !== 'sync') return;
-  if (changes[SETTINGS_KEY] || changes[INSTANCES_KEY]) refreshAllBadges();
+  if (changes[SITES.SETTINGS_KEY] || changes[SITES.INSTANCES_KEY]) {
+    refreshAllBadges();
+  }
 });
 
 api.runtime.onInstalled.addListener(refreshAllBadges);

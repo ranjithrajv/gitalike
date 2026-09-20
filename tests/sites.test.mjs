@@ -22,9 +22,14 @@ const {
   hostsFor,
   isBuiltin,
   isKind,
-  isOn,
+  kindOn,
   themeFor,
+  stateFrom,
   kinds,
+  THEMES,
+  SETTINGS_KEY,
+  INSTANCES_KEY,
+  STORAGE_KEYS,
 } = SITES;
 
 describe('module shape', () => {
@@ -36,17 +41,24 @@ describe('module shape', () => {
       hostsFor,
       isBuiltin,
       isKind,
-      isOn,
+      kindOn,
       themeFor,
+      stateFrom,
     ]) {
       assert.equal(typeof fn, 'function');
     }
   });
 
+  test('the storage schema and theme list are the shared ones', () => {
+    assert.deepEqual(STORAGE_KEYS, [SETTINGS_KEY, INSTANCES_KEY]);
+    assert.equal(SETTINGS_KEY, 'gitSameSettings');
+    assert.equal(INSTANCES_KEY, 'gitSameInstances');
+    // Derived from `kinds`, so a third kind contributes its theme exactly once.
+    assert.deepEqual(THEMES, ['gitlab', 'github']);
+  });
+
   test('a kind is always skinned with the *other* product', () => {
-    assert.equal(kinds.github.setting, 'github');
     assert.equal(kinds.github.theme, 'gitlab');
-    assert.equal(kinds.gitlab.setting, 'gitlab');
     assert.equal(kinds.gitlab.theme, 'github');
   });
 });
@@ -186,41 +198,79 @@ describe('isBuiltin / isKind', () => {
   });
 });
 
-describe('isOn / themeFor', () => {
+describe('stateFrom', () => {
+  test('applies the defaults for a first run', () => {
+    assert.deepEqual(stateFrom(undefined), { settings: {}, instances: {} });
+    assert.deepEqual(stateFrom({}), { settings: {}, instances: {} });
+  });
+
+  test('reads the two maps under their shared keys', () => {
+    const stored = {
+      [SETTINGS_KEY]: { github: 'gitlab' },
+      [INSTANCES_KEY]: { 'gh.acme.com': 'github' },
+    };
+    assert.deepEqual(stateFrom(stored), {
+      settings: { github: 'gitlab' },
+      instances: { 'gh.acme.com': 'github' },
+    });
+  });
+
+  test('tolerates one map present and the other absent', () => {
+    assert.deepEqual(stateFrom({ [SETTINGS_KEY]: { github: 'gitlab' } }), {
+      settings: { github: 'gitlab' },
+      instances: {},
+    });
+  });
+});
+
+describe('kindOn', () => {
+  test('is the single definition of "on" for a kind', () => {
+    assert.equal(kindOn('github', { github: 'gitlab' }), true);
+    assert.equal(kindOn('gitlab', { gitlab: 'github' }), true);
+  });
+
+  test('off, the wrong theme and a missing map are all off', () => {
+    assert.equal(kindOn('github', { github: 'off' }), false);
+    assert.equal(kindOn('github', { github: 'github' }), false);
+    assert.equal(kindOn('github', undefined), false);
+  });
+
+  test('an unknown kind is off, never a throw', () => {
+    assert.equal(kindOn('bitbucket', { bitbucket: 'gitlab' }), false);
+    assert.equal(kindOn(null, { github: 'gitlab' }), false);
+  });
+});
+
+describe('themeFor', () => {
   test('a github host is on for the gitlab skin', () => {
-    assert.equal(isOn('github.com', { github: 'gitlab' }, {}), true);
     assert.equal(themeFor('github.com', { github: 'gitlab' }, {}), 'gitlab');
   });
 
   test('a gitlab host is on for the github skin', () => {
-    assert.equal(isOn('gitlab.com', { gitlab: 'github' }, {}), true);
     assert.equal(themeFor('gitlab.com', { gitlab: 'github' }, {}), 'github');
   });
 
   test('"off" means off', () => {
-    assert.equal(isOn('github.com', { github: 'off' }, {}), false);
     assert.equal(themeFor('github.com', { github: 'off' }, {}), null);
   });
 
   test('only the matching theme value switches a kind on', () => {
     // A github site is switched on by `'gitlab'`, never by `'github'`.
-    assert.equal(isOn('github.com', { github: 'github' }, {}), false);
-    assert.equal(isOn('gitlab.com', { gitlab: 'gitlab' }, {}), false);
+    assert.equal(themeFor('github.com', { github: 'github' }, {}), null);
+    assert.equal(themeFor('gitlab.com', { gitlab: 'gitlab' }, {}), null);
   });
 
   test('a known host with no settings is off, not unknown', () => {
-    assert.equal(isOn('github.com', {}, {}), false);
-    assert.equal(isOn('github.com', undefined, {}), false);
+    assert.equal(themeFor('github.com', {}, {}), null);
+    assert.equal(themeFor('github.com', undefined, {}), null);
   });
 
-  test('an unknown host is null, never false', () => {
-    assert.equal(isOn('example.com', { github: 'gitlab' }, {}), null);
+  test('an unknown host is null', () => {
     assert.equal(themeFor('example.com', { github: 'gitlab' }, {}), null);
   });
 
   test('user-added hosts behave like bundled ones', () => {
     const added = { 'gl.acme.com': 'gitlab' };
-    assert.equal(isOn('gl.acme.com', { gitlab: 'github' }, added), true);
     assert.equal(themeFor('gl.acme.com', { gitlab: 'github' }, added), 'github');
   });
 });

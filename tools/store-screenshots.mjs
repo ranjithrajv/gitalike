@@ -76,9 +76,11 @@ try {
   // Turn both skins on, straight through the extension's own storage.
   const popupPage = await context.newPage();
   await popupPage.goto(`chrome-extension://${extId}/popup/popup.html`);
+  // Read the key from the shared table the popup already loaded, so the tool
+  // cannot drift if the storage schema is renamed.
   await popupPage.evaluate(() =>
     chrome.storage.sync.set({
-      gitSameSettings: { github: 'gitlab', gitlab: 'github' },
+      [globalThis.GIT_SAME.SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' },
     }),
   );
 

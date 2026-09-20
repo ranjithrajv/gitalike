@@ -20,28 +20,26 @@ const {
   NAV_RULES,
   SHORTCUTS,
   translate,
-  translateLabel,
   translateControl,
   noEquivalentFor,
   refMarker,
   labelMatches,
   orderIndexes,
-  orderItems,
   otherHostUrl,
+  hostProduct,
 } = UX;
 
 describe('module shape', () => {
   test('publishes the shared surface', () => {
     for (const fn of [
       translate,
-      translateLabel,
       translateControl,
       noEquivalentFor,
       refMarker,
       labelMatches,
       orderIndexes,
-      orderItems,
       otherHostUrl,
+      hostProduct,
     ]) {
       assert.equal(typeof fn, 'function');
     }
@@ -80,22 +78,6 @@ describe('module shape', () => {
     // GitHub's word under the GitHub theme is unchanged.
     assert.equal(translate('Pull request', 'github'), 'Pull request');
     assert.equal(translate('Merge request', 'gitlab'), 'Merge request');
-  });
-});
-
-describe('translateLabel', () => {
-  test('translates exact navigation words', () => {
-    assert.equal(translateLabel('Code', 'gitlab'), 'Repository');
-    assert.equal(translateLabel('Actions', 'gitlab'), 'CI/CD');
-    assert.equal(translateLabel('Repository', 'github'), 'Code');
-  });
-
-  test('falls back to the phrase table for longer labels', () => {
-    assert.equal(translateLabel('Pull requests', 'gitlab'), 'Merge requests');
-  });
-
-  test('does not touch an unknown label', () => {
-    assert.equal(translateLabel('Discussions', 'gitlab'), 'Discussions');
   });
 });
 
@@ -263,6 +245,53 @@ describe('otherHostUrl', () => {
     );
   });
 
+  test('maps the remaining routes and their list / detail forms', () => {
+    assert.equal(
+      otherHostUrl('https://github.com/o/r/wiki/Home'),
+      'https://gitlab.com/o/r/-/wikis/Home',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/o/r/actions'),
+      'https://gitlab.com/o/r/-/pipelines',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/o/r/commits/main'),
+      'https://gitlab.com/o/r/-/commits/main',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/o/r/releases/tag/v1'),
+      'https://gitlab.com/o/r/-/releases/tag/v1',
+    );
+    // The route table is written once and inverted, so both directions agree.
+    assert.equal(
+      otherHostUrl('https://gitlab.com/o/r/-/wikis/Home'),
+      'https://github.com/o/r/wiki/Home',
+    );
+    assert.equal(
+      otherHostUrl('https://gitlab.com/o/r/-/pipelines'),
+      'https://github.com/o/r/actions',
+    );
+    assert.equal(
+      otherHostUrl('https://github.com/o/r/pulls'),
+      'https://gitlab.com/o/r/-/merge_requests',
+    );
+    assert.equal(
+      otherHostUrl('https://gitlab.com/o/r/-/merge_requests'),
+      'https://github.com/o/r/pulls',
+    );
+  });
+
+  test('an unknown route falls back to the repository root', () => {
+    assert.equal(
+      otherHostUrl('https://github.com/o/r/unknownroute/x'),
+      'https://gitlab.com/o/r',
+    );
+    assert.equal(
+      otherHostUrl('https://gitlab.com/o/r/-/unknownroute'),
+      'https://github.com/o/r',
+    );
+  });
+
   test('refuses a host with no known pair', () => {
     assert.equal(otherHostUrl('https://github.acme.com/o/r'), null);
     assert.equal(otherHostUrl('https://example.com/o/r'), null);
@@ -281,6 +310,24 @@ describe('otherHostUrl', () => {
       otherHostUrl('https://gitlab.com/a/b/c/-/merge_requests/1'),
       null,
     );
+  });
+});
+
+describe('hostProduct', () => {
+  test('names the product a known forge URL belongs to', () => {
+    assert.equal(hostProduct('https://github.com/o/r'), 'GitHub');
+    assert.equal(hostProduct('https://gitlab.com/g/p/-/issues/1'), 'GitLab');
+  });
+
+  test('returns null for anything that is not one of the two forges', () => {
+    assert.equal(hostProduct('https://github.acme.com/o/r'), null);
+    assert.equal(hostProduct('https://example.com/o/r'), null);
+    assert.equal(hostProduct('not a url'), null);
+  });
+
+  test('the other-host URL and its product agree', () => {
+    const other = otherHostUrl('https://github.com/git/git');
+    assert.equal(hostProduct(other), 'GitLab');
   });
 });
 
@@ -370,42 +417,25 @@ describe('labelMatches', () => {
   });
 });
 
-describe('orderItems', () => {
+describe('orderIndexes', () => {
   const order = ['Code', 'Issues', 'Merge requests', 'Actions'];
 
-  test('sorts known labels into the requested order', () => {
-    assert.deepEqual(
-      orderItems(['Actions', 'Code', 'Issues'], order),
-      ['Code', 'Issues', 'Actions'],
-    );
+  test('hands back the permutation of known labels, not the labels', () => {
+    assert.deepEqual(orderIndexes(['Actions', 'Code', 'Issues'], order), [1, 2, 0]);
   });
 
   test('ranks a label carrying a counter by its prefix', () => {
     assert.deepEqual(
-      orderItems(['Merge requests 12', 'Code', 'Actions'], order),
-      ['Code', 'Merge requests 12', 'Actions'],
+      orderIndexes(['Merge requests 12', 'Code', 'Actions'], order),
+      [1, 0, 2],
     );
   });
 
   test('unknown labels keep their relative order at the end', () => {
-    assert.deepEqual(
-      orderItems(['Zed', 'Actions', 'Alpha'], order),
-      ['Actions', 'Zed', 'Alpha'],
-    );
-  });
-
-  test('an already-ordered list is returned unchanged', () => {
-    assert.deepEqual(
-      orderItems(['Code', 'Issues', 'Actions'], order),
-      ['Code', 'Issues', 'Actions'],
-    );
-  });
-
-  test('orderIndexes hands back the permutation, not the labels', () => {
-    assert.deepEqual(orderIndexes(['Actions', 'Code', 'Issues'], order), [1, 2, 0]);
-  });
-
-  test('orderIndexes is stable for equal ranks', () => {
     assert.deepEqual(orderIndexes(['Zed', 'Actions', 'Alpha'], order), [1, 0, 2]);
+  });
+
+  test('an already-ordered list is its own permutation', () => {
+    assert.deepEqual(orderIndexes(['Code', 'Issues', 'Actions'], order), [0, 1, 2]);
   });
 });

@@ -17,11 +17,11 @@ code. Both stylesheets ship in the bundle and every logo is an inline data URI.
 There is no build-time or runtime dependency for the shipped extension, and we
 would like to keep it that way.
 
-**One source of truth per concern.** Hosts, kinds and address parsing live in
-`src/lib/sites.js`; the vocabulary, navigation and keyboard tables live in
-`src/lib/ux.js`. Neither touches the DOM, which is what makes them unit-testable.
-The manifest repeats hostnames only because the manifest format cannot read a
-JavaScript file.
+**One source of truth per concern.** Hosts, kinds, address parsing and the
+storage schema live in `src/lib/sites.js`; the vocabulary, navigation, keyboard
+and path-translation tables live in `src/lib/ux.js`. Neither touches the DOM,
+which is what makes them unit-testable. The manifest repeats hostnames only
+because the manifest format cannot read a JavaScript file.
 
 **Stay conservative on the page.** The UX layer must never rewrite text inside
 `<code>`, inputs, editable regions or anything marked `[data-gs-ux-skip]`, and
@@ -62,7 +62,7 @@ src/
 ├── manifest.base.json   shared manifest; the build adds `background` + `version`
 ├── background.js        keyboard shortcut and per-tab badge
 ├── lib/
-│   ├── sites.js         hosts, kinds, parseHost        — pure, no DOM
+│   ├── sites.js         hosts, kinds, parseHost, schema — pure, no DOM
 │   └── ux.js            vocabulary/nav/shortcut tables — pure, no DOM
 ├── content/
 │   ├── theme.js         applies the theme classes, tracks light/dark
@@ -162,16 +162,15 @@ it works out of the box.
 ### A genuinely different product
 
 Bitbucket or Sourcehut are not GitHub with a different logo; they need their own
-skin and their own vocabulary. That means six files:
+skin and their own vocabulary. That means five files:
 
 | # | File | What goes there |
 | - | ---- | --------------- |
 | 1 | `src/themes/<a>-as-<b>.css` | the skin — a palette block plus a token mapping |
 | 2 | `src/lib/ux.js` | `PHRASES`, `NAV`, `NAV_RULES`, `SHORTCUTS` keyed by the new theme name |
-| 3 | `src/lib/sites.js` | a `kinds` entry — `setting`, `theme`, `badge`, `color`, `other` |
-| 4 | `src/content/theme.js` | the theme name in `THEMES` |
-| 5 | `src/popup/popup.html` + `popup.css` | a row for the kind, and its accent colour |
-| 6 | `tests/` | cases for the kind, the host table and the vocabulary |
+| 3 | `src/lib/sites.js` | a `kinds` entry — `theme`, `badge`, `color`, `other` (its key is the setting name and its `theme` joins `THEMES` automatically) |
+| 4 | `src/popup/popup.html` + `popup.css` | a row for the kind, and its accent colour |
+| 5 | `tests/` | cases for the kind, the host table and the vocabulary |
 
 **Open an issue about the mapping first.** `kinds` today hardcodes one target per
 kind: `github` is always shown as GitLab, `gitlab` always as GitHub. With a third

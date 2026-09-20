@@ -21,10 +21,7 @@
   const SITES = globalThis.GIT_SAME;
   if (!SITES) return;
 
-  const SETTINGS_KEY = 'gitSameSettings';
-  const INSTANCES_KEY = 'gitSameInstances';
   const CACHE_KEY = 'gitSame.theme';
-  const THEMES = ['gitlab', 'github'];
 
   const root = document.documentElement;
   const host = location.hostname;
@@ -33,7 +30,9 @@
 
   /** @param {'gitlab'|'github'|null} theme */
   function apply(theme) {
-    for (const name of THEMES) root.classList.toggle(`gs-theme-${name}`, name === theme);
+    for (const name of SITES.THEMES) {
+      root.classList.toggle(`gs-theme-${name}`, name === theme);
+    }
     syncDark();
   }
 
@@ -49,12 +48,9 @@
   }
 
   async function reconcile() {
-    const stored = await api.storage.sync.get([SETTINGS_KEY, INSTANCES_KEY]);
-    const theme = SITES.themeFor(
-      host,
-      stored?.[SETTINGS_KEY],
-      stored?.[INSTANCES_KEY],
-    );
+    const stored = await api.storage.sync.get(SITES.STORAGE_KEYS);
+    const { settings, instances } = SITES.stateFrom(stored);
+    const theme = SITES.themeFor(host, settings, instances);
     remember(theme);
     apply(theme);
   }
@@ -111,7 +107,7 @@
 
   api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
-    if (!changes[SETTINGS_KEY] && !changes[INSTANCES_KEY]) return;
+    if (!changes[SITES.SETTINGS_KEY] && !changes[SITES.INSTANCES_KEY]) return;
     reconcile().catch(() => {});
   });
 
