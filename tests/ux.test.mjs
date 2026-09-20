@@ -70,6 +70,12 @@ describe('module shape', () => {
       'Merge requests and a Merge request');
   });
 
+  test('sentence case is translated too', () => {
+    // GitHub labels are often sentence case ("New pull request").
+    assert.equal(translate('New pull request', 'gitlab'), 'New merge request');
+    assert.equal(translate('New merge request', 'github'), 'New pull request');
+  });
+
   test('leaves untouched copy untouched', () => {
     assert.equal(translate('A normal sentence.', 'gitlab'), 'A normal sentence.');
     assert.equal(translate('', 'gitlab'), '');

@@ -109,8 +109,13 @@ GitHub's app navigation is a horizontal tab row; GitLab's is a vertical sidebar,
 and each skin flips the orientation so the skinned site navigates the way the
 product it imitates does.
 
-- **G→L** — GitHub's repo tabs (`ul.UnderlineNav-body`) become a vertical,
-  GitLab-sidebar-style column.
+- **G→L** — GitHub's repo tabs become a real left sidebar, beside the repo header
+  and content. The tab bar and the repo header share one wrapper
+  (`main > div.tmp-pt-3`), so the wrapper is made `display: contents` and `main`
+  becomes a grid; without that the tabs can only sit above the content. GitHub's
+  responsive tab bar also hides its items and clones them into an overflow menu
+  once they stop fitting the bar, so the real rows are forced back on. The
+  sidebar sticks while the (very long) content scrolls.
 - **L→G** — GitLab's sidebar becomes a horizontal strip. GitLab's page is a grid
   (`.layout-page.page-with-super-sidebar` is `232px 1032px …`, with the sidebar
   in column one), so the grid is collapsed to a single column first — without
@@ -120,6 +125,15 @@ product it imitates does.
 GitLab's strip is taller than GitHub's single-row top bar because its navigation
 is grouped; the groups keep GitLab's structure and simply wrap horizontally
 rather than being flattened.
+
+Profile pages get the same treatment. GitLab's profile navigation is a
+`.super-sidebar` group, so L→G turns it into a horizontal strip like any other.
+G→L targets GitHub's profile navigation (`nav[aria-label="User profile"]`)
+separately: the sticky horizontal tab strip becomes a vertical panel in the left
+rail, the profile card moves below it, and the content stays in the right column.
+GitHub splits the profile across two `container-xl` wrappers, so both are
+dissolved to a page grid — the profile equivalent of the repository header/tab
+wrapper trick above.
 
 ## References
 
@@ -188,7 +202,9 @@ and that `PHRASES` stays the same size in both directions.
   tab was marked `≠ GitLab`, and every badge was removed on switch-off. Both
   orientations rendered correctly: GitHub's repo tabs as a vertical column, and
   GitLab's sidebar as a horizontal strip with the project content still full
-  width (1231px).
+  width (1231px). A GitHub profile (`github.com/torvalds`) was checked too: its
+  profile tabs became a vertical panel in the left rail, the profile card below
+  it, and the pinned content kept the full right column.
 - **Unit**, `tests/ux.test.mjs`: every table and helper, including the `LABELS`
   and `CHROME` round-trips, `PHRASES` symmetry, `labelMatches`, `otherHostUrl`,
   and that `UNMAPPED` never overlaps a translated label.

@@ -221,10 +221,17 @@ events.
 
 ### Change the navigation order or orientation
 
-`NAV_RULES` in `src/lib/ux.js` holds the desired item order; orientation is
-CSS in `themes/ux-nav.css`. GitLab's page is a grid, so making its sidebar
-horizontal also means collapsing `.layout-page.page-with-super-sidebar` to one
-column — otherwise the content keeps the narrow column.
+`NAV_RULES` in `src/lib/ux.js` holds the desired item order; orientation is CSS
+in `themes/ux-nav.css`.
+
+- **G→L** turns GitHub's repo tab bar into a left sidebar by making `main` a grid
+  and the tab bar's wrapper `display: contents`, so the repo header and the tabs
+  can be placed independently. GitHub's responsive tab bar hides the real items
+  and clones them into an overflow menu when they stop fitting the bar, so the
+  body items are forced `visibility: visible`.
+- **L→G** makes GitLab's sidebar horizontal, but GitLab's page is a grid
+  (`.layout-page.page-with-super-sidebar`), so that grid is collapsed to one
+  column first — otherwise the content keeps the narrow column.
 
 ## Adding another forge — contributions welcome
 
@@ -397,6 +404,14 @@ read.
   GitLab→GitHub skin leans more on structural selectors and will be the first to
   drift. Self-hosted instances make this worse: `code.swecha.org` runs an older
   GitLab than `gitlab.com` and carries fewer Pajamas tokens.
+- **GitHub's responsive tab bar fights the sidebar.** Its JS hides the repo tab
+  items and clones them into an overflow menu once they stop fitting the bar;
+  the skin forces the real rows back on with `visibility: visible`. If a future
+  release renames `.UnderlineNav-body`, the sidebar goes empty rather than wrong.
+- **GitHub's newer `Button` component** reads its colours from a component-scoped
+  variable the token mapping cannot reach, so the primary button is painted
+  directly by class (`.Button--primary`). A renamed class means the button
+  reverts to GitHub's green.
 
 ## Style
 

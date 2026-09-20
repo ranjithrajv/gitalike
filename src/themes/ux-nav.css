@@ -1,25 +1,87 @@
 /* =====================================================================
-   gitalike — navigation orientation.
+   Git Same — navigation orientation.
    GitHub's app navigation is a horizontal tab row; GitLab's is a vertical
    sidebar. Each skin flips the orientation so a skinned site navigates the way
    the product it is imitating does.
 
-   GitLab's layout is a grid — `.layout-page.page-with-super-sidebar` is
-   `232px 1032px …`, the sidebar in column one and the content in column two —
-   so the sidebar cannot simply be made horizontal; the grid has to collapse to
-   one column or the content keeps the narrow column. That is done here.
+   G→L: GitHub's repo tab bar becomes a GitLab-style left sidebar, beside the
+        repo header and content. The tab bar and the repo header share one
+        wrapper (`main > div.tmp-pt-3`), so the wrapper is made
+        `display: contents` to let both take part in a page grid; without that
+        the tabs can only sit above the content.
+
+   L→G: GitLab's fixed sidebar becomes a horizontal top strip. GitLab's page is
+        a grid (`.layout-page.page-with-super-sidebar` is `232px 1032px …`),
+        so that grid is collapsed to one column first — otherwise the content
+        keeps the narrow column and shrinks to ~277px.
    ===================================================================== */
 
 /* ---------------------------------------------------------------- G → L -- */
 
-/* GitHub's repo tabs become a vertical, GitLab-sidebar-style column. */
+html.gs-theme-gitlab main:has(> div > nav[aria-label="Repository"]) {
+  display: grid;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 24px;
+  padding-left: 16px;
+}
+
+/* Lift the repo header and the tab bar out of their shared wrapper so the grid
+   can place them independently. */
+html.gs-theme-gitlab main:has(> div > nav[aria-label="Repository"]) > div {
+  display: contents;
+}
+
+/* Repo header (title, Notifications / Fork / Star): top of the right column. */
+html.gs-theme-gitlab
+  main:has(> div > nav[aria-label="Repository"])
+  > div
+  > div:first-child {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+/* The empty spacer GitHub keeps between the header and the tabs. */
+html.gs-theme-gitlab
+  main:has(> div > nav[aria-label="Repository"])
+  > div
+  > div:nth-child(2) {
+  display: none;
+}
+
+/* The tab bar, now a sidebar spanning both rows. */
+html.gs-theme-gitlab
+  main:has(> div > nav[aria-label="Repository"])
+  > div
+  > nav[aria-label="Repository"] {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: block !important;
+  padding: 8px;
+  background-color: var(--gs-canvas-subtle);
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius-lg, 8px);
+  /* Stay in view while the (very long) content scrolls, like GitLab's. */
+  position: sticky;
+  top: 16px;
+}
+
+/* Content: right column, below the header. */
+html.gs-theme-gitlab
+  main:has(> div > nav[aria-label="Repository"])
+  > turbo-frame {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+}
+
+/* The list becomes a vertical column of GitLab-style rows. */
 html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body {
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
   gap: 2px !important;
   width: 100%;
-  max-width: 260px;
 }
 
 html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
@@ -27,13 +89,30 @@ html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
   width: 100%;
 }
 
+/* GitHub's responsive tab bar hides items and clones them into an overflow menu
+   once they stop fitting the bar. In a vertical sidebar we want the real rows,
+   so they are forced back on. */
+html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li,
 html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
-  display: block !important;
+  visibility: visible !important;
+}
+
+/* A row: icon and label side by side. GitHub keeps the icon and label as
+   separate block children, so the row layout has to be restored here. */
+html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  padding: 6px 12px !important;
+  padding: 6px 10px !important;
   border: 0 !important;
   border-radius: var(--gs-radius-md, 6px) !important;
   text-align: left !important;
+  color: var(--gs-fg) !important;
+}
+
+html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a:hover {
+  background-color: var(--gs-canvas) !important;
 }
 
 html.gs-theme-gitlab
@@ -45,9 +124,212 @@ html.gs-theme-gitlab
   font-weight: 600 !important;
 }
 
+/* GitHub positions the counter absolutely for the horizontal tab; in a row it
+   belongs at the end of the flex line, inside the panel. */
+html.gs-theme-gitlab
+  nav[aria-label="Repository"]
+  .UnderlineNav-item
+  .Counter {
+  position: static !important;
+  float: none !important;
+  margin-left: auto !important;
+}
+
 /* The active-tab underline belongs to the horizontal form; the tint above
    replaces it. */
 html.gs-theme-gitlab nav[aria-label="Repository"] .UnderlineNav-item::after {
+  display: none !important;
+}
+
+/* The "additional navigation options" menu trails the rows. */
+html.gs-theme-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
+  margin-top: 4px;
+}
+
+/* Profile pages. GitHub's profile navigation is a horizontal tab bar in a
+   sticky strip; GitLab's is a vertical sidebar group. Flip it the same way as
+   the repo tabs, and move it into the left rail so a GitLab-skinned profile
+   reads like GitLab's. GitHub splits the page across two `container-xl`
+   wrappers — the sticky tab strip and the card+content Layout — so both are
+   dissolved to grid items here. */
+html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 24px;
+  row-gap: 16px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* The status banner GitHub keeps above the nav is empty here. */
+html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) > x-banner {
+  display: none !important;
+}
+
+/* Dissolve the sticky tab strip and the card+content Layout so their children
+   take part in the page grid. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"],
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  > .container-xl,
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  > .container-xl
+  > .Layout,
+html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) > .container-xl,
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > .container-xl
+  > .Layout {
+  display: contents !important;
+}
+
+/* The tab strip's mini vcard duplicates the profile card; GitLab shows it once. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  > .container-xl
+  > .Layout
+  > .Layout-sidebar {
+  display: none !important;
+}
+
+/* The nav panel: top of the left rail. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  > .container-xl
+  > .Layout
+  > .Layout-main {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+/* The profile card: below the nav in the left rail. Primer sizes the sidebar
+   for its own 296px column, so it is re-fitted to this one. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > .container-xl
+  > .Layout
+  > .Layout-sidebar {
+  grid-column: 1;
+  grid-row: 2;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  margin-top: 16px !important;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > .container-xl
+  > .Layout
+  > .Layout-sidebar
+  .h-card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* The content: the right column, beside the whole rail. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > .container-xl
+  > .Layout
+  > .Layout-main {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 0;
+}
+
+/* The tab row becomes a vertical column of GitLab-style rows in a panel. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  .UnderlineNav {
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  nav[aria-label="User profile"] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 2px !important;
+  width: 100% !important;
+  padding: 8px !important;
+  background-color: var(--gs-canvas-subtle);
+  border: 1px solid var(--gs-border);
+  border-radius: var(--gs-radius-lg, 8px);
+  position: sticky;
+  top: 16px;
+}
+
+/* GitHub clones overflowing tabs into an options menu once they stop fitting;
+   a vertical column always fits them, so the real rows are forced back on. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  nav[aria-label="User profile"]
+  > a {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  visibility: visible !important;
+  padding: 6px 10px !important;
+  border: 0 !important;
+  border-radius: var(--gs-radius-md, 6px) !important;
+  text-align: left !important;
+  color: var(--gs-fg) !important;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  nav[aria-label="User profile"]
+  > a:hover {
+  background-color: var(--gs-canvas) !important;
+}
+
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  nav[aria-label="User profile"]
+  > a[aria-current="page"] {
+  background-color: var(--gs-accent-subtle) !important;
+  color: var(--gs-accent) !important;
+  font-weight: 600 !important;
+}
+
+/* The counting tab keeps its count, but as a GitLab-style trailing pill. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  nav[aria-label="User profile"]
+  > a
+  .Counter {
+  position: static !important;
+  float: none !important;
+  margin-left: auto !important;
+}
+
+/* The active-tab underline belongs to the horizontal form. */
+html.gs-theme-gitlab
+  main:has(nav[aria-label="User profile"])
+  > div[data-turbo-frame="user-profile-frame"]
+  nav[aria-label="User profile"]
+  > a::after {
   display: none !important;
 }
 

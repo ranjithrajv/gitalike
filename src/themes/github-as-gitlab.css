@@ -325,3 +325,16 @@ html.gs-theme-gitlab
 html.gs-theme-gitlab :is(.Box, .Box--condensed, .border.rounded-2, .flash) {
   border-radius: var(--gs-radius-lg);
 }
+
+/* GitHub's newer Button component reads its colours from a component-scoped
+   variable the token mapping above cannot reach, so the primary button is
+   painted directly. GitLab's primary is blue, not GitHub's green. */
+html.gs-theme-gitlab :is(.Button--primary, .btn-primary) {
+  background-color: var(--gs-accent) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+html.gs-theme-gitlab :is(.Button--primary, .btn-primary):hover {
+  background-color: var(--gs-accent-hover) !important;
+}

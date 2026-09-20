@@ -28,6 +28,8 @@
     gitlab: {
       'Pull requests': 'Merge requests',
       'Pull request': 'Merge request',
+      'pull requests': 'merge requests',
+      'pull request': 'merge request',
       'Go to file': 'Find file',
       Gists: 'Snippets',
       Gist: 'Snippet',
@@ -39,6 +41,8 @@
     github: {
       'Merge requests': 'Pull requests',
       'Merge request': 'Pull request',
+      'merge requests': 'pull requests',
+      'merge request': 'pull request',
       'Find file': 'Go to file',
       Snippets: 'Gists',
       Snippet: 'Gist',
