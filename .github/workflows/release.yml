@@ -67,16 +67,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # web-ext names the ZIP after the extension, so the Chromium and
-          # Firefox artifacts come out with *identical* filenames and the second
-          # upload collides with the first. Label each one per target on the way
-          # in; the files on disk keep the names the README documents.
+          # web-ext names the ZIP after the extension, so both targets produce
+          # gitalike_github_gitlab_ui-<version>.zip. Two assets cannot share a
+          # name (HTTP 422), and gh's `file#label` form only sets the display
+          # label — the underlying asset keeps the filename. So stage both under
+          # distinct names first and let the upload take its name from the file.
           version="${GITHUB_REF_NAME#v}"
-          chromium_zip=$(ls dist/artifacts/chromium/*.zip)
-          firefox_zip=$(ls dist/artifacts/firefox/*.zip)
+          mkdir -p dist/release
+          cp "$(ls dist/artifacts/chromium/*.zip)" "dist/release/gitalike-${version}-chromium.zip"
+          cp "$(ls dist/artifacts/firefox/*.zip)" "dist/release/gitalike-${version}-firefox.zip"
+          ls -l dist/release
 
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --notes-file release-notes.md \
-            "${chromium_zip}#gitalike-${version}-chromium.zip" \
-            "${firefox_zip}#gitalike-${version}-firefox.zip"
+            dist/release/*.zip
