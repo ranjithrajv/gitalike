@@ -24,5 +24,6 @@
   },
   "overrides": {
     "image-size": "^2.0.4"
-  }
+  },
+  "packageManager": "npm@12.0.2"
 }
