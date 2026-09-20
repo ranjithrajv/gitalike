@@ -162,7 +162,8 @@
       const badge = document.createElement('span');
       badge.className = 'gs-no-equiv';
       badge.setAttribute('data-gs-ux-skip', '');
-      badge.setAttribute('aria-hidden', 'true');
+      // Deliberately not aria-hidden: the marker should reach screen readers too,
+      // so the feature is not announced as if it existed here.
       badge.textContent = `≠ ${missing}`;
       el.appendChild(badge);
       el.setAttribute('data-gs-no-equiv', missing);
