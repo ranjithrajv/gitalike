@@ -1,5 +1,5 @@
 /**
- * Git Same — background context.
+ * gitalike — background context.
  *
  * A service worker on Chromium, an event page on Firefox. Its only jobs are the
  * keyboard command and the per-tab toolbar badge; the reskin itself is done by
@@ -14,8 +14,8 @@
 if (typeof importScripts === 'function') importScripts('lib/sites.js', 'lib/ux.js');
 
 const api = globalThis.browser ?? globalThis.chrome;
-const SITES = globalThis.GIT_SAME;
-const UX = globalThis.GIT_SAME_UX;
+const SITES = globalThis.GITALIKE;
+const UX = globalThis.GITALIKE_UX;
 
 function hostOf(url) {
   try {
@@ -44,7 +44,7 @@ async function refreshBadge(tabId, url) {
   }
   await api.action.setTitle({
     tabId,
-    title: on ? `Git Same — showing the ${meta.other} UI` : 'Git Same',
+    title: on ? `gitalike — showing the ${meta.other} UI` : 'gitalike',
   });
 }
 

@@ -1,5 +1,5 @@
 /**
- * Git Same — content script.
+ * gitalike — content script.
  *
  * Runs on http(s) pages at `document_start`. It never touches page structure;
  * all it does is keep two classes on <html> in sync:
@@ -18,7 +18,7 @@
   const api = globalThis.browser ?? globalThis.chrome;
   if (!api?.storage?.sync) return;
 
-  const SITES = globalThis.GIT_SAME;
+  const SITES = globalThis.GITALIKE;
   if (!SITES) return;
 
   const CACHE_KEY = 'gitSame.theme';

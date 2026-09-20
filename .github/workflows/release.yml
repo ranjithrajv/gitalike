@@ -1,0 +1,90 @@
+name: Release
+
+# Triggered by the tag, not by main. That is the whole point: the artifacts
+# attached to a release have to be built from the commit the tag points at,
+# never from whatever happens to be on the branch. `actions/checkout` checks out
+# the tag ref here, so the ZIPs and the release always describe the same code.
+on:
+  push:
+    tags:
+      - 'v*'
+
+# gh release create needs to write to the repo.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      # Builds the Firefox target and validates it with web-ext.
+      - name: Lint the extension
+        run: npm run lint
+
+      # Builds both targets and writes dist/artifacts/{chromium,firefox}/*.zip.
+      - name: Package the store ZIPs
+        run: npm run package
+
+      - name: Build the release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          {
+            echo "Built from the \`${GITHUB_REF_NAME}\` tag."
+            echo
+            echo "| Asset | Target | How to install |"
+            echo "| --- | --- | --- |"
+            echo "| \`gitalike-chromium.zip\` | Chromium, Chrome, Edge, Brave | Unzip, then **Load unpacked** — or install from the Chrome Web Store. |"
+            echo "| \`gitalike-firefox.zip\` | Firefox | Unsigned, so it only loads temporarily — see below. |"
+            echo
+            echo "> The Firefox asset is unsigned and can therefore only be loaded"
+            echo "> temporarily via \`about:debugging\`; it disappears when Firefox"
+            echo "> restarts. Permanent installs come from addons.mozilla.org."
+            echo
+            echo "### What changed"
+            echo
+            awk -v want="$version" '
+              $0 ~ "^## \\[" want "\\]" { inside = 1; next }
+              inside && /^## \[/ { exit }
+              inside { print }
+            ' CHANGELOG.md
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Two things have to be true of the asset names.
+          #
+          # 1. They must be distinct. web-ext names the ZIP after the extension,
+          #    so both targets come out gitalike_github_gitlab_ui-<version>.zip;
+          #    two assets cannot share a name (HTTP 422), and gh's `file#label`
+          #    form only sets the display label, so the underlying asset keeps
+          #    colliding.
+          # 2. They must NOT carry the version. The README links to
+          #    /releases/latest/download/<name>, and that URL only keeps working
+          #    if the name is stable across releases.
+          #
+          # So stage both under a fixed, per-target name and upload those.
+          mkdir -p dist/release
+          cp "$(ls dist/artifacts/chromium/*.zip)" dist/release/gitalike-chromium.zip
+          cp "$(ls dist/artifacts/firefox/*.zip)" dist/release/gitalike-firefox.zip
+          ls -l dist/release
+
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release-notes.md \
+            dist/release/*.zip

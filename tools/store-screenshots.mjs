@@ -124,7 +124,7 @@ try {
   await frame.setContent(
     `<html><body style="margin:0;height:100vh;display:grid;place-items:center;
       background:linear-gradient(135deg,#fca326 0%,#e24329 45%,#7759c2 100%)">
-      <img alt="Git Same popup" style="max-height:78vh;border-radius:12px;
+      <img alt="gitalike popup" style="max-height:78vh;border-radius:12px;
         box-shadow:0 24px 60px rgba(0,0,0,.35)" src="data:image/png;base64,${shot}">
     </body></html>`,
   );
