@@ -1,0 +1,8 @@
+#!/bin/sh
+# Git entry point; the checks live in tools/pre-commit.mjs so `npm test`,
+# `npm run lint` and the hook all read from one place. Git runs hooks from the
+# repository root, but resolving the root explicitly keeps the delegation
+# correct when a hook is invoked from a subdirectory or a linked worktree.
+set -e
+root=$(git rev-parse --show-toplevel 2>/dev/null) || root=.
+exec node "$root/tools/pre-commit.mjs"

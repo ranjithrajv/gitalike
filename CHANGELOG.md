@@ -49,6 +49,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).
+- A pre-commit gate runs the same checks CI does plus the cheap ones it does
+  not: staged blobs are scanned for merge conflict markers, CRLF, missing
+  final newlines, invalid JSON, syntax errors, oversized files and leaked
+  credentials, `package.json`/`package-lock.json` are checked for version
+  drift, and `npm test` and `npm run lint` run before the commit is created.
+  It is dependency-free (`tools/pre-commit.mjs`, `.githooks/pre-commit`) and
+  installs itself via `npm install` or `npm run hooks:install`; `git commit
+  --no-verify` bypasses it, with CI still the backstop.
 
 ### Changed
 
@@ -95,6 +103,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   "Work items" (GitHub's "Issues" under the GitLab UI), so it sorts in place and
   gets its "Plan" heading instead of dropping to the end of the navigation
   (`src/lib/ux.js`).
+- `package-lock.json` had drifted from `package.json` (`0.1.0` after the `0.1.1`
+  release). It is back in lockstep, and the pre-commit gate now fails when the
+  two disagree.
 
 ### Security
 

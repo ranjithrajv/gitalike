@@ -6,6 +6,9 @@
   "type": "module",
   "license": "GPL-3.0-or-later",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "precommit": "node tools/pre-commit.mjs",
     "build": "node build.mjs",
     "build:chromium": "node build.mjs chromium",
     "build:firefox": "node build.mjs firefox",

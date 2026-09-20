@@ -49,7 +49,7 @@ another permission needs a very good argument.
 ## Getting set up
 
 ```sh
-npm install          # dev-only: web-ext, playwright-core
+npm install          # dev-only deps; also installs the git hooks
 npm run build        # -> dist/chromium and dist/firefox
 npm test             # unit tests, no browser needed
 node tools/e2e.mjs   # Playwright end-to-end test against the live sites
@@ -71,6 +71,27 @@ dependencies exist: [`web-ext`](https://github.com/mozilla/web-ext) for
 [`playwright-core`](https://playwright.dev/) for `npm run screenshots` and
 `node tools/e2e.mjs`, both of which drive the system Chromium and download no
 browser of their own.
+
+### The pre-commit gate
+
+Every commit runs a gate first. It reads the *staged* blobs — not the working
+tree — and rejects merge conflict markers, CRLF line endings, missing final
+newlines, invalid JSON, JavaScript that fails `node --check`, oversized files
+and leaked credentials. It then checks that `package.json` and
+`package-lock.json` are in lockstep, and runs `npm test` and `npm run lint`, the
+same two commands CI runs.
+
+`npm install` wires it up through the `prepare` script (`.githooks/`); if you
+cloned before the hooks existed, apply them with:
+
+```sh
+npm run hooks:install
+```
+
+The checks live in `tools/pre-commit.mjs`, so `npm run precommit` runs exactly
+what the hook does. For a genuine emergency, `git commit --no-verify` skips the
+gate — CI is still the backstop, so the commit will not land on `main` if it
+fails there.
 
 ## Layout
 
@@ -464,7 +485,8 @@ read.
 
 - One concern per pull request.
 - `npm test && npm run lint` must pass, and `node tools/e2e.mjs` if you touched
-  what it covers.
+  what it covers. The pre-commit gate enforces the first two; do not treat
+  `--no-verify` as a normal workflow.
 - Behaviour changes need a `README.md` update, and an entry under
   `## [Unreleased]` in `CHANGELOG.md`.
 - The version lives in `package.json` and nowhere else — `build.mjs` stamps it
