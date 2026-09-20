@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-20
+
 ### Added
 
 - Account/menu chrome is translated too (`CHROME`): "Your repositories" ⇄
