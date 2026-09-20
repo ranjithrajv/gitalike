@@ -4,7 +4,7 @@
   "private": true,
   "description": "Show GitHub with a GitLab UI, and GitLab with a GitHub UI.",
   "type": "module",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "build": "node build.mjs",
     "build:chromium": "node build.mjs chromium",

@@ -1,0 +1,26 @@
+gitalike
+Copyright (C) 2026 gitalike contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <https://www.gnu.org/licenses/>.
+
+The full licence text is in LICENSE.
+
+Names and marks — an additional term under section 7
+
+The licence above covers this software. It grants no rights in the "gitalike"
+name or logo, which remain with the project: a modified version distributed to
+others must not use them in a way that suggests it is gitalike, and must be
+marked as a changed version. It likewise grants no rights in the trademarks of
+GitHub, Inc. or GitLab Inc. — GitHub, the Octocat, GITLAB, the Tanuki and their
+logos — which gitalike neither owns nor licenses. See the Trademarks section of
+the README.

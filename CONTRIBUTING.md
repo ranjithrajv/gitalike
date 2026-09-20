@@ -507,5 +507,6 @@ where GitLab's is white" is not.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). By contributing you agree your work is licensed on
-the same terms.
+GPL-3.0-or-later — see [LICENSE](LICENSE) and [NOTICE](NOTICE). By contributing
+you agree your work is licensed on the same terms, so the project keeps shipping
+as free software. There is no CLA and you keep your copyright.

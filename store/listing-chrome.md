@@ -57,6 +57,9 @@ Permissions, plainly: gitalike asks for access to all sites because GitHub
 Enterprise Server and self-hosted GitLab live on hostnames that cannot be
 listed ahead of time. On every site you have not set up, it does nothing at all.
 
+gitalike is free software, licensed GPL-3.0-or-later; the source is at
+github.com/ranjithrajv/gitalike.
+
 GitHub is a trademark of GitHub, Inc. GITLAB is a trademark of GitLab Inc. in
 the United States and other countries and regions. Not affiliated with GitHub
 or GitLab.

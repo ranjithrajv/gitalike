@@ -54,6 +54,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   GitLab's ™ symbol plus its proprietorship statement, and a GitHub trademark
   line — to the README, both store listings and the extension's manifest
   description.
+- Relicensed from MIT to GPL-3.0-or-later. A distributed fork now has to stay
+  free software, and a new `NOTICE` records the copyright and an additional term
+  under GPLv3 section 7 reserving the gitalike name and the GitHub/GitLab marks.
 - Performance: content scripts and stylesheets are now registered only for the
   hosts gitalike is set up on, instead of being injected into every page, so an
   unconfigured page parses neither. This adds the `scripting` permission; the

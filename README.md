@@ -229,4 +229,12 @@ or other brand artwork — the mark it paints on a page is gitalike's own.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+GPL-3.0-or-later — see [LICENSE](LICENSE) for the full text and
+[NOTICE](NOTICE) for the copyright and the name/mark term.
+
+gitalike is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. It comes with no warranty. A fork that is distributed to others has to
+stay free software too; the source is at
+<https://github.com/ranjithrajv/gitalike>.

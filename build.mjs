@@ -87,6 +87,11 @@ for (const target of targets) {
     `${JSON.stringify(manifest, null, 2)}\n`,
   );
 
+  // GPLv3 wants the licence and notices to travel with every conveyed copy, so
+  // they go into the packaged extension too, not only the repository.
+  await cp(join(root, 'LICENSE'), join(out, 'LICENSE'));
+  await cp(join(root, 'NOTICE'), join(out, 'NOTICE'));
+
   console.log(`built dist/${target}`);
 }
 
