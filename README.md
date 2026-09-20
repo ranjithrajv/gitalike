@@ -121,6 +121,7 @@ product's *vocabulary and habits*:
 | References | a pull/merge-request link shows the other product's marker — `#42` ⇄ `!42`                                        |
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
 | Other host | open the same page on the other forge, from the popup or `Alt` + `Shift` + `O`                                     |
+| No counterpart | a feature the other product lacks is marked `≠ GitLab` / `≠ GitHub` instead of pretending it exists             |
 
 It is deliberately conservative. Copy is rewritten only in ordinary page text —
 never inside code, inputs or editable regions — control words like the merge
@@ -233,6 +234,11 @@ source of truth shared by the content script, the popup and the background.
   match GitHub's.
 - **"Open on the other host" covers the two public forges only.** A self-hosted
   instance has no pair to guess, so the action is absent there.
+- **A feature with no counterpart is marked, not hidden.** GitLab-only features
+  (Epics, Iterations, Requirements, Service Desk, …) get a `≠ GitHub` badge on a
+  GitHub-skinned site, and GitHub-only ones (Discussions, Sponsors) get `≠ GitLab`
+  on a GitLab-skinned site. The list is curated in `UNMAPPED`; a feature that has
+  a real counterpart is never marked.
 - **Access to all sites.** The install prompt is the honest one. If that is not
   a trade you want to make, the alternative above is a small change to make.
 - **The stylesheets and UX tables load on every page** — about 24 KB of CSS plus

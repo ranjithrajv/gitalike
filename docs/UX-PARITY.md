@@ -20,6 +20,7 @@ is the map and the scorecard.
 | Logo palette (shape kept) | ✅ | ✅ | `--gs-tanuki` / `--gs-octocat` |
 | Copy — `PHRASES` | ✅ 9 | ✅ 9 | `lib/ux.js` |
 | Control labels — `LABELS` | ✅ 4 | ✅ 4 | `lib/ux.js` |
+| No-counterpart markers — `UNMAPPED` | ✅ 2 | ✅ 15 | `lib/ux.js` |
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
@@ -64,6 +65,21 @@ are safe to translate. Every entry round-trips:
 `NAV` relabels app navigation on an exact whole-label match inside a known nav
 region: `Code ⇄ Repository`, `Actions ⇄ CI/CD`, `Pull requests ⇄ Merge requests`,
 `Insights ⇄ Analytics`, `Projects ⇄ Issue boards`.
+
+## No counterpart
+
+Some features have no equivalent in the other product. Rather than leave them
+looking native, `UNMAPPED` marks them: `content/ux.js` appends a small
+`≠ GitLab` / `≠ GitHub` badge (and a `data-gs-no-equiv` attribute) to a nav item
+or control whose whole label names such a feature. Examples: GitLab's Epics,
+Iterations, Requirements, Service Desk, Merge trains, Feature flags, Terraform
+modules, Model registry, Model experiments, Test cases, Incidents, Error
+tracking, On-call schedules, Alert management and Value stream analytics;
+GitHub's Discussions and Sponsors.
+
+A feature with a real counterpart is never marked — the two tables are disjoint,
+and a test enforces it — and every badge is removed when the skin is switched
+off.
 
 ## Navigation
 
@@ -142,6 +158,9 @@ directions.
   navigating to the project's merge requests. The popup's "Open this page on
   GitLab" button resolved `github.com/git/git/pull/1875` to
   `gitlab.com/git/git/-/merge_requests/1875`, and `open-other-host` was
-  registered alongside `toggle-site`.
+  registered alongside `toggle-site`. Nine `≠ GitHub` badges appeared on
+  GitLab-only features, a mapped item carried none, an injected `Discussions`
+  tab was marked `≠ GitLab`, and every badge was removed on switch-off.
 - **Unit**, `tests/ux.test.mjs`: every table and helper, including the `LABELS`
-  round-trip, `PHRASES` symmetry, `labelMatches` and `otherHostUrl`.
+  round-trip, `PHRASES` symmetry, `labelMatches`, `otherHostUrl`, and that
+  `UNMAPPED` never overlaps a translated label.

@@ -17,6 +17,8 @@
  *     known navigation region, so marketing copy is safe;
  *   - control labels ("Merge", "Rebase") only change on an exact whole-label
  *     match on a button, tab, menu item or link, never in prose;
+ *   - a feature the other product does not have is not translated — it is
+ *     marked with a .gs-no-equiv badge saying so;
  *   - the nav is only reordered by moving its items among the slots they
  *     already occupy, so children we do not recognise stay where they are.
  *
@@ -51,6 +53,7 @@
   const refOrig = new Map();
   const orderOrig = new Map();
   const orderStamp = new WeakMap();
+  const markerOrig = new Map();
 
   let theme = null;
   let applying = false;
@@ -148,6 +151,29 @@
     }
   }
 
+  function paintUnmapped(node, t) {
+    const mark = (el) => {
+      // Already marked: leave it, so the badge's own text never feeds back into
+      // the label we match on.
+      if (el.hasAttribute('data-gs-no-equiv')) return;
+      const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      const missing = UX.noEquivalentFor(label, t);
+      if (!missing) return;
+      const badge = document.createElement('span');
+      badge.className = 'gs-no-equiv';
+      badge.setAttribute('data-gs-ux-skip', '');
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = `≠ ${missing}`;
+      el.appendChild(badge);
+      el.setAttribute('data-gs-no-equiv', missing);
+      markerOrig.set(badge, el);
+    };
+    for (const region of scope(node, UX.NAV_SCOPE)) {
+      for (const el of scope(region, 'a,button,summary')) mark(el);
+    }
+    for (const el of scope(node, UX.LABEL_SCOPE)) mark(el);
+  }
+
   function paintNav(node, t) {
     const map = UX.NAV[t] || {};
     // NAV_SCOPE selects the navigation *regions*; the labels live on the
@@ -225,6 +251,7 @@
     paintRefs(node, t);
     paintControls(node, t);
     paintNav(node, t);
+    paintUnmapped(node, t);
     paintOrder(t);
     applying = false;
   }
@@ -234,6 +261,10 @@
   function revertAll() {
     for (const [node, value] of textOrig) {
       if (node.isConnected && node.nodeValue !== value) node.nodeValue = value;
+    }
+    for (const [badge, el] of markerOrig) {
+      if (badge.isConnected) badge.remove();
+      if (el.isConnected) el.removeAttribute('data-gs-no-equiv');
     }
     for (const [el, store] of attrOrig) {
       if (!el.isConnected) continue;
@@ -249,6 +280,7 @@
     attrOrig.clear();
     refOrig.clear();
     orderOrig.clear();
+    markerOrig.clear();
   }
 
   /* -------------------------------------------------------------- boot -- */
@@ -275,6 +307,7 @@
         paintRefs(node, current);
         paintControls(node, current);
         paintNav(node, current);
+        paintUnmapped(node, current);
       }
       applying = false;
       paintOrder(current);

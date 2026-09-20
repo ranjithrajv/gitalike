@@ -24,7 +24,11 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "css": ["themes/github-as-gitlab.css", "themes/gitlab-as-github.css"],
+      "css": [
+        "themes/github-as-gitlab.css",
+        "themes/gitlab-as-github.css",
+        "themes/ux-markers.css"
+      ],
       "js": [
         "lib/sites.js",
         "lib/ux.js",

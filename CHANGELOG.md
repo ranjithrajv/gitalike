@@ -25,6 +25,9 @@ switched off.
 - An "open on the other host" action — a popup button and `Alt`+`Shift`+`O` —
   that maps the current page onto the other forge (`pull` ⇄
   `-/merge_requests`, issues, file views and so on), for the two public hosts.
+- A `≠ GitLab` / `≠ GitHub` marker on a feature the other product does not have
+  (GitLab's Epics, Iterations, Requirements, Service Desk, …; GitHub's
+  Discussions and Sponsors), instead of leaving it looking native.
 - Bundled support for `github.com`, `gitlab.com` and `code.swecha.org`, and a
   popup flow for classifying any other instance — GitHub Enterprise Server and
   self-hosted GitLab included — either on the page in front of you or by typing

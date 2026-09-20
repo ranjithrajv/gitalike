@@ -183,6 +183,37 @@
     github: { gp: 'Pull requests', gb: 'Projects' },
   };
 
+  /* ------------------------------------------------------- no counterpart -- */
+
+  // Features that exist in one product but have no counterpart in the other.
+  // Keyed by the theme being applied, with the product that *lacks* the feature
+  // as the value, so the UI can say so instead of pretending it exists. These
+  // are deliberately absent from PHRASES/NAV/LABELS — there is nothing to
+  // translate them to.
+  const UNMAPPED = {
+    gitlab: {
+      Discussions: 'GitLab',
+      Sponsors: 'GitLab',
+    },
+    github: {
+      Epics: 'GitHub',
+      Iterations: 'GitHub',
+      Requirements: 'GitHub',
+      'Service Desk': 'GitHub',
+      'Merge trains': 'GitHub',
+      'Feature flags': 'GitHub',
+      'Terraform modules': 'GitHub',
+      'Model registry': 'GitHub',
+      'Model experiments': 'GitHub',
+      'Test cases': 'GitHub',
+      Incidents: 'GitHub',
+      'Error tracking': 'GitHub',
+      'On-call schedules': 'GitHub',
+      'Alert management': 'GitHub',
+      'Value stream analytics': 'GitHub',
+    },
+  };
+
   /* ------------------------------------------------------ pure helpers -- */
 
   const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -229,6 +260,13 @@
       return map[label];
     }
     return translate(label, theme);
+  }
+
+  /** The product that lacks this feature, or null if it has a counterpart. */
+  function noEquivalentFor(label, theme) {
+    const map = UNMAPPED[theme];
+    if (map && Object.prototype.hasOwnProperty.call(map, label)) return map[label];
+    return null;
   }
 
   /**
@@ -362,6 +400,7 @@
     PHRASES,
     NAV,
     LABELS,
+    UNMAPPED,
     NAV_SCOPE,
     LABEL_SCOPE,
     NAV_RULES,
@@ -370,6 +409,7 @@
     translate,
     translateLabel,
     translateControl,
+    noEquivalentFor,
     refMarker,
     labelMatches,
     orderIndexes,

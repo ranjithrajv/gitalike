@@ -1,0 +1,24 @@
+/* =====================================================================
+   Git Same — "no counterpart" markers.
+   Injected everywhere; inert until content/ux.js appends a .gs-no-equiv badge
+   to a feature that the product being imitated does not have. It says so
+   instead of leaving the feature looking native.
+   ===================================================================== */
+
+html.gs-theme-gitlab .gs-no-equiv,
+html.gs-theme-github .gs-no-equiv {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 15px;
+  white-space: nowrap;
+  vertical-align: middle;
+  color: var(--gs-fg-subtle, #8b8a91);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  /* A marker, not a control: never intercept the nav click, never get copied. */
+  pointer-events: none;
+  user-select: none;
+}

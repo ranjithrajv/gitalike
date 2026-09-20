@@ -15,12 +15,14 @@ const {
   PHRASES,
   NAV,
   LABELS,
+  UNMAPPED,
   LABEL_SCOPE,
   NAV_RULES,
   SHORTCUTS,
   translate,
   translateLabel,
   translateControl,
+  noEquivalentFor,
   refMarker,
   labelMatches,
   orderIndexes,
@@ -34,6 +36,7 @@ describe('module shape', () => {
       translate,
       translateLabel,
       translateControl,
+      noEquivalentFor,
       refMarker,
       labelMatches,
       orderIndexes,
@@ -42,7 +45,7 @@ describe('module shape', () => {
     ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, LABELS, SHORTCUTS]) {
+    for (const table of [PHRASES, NAV, LABELS, UNMAPPED, SHORTCUTS]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
@@ -278,6 +281,41 @@ describe('otherHostUrl', () => {
       otherHostUrl('https://gitlab.com/a/b/c/-/merge_requests/1'),
       null,
     );
+  });
+});
+
+describe('UNMAPPED', () => {
+  test('names the product that lacks the feature', () => {
+    assert.equal(noEquivalentFor('Discussions', 'gitlab'), 'GitLab');
+    assert.equal(noEquivalentFor('Sponsors', 'gitlab'), 'GitLab');
+    assert.equal(noEquivalentFor('Epics', 'github'), 'GitHub');
+    assert.equal(noEquivalentFor('Merge trains', 'github'), 'GitHub');
+  });
+
+  test('a feature with a counterpart is not marked', () => {
+    assert.equal(noEquivalentFor('Pull requests', 'gitlab'), null);
+    assert.equal(noEquivalentFor('Merge requests', 'github'), null);
+    assert.equal(noEquivalentFor('Wiki', 'github'), null);
+  });
+
+  test('only applies in its own direction', () => {
+    assert.equal(noEquivalentFor('Epics', 'gitlab'), null);
+    assert.equal(noEquivalentFor('Discussions', 'github'), null);
+  });
+
+  test('never marks something it also translates', () => {
+    const targets = { gitlab: 'GitLab', github: 'GitHub' };
+    for (const theme of ['gitlab', 'github']) {
+      const mapped = new Set([
+        ...Object.keys(PHRASES[theme]),
+        ...Object.keys(NAV[theme]),
+        ...Object.keys(LABELS[theme]),
+      ]);
+      for (const [label, product] of Object.entries(UNMAPPED[theme])) {
+        assert.equal(product, targets[theme], `${theme}: ${label}`);
+        assert.ok(!mapped.has(label), `${theme}: ${label} is both mapped and marked`);
+      }
+    }
   });
 });
 
