@@ -1,5 +1,5 @@
 /**
- * Git Same — toolbar popup.
+ * gitalike — toolbar popup.
  *
  * The extension matches the entire web, so there is no permission to request
  * and nothing to pre-configure: the popup classifies hosts and switches each
@@ -13,7 +13,7 @@
   const api = globalThis.browser ?? globalThis.chrome;
   if (!api?.storage?.sync) return;
 
-  const SITES = globalThis.GIT_SAME;
+  const SITES = globalThis.GITALIKE;
   if (!SITES) return;
 
   const SETTINGS_KEY = 'gitSameSettings';

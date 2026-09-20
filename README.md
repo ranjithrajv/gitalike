@@ -1,8 +1,8 @@
-# Git Same
+# gitalike
 
 See GitHub with a GitLab interface, and GitLab with a GitHub interface.
 
-Git Same is a small browser extension that re-skins the two big forges so they
+gitalike is a small browser extension that re-skins the two big forges so they
 look — and read — like each other. It repaints the interface from the other
 product's design tokens, then matches its *words and habits*: copy is rewritten
 ("Pull request" becomes "Merge request"), reference markers are swapped, the
@@ -46,7 +46,7 @@ npm run build:firefox
 2. Go to `about:debugging#/runtime/this-firefox`
 3. **Load Temporary Add-on…** → choose `dist/firefox/manifest.json`
 
-> **About the permission prompt.** Chromium will warn that Git Same can "read and
+> **About the permission prompt.** Chromium will warn that gitalike can "read and
 > change all your data on all websites". That is accurate, and it is the price of
 > the design — see [Why it matches every site](#why-it-matches-every-site). The
 > extension adds a class to `<html>` on sites you have explicitly set up, does
@@ -109,7 +109,7 @@ To undo, open the popup on that host and choose **Remove**.
 
 ## UX parity
 
-The skin is not only colour. While a skin is on, Git Same also matches the other
+The skin is not only colour. While a skin is on, gitalike also matches the other
 product's *vocabulary and habits*:
 
 | Surface    | What changes                                                                                                     |
@@ -139,7 +139,7 @@ reads its colours from a handful of CSS custom properties:
   `--bgColor-*`, `--borderColor-*`, plus the legacy `--color-*` names)
 - GitLab → [Pajamas](https://design.gitlab.com/) (`--gl-*`)
 
-So Git Same mostly re-points those properties at the other design system's
+So gitalike mostly re-points those properties at the other design system's
 palette, then fixes up a few structural things the tokens cannot reach (the top
 bar, the logo, active-tab accents). Two stylesheets and two classes do the
 visual half; a second content script does the copy, reference, navigation and
@@ -392,7 +392,7 @@ To cut a release:
 
 ```sh
 npm test && npm run lint     # 46 unit tests, 0 lint warnings
-npm run package              # dist/artifacts/*/git_same_github_gitlab_ui-X.Y.Z.zip
+npm run package              # dist/artifacts/*/gitalike_github_gitlab_ui-X.Y.Z.zip
 npm run screenshots          # refresh store/screenshots/
 ```
 

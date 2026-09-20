@@ -1,5 +1,5 @@
 /**
- * Git Same — UX content script.
+ * gitalike — UX content script.
  *
  * The colour skin is done entirely in CSS; this script carries the part CSS
  * cannot: the words, the reference markers, the app-navigation order and the
@@ -28,7 +28,7 @@
 (() => {
   'use strict';
 
-  const UX = globalThis.GIT_SAME_UX;
+  const UX = globalThis.GITALIKE_UX;
   if (!UX || typeof document === 'undefined') return;
 
   const root = document.documentElement;

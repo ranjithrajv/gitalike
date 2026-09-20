@@ -3,14 +3,14 @@
  * tables that the UX content script applies.
  *
  * Like sites.test.mjs, the module is a classic script that publishes itself on
- * `globalThis.GIT_SAME_UX`; importing it is all that is needed.
+ * `globalThis.GITALIKE_UX`; importing it is all that is needed.
  */
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import '../src/lib/ux.js';
 
-const UX = globalThis.GIT_SAME_UX;
+const UX = globalThis.GITALIKE_UX;
 const {
   PHRASES,
   NAV,
