@@ -11,7 +11,7 @@ gitalike — GitHub ⇄ GitLab UI
 ## Summary (max 250)
 
 ```
-See GitHub with a GitLab UI, and GitLab with a GitHub UI. Re-skins the page and its words to match the other product, locally. No data is collected, and there is no network access at all.
+See GitHub with a GitLab™ UI, and GitLab with a GitHub UI. Re-skins the page and its words to match the other product, locally. No data is collected, and there is no network access at all.
 ```
 
 ## Description
@@ -19,7 +19,7 @@ See GitHub with a GitLab UI, and GitLab with a GitHub UI. Re-skins the page and 
 ```
 gitalike re-skins the two big forges so they look — and read — like each other:
 
-    a GitHub-flavoured site + GitLab UI  ->  purple accents, light top bar
+    a GitHub-flavoured site + GitLab™ UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
 
 Beyond colour, it matches the other product's words and habits: "Pull request"
@@ -49,7 +49,9 @@ Permissions, plainly: gitalike asks for access to all sites because GitHub
 Enterprise Server and self-hosted GitLab live on hostnames that cannot be
 listed ahead of time. On every site you have not set up, it does nothing at all.
 
-Not affiliated with GitHub or GitLab.
+GitHub is a trademark of GitHub, Inc. GITLAB is a trademark of GitLab Inc. in
+the United States and other countries and regions. Not affiliated with GitHub
+or GitLab.
 ```
 
 ## Category

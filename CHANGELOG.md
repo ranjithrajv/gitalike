@@ -22,14 +22,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `themes/ux-nav.css`). GitLab publishes no organisation on a profile, so that
   line stays absent.
 - The profile menu is rebuilt as the applied product's: same labels, same order,
-  same options. `Repositories` ⇄ `Personal projects`, `Stars` ⇄ `Starred
-  projects`, `Groups` ⇄ `Organizations`, the landing item swaps (GitHub's
-  "Overview" ⇄ GitLab's account name), and the applied product's extra
-  destinations are added — GitLab's Activity, Groups and Snippets point at
-  GitHub's Overview, Organizations and Gists. GitHub's "Packages" has no
-  user-level GitLab page, so GitLab's menu omits it, and GitHub's public
-  Achievements block is hidden under the GitLab UI, where GitLab shows
-  achievements only to the owner (`content/ux.js`, `themes/ux-nav.css`).
+  same options. Under the GitHub skin it is exactly GitHub's profile menu —
+  Overview, Repositories, Projects, Packages, Stars — mapping Repositories ⇄
+  Personal projects, Projects ⇄ Contributed projects and Stars ⇄ Starred
+  projects, with the landing item swapped (GitHub's "Overview" ⇄ GitLab's account
+  name) and Packages pointed at GitLab's user packages route; GitLab's Activity,
+  Groups, Snippets, Followers and Following are dropped. Under the GitLab skin it
+  is exactly GitLab's destinations, with GitHub's Activity, Groups and Snippets
+  landing on GitLab's own. GitHub's public Achievements block is hidden under the
+  GitLab UI, where GitLab shows achievements only to the owner
+  (`content/ux.js`, `themes/ux-nav.css`).
 - The GitHub Pages preview (`docs/index.html`) gains GitLab and GitHub
   profile-page swipes beside the project-page ones, captured with
   `npm run screenshots:profiles` (`tools/profile-screenshots.mjs`).
@@ -48,6 +50,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shots show the gitalike mark. The project-page pairs, previously captured by
   hand, now have a tool (`tools/project-screenshots.mjs`) matching the profile
   pairs'.
+- Added the trademark attributions the platforms' brand guidelines ask for —
+  GitLab's ™ symbol plus its proprietorship statement, and a GitHub trademark
+  line — to the README and both store listings.
 - Performance: content scripts and stylesheets are now registered only for the
   hosts gitalike is set up on, instead of being injected into every page, so an
   unconfigured page parses neither. This adds the `scripting` permission; the

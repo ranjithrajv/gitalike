@@ -1,6 +1,6 @@
 # gitalike
 
-See GitHub with a GitLab interface, and GitLab with a GitHub interface.
+See GitHub with a GitLab™ interface, and GitLab with a GitHub interface.
 
 gitalike is a small browser extension that re-skins the two big forges so they
 look — and read — like each other. It repaints the interface from the other
@@ -22,7 +22,9 @@ at — **GitHub Enterprise Server** included.
 
 gitalike is an independent project. It is not affiliated with, endorsed by or
 sponsored by GitHub, Inc. or GitLab Inc., and it ships none of their artwork:
-the mark it paints on a skinned page is its own.
+the mark it paints on a skinned page is its own. GitHub is a trademark of
+GitHub, Inc. GITLAB is a trademark of GitLab Inc. in the United States and other
+countries and regions.
 
 **Live preview:** <https://ranjithrajv.github.io/gitalike/> — swipe between each
 site and its skin.
@@ -218,11 +220,12 @@ the ground rules, and how to add a forge or a translation — is in
 
 ## Trademarks
 
-GitHub, the Octocat, GitLab and the Tanuki are trademarks of their respective
-owners. gitalike is not affiliated with, endorsed by or sponsored by GitHub,
-Inc. or GitLab Inc. It names those products only to describe what it is
-compatible with, and it redistributes none of their logos or other brand
-artwork — the mark it paints on a page is gitalike's own.
+GitHub and the Octocat are trademarks of GitHub, Inc. GITLAB is a trademark of
+GitLab Inc. in the United States and other countries and regions, and GitLab's
+Tanuki logo is a GitLab Inc. trademark. gitalike is not affiliated with,
+endorsed by or sponsored by either company. It names those products only to
+describe what it is compatible with, and it redistributes none of their logos
+or other brand artwork — the mark it paints on a page is gitalike's own.
 
 ## License
 
