@@ -723,3 +723,14 @@ html.gs-theme-github .super-sidebar :is(a, button, span, svg, .gl-icon) {
 html.gs-theme-github .super-sidebar a[aria-current="page"] {
   font-weight: 600 !important;
 }
+
+/* GitHub's bar lists its tabs directly; GitLab's sidebar hides them inside
+   collapsible groups. Show the group contents and drop the group toggles so the
+   items are on the bar, where NAV_KEEP then keeps only GitHub's own options. */
+html.gs-theme-github .super-sidebar [data-testid="menu-section-button"] {
+  display: none !important;
+}
+
+html.gs-theme-github .super-sidebar [data-testid="menu-section"] {
+  display: contents !important;
+}

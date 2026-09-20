@@ -411,7 +411,7 @@
       ['Overview', `/${u}`, '@first'],
       ['Repositories', `/users/${u}/projects`, 'Personal projects'],
       ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
-      ['Organizations', `/users/${u}/groups`, 'Groups'],
+      ['Packages', `/users/${u}/packages`, null],
       ['Stars', `/users/${u}/starred`, 'Starred projects'],
     ],
     // Applied GitLab UI (source GitHub): GitLab's profile destinations, in order.
@@ -567,6 +567,9 @@
           anchor.setAttribute('href', href);
           const holder = sourceIsGitlab ? anchor.closest('li') || anchor : anchor;
           rememberOrder(holder);
+          // The label-match pass may have hidden this item before the menu was
+          // rebuilt; it belongs to the applied product's menu, so show it again.
+          holder.style.removeProperty('display');
           holder.style.setProperty('order', String(index));
           return;
         }

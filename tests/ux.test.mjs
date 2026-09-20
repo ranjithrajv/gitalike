@@ -16,6 +16,7 @@ const {
   NAV,
   NAV_GROUPS,
   NAV_HIDE,
+  NAV_KEEP,
   LABELS,
   CHROME,
   UNMAPPED,
@@ -30,6 +31,7 @@ const {
   labelMatches,
   navGroupFor,
   navHidden,
+  navKeep,
   orderIndexes,
   otherHostUrl,
   hostProduct,
@@ -45,13 +47,14 @@ describe('module shape', () => {
       labelMatches,
       navGroupFor,
       navHidden,
+      navKeep,
       orderIndexes,
       otherHostUrl,
       hostProduct,
     ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, NAV_GROUPS, NAV_HIDE, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
+    for (const table of [PHRASES, NAV, NAV_GROUPS, NAV_HIDE, NAV_KEEP, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
@@ -489,6 +492,24 @@ describe('NAV_HIDE', () => {
 
   test('a label carrying a counter still matches', () => {
     assert.equal(navHidden('Iterations 3', 'github'), true);
+  });
+});
+
+describe('NAV_KEEP', () => {
+  test('keeps only GitHub’s project-page options under the GitHub skin', () => {
+    for (const keep of ['Code', 'Issues', 'Pull requests', 'Actions', 'Projects', 'Wiki', 'Security', 'Insights', 'Settings']) {
+      assert.equal(navKeep(keep, 'github'), true, keep);
+    }
+  });
+
+  test('drops the items GitHub’s project page does not show', () => {
+    for (const drop of ['Branches', 'Commits', 'Tags', 'Labels', 'Milestones', 'Members', 'Help', 'GitLab']) {
+      assert.equal(navKeep(drop, 'github'), false, drop);
+    }
+  });
+
+  test('the other theme has no whitelist', () => {
+    assert.equal(navKeep('Branches', 'gitlab'), true);
   });
 });
 

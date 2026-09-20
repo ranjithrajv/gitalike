@@ -257,6 +257,24 @@
     gitlab: ['Discussions', 'Sponsors', 'Marketplace'],
   };
 
+  // On some skins the menu is a *whitelist*: only the applied product's own
+  // project-page options are shown, so the navigation is that product's menu
+  // exactly rather than the source product's menu with a few items hidden.
+  // These are GitHub's repo tabs, after translation.
+  const NAV_KEEP = {
+    github: [
+      'Code',
+      'Issues',
+      'Pull requests',
+      'Actions',
+      'Projects',
+      'Wiki',
+      'Security',
+      'Insights',
+      'Settings',
+    ],
+  };
+
   /* ---------------------------------------------------------- shortcuts -- */
 
   // Two-key `g` combos. Keyed by the theme being applied; each entry maps the
@@ -419,6 +437,16 @@
   }
 
   /**
+   * Is this nav item one the applied product's own project menu shows? True when
+   * the theme has no whitelist (then everything is kept).
+   */
+  function navKeep(label, theme) {
+    const list = NAV_KEEP[theme];
+    if (!list) return true;
+    return list.some((key) => labelMatches(label, key));
+  }
+
+  /**
    * Indices of `labels`, arranged by their position in `order` (stable for
    * equal ranks). Prefix matching means a label carrying a counter
    * ("Pull requests 387") still ranks. Unknown labels sort after the known
@@ -549,6 +577,7 @@
     NAV,
     NAV_GROUPS,
     NAV_HIDE,
+    NAV_KEEP,
     LABELS,
     CHROME,
     UNMAPPED,
@@ -565,6 +594,7 @@
     labelMatches,
     navGroupFor,
     navHidden,
+    navKeep,
     orderIndexes,
     otherHostUrl,
     hostProduct,
