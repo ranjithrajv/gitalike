@@ -46,8 +46,8 @@ jobs:
             echo
             echo "| Asset | Target | How to install |"
             echo "| --- | --- | --- |"
-            echo "| \`gitalike_*chromium*.zip\` | Chromium, Chrome, Edge, Brave | Unzip, then **Load unpacked** — or install from the Chrome Web Store. |"
-            echo "| \`gitalike_*firefox*.zip\` | Firefox | Unsigned, so it only loads temporarily — see below. |"
+            echo "| \`gitalike-${version}-chromium.zip\` | Chromium, Chrome, Edge, Brave | Unzip, then **Load unpacked** — or install from the Chrome Web Store. |"
+            echo "| \`gitalike-${version}-firefox.zip\` | Firefox | Unsigned, so it only loads temporarily — see below. |"
             echo
             echo "> The Firefox asset is unsigned and can therefore only be loaded"
             echo "> temporarily via \`about:debugging\`; it disappears when Firefox"
@@ -67,8 +67,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # web-ext names the ZIP after the extension, so the Chromium and
+          # Firefox artifacts come out with *identical* filenames and the second
+          # upload collides with the first. Label each one per target on the way
+          # in; the files on disk keep the names the README documents.
+          version="${GITHUB_REF_NAME#v}"
+          chromium_zip=$(ls dist/artifacts/chromium/*.zip)
+          firefox_zip=$(ls dist/artifacts/firefox/*.zip)
+
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
             --notes-file release-notes.md \
-            dist/artifacts/chromium/*.zip \
-            dist/artifacts/firefox/*.zip
+            "${chromium_zip}#gitalike-${version}-chromium.zip" \
+            "${firefox_zip}#gitalike-${version}-firefox.zip"
