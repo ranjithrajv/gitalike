@@ -141,7 +141,7 @@ product's *vocabulary and habits*:
 | ---------- | ---------------------------------------------------------------------------------------------------------------- |
 | Copy       | "Pull request(s)" ⇄ "Merge request(s)", "Insights" ⇄ "Analytics", "Actions" ⇄ "CI/CD", "Go to file" ⇄ "Find file", "Gists" ⇄ "Snippets", "Codespaces" ⇄ "Workspaces" |
 | Navigation | repo tabs are relabelled ("Code" ⇄ "Repository") and reordered into the other product's order — GitLab's repository group included |
-| Orientation | GitHub's repo tabs and profile tabs become a GitLab-style left sidebar/rail, and GitLab's sidebar becomes a horizontal top strip |
+| Orientation | GitHub's repo tabs and profile tabs become a GitLab-style left sidebar/rail (with GitLab group headings), and GitLab's sidebar becomes a horizontal top strip |
 | Metadata | GitHub's right-hand "About" becomes a full-width block on top (GitLab style); GitLab's "Project information" becomes a right sidebar (GitHub style) |
 | References | a pull/merge-request link shows the other product's marker — `#42` ⇄ `!42`                                        |
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |

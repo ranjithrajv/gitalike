@@ -203,7 +203,9 @@
     let bestCount = 0;
     for (const region of document.querySelectorAll(rule.scope)) {
       for (const el of region.querySelectorAll('ul,ol,div')) {
-        const items = [...el.children].filter((c) => c.matches(rule.item));
+        const items = [...el.children].filter(
+          (c) => c.matches(rule.item) && !c.classList.contains('gs-nav-group'),
+        );
         if (items.length < 2 || items.length <= bestCount) continue;
         // The container must hold the named item as one of its own children —
         // exact match, so a longer label ("Code review analytics") never counts.
@@ -220,7 +222,9 @@
       const container = resolveContainer(rule);
       if (!container) continue;
       const children = [...container.children];
-      const items = children.filter((c) => c.matches(rule.item));
+      const items = children.filter(
+        (c) => c.matches(rule.item) && !c.classList.contains('gs-nav-group'),
+      );
       if (items.length < 2) continue;
       const labels = items.map((el) => (el.textContent || '').trim());
       const sorted = UX.orderIndexes(labels, rule.order).map((i) => items[i]);
@@ -245,6 +249,48 @@
     }
   }
 
+  // Insert GitLab-style group headings into the (now ordered) sidebar. Runs
+  // after paintOrder so the headings land on the final order, and rebuilds only
+  // when the headings no longer match — otherwise our own insertions would feed
+  // back through the mutation observer.
+  function paintNavGroups(t) {
+    if (!UX.NAV_GROUPS[t]) return;
+    for (const region of document.querySelectorAll(UX.NAV_SCOPE)) {
+      const ul = region.querySelector('ul.UnderlineNav-body');
+      if (!ul) continue;
+      const items = [...ul.children].filter(
+        (c) => c.matches('li') && !c.classList.contains('gs-nav-group'),
+      );
+      const desired = [];
+      let last = null;
+      for (const li of items) {
+        const label = (li.textContent || '').replace(/\s+/g, ' ').trim();
+        const group = UX.navGroupFor(label, t);
+        if (group && group !== last) {
+          desired.push({ group, before: li });
+          last = group;
+        }
+      }
+      const current = [...ul.querySelectorAll(':scope > .gs-nav-group')];
+      const ok =
+        current.length === desired.length &&
+        current.every(
+          (el, i) =>
+            el.textContent === desired[i].group &&
+            el.nextElementSibling === desired[i].before,
+        );
+      if (ok) continue;
+      for (const el of current) el.remove();
+      for (const entry of desired) {
+        const heading = document.createElement('li');
+        heading.className = 'gs-nav-group';
+        heading.setAttribute('data-gs-ux-skip', '');
+        heading.textContent = entry.group;
+        ul.insertBefore(heading, entry.before);
+      }
+    }
+  }
+
   // The per-node passes, in one place so a new pass cannot be wired into the
   // initial load but forgotten for the mutations that follow it.
   function paintNode(node, t) {
@@ -261,6 +307,7 @@
     applying = true;
     paintNode(node, t);
     paintOrder(t);
+    paintNavGroups(t);
     applying = false;
   }
 
@@ -284,6 +331,7 @@
     for (const [container, items] of orderOrig) {
       if (container.isConnected) for (const el of items) container.appendChild(el);
     }
+    for (const el of document.querySelectorAll('.gs-nav-group')) el.remove();
     textOrig.clear();
     attrOrig.clear();
     refOrig.clear();
@@ -323,6 +371,7 @@
       }
       applying = false;
       paintOrder(current);
+      paintNavGroups(current);
     }, 120);
   }
 

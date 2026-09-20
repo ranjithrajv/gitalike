@@ -116,7 +116,9 @@ product it imitates does.
   becomes a grid; without that the tabs can only sit above the content. GitHub's
   responsive tab bar also hides its items and clones them into an overflow menu
   once they stop fitting the bar, so the real rows are forced back on. The
-  sidebar sticks while the (very long) content scrolls.
+  sidebar sticks while the (very long) content scrolls, and its items are
+  gathered under GitLab's group headings (Code, Build, Secure, Analyze), which
+  GitHub's flat tab bar has no notion of.
 - **L→G** — GitLab's sidebar becomes a horizontal strip. GitLab's page is a grid
   (`.layout-page.page-with-super-sidebar` is `232px 1032px …`, with the sidebar
   in column one), so the grid is collapsed to a single column first — without

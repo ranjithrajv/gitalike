@@ -229,7 +229,9 @@ in `themes/ux-nav.css`.
   and the tab bar's wrapper `display: contents`, so the repo header and the tabs
   can be placed independently. GitHub's responsive tab bar hides the real items
   and clones them into an overflow menu when they stop fitting the bar, so the
-  body items are forced `visibility: visible`.
+  body items are forced `visibility: visible`. `NAV_GROUPS` gathers the items
+  under GitLab's group headings, which the content script inserts after the
+  reorder (`paintNavGroups`), and the CSS styles them.
 - **L→G** makes GitLab's sidebar horizontal, but GitLab's page is a grid
   (`.layout-page.page-with-super-sidebar`), so that grid is collapsed to one
   column first — otherwise the content keeps the narrow column.

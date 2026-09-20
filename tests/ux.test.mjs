@@ -14,6 +14,7 @@ const UX = globalThis.GITALIKE_UX;
 const {
   PHRASES,
   NAV,
+  NAV_GROUPS,
   LABELS,
   CHROME,
   UNMAPPED,
@@ -25,6 +26,7 @@ const {
   noEquivalentFor,
   refMarker,
   labelMatches,
+  navGroupFor,
   orderIndexes,
   otherHostUrl,
   hostProduct,
@@ -38,13 +40,14 @@ describe('module shape', () => {
       noEquivalentFor,
       refMarker,
       labelMatches,
+      navGroupFor,
       orderIndexes,
       otherHostUrl,
       hostProduct,
     ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
+    for (const table of [PHRASES, NAV, NAV_GROUPS, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
@@ -392,6 +395,33 @@ describe('UNMAPPED', () => {
         assert.equal(product, targets[theme], `${theme}: ${label}`);
         assert.ok(!mapped.has(label), `${theme}: ${label} is both mapped and marked`);
       }
+    }
+  });
+});
+
+describe('NAV_GROUPS', () => {
+  test('gathers repo tabs under GitLab group headings', () => {
+    assert.equal(navGroupFor('Merge requests', 'gitlab'), 'Code');
+    assert.equal(navGroupFor('Repository', 'gitlab'), 'Code');
+    assert.equal(navGroupFor('Issues', 'gitlab'), 'Plan');
+    assert.equal(navGroupFor('Issue boards', 'gitlab'), 'Plan');
+    assert.equal(navGroupFor('CI/CD', 'gitlab'), 'Build');
+    assert.equal(navGroupFor('Analytics', 'gitlab'), 'Analyze');
+  });
+
+  test('a label carrying a counter still matches', () => {
+    assert.equal(navGroupFor('Merge requests 387', 'gitlab'), 'Code');
+  });
+
+  test('items with no group, and the other theme, return null', () => {
+    assert.equal(navGroupFor('Discussions', 'gitlab'), null);
+    assert.equal(navGroupFor('Merge requests', 'github'), null);
+  });
+
+  test('every group heading is a non-empty string', () => {
+    for (const group of Object.values(NAV_GROUPS.gitlab)) {
+      assert.equal(typeof group, 'string');
+      assert.ok(group.length > 0);
     }
   });
 });

@@ -375,3 +375,20 @@ html.gs-theme-gitlab [class*="CodeViewSidebar-"] {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
   column-gap: 24px !important;
 }
+
+/* GitLab's project sidebar gathers its items under group headings (Plan, Code,
+   Build, …); GitHub's repo tabs are flat. On the GitLab skin the tabs are
+   gathered under the same headings, inserted by content/ux.js. */
+html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group {
+  margin: 12px 0 2px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gs-fg-subtle);
+}
+
+html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group:first-child {
+  margin-top: 0;
+}

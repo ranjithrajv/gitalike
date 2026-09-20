@@ -152,14 +152,18 @@
       {
         container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
         item: 'li',
+        // GitLab's sidebar order: Plan, then Code, then Build, then the rest.
         order: [
-          'Repository',
           'Issues',
-          'Merge requests',
-          'CI/CD',
+          'Issue boards',
           'Wiki',
-          'Analytics',
+          'Merge requests',
+          'Repository',
+          'CI/CD',
+          'Releases',
           'Security',
+          'Analytics',
+          'Settings',
         ],
       },
     ],
@@ -180,6 +184,24 @@
         ],
       },
     ],
+  };
+
+  // The GitLab project sidebar groups its items (Plan, Code, Build, …). GitHub's
+  // repo tabs are flat, so on the GitLab skin they are gathered under the same
+  // group headings, using the *displayed* label (after translation). An item not
+  // listed here stands alone, with no heading.
+  const NAV_GROUPS = {
+    gitlab: {
+      Issues: 'Plan',
+      'Issue boards': 'Plan',
+      Wiki: 'Plan',
+      'Merge requests': 'Code',
+      Repository: 'Code',
+      'CI/CD': 'Build',
+      Releases: 'Deploy',
+      Security: 'Secure',
+      Analytics: 'Analyze',
+    },
   };
 
   /* ---------------------------------------------------------- shortcuts -- */
@@ -308,6 +330,16 @@
   function labelMatches(text, label) {
     const normalized = String(text || '').replace(/\s+/g, ' ').trim();
     return normalized === label || normalized.startsWith(`${label} `);
+  }
+
+  /** The GitLab-style group heading a nav item belongs under, or null. */
+  function navGroupFor(label, theme) {
+    const map = NAV_GROUPS[theme];
+    if (!map) return null;
+    for (const [key, group] of Object.entries(map)) {
+      if (labelMatches(label, key)) return group;
+    }
+    return null;
   }
 
   /**
@@ -439,6 +471,7 @@
   globalThis.GITALIKE_UX = {
     PHRASES,
     NAV,
+    NAV_GROUPS,
     LABELS,
     CHROME,
     UNMAPPED,
@@ -452,6 +485,7 @@
     noEquivalentFor,
     refMarker,
     labelMatches,
+    navGroupFor,
     orderIndexes,
     otherHostUrl,
     hostProduct,
