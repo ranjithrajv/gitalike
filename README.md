@@ -2,6 +2,11 @@
 
 Use any forge, keep your muscle memory.
 
+[![CI](https://github.com/ranjithrajv/gitalike/actions/workflows/ci.yml/badge.svg)](https://github.com/ranjithrajv/gitalike/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/ranjithrajv/gitalike)](https://github.com/ranjithrajv/gitalike/releases/latest)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
+[![Telemetry: none](https://img.shields.io/badge/telemetry-none-success)](https://ranjithrajv.github.io/gitalike/privacy.html)
+
 **Nothing else makes GitHub read like GitLab — and back.** gitalike re-skins the
 forge in front of you as the product you know best — GitHub, GitLab or Bitbucket
 — down to the words, the navigation, the `#42` / `!42` reference markers and the
@@ -14,6 +19,13 @@ remote code: both stylesheets ship in the bundle and every mark is an inline dat
 URI. It changes nothing about what the site *does* — no requests are intercepted,
 no data is touched — and every change is recorded and reverted exactly the moment
 you switch a skin off.
+
+<p align="center">
+  <img src="docs/github-default.png" width="49%" alt="A GitHub project page, default" />
+  <img src="docs/github-gitlab.png" width="49%" alt="The same GitHub project page with the GitLab UI applied" />
+</p>
+
+<p align="center"><em>The same GitHub project page: default on the left, with the GitLab UI applied on the right. <a href="https://ranjithrajv.github.io/gitalike/">Drag the divider on the live preview →</a></em></p>
 
 Three skins — **GitLab**, **GitHub** and **Bitbucket** — and any host you have
 set up can wear any of them from the popup.
@@ -58,7 +70,24 @@ countries and regions.
 **Live preview:** <https://ranjithrajv.github.io/gitalike/> — drag the divider
 and watch each site wear every skin it can.
 
+## Contents
+
+- [Install](#install)
+  - [From source](#from-source)
+- [Use](#use)
+- [Adding a self-hosted instance](#adding-a-self-hosted-instance-github-enterprise-gitlab-bitbucket-gerrit)
+- [UX parity](#ux-parity)
+- [Known limitations](#known-limitations)
+- [Privacy](#privacy)
+- [Contributing](#contributing)
+- [Trademarks](#trademarks)
+- [License](#license)
+
 ## Install
+
+> **Not on the extension stores yet.** gitalike is sideloaded for now: download
+> the ZIP for your browser below and follow the steps. Store listings are
+> in progress.
 
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download gitalike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"><img alt="Download gitalike for Firefox" src="https://img.shields.io/badge/Download-Firefox-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
@@ -221,97 +250,28 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
 
 ## Known limitations
 
-- **UX parity is conservative, not exhaustive.** Only the vocabulary that maps
-  cleanly is rewritten ("Pull request" ⇄ "Merge request"); product-specific
-  concepts with no counterpart are marked rather than guessed at. Copy is never
-  touched inside code, inputs or editable regions, and nav labels change only on
-  an exact whole-label match, so search, copy/paste and screen readers keep
-  working — but text the site updates *inside* an already-processed node is not
-  re-translated until that node is replaced.
-- **The keyboard remap is best-effort.** Where the destination has a navigation
-  link the combo is delivered as a click on that link, because GitLab ignores
-  synthetic key events. `g n` (notifications) has no link, so it only works on
-  GitHub.
-- **A feature with no counterpart is marked, not hidden.** GitLab-only features
-  (Epics, Iterations, Requirements, Service Desk, …) get a `≠ GitHub` badge on a
-  GitHub-skinned site, and GitHub-only ones (Discussions, Sponsors) get `≠ GitLab`
-  on a GitLab-skinned site.
-- **The GitHub-skin strip is rebuilt, not just reordered.** GitLab scatters the
-  same project destinations across a pinned block and collapsible groups, some of
-  which (Wiki, Security) it may not render at all, so the tab row is rebuilt from
-  GitHub's own tabs, in GitHub's order, and hosted under the repository header
-  where GitHub puts it. Under the GitLab skin, GitHub's flat tabs are gathered
-  under GitLab's group headings instead.
-- **"Open on the other host" covers the two public forges only.** A self-hosted
-  instance has no pair to guess, so the action is absent there.
-- **Access is bundled hosts at install, one origin at a time after that.** The
-  install prompt covers the public forges, Codeberg and Bitbucket (`github.com`,
-  `gitlab.com`, `codeberg.org`, `gitea.com`, `bitbucket.org`). A self-hosted
-  instance is granted when you add it — the popup asks for that one origin, a
-  prompt you only see if you asked for that host. There is no all-sites grant.
-- **The content scripts and stylesheets load only on hosts you have set up and
-  granted.** The background registers them for the configured hosts, so an
-  unconfigured page parses neither. This is what the `scripting` permission is
-  for.
-- **The skin is cosmetic, and the page can influence it.** Everything gitalike
-  does hangs off `html.gs-theme-*` classes and `data-gs-*` markers on the page
-  itself, so the page can add, remove or spoof them, and it can mark its own
-  content `[data-gs-ux-skip]` to opt out of translation. That is fine for a
-  reskin, but the skin is not a security boundary: do not treat it as a trust
-  signal.
-- **The first-paint cache lives in the page's `localStorage`.** The per-host
-  decision is cached under `gitSame.theme` so a repeat visit does not flash the
-  original theme; it is the only store readable synchronously at
-  `document_start`. Being origin storage, the page can read or overwrite it, but
-  `storage.sync` is reconciled immediately afterwards and wins.
-- **The global skin covers every host it applies to at once, unless you choose a
-  skin per host.** The **Show the web with** radio sets one skin for the whole
-  extension. The popup's **Show *this site* with** picker (and
-  `Alt` + `Shift` + `G`) chooses the skin for a single host, which is how an
-  enterprise instance is skinned without `github.com`; there is no bulk per-host
-  list beyond that.
-- **The Bitbucket skin is verified from a capture, not live.** Bitbucket no
-  longer serves public repository pages, so its palette and repo-tab set were
-  taken from an archived Bitbucket repository page (Atlassian's `#0049B0` bar,
-  `#0052CC` accent, and the Source/Commits/Branches/Pull requests/Pipelines/
-  Deployments/Jira issues/Security/Downloads menu) rather than a live page. Its
-  navigation is a left sidebar, so it reuses GitLab's layout, but its menu is
-  flat: it drops GitLab's group headings rather than inheriting them. It cannot
-  be watched by the selector canary for the same reason.
-- **Bitbucket as a source is vocabulary-only for now.** A Bitbucket host can be
-  classified and shown with the GitHub or GitLab UI, and its copy, control labels
-  and `/pull-requests/N` reference markers follow the applied product — but there
-  is no palette, navigation or metadata pass for Bitbucket markup. Bitbucket
-  Cloud renders its repository page client-side and serves no capturable public
-  page, so its structural hooks cannot be verified the way the other forges' are;
-  the skin stops at the source-agnostic passes until a capture exists.
-- **Gerrit as a source is vocabulary-only too, and has no bundled host.** A
-  Gerrit instance is added one origin at a time from the popup, and can be shown
-  with the GitHub or GitLab UI. Like Bitbucket, its PolyGerrit UI is
-  client-rendered with no capturable markup, so there is no palette, navigation
-  or metadata pass; and its changes are numbered (`/c/<project>/+/<N>`) with a
-  Change-Id rather than a `#`/`!` pull-request marker, so even the reference
-  markers do not apply. Copy and control labels are what reach it.
-- **The Codeberg and gitea.com skin now re-orients the navigation, but not the
-  whole page.** They are GitHub-flavoured, so they can wear either UI. Under the
-  **GitLab UI** the repo tabs are rebuilt as a grouped left sidebar (GitLab's
-  Plan/Code/Build/Deploy headings), and under the **GitHub UI** they are a
-  GitHub-style underlined tab row; colours, words, reference markers and the
-  active tab follow the applied product either way. Gitea's description and
-  topics stay where Gitea puts them (they are not moved into a GitLab "Project
-  information" block or a GitHub "About" rail), and Gitea's own keyboard
-  shortcuts are left alone (the GitHub/GitLab `g`-combo remap does not run on it).
-- **The shortcut cannot set up a new host**, only toggle one already classified,
-  because classifying requires choosing which product it is.
-- **The in-page mark is gitalike's own, in the other product's palette.** The
-  site's brand logo is replaced by gitalike's two-way swap arrow, painted across
-  whichever palette the skin uses — GitLab's red→orange→yellow, or Primer's ink
-  and accent blue. The extension ships no vendor artwork and borrows only the
-  palette; the mark never pretends to be the other product's logo.
-- **`gitlab.com/` redirects.** When you are logged out the root bounces to
-  `about.gitlab.com`, a different origin, so there is nothing for the skin to do
-  there. The GitLab app — `/dashboard`, `/explore`, project pages — is where it
-  applies.
+gitalike is deliberately conservative, and it is honest about the edges. The
+short version:
+
+- **UX parity is conservative, not exhaustive.** Only vocabulary that maps
+  cleanly is rewritten; a concept with no counterpart is marked (`≠ GitHub` /
+  `≠ GitLab`) rather than guessed at. Copy is never touched inside code, inputs
+  or editable regions.
+- **The keyboard remap is best-effort.** Where the destination has a link the
+  combo clicks it; `g n` (notifications) has no link, so it works only on GitHub.
+- **Bitbucket and Gerrit as sources are vocabulary-only**, and Gerrit has no
+  bundled host — add it by instance.
+- **The skin is cosmetic, and the page can influence it.** It is not a security
+  boundary; do not treat it as a trust signal.
+- **Access is bundled hosts at install, one origin at a time after that.** There
+  is no all-sites grant.
+- **“Open on the other host” covers the two public forges only.**
+
+The full list — the rebuilt tab strips, the first-paint `localStorage` cache,
+global-versus-per-host skins, how the Bitbucket palette was verified from a
+capture, the Codeberg/Gitea partial pass, the mark’s provenance and the
+`gitlab.com/` redirect — is in
+[docs/LIMITATIONS.md](docs/LIMITATIONS.md).
 
 ## Privacy
 
