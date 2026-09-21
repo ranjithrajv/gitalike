@@ -34,6 +34,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launch, retry, waitForNoTheme, waitForTheme } from './harness.mjs';
+import '../plugins.mjs';
 import {
   PROFILE_JOBS,
   PROJECT_JOBS,
@@ -52,7 +53,10 @@ const instances = Object.fromEntries(
   instanceSources.map((source) => [source.instance.host, source.instance.kind]),
 );
 
-const OFF = { github: 'off', gitlab: 'off', bitbucket: 'off', gerrit: 'off' };
+// Every kind off, derived from the registry so a new kind is covered.
+const OFF = Object.fromEntries(
+  Object.keys(globalThis.GITALIKE.kinds).map((kind) => [kind, 'off']),
+);
 const PAGE = { width: 1280, height: 900 };
 const STORE = { width: 1280, height: 800 };
 

@@ -15,6 +15,9 @@
     description: 'GitHub’s Primer markup.',
     // A display name for the registry, the site's chip and the docs.
     label: 'GitHub — Primer',
+    // Every parity dimension applies: palette, navigation, page-wide passes,
+    // metadata, profile and reference markers.
+    compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 },
     // GitHub's markup (Primer).
     selectors: {
       repoNavList: 'nav[aria-label="Repository"] ul.UnderlineNav-body', // css

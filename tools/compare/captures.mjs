@@ -236,6 +236,33 @@ export const NO_CAPTURE = new Set();
   }
 }
 
+// The skins a source can wear are the registry's: every skin except the one it
+// already is (a source is never painted as itself). The authored order and file
+// names stay, but a set that drifts from the registry fails here rather than
+// silently measuring the wrong skins.
+{
+  const skinKeys = Object.keys(globalThis.GITALIKE_PLUGINS.skins);
+  for (const source of SOURCES) {
+    const own = skinKeys.includes(source.key) ? source.key : null;
+    const expected = skinKeys
+      .filter((skin) => skin !== own)
+      .sort()
+      .join(',');
+    for (const page of ['project', 'profile']) {
+      const got = source[page].skins
+        .map((skin) => themeOf(skin))
+        .sort()
+        .join(',');
+      if (got !== expected) {
+        throw new Error(
+          `captures: ${source.key} ${page} skins are [${got}] but the ` +
+            `registry expects [${expected}]`,
+        );
+      }
+    }
+  }
+}
+
 /** Project-page jobs, one per source, in the table's order. */
 export const PROJECT_JOBS = SOURCES.map((source) => source.project);
 

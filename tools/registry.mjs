@@ -73,6 +73,7 @@ export function registryObject() {
       description: source.description ?? null,
       markup: source.markup !== false,
       hosts: (hosts[name] ?? []).sort(),
+      compare: source.compare,
       selectors: Object.keys(source.selectors),
       canary: source.canary.map((page) => page.url),
     })),

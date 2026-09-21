@@ -59,29 +59,12 @@ export const SKINS = Object.entries(PLUGINS.skins).map(([key, skin]) => ({
 }));
 
 /**
- * A source's coverage is three independent capabilities, not one markup flag:
- *
- *   palette  a skin re-points the design tokens the source reads
- *            (`themes/gs-tokens.css`). Every source has one now.
- *   nav      a skin pass reorients/relabels the source's navigation.
- *   page     the page-wide passes (copy, control labels, `unmapped`, markers)
- *            reach the source's DOM.
- *
- * GitHub, GitLab and Gitea have all three. Bitbucket Cloud is light DOM with a
- * nav pass, but no `NAV_RULES` entry (so its nav is not reordered or filtered)
- * and no metadata profile. Gerrit is client-rendered inside shadow DOM, so only
- * its palette lands — the page-wide and nav passes do not reach it.
+ * The parity model reads each source's own `compare` capabilities — declared in
+ * `src/plugins/sources/<name>/index.js` and published in `plugins.json` — rather
+ * than a hardcoded set, so a new source declares how comparable it is and the
+ * rubric follows. Each value is a fraction in [0, 1]; a missing one is 0.
  */
-const PALETTE = new Set(['github', 'gitlab', 'gitea', 'bitbucket', 'gerrit']);
-const NAV = new Set(['github', 'gitlab', 'gitea', 'bitbucket']);
-const PAGE = new Set(['github', 'gitlab', 'gitea', 'bitbucket']);
-
-// Gerrit's palette re-points text, links, borders and feedback but not its
-// surfaces or header, so it is a partial re-point rather than the full one the
-// others get.
-const PALETTE_SHARE = { gerrit: 0.6 };
-const paletteShare = (source) =>
-  PALETTE.has(source) ? (PALETTE_SHARE[source] ?? 1) : 0.2;
+const cap = (source) => PLUGINS.sources[source]?.compare ?? {};
 
 /**
  * How much of a `g`-combo remap works for a source under a skin. GitHub honours
@@ -112,7 +95,7 @@ const PROJECT = [
   {
     key: 'palette',
     weight: 12,
-    share: ({ source, native }) => (native ? 1 : paletteShare(source)),
+    share: ({ source, native }) => (native ? 1 : cap(source).palette || 0.2),
   },
   {
     key: 'orientation',
@@ -123,13 +106,11 @@ const PROJECT = [
     share: ({ source, layout, native }) =>
       native
         ? 1
-        : !NAV.has(source)
+        : !cap(source).nav
           ? 0.1
           : source === 'gitea' && layout === 'github'
             ? 0.9
-            : source === 'bitbucket'
-              ? 0.9
-              : 1,
+            : cap(source).nav,
   },
   {
     key: 'navLabels',
@@ -139,7 +120,7 @@ const PROJECT = [
     share: ({ skin, source, native }) =>
       native
         ? 1
-        : NAV.has(source) && Object.keys(UX.NAV[skin] || {}).length
+        : cap(source).nav && Object.keys(UX.NAV[skin] || {}).length
           ? 1
           : 0,
   },
@@ -163,7 +144,7 @@ const PROJECT = [
     share: ({ skin, source, native }) =>
       native
         ? 1
-        : !NAV.has(source)
+        : !cap(source).nav
           ? 0
           : source === 'bitbucket'
             ? skin === 'gitlab'
@@ -178,7 +159,7 @@ const PROJECT = [
     // no hooked nav region (Bitbucket) filters nothing.
     share: ({ skin, source, native }) => {
       if (native) return 1;
-      if (!NAV.has(source)) return 0;
+      if (!cap(source).nav) return 0;
       if (source === 'bitbucket') return 0.2;
       return UX.NAV_KEEP[skin] ? 1 : UX.NAV_HIDE[skin] ? 0.7 : 0;
     },
@@ -192,11 +173,11 @@ const PROJECT = [
     share: ({ source, skin, native }) =>
       native
         ? 1
-        : source === 'gitea' || source === 'bitbucket' || !PAGE.has(source)
-          ? 0.2
-          : skin === 'bitbucket'
+        : cap(source).metadata
+          ? skin === 'bitbucket'
             ? 0.5
-            : 1,
+            : 1
+          : 0.2,
   },
   {
     key: 'controlLabels',
@@ -204,7 +185,7 @@ const PROJECT = [
     // Control labels are matched page-wide, so they work on any markup; the
     // wording tables are target-specific, so a source with no hooks is partial.
     share: ({ skin, source, native }) =>
-      native ? 1 : !UX.LABELS[skin] ? 0 : PAGE.has(source) ? 1 : 0.2,
+      native ? 1 : !UX.LABELS[skin] ? 0 : cap(source).page ? 1 : 0.2,
   },
   {
     key: 'refs',
@@ -213,13 +194,13 @@ const PROJECT = [
     // Bitbucket identifies issues by key (PROJ-123), not a `#`/`!` number, so
     // only the pull/merge marker direction is emulated.
     share: ({ source, skin, native }) =>
-      native ? 1 : source === 'gerrit' ? 0.3 : skin === 'bitbucket' ? 0.5 : 1,
+      native ? 1 : (cap(source).refs || 0.3) * (skin === 'bitbucket' ? 0.5 : 1),
   },
   {
     key: 'unmapped',
     weight: 5,
     share: ({ skin, source, native }) =>
-      native ? 1 : UX.UNMAPPED[skin] ? (PAGE.has(source) ? 1 : 0.2) : 0,
+      native ? 1 : UX.UNMAPPED[skin] ? (cap(source).page ? 1 : 0.2) : 0,
   },
   {
     key: 'shortcuts',
@@ -233,7 +214,7 @@ const PROFILE = [
   {
     key: 'palette',
     weight: 12,
-    share: ({ source, native }) => (native ? 1 : paletteShare(source)),
+    share: ({ source, native }) => (native ? 1 : cap(source).palette || 0.2),
   },
   {
     key: 'orientation',
@@ -241,17 +222,7 @@ const PROFILE = [
     // The profile passes are wired for GitHub's, GitLab's and (partly) Gitea's
     // markup; a Bitbucket source has no profile hooks.
     share: ({ source, skin, native }) =>
-      native
-        ? 1
-        : !NAV.has(source)
-          ? 0.1
-          : source === 'gitea'
-            ? 0.4
-            : source === 'bitbucket'
-              ? 0.3
-              : skin === 'bitbucket'
-                ? 0.6
-                : 1,
+      native ? 1 : cap(source).profile ? (skin === 'bitbucket' ? 0.6 : 1) : 0.1,
   },
   {
     key: 'menu',
@@ -272,8 +243,7 @@ const PROFILE = [
     // GitHub skin; neither runs for a source with no profile hooks.
     share: ({ source, skin, native }) => {
       if (native) return 1;
-      if (source === 'gitea' || source === 'bitbucket') return 0.1;
-      if (!PAGE.has(source)) return 0.1;
+      if (!cap(source).profile) return 0.1;
       if (skin === 'bitbucket') return 0.3;
       return 1;
     },
@@ -285,8 +255,7 @@ const PROFILE = [
     // pinned selection; GitLab has no pinned data for GitHub's section.
     share: ({ source, skin, native }) => {
       if (native) return 1;
-      if (source === 'gitea' || source === 'bitbucket' || !PAGE.has(source))
-        return 0.2;
+      if (!cap(source).profile) return 0.2;
       if (skin === 'bitbucket') return 0.2;
       return skin === 'gitlab' ? 0.8 : 0.5;
     },
@@ -297,7 +266,7 @@ const PROFILE = [
     share: ({ skin, source, native }) => {
       if (native) return 1;
       if (!UX.CHROME[skin]) return 0;
-      return PAGE.has(source) ? (skin === 'bitbucket' ? 0.8 : 1) : 0.2;
+      return cap(source).page ? (skin === 'bitbucket' ? 0.8 : 1) : 0.2;
     },
   },
   {
@@ -306,7 +275,7 @@ const PROFILE = [
     share: ({ skin, source, native }) => {
       if (native) return 1;
       if (!Object.keys(UX.PHRASES[skin] || {}).length) return 0;
-      return PAGE.has(source) ? (skin === 'bitbucket' ? 0.8 : 1) : 0.2;
+      return cap(source).page ? (skin === 'bitbucket' ? 0.8 : 1) : 0.2;
     },
   },
   {
@@ -315,14 +284,14 @@ const PROFILE = [
     share: ({ skin, source, native }) => {
       if (native) return 1;
       if (!UX.UNMAPPED[skin]) return 0;
-      return PAGE.has(source) ? (skin === 'bitbucket' ? 0.9 : 1) : 0.2;
+      return cap(source).page ? (skin === 'bitbucket' ? 0.9 : 1) : 0.2;
     },
   },
   {
     key: 'refs',
     weight: 5,
     share: ({ source, skin, native }) =>
-      native ? 1 : source === 'gerrit' ? 0.3 : skin === 'bitbucket' ? 0.5 : 1,
+      native ? 1 : (cap(source).refs || 0.3) * (skin === 'bitbucket' ? 0.5 : 1),
   },
   {
     key: 'shortcuts',

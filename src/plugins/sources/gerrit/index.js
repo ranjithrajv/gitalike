@@ -23,6 +23,17 @@
     description:
       'Gerrit’s PolyGerrit app; recoloured through its root custom properties.',
     label: 'Gerrit',
+    // Only the palette reaches Gerrit, and only partially (no surfaces/header);
+    // copy, navigation, metadata and profile cannot reach its shadow roots, and
+    // its changes carry a Change-Id rather than a `#`/`!` reference marker.
+    compare: {
+      palette: 0.6,
+      nav: 0,
+      page: 0,
+      metadata: 0,
+      profile: 0,
+      refs: 0.3,
+    },
     selectors: {
       app: 'gr-app#pg-app',
       body: 'body[unresolved]',

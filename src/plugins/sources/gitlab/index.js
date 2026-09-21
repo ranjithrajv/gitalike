@@ -14,6 +14,7 @@
   globalThis.GITALIKE_PLUGINS.defineSource('gitlab', {
     description: 'GitLab’s Pajamas markup.',
     label: 'GitLab — Pajamas',
+    compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 },
     // GitLab's markup (Pajamas, plus its older CSS).
     selectors: {
       superSidebar: '.super-sidebar', // css

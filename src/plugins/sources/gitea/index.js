@@ -15,6 +15,9 @@
     description:
       'Gitea and Forgejo’s shared markup, on gitea.com and Codeberg.',
     label: 'Gitea / Forgejo',
+    // Gitea keeps its own description/topics placement and has no profile hooks,
+    // so those dimensions are partial.
+    compare: { palette: 1, nav: 1, page: 1, metadata: 0, profile: 0, refs: 1 },
     // Gitea and Forgejo share one markup family, so one source covers both
     // hosts: gitea.com (Gitea) and codeberg.org (Forgejo). Each host has its
     // own canary page below, so if the 2024 hard fork's UI ever diverges the

@@ -57,6 +57,14 @@
       "hosts": [
         "bitbucket.org"
       ],
+      "compare": {
+        "palette": 1,
+        "nav": 0.9,
+        "page": 1,
+        "metadata": 0,
+        "profile": 0,
+        "refs": 1
+      },
       "selectors": [
         "app",
         "bootstrap",
@@ -72,6 +80,14 @@
       "description": "Gerrit’s PolyGerrit app; recoloured through its root custom properties.",
       "markup": true,
       "hosts": [],
+      "compare": {
+        "palette": 0.6,
+        "nav": 0,
+        "page": 0,
+        "metadata": 0,
+        "profile": 0,
+        "refs": 0.3
+      },
       "selectors": [
         "app",
         "body"
@@ -89,6 +105,14 @@
         "codeberg.org",
         "gitea.com"
       ],
+      "compare": {
+        "palette": 1,
+        "nav": 1,
+        "page": 1,
+        "metadata": 0,
+        "profile": 0,
+        "refs": 1
+      },
       "selectors": [
         "repoNavList",
         "repoMenu",
@@ -111,6 +135,14 @@
       "hosts": [
         "github.com"
       ],
+      "compare": {
+        "palette": 1,
+        "nav": 1,
+        "page": 1,
+        "metadata": 1,
+        "profile": 1,
+        "refs": 1
+      },
       "selectors": [
         "repoNavList",
         "appHeader",
@@ -138,6 +170,14 @@
       "hosts": [
         "gitlab.com"
       ],
+      "compare": {
+        "palette": 1,
+        "nav": 1,
+        "page": 1,
+        "metadata": 1,
+        "profile": 1,
+        "refs": 1
+      },
       "selectors": [
         "superSidebar",
         "navContainer",

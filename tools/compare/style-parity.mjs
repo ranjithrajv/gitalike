@@ -45,6 +45,7 @@ import '../plugins.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const PLUGINS = globalThis.GITALIKE_PLUGINS;
+const SITES = globalThis.GITALIKE;
 
 // The skins are the registry's, not a hand-kept list. (The capture coverage is
 // checked where the recipes live, in `captures.mjs`, so this tool and
@@ -247,52 +248,48 @@ const PROFILE_WORDS = [
   'Starred projects',
 ];
 
-// What each target product's chrome looks like, per page type: its navigation
-// shape and the words its menu carries.
+// The navigation shape a target is built to comes from the skin's own `layout`
+// (github = top bar + row, gitlab = left sidebar), so it is not restated here.
+// The words its menu carries are a reviewed list per page type. Both are keyed
+// over the registry's skins, so a new skin is measured without an edit here.
+const PROJECT_VOCAB = {
+  github: ['Code', 'Pull requests', 'Actions', 'Insights', 'Projects'],
+  gitlab: [
+    'Repository',
+    'Merge requests',
+    'CI/CD',
+    'Analytics',
+    'Issue boards',
+  ],
+  bitbucket: ['Source', 'Pull requests', 'Pipelines'],
+};
+const PROFILE_VOCAB = {
+  github: ['Overview', 'Repositories', 'Projects', 'Packages', 'Stars'],
+  gitlab: [
+    'Activity',
+    'Groups',
+    'Contributed projects',
+    'Personal projects',
+    'Starred projects',
+    'Snippets',
+    'Followers',
+    'Following',
+  ],
+  bitbucket: ['Overview', 'Repositories', 'Projects', 'Snippets'],
+};
+
+const targetFor = (skin, vocab) => ({
+  layout: SITES.skins[skin].layout === 'github' ? 'row' : 'column',
+  vocab: vocab[skin],
+});
+
 const TARGETS = {
-  project: {
-    github: {
-      layout: 'row',
-      vocab: ['Code', 'Pull requests', 'Actions', 'Insights', 'Projects'],
-    },
-    gitlab: {
-      layout: 'column',
-      vocab: [
-        'Repository',
-        'Merge requests',
-        'CI/CD',
-        'Analytics',
-        'Issue boards',
-      ],
-    },
-    bitbucket: {
-      layout: 'column',
-      vocab: ['Source', 'Pull requests', 'Pipelines'],
-    },
-  },
-  profile: {
-    github: {
-      layout: 'row',
-      vocab: ['Overview', 'Repositories', 'Projects', 'Packages', 'Stars'],
-    },
-    gitlab: {
-      layout: 'column',
-      vocab: [
-        'Activity',
-        'Groups',
-        'Contributed projects',
-        'Personal projects',
-        'Starred projects',
-        'Snippets',
-        'Followers',
-        'Following',
-      ],
-    },
-    bitbucket: {
-      layout: 'column',
-      vocab: ['Overview', 'Repositories', 'Projects', 'Snippets'],
-    },
-  },
+  project: Object.fromEntries(
+    SKINS.map((skin) => [skin, targetFor(skin, PROJECT_VOCAB)]),
+  ),
+  profile: Object.fromEntries(
+    SKINS.map((skin) => [skin, targetFor(skin, PROFILE_VOCAB)]),
+  ),
 };
 
 const PAGES = [

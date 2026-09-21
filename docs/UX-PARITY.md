@@ -84,6 +84,12 @@ The score is derived from the tables in `src/plugins/skins/` and the pass gating
 weighted dimensions; a cell is the sum of (weight × share reproduced), rounded
 to one decimal.
 
+How much of each dimension a *source* can be credited is declared by the source
+itself (`compare` in `src/plugins/sources/<name>/index.js`, published in
+`plugins.json`): `palette`, `nav`, `page`, `metadata`, `profile` and `refs`, each
+a fraction in [0, 1]. The rubric reads those, so a new source declares its
+comparable surface instead of the model assuming one.
+
 **Project pages** — palette & tokens 12; navigation orientation 18; nav labels
 10; nav order 8; nav groups 6; nav keep/hide 10; metadata block & heading 12;
 control labels 6; reference markers 5; no-counterpart markers 5; shortcuts 8.
@@ -107,7 +113,7 @@ at a time from the popup).
 | Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
 | **Bitbucket** | 10.0 | 6.5 | 5.9 |
-| **Gerrit** | 1.5 | 1.5 | 1.5 |
+| **Gerrit** | 1.4 | 1.5 | 1.5 |
 | **Gitea / Forgejo** | 8.0 | 8.1 | 7.9 |
 | **GitHub** | 8.4 | 10.0 | 9.7 |
 | **GitLab** | 8.4 | 9.7 | 10.0 |
@@ -116,9 +122,9 @@ at a time from the popup).
 
 | Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
-| **Bitbucket** | 10.0 | 4.8 | 4.8 |
-| **Gerrit** | 1.9 | 1.9 | 1.9 |
-| **Gitea / Forgejo** | 4.3 | 5.0 | 5.0 |
+| **Bitbucket** | 10.0 | 4.5 | 4.5 |
+| **Gerrit** | 1.8 | 1.9 | 1.9 |
+| **Gitea / Forgejo** | 3.9 | 4.5 | 4.5 |
 | **GitHub** | 6.7 | 10.0 | 9.9 |
 | **GitLab** | 6.7 | 9.5 | 10.0 |
 
@@ -162,14 +168,14 @@ excused.
   Bitbucket's own destinations, but Bitbucket has no public profile of its own,
   so the identity card is not re-shaped (the rail and stats passes are
   GitLab/GitHub only) and shortcuts are unmapped.
-- **Gitea → any skin, profile (4.3–5.0)** — the profile passes are keyed to
+- **Gitea → any skin, profile (3.9–4.5)** — the profile passes are keyed to
   GitHub's and GitLab's profile markup (`SELECTORS.github.profile*`,
   `SELECTORS.gitlab.profile*`), so a Gitea/Forgejo profile gets the shared
   palette, copy, account-chrome and reference-marker work but none of the menu,
   rail or card rebuilding. This is the largest scoring gap, and the docs make no
   profile claim for Gitea/Forgejo; the `codeberg-profile-*.png` captures show
   exactly that — the shared palette and copy, not a rebuilt Gitea profile.
-- **Bitbucket as a source (6.5 / 5.9 project, 4.8 profile)** — it gains two
+- **Bitbucket as a source (6.5 / 5.9 project, 4.5 profile)** — it gains two
   passes. Its palette: Bitbucket Cloud exposes Atlassian's `--ds-*` design
   tokens on <html>, so the skins re-point them at their own palette, header
   included (`themes/gs-tokens.css`). Its navigation: `paintBitbucketNav`
@@ -178,7 +184,7 @@ excused.
   there is no `NAV_RULES` entry, so the nav is not reordered or filtered, no
   metadata shape, and no shortcut table. The diagonal is 10.0 because a source
   on its own UI needs no transformation.
-- **Gerrit as a source (1.5 project, 1.9 profile)** — the lowest row: only its
+- **Gerrit as a source (1.4–1.5 project, 1.8–1.9 profile)** — the lowest row: only its
   palette reaches it, and even that is partial. PolyGerrit reads its colours
   from root custom properties that inherit across its shadow boundary, so the
   skins re-point text, links, borders and feedback (`themes/gs-tokens.css`) but

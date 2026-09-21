@@ -78,6 +78,32 @@
   ];
 
   /**
+   * How much of each comparison dimension a source can be credited by the parity
+   * model — the source's own declaration, so the rubric reads it instead of a
+   * hardcoded set. Each is a fraction in [0, 1]:
+   *
+   *   palette   the skins re-point the design tokens the source reads
+   *   nav       a skin pass reorients/relabels the source's navigation
+   *   page      the page-wide passes (copy, control labels, markers) reach it
+   *   metadata  the description/metadata placement passes apply
+   *   profile   the profile passes apply
+   *   refs      a `#`/`!` reference marker carries over
+   *
+   * `tools/compare/parity-score.mjs` reads these from the registry.
+   * @type {string[]}
+   */
+  const COMPARE_KEYS = [
+    'palette',
+    'nav',
+    'page',
+    'metadata',
+    'profile',
+    'refs',
+  ];
+  const compareDefaults = () =>
+    Object.fromEntries(COMPARE_KEYS.map((key) => [key, 0]));
+
+  /**
    * The capabilities a skin opts into, with the value each takes when it does
    * not. Filling them keeps a skin's shape total, but the derived tables publish
    * only the ones a skin *declared*: an empty `keep` must not reach `navKeep`,
@@ -139,8 +165,13 @@
    */
   function sourceProblems(source) {
     if (!isString(source?.label)) return ['label — a display name, a string'];
+    const problems = [];
+    for (const [key, value] of Object.entries(source.compare ?? {})) {
+      if (typeof value !== 'number' || value < 0 || value > 1) {
+        problems.push(`compare.${key} — a number in [0, 1]`);
+      }
+    }
     if (source.markup === false) {
-      const problems = [];
       if (isObject(source.selectors) && Object.keys(source.selectors).length) {
         problems.push('selectors — a vocabulary-only source has none');
       }
@@ -149,7 +180,6 @@
       }
       return problems;
     }
-    const problems = [];
     if (!isObject(source.selectors) || !Object.keys(source.selectors).length) {
       problems.push('selectors — an object with at least one DOM hook');
     }
@@ -219,7 +249,13 @@
   function defineSource(name, partial) {
     assertNew('source', sources, name);
     assertCompatible(partial?.minApiVersion, name);
-    const source = { markup: true, selectors: {}, canary: [], ...partial };
+    const source = {
+      markup: true,
+      selectors: {},
+      canary: [],
+      ...partial,
+      compare: { ...compareDefaults(), ...partial?.compare },
+    };
     const problems = sourceProblems(source);
     if (problems.length) {
       throw new Error(
@@ -234,6 +270,7 @@
     API_VERSION,
     SKIN_REQUIRED,
     SKIN_CAPABILITIES,
+    COMPARE_KEYS,
     defineSkin,
     defineSource,
     skinProblems,
