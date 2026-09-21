@@ -149,6 +149,7 @@
         font-weight: 500;
       }
       .site nav a:hover { color: var(--fg); }
+      .site nav a.is-active { color: var(--fg); }
       .site nav .btn { color: var(--accent-fg); }
       @media (max-width: 620px) {
         /* Keep every link reachable on a phone: brand on one row, the nav wraps
@@ -339,6 +340,8 @@
         color: var(--accent);
         cursor: ew-resize;
         touch-action: none;
+        /* A hairline ring keeps the line legible on a light or dark capture. */
+        box-shadow: 0 0 0 1px rgb(255 255 255 / 0.75);
       }
       .multi-handle::after {
         content: "";
@@ -350,11 +353,42 @@
         margin: -13px 0 0 -13px;
         border-radius: 50%;
         background: currentColor;
-        box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+        /* The white ring separates the knob from whatever is behind it. */
+        box-shadow: 0 0 0 2px #fff, 0 2px 8px rgb(0 0 0 / 0.45);
       }
       .multi-handle[data-skin="gitlab"] { color: var(--gitlab); }
       .multi-handle[data-skin="github"] { color: var(--github); }
       .multi-handle[data-skin="bitbucket"] { color: var(--bitbucket); }
+      /* The stage clips overflow, so the ring is drawn as a shadow rather than
+         an outline that would be cut off at the edges. */
+      .multi-handle:focus-visible { outline: none; }
+      .multi-handle:focus-visible::after {
+        box-shadow: 0 0 0 2px #fff, 0 0 0 5px var(--accent), 0 2px 8px rgb(0 0 0 / 0.45);
+      }
+      .multi-handle.is-nudging { animation: gs-nudge 1.2s ease-in-out 2; }
+      @keyframes gs-nudge {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(7px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .multi-handle.is-nudging { animation: none; }
+      }
+      .multi-hint {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        padding: 4px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #fff;
+        background: rgb(0 0 0 / 0.62);
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+      }
+      .multi-hint.is-gone { opacity: 0; }
       .multi-label { display: none; }
       .multi-legend {
         display: flex;
@@ -387,7 +421,8 @@
           color: var(--muted);
           padding: 8px 2px;
         }
-        .multi-legend { display: none; }
+        .multi-legend,
+        .multi-hint { display: none; }
       }
 
       /* ------------------------------------------------------------ sections -- */
@@ -515,6 +550,26 @@
       footer a { color: var(--accent); text-decoration: none; }
       footer a:hover { text-decoration: underline; }
       footer .fine { font-size: 12.5px; max-width: 80ch; }
+
+      .to-top {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 15;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--fg);
+        font-size: 18px;
+        text-decoration: none;
+        box-shadow: var(--shadow);
+      }
+      .to-top[hidden] { display: none; }
+      .to-top:hover { border-color: var(--muted); }
     </style>
   </head>
   <body>
@@ -534,8 +589,11 @@
         </a>
         <nav aria-label="Primary">
           <a href="#see">See it</a>
+          <a href="#how">How</a>
           <a href="#features">Features</a>
+          <a href="#forges">Forges</a>
           <a href="#privacy">Privacy</a>
+          <a href="#faq">Questions</a>
           <a href="#install">Install</a>
           <a
             class="btn small"
@@ -662,8 +720,8 @@
                   <span class="multi-label">GitLab UI</span>
                   <picture><source srcset="github-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-bitbucket.png" alt="GitHub project page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
-                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
-                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitHub</span>
@@ -689,8 +747,8 @@
                   <span class="multi-label">GitHub UI</span>
                   <picture><source srcset="gitlab-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-bitbucket.png" alt="GitLab project page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
-                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
-                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitLab</span>
@@ -718,9 +776,9 @@
                   <span class="multi-label">GitHub UI</span>
                   <picture><source srcset="codeberg-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="3" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
-                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
-                  <span class="multi-handle" data-skin="github" data-i="2" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
-                  <span class="multi-handle" data-skin="bitbucket" data-i="3" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="github" data-i="2" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="3" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · Gitea</span>
@@ -747,8 +805,8 @@
                   <span class="multi-label">GitLab UI</span>
                   <picture><source srcset="github-profile-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-bitbucket.png" alt="GitHub profile page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
-                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
-                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitHub</span>
@@ -774,8 +832,8 @@
                   <span class="multi-label">GitHub UI</span>
                   <picture><source srcset="gitlab-profile-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-bitbucket.png" alt="GitLab profile page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
-                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
-                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitLab</span>
@@ -1107,6 +1165,8 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
       </div>
     </footer>
 
+    <a class="to-top" href="#top" aria-label="Back to top" hidden>↑</a>
+
     <script>
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1193,7 +1253,11 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
           });
           handles.forEach((handle, i) => {
             handle.style.left = `${pos[i]}%`;
-            handle.setAttribute('aria-valuenow', String(Math.round(pos[i])));
+            const value = Math.round(pos[i]);
+            handle.setAttribute('aria-valuenow', String(value));
+            if (handle.dataset.name) {
+              handle.setAttribute('aria-valuetext', `${handle.dataset.name}, ${value}%`);
+            }
           });
         };
         const setPos = (i, value) => {
@@ -1236,6 +1300,75 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
           });
         });
         apply();
+
+        // Signal that the dividers move: a one-time nudge plus a hint pill, on
+        // first scroll-in. Both respect prefers-reduced-motion.
+        const hint = document.createElement('span');
+        hint.className = 'multi-hint';
+        hint.textContent = 'Drag to compare';
+        stage.appendChild(hint);
+        const dismiss = () => hint.classList.add('is-gone');
+        let hinted = false;
+        const hintObserver = new IntersectionObserver(
+          (entries) => {
+            if (hinted || !entries[0].isIntersecting) return;
+            hinted = true;
+            hintObserver.disconnect();
+            if (!reduceMotion) {
+              handles.forEach((h) => h.classList.add('is-nudging'));
+              setTimeout(
+                () => handles.forEach((h) => h.classList.remove('is-nudging')),
+                2600,
+              );
+              setTimeout(dismiss, 3400);
+            } else {
+              setTimeout(dismiss, 5000);
+            }
+          },
+          { threshold: 0.4 },
+        );
+        hintObserver.observe(stage);
+        handles.forEach((handle) =>
+          handle.addEventListener(
+            'pointerdown',
+            () => {
+              handles.forEach((h) => h.classList.remove('is-nudging'));
+              dismiss();
+            },
+            { once: true },
+          ),
+        );
+      }
+
+      // Highlight the nav link for the section currently in view.
+      const navLinks = [...document.querySelectorAll('.site nav a[href^="#"]')];
+      const linkFor = new Map(
+        navLinks.map((a) => [a.getAttribute('href').slice(1), a]),
+      );
+      const spy = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            const link = linkFor.get(entry.target.id);
+            if (!link) continue;
+            navLinks.forEach((a) => a.classList.toggle('is-active', a === link));
+          }
+        },
+        { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
+      );
+      for (const id of linkFor.keys()) {
+        const section = document.getElementById(id);
+        if (section) spy.observe(section);
+      }
+
+      // Back-to-top, once the hero is behind you.
+      const toTop = document.querySelector('.to-top');
+      if (toTop) {
+        const onScroll = () => {
+          toTop.hidden = window.scrollY < 600;
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
       }
     </script>
   </body>
