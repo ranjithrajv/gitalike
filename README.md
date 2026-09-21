@@ -104,9 +104,9 @@ off.
 
 ## Install
 
-> **Not on the extension stores yet.** GitAlike is sideloaded for now: download
-> the ZIP for your browser below and follow the steps. Store listings are
-> in progress.
+> **In review on the Chrome Web Store and addons.mozilla.org.** While those
+> listings are pending, download the ZIP for your browser below and follow the
+> steps to load it yourself.
 
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download GitAlike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"><img alt="Download GitAlike for Firefox" src="https://img.shields.io/badge/Download-Firefox-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
