@@ -36,6 +36,25 @@
       content="Any forge, any skin. GitHub, GitLab and Bitbucket interfaces for the forge you use — locally, with no network access."
     />
     <meta name="twitter:image" content="https://ranjithrajv.github.io/gitalike/og.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "gitalike",
+        "alternateName": "gitalike — GitHub ⇄ GitLab UI",
+        "description": "Re-skins GitHub, GitLab, Codeberg/Gitea and any instance you add with the UI of GitHub, GitLab or Bitbucket — colour, words, navigation, reference markers and keyboard shortcuts, entirely locally.",
+        "url": "https://ranjithrajv.github.io/gitalike/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Chrome, Chromium, Microsoft Edge, Brave, Opera, Vivaldi, Firefox",
+        "softwareVersion": "0.1.2",
+        "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "codeRepository": "https://github.com/ranjithrajv/gitalike",
+        "downloadUrl": "https://github.com/ranjithrajv/gitalike/releases/latest",
+        "screenshot": "https://ranjithrajv.github.io/gitalike/github-gitlab.png"
+      }
+    </script>
     <style>
       :root {
         color-scheme: light dark;
@@ -352,6 +371,49 @@
       }
       .note { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
 
+      /* --------------------------------------------------------------- terms -- */
+      .table-wrap { overflow-x: auto; margin-top: 10px; }
+      table.terms { width: 100%; border-collapse: collapse; font-size: 14px; }
+      table.terms th,
+      table.terms td {
+        text-align: left;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      table.terms th { color: var(--muted); font-weight: 600; font-size: 13px; }
+      table.terms td:first-child { color: var(--muted); }
+      table.terms code {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 12.5px;
+      }
+      .terms-head { margin: 30px 0 4px; font-size: 18px; }
+
+      /* ----------------------------------------------------------------- faq -- */
+      .faq { display: grid; gap: 10px; max-width: 74ch; }
+      .faq details {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0 16px;
+      }
+      .faq summary {
+        cursor: pointer;
+        padding: 14px 0;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .faq summary::-webkit-details-marker { display: none; }
+      .faq summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+      .faq details[open] summary::after { content: "–"; }
+      .faq p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+
       /* -------------------------------------------------------------- footer -- */
       footer {
         border-top: 1px solid var(--border);
@@ -422,6 +484,8 @@
               >
               <a class="btn ghost" href="https://github.com/ranjithrajv/gitalike">Source</a>
             </div>
+            <!-- Store badges (Chrome Web Store, Edge Add-ons, AMO, Opera) replace
+                 the two ZIP buttons once the listings are live. -->
             <p class="trust">
               <span>No network requests</span>
               <span>No data collected</span>
@@ -438,6 +502,43 @@
             <span class="divider"></span>
             <span class="knob">↔</span>
             <input type="range" min="0" max="100" value="45" aria-label="Swipe: GitHub project page skinned as GitLab" />
+          </div>
+        </div>
+      </section>
+
+      <!-- --------------------------------------------------------------- how -- -->
+      <section id="how">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>How it works</h2>
+            <p>Three steps — and it is invisible the moment you turn it off.</p>
+          </div>
+          <div class="grid">
+            <div class="feature">
+              <span class="ico" aria-hidden="true">1</span>
+              <h3>Pick a skin</h3>
+              <p>
+                Open the popup and choose GitHub UI, GitLab UI or Bitbucket UI —
+                for the whole web, or for the one host you are on.
+              </p>
+            </div>
+            <div class="feature">
+              <span class="ico" aria-hidden="true">2</span>
+              <h3>The site repaints</h3>
+              <p>
+                gitalike re-points the site's own design tokens and matches the
+                other product's words, navigation and shortcuts — with no
+                reload.
+              </p>
+            </div>
+            <div class="feature">
+              <span class="ico" aria-hidden="true">3</span>
+              <h3>Switch it off</h3>
+              <p>
+                Every change is recorded and undone exactly. With the skin off,
+                the extension is completely inert — nothing to clean up.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -661,6 +762,30 @@
               </p>
             </div>
           </div>
+
+          <h3 class="terms-head">The same page, in each product's words</h3>
+          <div class="table-wrap">
+            <table class="terms">
+              <thead>
+                <tr>
+                  <th scope="col">Concept</th>
+                  <th scope="col">GitHub UI</th>
+                  <th scope="col">GitLab UI</th>
+                  <th scope="col">Bitbucket UI</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Code review</td><td>Pull request</td><td>Merge request</td><td>Pull request</td></tr>
+                <tr><td>Continuous integration</td><td>Actions</td><td>CI/CD</td><td>Pipelines</td></tr>
+                <tr><td>Source tab</td><td>Code</td><td>Repository</td><td>Source</td></tr>
+                <tr><td>Issue tracking</td><td>Issues</td><td>Work items</td><td>Jira issues</td></tr>
+                <tr><td>Insights</td><td>Insights</td><td>Analytics</td><td>Insights</td></tr>
+                <tr><td>File finder</td><td>Go to file</td><td>Find file</td><td>Go to file</td></tr>
+                <tr><td>Snippets</td><td>Gists</td><td>Snippets</td><td>Snippets</td></tr>
+                <tr><td>Reference marker</td><td><code>#42</code></td><td><code>!42</code></td><td><code>#42</code></td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -721,6 +846,72 @@
                 all.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- -------------------------------------------------------------- faq -- -->
+      <section id="faq">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>Questions</h2>
+          </div>
+          <div class="faq">
+            <details>
+              <summary>Does it send my data anywhere?</summary>
+              <p>
+                No. gitalike makes no network requests at all — no CDN, no
+                remote configuration, no telemetry. The stylesheets ship in the
+                bundle and the mark is an inline data URI. It stores only your
+                on/off choices and the instances you add, in the browser's own
+                synced storage.
+              </p>
+            </details>
+            <details>
+              <summary>Why does it ask for access to all sites?</summary>
+              <p>
+                GitHub Enterprise Server and self-hosted GitLab live on
+                hostnames nobody can predict, and a manifest match pattern
+                cannot wildcard a host's middle. So gitalike matches all pages
+                but decides at runtime: its scripts are registered only for the
+                hosts you have set up. On any other host it does nothing at all.
+              </p>
+            </details>
+            <details>
+              <summary>Does it work on my self-hosted instance?</summary>
+              <p>
+                Yes. Add the host by visiting it or typing its address — no
+                rebuild, no per-site permission prompt. GitHub Enterprise
+                Server and self-hosted GitLab both work, and Codeberg (Forgejo)
+                and gitea.com are bundled.
+              </p>
+            </details>
+            <details>
+              <summary>Does it change what the site does?</summary>
+              <p>
+                No. It changes how the page looks and reads, not what it does:
+                no requests are intercepted and no data is touched. It never
+                rewrites text inside code, inputs or editable regions, and every
+                change is reverted when you switch the skin off.
+              </p>
+            </details>
+            <details>
+              <summary>Which browsers does it run in?</summary>
+              <p>
+                The two extension platforms, so it covers their forks too. The
+                Chromium build runs in Chrome, Edge, Brave, Opera, Vivaldi and
+                the rest; the Firefox build needs Firefox 142 or newer and runs
+                in the forks that track it, such as LibreWolf, Floorp and Zen.
+              </p>
+            </details>
+            <details>
+              <summary>Is it free?</summary>
+              <p>
+                Yes — GPL-3.0-or-later, no account and no paid tier. The source
+                is on GitHub, and you can build it yourself with
+                <code>npm run build</code>.
+              </p>
+            </details>
           </div>
         </div>
       </section>
@@ -808,8 +999,9 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
         <nav aria-label="Footer">
           <a href="https://github.com/ranjithrajv/gitalike">Source on GitHub</a>
           <a href="https://github.com/ranjithrajv/gitalike#install">Install</a>
-          <a href="FORGE-UX.md">Forge UX</a>
-          <a href="UX-PARITY.md">UX parity status</a>
+          <a href="https://github.com/ranjithrajv/gitalike/blob/main/docs/FORGE-UX.md">Forge UX</a>
+          <a href="https://github.com/ranjithrajv/gitalike/blob/main/docs/UX-PARITY.md">UX parity status</a>
+          <a href="https://github.com/ranjithrajv/gitalike/issues/new">Report a missed spot</a>
           <a href="privacy.html">Privacy</a>
           <a href="https://github.com/ranjithrajv/gitalike/blob/main/CHANGELOG.md">Changelog</a>
           <a href="https://github.com/ranjithrajv/gitalike/blob/main/LICENSE">GPL-3.0</a>
