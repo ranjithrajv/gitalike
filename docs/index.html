@@ -302,6 +302,18 @@
       }
       .swipe .tag.left { left: 10px; }
       .swipe .tag.right { right: 10px; }
+      /* The <picture> wrappers must not add a box, so the two captures keep
+         overlaying exactly as before. */
+      picture { display: contents; }
+      @media (max-width: 640px) {
+        /* A 1280px capture at phone width is unreadable side-by-side, so the
+           two captures stack instead of overlaying. */
+        .swipe .over { position: static; clip-path: none; }
+        .swipe .divider,
+        .swipe .knob,
+        .swipe input[type="range"],
+        .swipe .tag { display: none; }
+      }
 
       /* ------------------------------------------------------------ sections -- */
       section { padding: 48px 0; }
@@ -310,6 +322,8 @@
       .section-head p { color: var(--muted); margin: 0; font-size: 16px; }
 
       .demos { display: grid; gap: 28px; }
+      /* Skip rendering the demos until they scroll near the viewport. */
+      .card { content-visibility: auto; contain-intrinsic-size: auto 820px; }
       .card h3 { font-size: 16px; margin: 0 0 4px; }
       .card .sub { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
       .card .sub b.gitlab { color: var(--gitlab); }
@@ -495,8 +509,8 @@
           </div>
 
           <div class="swipe swipe--hero">
-            <img class="base" src="github-default.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page, default" />
-            <img class="over" src="github-gitlab.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page skinned as GitLab" />
+            <picture><source srcset="github-default.webp" type="image/webp" /><img class="base" src="github-default.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page, default" /></picture>
+            <picture><source srcset="github-gitlab.webp" type="image/webp" /><img class="over" src="github-gitlab.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page skinned as GitLab" /></picture>
             <span class="tag left">GitHub default</span>
             <span class="tag right">GitLab skin</span>
             <span class="divider"></span>
@@ -549,9 +563,9 @@
           <div class="section-head">
             <h2>See it</h2>
             <p>
-              Live captures of the real sites at 1280×900. Drag the handle, or
-              use the arrow keys, to swipe between the plain site and the
-              skinned one.
+              Live captures of the real sites at 1280×900. Drag the handle,
+              click, or use the arrow keys to swap between the plain site and
+              the skinned one; on a narrow screen the two captures stack.
             </p>
           </div>
 
@@ -566,8 +580,8 @@
                 header.
               </p>
               <div class="swipe">
-                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-default.png" alt="GitLab project page, default" />
-                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" />
+                <picture><source srcset="gitlab-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-default.png" alt="GitLab project page, default" /></picture>
+                <picture><source srcset="gitlab-github.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" /></picture>
                 <span class="tag left">GitLab default · sidebar</span>
                 <span class="tag right">GitHub skin · tab row</span>
                 <span class="divider"></span>
@@ -584,8 +598,8 @@
                 GitLab — a vertical <b class="gitlab">sidebar-style column</b>.
               </p>
               <div class="swipe">
-                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-default.png" alt="GitHub project page, default" />
-                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
+                <picture><source srcset="github-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-default.png" alt="GitHub project page, default" /></picture>
+                <picture><source srcset="github-gitlab.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" /></picture>
                 <span class="tag left">GitHub default · tab bar</span>
                 <span class="tag right">GitLab skin · sidebar column</span>
                 <span class="divider"></span>
@@ -603,8 +617,8 @@
                 group headings in a left sidebar.
               </p>
               <div class="swipe">
-                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" />
+                <picture><source srcset="codeberg-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
+                <picture><source srcset="codeberg-gitlab.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" /></picture>
                 <span class="tag left">Gitea default · tab row</span>
                 <span class="tag right">GitLab skin · sidebar</span>
                 <span class="divider"></span>
@@ -621,8 +635,8 @@
                 <b class="github">tab row</b> with the warm active underline.
               </p>
               <div class="swipe">
-                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" />
+                <picture><source srcset="codeberg-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
+                <picture><source srcset="codeberg-github.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" /></picture>
                 <span class="tag left">Gitea default · tab row</span>
                 <span class="tag right">GitHub skin · tab row</span>
                 <span class="divider"></span>
@@ -641,8 +655,8 @@
                 Pipelines, Deployments, Jira issues, Security, Downloads</b>.
               </p>
               <div class="swipe">
-                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" />
+                <picture><source srcset="codeberg-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
+                <picture><source srcset="codeberg-bitbucket.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" /></picture>
                 <span class="tag left">Gitea default · tab row</span>
                 <span class="tag right">Bitbucket skin · sidebar</span>
                 <span class="divider"></span>
@@ -663,8 +677,8 @@
                 avatar.
               </p>
               <div class="swipe">
-                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" />
-                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" />
+                <picture><source srcset="gitlab-profile-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" /></picture>
+                <picture><source srcset="gitlab-profile-github.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" /></picture>
                 <span class="tag left">GitLab default · sidebar</span>
                 <span class="tag right">GitHub skin · top strip</span>
                 <span class="divider"></span>
@@ -685,8 +699,8 @@
                 the right.
               </p>
               <div class="swipe">
-                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-profile-default.png" alt="GitHub profile page, default" />
-                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" />
+                <picture><source srcset="github-profile-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-profile-default.png" alt="GitHub profile page, default" /></picture>
+                <picture><source srcset="github-profile-gitlab.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" /></picture>
                 <span class="tag left">GitHub default · tab row</span>
                 <span class="tag right">GitLab skin · left rail</span>
                 <span class="divider"></span>
@@ -998,6 +1012,7 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
       <div class="wrap">
         <nav aria-label="Footer">
           <a href="https://github.com/ranjithrajv/gitalike">Source on GitHub</a>
+          <a href="https://github.com/ranjithrajv/gitalike/stargazers">Star it</a>
           <a href="https://github.com/ranjithrajv/gitalike#install">Install</a>
           <a href="https://github.com/ranjithrajv/gitalike/blob/main/docs/FORGE-UX.md">Forge UX</a>
           <a href="https://github.com/ranjithrajv/gitalike/blob/main/docs/UX-PARITY.md">UX parity status</a>
@@ -1017,11 +1032,65 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
     </footer>
 
     <script>
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
       for (const swipe of document.querySelectorAll('.swipe')) {
         const input = swipe.querySelector('input[type="range"]');
         const set = () => swipe.style.setProperty('--x', `${input.value}%`);
         input.addEventListener('input', set);
         set();
+
+        // Click anywhere on the capture to swap sides. A drag is left to the
+        // range input, so a click that moved is ignored.
+        let down = null;
+        swipe.addEventListener('pointerdown', (e) => {
+          down = { x: e.clientX, y: e.clientY };
+        });
+        swipe.addEventListener('click', (e) => {
+          if (down && (Math.abs(e.clientX - down.x) > 6 || Math.abs(e.clientY - down.y) > 6)) {
+            return;
+          }
+          input.value = Number(input.value) < 50 ? '100' : '0';
+          set();
+        });
+      }
+
+      // The hero capture sweeps itself so the before/after is obvious without
+      // interaction. It stops for good the moment the visitor touches it, and
+      // never starts under prefers-reduced-motion.
+      const hero = document.querySelector('.swipe--hero');
+      if (hero && !reduceMotion) {
+        const input = hero.querySelector('input[type="range"]');
+        let raf = 0;
+        let t0 = 0;
+        let stopped = false;
+        const stop = () => {
+          stopped = true;
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
+        };
+        const tick = (t) => {
+          if (stopped) return;
+          if (!t0) t0 = t;
+          const v = 50 + 42 * Math.sin(((t - t0) / 1000) * 0.55 * Math.PI);
+          input.value = String(v);
+          hero.style.setProperty('--x', `${v}%`);
+          raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        for (const ev of ['pointerdown', 'input', 'keydown', 'focusin']) {
+          hero.addEventListener(ev, stop, { once: true });
+        }
+        // Pause while the hero is scrolled out of view.
+        new IntersectionObserver((entries) => {
+          if (stopped) return;
+          if (entries[0].isIntersecting) {
+            if (!raf) raf = requestAnimationFrame(tick);
+          } else if (raf) {
+            cancelAnimationFrame(raf);
+            raf = 0;
+          }
+        }).observe(hero);
       }
     </script>
   </body>
