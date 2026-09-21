@@ -8,6 +8,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- A third skin: **Bitbucket**. It is a *target only* — no host is classified as
+  Bitbucket — so any configured GitHub, GitLab or Gitea site can wear it. Its
+  Atlassian palette is mapped for each source's own tokens (Primer on GitHub,
+  Pajamas on GitLab, `--color-*` on Gitea), it carries GitHub's layout (top bar +
+  repo tab row), and its vocabulary is Bitbucket's (`Source`, `Pipelines`,
+  `Pull requests`, `Downloads`). The global **Show the web with** radio and the
+  per-site picker both offer it (`src/themes/as-bitbucket.css`, `src/lib/ux.js`,
+  `src/lib/sites.js`, `src/background.js`).
+- A `layout` on each skin (`github` = top bar + tab row, `gitlab` = left
+  sidebar) and a matching `gs-layout-*` class on `<html>`, so a skin that shares
+  another's shape reuses its structural CSS and passes instead of copying them.
+  A kind's setting now holds any theme, not only the one it defaults to, which is
+  what lets a target no kind defaults to be chosen for a whole kind
+  (`src/lib/sites.js`, `src/content/theme.js`, `src/content/ux.js`,
+  `src/popup/popup.js`).
+
 - A per-site skin picker. The popup gains a **Show *this site* with** radio group
   — **Off**, **GitHub UI** or **GitLab UI** — so one host can wear a different
   skin (or none) without changing the global choice, and a GitHub Enterprise

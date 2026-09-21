@@ -51,6 +51,10 @@
   const root = document.documentElement;
   // Which themes exist is derived from the shared `kinds` table, not listed here.
   const THEMES = SITES.THEMES;
+  // The shape a skin is built to ('github' top bar + tabs, 'gitlab' sidebar).
+  // Structural passes key on this, not the theme name, so a third target
+  // (Bitbucket) reuses a layout instead of needing its own copies of every pass.
+  const layoutOf = (t) => (SITES.skins[t] && SITES.skins[t].layout) || t;
 
   const SKIP_TAGS = new Set([
     'SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'CODE', 'PRE', 'KBD', 'SAMP',
@@ -329,7 +333,7 @@
   // Languages). On the GitLab skin the GitHub-only sections are hidden so the
   // block shows the items GitLab's project page does.
   function paintMetadata(t) {
-    if (t !== 'gitlab') return;
+    if (layoutOf(t) !== 'gitlab') return;
     const grid = document.querySelector(SELECTORS.github.metadataSidebar);
     if (!grid) return;
     for (const section of grid.children) {
@@ -343,7 +347,7 @@
   // GitLab's About column ends with a "Created on" block, for which GitHub's
   // About has no counterpart, so it is hidden on the GitHub skin.
   function paintAboutExtras(t) {
-    if (t !== 'github') return;
+    if (layoutOf(t) !== 'github') return;
     for (const block of document.querySelectorAll(
       SELECTORS.gitlab.projectSidebarBlock,
     )) {
@@ -356,6 +360,9 @@
   // "About" sidebar, GitLab's "Project information" block. CSS moves the block;
   // the heading is renamed here so its label matches the product being imitated.
   function paintHeadings(t) {
+    // Only the two big forges have the About / Project information heading this
+    // renames; Bitbucket's metadata block is headed differently, so it is left.
+    if (t !== 'github' && t !== 'gitlab') return;
     const rename = (heading, from, to) => {
       for (const text of textNodes(heading)) {
         if (text.nodeValue.trim() !== from) continue;
@@ -414,9 +421,9 @@
   // (`UX.activeTabFor`) and that tab is marked here; the underline styling lives
   // in the theme.
   function paintActiveTab(t) {
-    if (t !== 'github') return;
+    if (layoutOf(t) !== 'github') return;
     const page = (document.body && document.body.dataset.page) || '';
-    const label = UX.activeTabFor(page);
+    const label = UX.activeTabFor(page, t);
     for (const anchor of document.querySelectorAll(
       `${SELECTORS.gitlab.superSidebar} a, [data-gs-project-tabs] a`,
     )) {
@@ -487,7 +494,7 @@
   // GitHub's repo tabs, in GitHub's order (`UX.projectTabs`), reusing each link
   // GitLab does render and synthesising the tabs GitLab omits.
   function paintProjectTabs(t) {
-    if (t !== 'github') return;
+    if (layoutOf(t) !== 'github') return;
     const page = (document.body && document.body.dataset.page) || '';
     if (!page.startsWith('projects:')) return;
     const sidebar = document.querySelector(SELECTORS.gitlab.superSidebar);
@@ -523,7 +530,7 @@
     let list = document.querySelector('[data-gs-project-tabs]');
     if (list && list.getAttribute('data-gs-signature') === signature) return;
     if (list) list.remove();
-    const tabs = UX.projectTabs(base, hrefs);
+    const tabs = UX.projectTabs(base, hrefs, t);
     list = document.createElement('ul');
     list.setAttribute('data-gs-project-tabs', '');
     list.setAttribute('data-gs-ux-skip', '');
@@ -575,7 +582,7 @@
   // applied product's labels, order and group headings come from `UX.repoNav`;
   // the original menu is hidden by the stylesheet.
   function paintGiteaNav(t) {
-    if (t !== 'gitlab') return;
+    if (layoutOf(t) !== 'gitlab') return;
     const menu = document.querySelector(SELECTORS.gitea.repoMenu);
     if (!menu) return;
     const anchors = [...menu.querySelectorAll('a.item')].filter((a) =>

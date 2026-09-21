@@ -85,6 +85,7 @@ const CONTENT_JS = [
 const CONTENT_CSS = [
   'themes/as-gitlab.css',
   'themes/as-github.css',
+  'themes/as-bitbucket.css',
   'themes/ux-markers.css',
   'themes/ux-nav.css',
 ];

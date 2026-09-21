@@ -67,7 +67,7 @@ describe('module shape', () => {
     assert.equal(INSTANCES_KEY, 'gitSameInstances');
     assert.equal(HOST_SETTINGS_KEY, 'gitSameHostSettings');
     // Derived from `skins`, so a new skin is listed exactly once.
-    assert.deepEqual(THEMES, ['gitlab', 'github']);
+    assert.deepEqual(THEMES, ['gitlab', 'github', 'bitbucket']);
   });
 
   test('a kind is always skinned with the *other* product by default', () => {
@@ -75,14 +75,18 @@ describe('module shape', () => {
     assert.equal(kinds.gitlab.theme, 'github');
   });
 
-  test('every skin names the product whose UI it is', () => {
+  test('every skin names the product whose UI it is, and its layout', () => {
     for (const theme of THEMES) {
       assert.equal(typeof skins[theme].product, 'string');
       assert.equal(typeof skins[theme].badge, 'string');
       assert.match(skins[theme].color, /^#[0-9a-f]{6}$/i);
+      assert.ok(['github', 'gitlab'].includes(skins[theme].layout), theme);
     }
     assert.equal(skins.gitlab.product, 'GitLab');
     assert.equal(skins.github.product, 'GitHub');
+    assert.equal(skins.bitbucket.product, 'Bitbucket');
+    // Bitbucket reuses GitHub's shape (top bar + tab row), not GitLab's sidebar.
+    assert.equal(skins.bitbucket.layout, 'github');
   });
 });
 
@@ -348,14 +352,17 @@ describe('stateFrom', () => {
 });
 
 describe('kindOn', () => {
-  test('is the single definition of "on" for a kind', () => {
+  test('is true when any skin is chosen for a kind', () => {
     assert.equal(kindOn('github', { github: 'gitlab' }), true);
     assert.equal(kindOn('gitlab', { gitlab: 'github' }), true);
+    // A kind can now hold any theme, including one it does not default to.
+    assert.equal(kindOn('github', { github: 'bitbucket' }), true);
+    assert.equal(kindOn('github', { github: 'github' }), true);
   });
 
-  test('off, the wrong theme and a missing map are all off', () => {
+  test('off, junk and a missing map are off', () => {
     assert.equal(kindOn('github', { github: 'off' }), false);
-    assert.equal(kindOn('github', { github: 'github' }), false);
+    assert.equal(kindOn('github', { github: 'nonsense' }), false);
     assert.equal(kindOn('github', undefined), false);
   });
 
@@ -521,6 +528,23 @@ describe('themeFor', () => {
     assert.equal(
       themeFor('example.com', { github: 'gitlab' }, {}, { 'example.com': 'gitlab' }),
       null,
+    );
+  });
+
+  test('a host can wear the Bitbucket skin, whatever its own markup is', () => {
+    // Bitbucket is a target only, so it is never any site's "own UI" — a
+    // GitHub, GitLab or Gitea host can all be pinned to it.
+    assert.equal(
+      themeFor('github.com', { github: 'gitlab' }, {}, { 'github.com': 'bitbucket' }),
+      'bitbucket',
+    );
+    assert.equal(
+      themeFor('gitlab.com', { gitlab: 'github' }, {}, { 'gitlab.com': 'bitbucket' }),
+      'bitbucket',
+    );
+    assert.equal(
+      themeFor('codeberg.org', {}, {}, { 'codeberg.org': 'bitbucket' }),
+      'bitbucket',
     );
   });
 

@@ -2,18 +2,21 @@
 
 Use any forge, keep your muscle memory.
 
-gitalike is a small browser extension that re-skins the two big forges so they
-look — and read — like each other. It repaints the interface from the other
-product's design tokens, then matches its *words and habits*: copy is rewritten
-("Pull request" becomes "Merge request"), reference markers are swapped, the
-repo navigation is relabelled and reordered, and the other product's
-`g`-shortcuts work. It never changes what the site *does* — no requests are
-intercepted, no data is touched — and every change is reverted the moment you
-switch a skin off.
+gitalike is a small browser extension that re-skins the big forges so they look —
+and read — like each other. It repaints the interface from the target product's
+design tokens, then matches its *words and habits*: copy is rewritten ("Pull
+request" becomes "Merge request"), reference markers are swapped, the repo
+navigation is relabelled and reordered, and the other product's `g`-shortcuts
+work. It never changes what the site *does* — no requests are intercepted, no
+data is touched — and every change is reverted the moment you switch a skin off.
+
+Three skins — **GitLab**, **GitHub** and **Bitbucket** — and any host you have
+set up can wear any of them from the popup.
 
 ```
- a GitHub-flavoured site  + GitLab UI  ->  gitalike mark, purple accents, light bar
- a GitLab-flavoured site  + GitHub UI  ->  gitalike mark, blue accents, dark bar
+ a GitHub-flavoured site  + GitLab UI     ->  gitalike mark, purple accents, light bar
+ a GitLab-flavoured site  + GitHub UI     ->  gitalike mark, blue accents, dark bar
+ any site                 + Bitbucket UI  ->  gitalike mark, Atlassian blue bar
 ```
 
 It works on `github.com` and `gitlab.com` out of the box, on the bundled
@@ -23,11 +26,11 @@ at — **GitHub Enterprise Server** included.
 gitalike starts with the two big forges, GitHub and GitLab, and grows from
 there. The GitHub-flavoured **Codeberg** (Forgejo) and **gitea.com** (Gitea) are
 bundled too — they speak GitHub's dialect, so by default they are shown with the
-GitLab UI, and the popup's per-site picker can show them with the GitHub UI
-instead. Bitbucket and Sourcehut are the next candidates. A forge that already
-speaks one of the two dialects needs only to be classified as that kind of site;
-until then, any instance works today through the popup's **Add a site** flow. If
-you would like to help add one, see
+GitLab UI, and the per-site picker can show them with the GitHub or Bitbucket UI
+instead. Sourcehut is the next candidate. A forge that already speaks one of the
+two dialects needs only to be classified as that kind of site; until then, any
+instance works today through the popup's **Add a site** flow. If you would like
+to help add one, see
 [CONTRIBUTING.md](CONTRIBUTING.md#adding-another-forge--contributions-welcome).
 
 gitalike is an independent project. It is not affiliated with, endorsed by or
@@ -97,26 +100,27 @@ through `about:debugging`.
 ## Use
 
 Open the toolbar popup. **Show the web with** is one radio group — **GitLab UI**,
-**GitHub UI** or **Off** — so exactly one skin is active at a time. Each option
-lists the hosts it covers:
+**GitHub UI**, **Bitbucket UI** or **Off** — so exactly one skin is active at a
+time. Each option lists the hosts it covers:
 
-| Choice         | Normally covers                                                              | Result              |
-| -------------- | ---------------------------------------------------------------------------- | ------------------- |
-| **GitLab UI**  | `github.com`, `codeberg.org`, `gitea.com`, your GitHub Enterprise instances   | rendered as GitLab  |
-| **GitHub UI**  | `gitlab.com`, `code.swecha.org`, your GitLab ones                             | rendered as GitHub  |
-| **Off**        | —                                                                            | each site's own UI  |
+| Choice            | Normally covers                                                             | Result               |
+| ----------------- | --------------------------------------------------------------------------- | -------------------- |
+| **GitLab UI**     | `github.com`, `codeberg.org`, `gitea.com`, your GitHub Enterprise instances  | rendered as GitLab   |
+| **GitHub UI**     | `gitlab.com`, `code.swecha.org`, `codeberg.org`, `gitea.com`, your GitLab ones | rendered as GitHub |
+| **Bitbucket UI**  | every host you have set up                                                   | rendered as Bitbucket |
+| **Off**           | —                                                                           | each site's own UI   |
 
-It starts on **Off**. A choice applies to every host of that flavour at once, and
-the option covering the site you are on is highlighted.
+It starts on **Off**. A choice applies to every host it covers at once, and the
+option covering the site you are on is highlighted.
 
 When you are on a site gitalike knows, a **Show *this site* with** picker below
-lets you choose the skin for that one host — **Off**, **GitHub UI** or
-**GitLab UI** — so one enterprise instance can wear a different skin (or none)
-without changing `github.com`. Codeberg and gitea.com can genuinely wear either
-UI (they are GitHub-flavoured but not GitHub's markup); for a site that already
-*is* the product — `github.com` shown as GitHub, `gitlab.com` shown as GitLab —
-choosing its own UI is the same as **Off**, because gitalike does not repaint a
-site as itself. **Follow the global skin** clears the per-site choice.
+lets you choose the skin for that one host — **Off**, **GitHub UI**,
+**GitLab UI** or **Bitbucket UI** — so one enterprise instance can wear a
+different skin (or none) without changing `github.com`. Choosing a site's own UI
+(`github.com` shown as GitHub, `gitlab.com` shown as GitLab) is the same as
+**Off**, because gitalike does not repaint a site as itself. Bitbucket is never
+a site's own UI — no forge is Bitbucket's markup — so it always paints.
+**Follow the global skin** clears the per-site choice.
 
 **Keyboard:** `Alt` + `Shift` + `G` toggles the current site (the same per-site
 choice). It can only toggle a site that is already set up — telling GitHub from
@@ -233,11 +237,17 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   original theme; it is the only store readable synchronously at
   `document_start`. Being origin storage, the page can read or overwrite it, but
   `storage.sync` is reconciled immediately afterwards and wins.
-- **The global skin is all-or-nothing, unless you choose a skin per host.** The
-  **Show the web with** radio covers every host of that flavour at once. The
-  popup's **Show *this site* with** picker (and `Alt` + `Shift` + `G`) chooses
-  the skin for a single host, which is how an enterprise instance is skinned
-  without `github.com`; there is no bulk per-host list beyond that.
+- **The global skin covers every host it applies to at once, unless you choose a
+  skin per host.** The **Show the web with** radio sets one skin for the whole
+  extension. The popup's **Show *this site* with** picker (and
+  `Alt` + `Shift` + `G`) chooses the skin for a single host, which is how an
+  enterprise instance is skinned without `github.com`; there is no bulk per-host
+  list beyond that.
+- **The Bitbucket skin is built to Atlassian's design, not verified against
+  live Bitbucket.** Bitbucket no longer serves public repository pages, so its
+  layout and palette come from the Atlassian Design System rather than a captured
+  page; the skin reuses GitHub's shape (top bar + repo tab row) and repaints it.
+  It cannot be checked by the selector canary for the same reason.
 - **The Codeberg and gitea.com skin now re-orients the navigation, but not the
   whole page.** They are GitHub-flavoured, so they can wear either UI. Under the
   **GitLab UI** the repo tabs are rebuilt as a grouped left sidebar (GitLab's

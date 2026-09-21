@@ -51,6 +51,19 @@
       'CI/CD': 'Actions',
       'Dependency scanning': 'Dependabot',
     },
+    // Bitbucket is a target only: its table maps each source product's words onto
+    // Bitbucket's. GitHub and Gitea say "Pull request"/"Actions"; GitLab says
+    // "Merge request"/"CI/CD". Both read Bitbucket's way after this.
+    bitbucket: {
+      'Merge requests': 'Pull requests',
+      'Merge request': 'Pull request',
+      'merge requests': 'pull requests',
+      'merge request': 'pull request',
+      'GitHub Actions': 'Pipelines',
+      'CI/CD': 'Pipelines',
+      Gists: 'Snippets',
+      Gist: 'Snippet',
+    },
   };
 
   // Short app-navigation labels. These are only replaced when an element's
@@ -74,6 +87,16 @@
       Analytics: 'Insights',
       'Issue boards': 'Projects',
     },
+    // Bitbucket's repo tabs. GitHub/Gitea say "Code"/"Actions"; GitLab says
+    // "Repository"/"CI/CD"; all become "Source"/"Pipelines".
+    bitbucket: {
+      Code: 'Source',
+      Repository: 'Source',
+      Actions: 'Pipelines',
+      'CI/CD': 'Pipelines',
+      'Merge requests': 'Pull requests',
+      'Work items': 'Issues',
+    },
   };
 
   // Exact labels on *controls* — buttons, menu items, tabs, links — that name a
@@ -93,6 +116,14 @@
       'Squash commits': 'Squash and merge',
       Rebase: 'Rebase and merge',
       Security: 'Security and quality',
+    },
+    // Bitbucket's merge controls. Every source word maps to Bitbucket's own.
+    bitbucket: {
+      'Merge pull request': 'Merge',
+      'Squash and merge': 'Squash',
+      'Squash commits': 'Squash',
+      'Rebase and merge': 'Rebase',
+      'Security and quality': 'Security',
     },
   };
 
@@ -123,6 +154,18 @@
       'Your snippets': 'Your gists',
       'Starred projects': 'Your stars',
       'Your groups': 'Your organizations',
+    },
+    // Bitbucket's account chrome. Its account menu is "Your work"; groups are
+    // Atlassian "Workspaces"; gists live under Snippets.
+    bitbucket: {
+      'Your repositories': 'Your work',
+      'Your projects': 'Your work',
+      'Your gists': 'Snippets',
+      'Your snippets': 'Snippets',
+      'Your stars': 'Your starred',
+      'Starred projects': 'Your starred',
+      'Your organizations': 'Your workspaces',
+      'Your groups': 'Your workspaces',
     },
   };
 
@@ -191,6 +234,20 @@
     'Insights',
   ];
 
+  // Bitbucket's repo tab order, in Bitbucket's displayed labels.
+  const BITBUCKET_REPO_ORDER = [
+    'Source',
+    'Commits',
+    'Branches',
+    'Pull requests',
+    'Pipelines',
+    'Deployments',
+    'Downloads',
+    'Issues',
+    'Wiki',
+    'Settings',
+  ];
+
   const NAV_RULES = {
     gitlab: [
       {
@@ -224,6 +281,20 @@
         container: 'overflow-menu .overflow-menu-items',
         item: 'a.item',
         order: GITHUB_REPO_ORDER,
+      },
+    ],
+    bitbucket: [
+      {
+        source: 'github',
+        container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
+        item: 'li',
+        order: BITBUCKET_REPO_ORDER,
+      },
+      {
+        source: 'gitea',
+        container: 'overflow-menu .overflow-menu-items',
+        item: 'a.item',
+        order: BITBUCKET_REPO_ORDER,
       },
     ],
   };
@@ -300,6 +371,20 @@
       'Wiki',
       'Security',
       'Insights',
+      'Settings',
+    ],
+    // Bitbucket's own repo tabs; anything else the source shows (Projects,
+    // Insights, Security, Releases, Activity, …) is hidden rather than relabelled.
+    bitbucket: [
+      'Source',
+      'Commits',
+      'Branches',
+      'Pull requests',
+      'Pipelines',
+      'Deployments',
+      'Downloads',
+      'Issues',
+      'Wiki',
       'Settings',
     ],
   };
@@ -461,6 +546,34 @@
       'On-call schedules': 'GitHub',
       'Alert management': 'GitHub',
       'Value stream analytics': 'GitHub',
+    },
+    // Features Bitbucket has no page for, from either source. Bitbucket's own
+    // vocabulary ("Source", "Pipelines") is mapped in NAV/PHRASES, so only the
+    // genuinely absent ones are marked.
+    bitbucket: {
+      // GitHub-only
+      Discussions: 'Bitbucket',
+      Sponsors: 'Bitbucket',
+      Codespaces: 'Bitbucket',
+      Marketplace: 'Bitbucket',
+      // GitLab-only
+      Epics: 'Bitbucket',
+      Iterations: 'Bitbucket',
+      Requirements: 'Bitbucket',
+      'Service Desk': 'Bitbucket',
+      'Merge trains': 'Bitbucket',
+      'Feature flags': 'Bitbucket',
+      'Terraform modules': 'Bitbucket',
+      'Model registry': 'Bitbucket',
+      'Model experiments': 'Bitbucket',
+      'Test cases': 'Bitbucket',
+      Incidents: 'Bitbucket',
+      'Error tracking': 'Bitbucket',
+      'On-call schedules': 'Bitbucket',
+      'Alert management': 'Bitbucket',
+      'Value stream analytics': 'Bitbucket',
+      'Issue boards': 'Bitbucket',
+      Analytics: 'Bitbucket',
     },
   };
 
@@ -629,10 +742,16 @@
     [/^projects:(insights|analytics)\b/, 'Insights'],
   ];
 
-  /** The GitHub repo tab a GitLab page should mark active, or null. */
-  function activeTabFor(page) {
+  /**
+   * The repo tab a GitLab page should mark active, in the *applied* product's
+   * words: the table maps to GitHub's label, then `NAV` renames it for the skin
+   * (Code → Source, Actions → Pipelines for Bitbucket).
+   */
+  function activeTabFor(page, target = 'github') {
     const rule = ACTIVE_TABS.find(([re]) => re.test(String(page || '')));
-    return rule ? rule[1] : null;
+    if (!rule) return null;
+    const label = rule[1];
+    return (NAV[target] && NAV[target][label]) || label;
   }
 
   // GitHub puts a counter inside a metadata section heading ("Releases240
@@ -654,8 +773,13 @@
   // GitHub's repo tabs for a GitLab project, in GitHub's order. `hrefs` carries
   // the links GitLab actually renders (found by label); a tab GitLab omits is
   // synthesised from `base`. Pure, so the tab set is testable without a page.
-  function projectTabs(base, hrefs = {}) {
-    return [
+  // The repo tabs an applied product shows on a project page, emitted as
+  // [label, href] in that product's order. `hrefs` carries the links the source
+  // actually renders (found by label); a tab the source omits is synthesised
+  // from `base`. GitLab's routes are the target because this rebuilds a *GitLab*
+  // project page, whichever skin is applied.
+  const PROJECT_TABS = {
+    github: (base, hrefs) => [
       ['Code', hrefs.code || base],
       ['Issues', hrefs.issues || `${base}/-/work_items`],
       ['Pull requests', hrefs.pullRequests || `${base}/-/merge_requests`],
@@ -664,7 +788,21 @@
       ['Wiki', `${base}/-/wikis/home`],
       ['Security and quality', `${base}/-/security/dashboard`],
       ['Insights', hrefs.insights || `${base}/-/analytics`],
-    ];
+    ],
+    bitbucket: (base, hrefs) => [
+      ['Source', hrefs.code || base],
+      ['Commits', `${base}/-/commits`],
+      ['Branches', `${base}/-/branches`],
+      ['Pull requests', hrefs.pullRequests || `${base}/-/merge_requests`],
+      ['Pipelines', hrefs.actions || `${base}/-/pipelines`],
+      ['Downloads', `${base}/-/tags`],
+    ],
+  };
+
+  /** The repo tabs `target` shows on a GitLab project page. */
+  function projectTabs(base, hrefs = {}, target = 'github') {
+    const build = PROJECT_TABS[target] || PROJECT_TABS.github;
+    return build(base, hrefs);
   }
 
   // GitHub's profile tabs (source: GitLab) and GitLab's profile destinations

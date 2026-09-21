@@ -6,7 +6,8 @@
  * on through the extension's own storage, visits the live sites — GitHub,
  * GitLab and Codeberg (Forgejo) — and asserts what the skin actually did:
  * orientation, relabelling, reference markers, no-counterpart badges, a keyboard
- * shortcut, the Gitea tab reorder, and a clean revert.
+ * shortcut, the Gitea tab reorder, the Bitbucket skin in place of GitHub's, and
+ * a clean revert.
  *
  *   node tools/e2e.mjs
  *
@@ -376,6 +377,48 @@ try {
   );
   await cb.close();
   // Clear the per-site choice so it does not leak into the revert check.
+  await setHostSettings(popup, {});
+
+  /* ------------------------------ Bitbucket skin ------------------------------ */
+  // Bitbucket is a target only — no host is classified as it — so it is chosen
+  // per site (or globally). On a GitHub source it keeps GitHub's shape (top bar
+  // + tab row) but in Atlassian's palette and Bitbucket's words.
+  await setHostSettings(popup, { 'github.com': 'bitbucket' });
+  await gh
+    .waitForFunction(
+      () =>
+        document.documentElement.classList.contains('gs-theme-bitbucket') &&
+        document.querySelector('nav[aria-label="Repository"] a'),
+      null,
+      { timeout: 45000 },
+    )
+    .catch(() => {});
+  await gh.waitForTimeout(1500);
+  const bb = await gh.evaluate(() => {
+    const header = document.querySelector('header[role="banner"], .AppHeader');
+    const link = document.querySelector(
+      'nav[aria-label="Repository"] a, .markdown-body a[href], #readme a[href]',
+    );
+    return {
+      cls: document.documentElement.className,
+      header: header ? getComputedStyle(header).backgroundColor : null,
+      link: link ? getComputedStyle(link).color : null,
+      nav: [...document.querySelectorAll('nav[aria-label="Repository"] a')]
+        .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
+        .filter(Boolean),
+    };
+  });
+  check('GitHub can wear the Bitbucket skin', /gs-theme-bitbucket/.test(bb.cls), bb.cls);
+  check(
+    'Bitbucket top bar is Atlassian blue',
+    bb.header === 'rgb(7, 71, 166)',
+    String(bb.header),
+  );
+  check(
+    'Bitbucket repo tabs read Source / Pipelines',
+    bb.nav.some((t) => t.startsWith('Source')) && bb.nav.some((t) => t.startsWith('Pipelines')),
+    bb.nav.slice(0, 4).join(', '),
+  );
   await setHostSettings(popup, {});
 
   /* ---------------------------------- revert ----------------------------------- */

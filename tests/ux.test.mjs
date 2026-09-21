@@ -224,7 +224,7 @@ describe('table symmetry', () => {
   });
 
   test('no table maps a label to itself', () => {
-    for (const theme of ['gitlab', 'github']) {
+    for (const theme of ['gitlab', 'github', 'bitbucket']) {
       for (const table of [PHRASES[theme], LABELS[theme]]) {
         for (const [from, to] of Object.entries(table)) {
           assert.notEqual(from, to, `${theme}: ${from} -> ${to}`);
@@ -466,8 +466,8 @@ describe('UNMAPPED', () => {
   });
 
   test('never marks something it also translates', () => {
-    const targets = { gitlab: 'GitLab', github: 'GitHub' };
-    for (const theme of ['gitlab', 'github']) {
+    const targets = { gitlab: 'GitLab', github: 'GitHub', bitbucket: 'Bitbucket' };
+    for (const theme of ['gitlab', 'github', 'bitbucket']) {
       const mapped = new Set([
         ...Object.keys(PHRASES[theme]),
         ...Object.keys(NAV[theme]),
@@ -886,5 +886,88 @@ describe('SELECTORS / CANARY_PAGES', () => {
       );
     }
     assert.ok(checked > 0, 'the scan found the content script’s selector reads');
+  });
+});
+
+describe('Bitbucket skin', () => {
+  test('is a target only, and maps each source’s words to its own', () => {
+    assert.equal(translate('Merge requests', 'bitbucket'), 'Pull requests');
+    assert.equal(translate('Merge request', 'bitbucket'), 'Pull request');
+    assert.equal(translate('GitHub Actions', 'bitbucket'), 'Pipelines');
+    assert.equal(translate('CI/CD', 'bitbucket'), 'Pipelines');
+    assert.equal(translate('Pull requests', 'bitbucket'), 'Pull requests');
+  });
+
+  test('renames the nav labels GitHub/Gitea and GitLab share', () => {
+    assert.equal(NAV.bitbucket.Code, 'Source');
+    assert.equal(NAV.bitbucket.Repository, 'Source');
+    assert.equal(NAV.bitbucket.Actions, 'Pipelines');
+    assert.equal(NAV.bitbucket['CI/CD'], 'Pipelines');
+    assert.equal(NAV.bitbucket['Merge requests'], 'Pull requests');
+    assert.equal(NAV.bitbucket['Work items'], 'Issues');
+  });
+
+  test('maps the merge controls', () => {
+    assert.equal(translateControl('Merge pull request', 'bitbucket'), 'Merge');
+    assert.equal(translateControl('Squash and merge', 'bitbucket'), 'Squash');
+    assert.equal(translateControl('Squash commits', 'bitbucket'), 'Squash');
+    assert.equal(translateControl('Rebase and merge', 'bitbucket'), 'Rebase');
+  });
+
+  test('marks the features it has no page for', () => {
+    assert.equal(noEquivalentFor('Discussions', 'bitbucket'), 'Bitbucket');
+    assert.equal(noEquivalentFor('Epics', 'bitbucket'), 'Bitbucket');
+    assert.equal(noEquivalentFor('Pull requests', 'bitbucket'), null);
+    assert.equal(noEquivalentFor('Epics', 'github'), 'GitHub');
+  });
+
+  test('keeps only Bitbucket’s own repo tabs', () => {
+    assert.ok(NAV_KEEP.bitbucket.includes('Source'));
+    assert.ok(NAV_KEEP.bitbucket.includes('Pipelines'));
+    assert.ok(!NAV_KEEP.bitbucket.includes('Projects'));
+    assert.ok(!NAV_KEEP.bitbucket.includes('Insights'));
+  });
+
+  test('activeTabFor returns the tab in the applied product’s words', () => {
+    assert.equal(activeTabFor('projects:tree', 'github'), 'Code');
+    assert.equal(activeTabFor('projects:tree', 'bitbucket'), 'Source');
+    assert.equal(activeTabFor('projects:merge_requests', 'bitbucket'), 'Pull requests');
+    assert.equal(activeTabFor('projects:pipelines', 'bitbucket'), 'Pipelines');
+  });
+
+  test('projectTabs builds Bitbucket’s tab set, not GitHub’s', () => {
+    const tabs = projectTabs('/o/r', {}, 'bitbucket').map(([label]) => label);
+    assert.deepEqual(tabs, [
+      'Source',
+      'Commits',
+      'Branches',
+      'Pull requests',
+      'Pipelines',
+      'Downloads',
+    ]);
+    assert.ok(!tabs.includes('Code'));
+    // The default stays GitHub's.
+    assert.equal(projectTabs('/o/r', {})[0][0], 'Code');
+  });
+
+  test('repoNav relabels and reorders a Gitea tab bar for Bitbucket', () => {
+    const entries = repoNav(
+      [
+        { href: '/o/r', label: 'Code', active: true },
+        { href: '/o/r/pulls', label: 'Pull requests' },
+        { href: '/o/r/issues', label: 'Issues' },
+        { href: '/o/r/actions', label: 'Actions' },
+      ],
+      'bitbucket',
+      NAV_RULES.bitbucket.find((r) => r.source === 'gitea').order,
+    );
+    const labels = entries.filter((e) => e.label).map((e) => e.label);
+    assert.deepEqual(labels, ['Source', 'Pull requests', 'Pipelines', 'Issues']);
+    assert.equal(entries[0].active, true);
+  });
+
+  test('carries a nav rule for each source', () => {
+    const sources = NAV_RULES.bitbucket.map((r) => r.source).sort();
+    assert.deepEqual(sources, ['gitea', 'github']);
   });
 });

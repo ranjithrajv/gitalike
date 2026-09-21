@@ -36,15 +36,16 @@ Search, copy/paste and screen readers keep working.
 Works on github.com and gitlab.com out of the box, on the bundled self-hosted
 instance code.swecha.org, on Codeberg (Forgejo) and gitea.com (Gitea), and on any
 other instance you point it at — GitHub Enterprise Server and self-hosted GitLab
-included. Bitbucket and Sourcehut are the next candidates.
+included. Three skins — GitLab, GitHub and Bitbucket — and any site you have set
+up can wear any of them. Sourcehut is the next candidate.
 
 Features
-- One global skin — GitLab UI or GitHub UI (or Off) — plus a per-site picker for
-  the site you are on, without changing the rest.
+- Three skins — GitLab UI, GitHub UI or Bitbucket UI (or Off) — one at a time,
+  plus a per-site picker for the site you are on.
 - Add any instance by visiting it, or by typing its address. It is remembered.
-- Alt+Shift+G toggles the site you are on; the toolbar badge shows GL or GH.
+- Alt+Shift+G toggles the site you are on; the toolbar badge shows GL, GH or BB.
 - Light and dark, following the site's own mode.
-- No network access at all: both stylesheets are bundled and the mark is an
+- No network access at all: the stylesheets are bundled and the mark is an
   inline data URI. Nothing is sent anywhere.
 
 Permissions, plainly: gitalike asks for access to all sites because GitHub
@@ -109,9 +110,9 @@ AMO has no fixed screenshot size. Upload, in order:
 
 - Reviewing needs no account: the skin applies on public pages
   (`github.com/git/git`, `gitlab.com/gitlab-org/gitlab`) while logged out. Pick a
-  skin under "Show the web with" in the toolbar popup; on a site you have set up,
-  the "Show this site with" picker switches that one host between Off, GitHub UI
-  and GitLab UI; Alt+Shift+G toggles the current site.
+  skin under "Show the web with" (GitLab UI, GitHub UI or Bitbucket UI); on a
+  site you have set up, the "Show this site with" picker switches that one host;
+  Alt+Shift+G toggles the current site.
 - The extension rewrites the page's own text, labels and CSS tokens locally. It
   is not a content blocker, intercepts no requests and makes no network
   requests; choosing Off reverts every change.

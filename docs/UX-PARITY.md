@@ -4,12 +4,27 @@ What gitalike matches between GitHub and GitLab beyond colour, and where the two
 directions still differ. The tables themselves live in `src/lib/ux.js`; this file
 is the map and the scorecard.
 
+## Skins
+
+A skin is a *target* UI — its key is the `html.gs-theme-<name>` class and its
+stylesheet is `themes/as-<name>.css`. There are three: **GitLab** and **GitHub**,
+which the two source products are shown with, and **Bitbucket**, which is a
+target only (no host is classified as it) and can be worn by any source. A skin
+names the shape it is built to in `SITES.skins[<name>].layout` (`github` = top
+bar + tab row, `gitlab` = left sidebar); Bitbucket reuses GitHub's, so the
+structural passes and the shared layout CSS apply to it unchanged and only its
+palette, words and tab set differ. This file's directional tables below still
+describe the two-way pair; Bitbucket's are in `src/lib/ux.js` under
+`bitbucket` and are covered by `tests/ux.test.mjs`.
+
 ## Directions
 
 - **G→L** — a GitHub-flavoured site shown with the GitLab UI
   (`html.gs-theme-gitlab`, `themes/as-gitlab.css`)
 - **L→G** — a GitLab-flavoured site shown with the GitHub UI
   (`html.gs-theme-github`, `themes/as-github.css`)
+- **→B** — any source shown with the Bitbucket UI
+  (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`, layout `github`)
 
 ## Status
 

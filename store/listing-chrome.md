@@ -44,15 +44,16 @@ Search, copy/paste and screen readers keep working.
 
 Works on github.com and gitlab.com out of the box, on the bundled self-hosted
 instance code.swecha.org, on Codeberg (Forgejo) and gitea.com (Gitea), and on any
-other instance you point it at — GitHub Enterprise Server included. Bitbucket and
-Sourcehut are the next candidates.
+other instance you point it at — GitHub Enterprise Server included. Three skins —
+GitLab, GitHub and Bitbucket — and any site you have set up can wear any of them.
+Sourcehut is the next candidate.
 
-• One global skin — GitLab UI or GitHub UI (or Off) — plus a per-site picker for
-  the site you are on, without changing the rest.
+• Three skins — GitLab UI, GitHub UI or Bitbucket UI (or Off) — one at a time,
+  plus a per-site picker for the site you are on.
 • Add any instance by visiting it, or by typing its address. It is remembered.
-• Alt+Shift+G toggles the site you are on; the toolbar badge shows GL or GH.
+• Alt+Shift+G toggles the site you are on; the toolbar badge shows GL, GH or BB.
 • Light and dark, following the site's own mode.
-• No network access at all: both stylesheets are bundled and the mark is an
+• No network access at all: the stylesheets are bundled and the mark is an
   inline data URI. Nothing is sent anywhere.
 
 Permissions, plainly: gitalike asks for access to all sites because GitHub
@@ -110,8 +111,8 @@ No account, credentials or special setup are needed.
 
 1. Install the extension, then open the toolbar popup.
 2. Pick a skin under "Show the web with": "GitLab UI" repaints the
-   GitHub-flavoured sites, "GitHub UI" the GitLab-flavoured ones (or leave it
-   Off).
+   GitHub-flavoured sites, "GitHub UI" the GitLab-flavoured ones, "Bitbucket UI"
+   repaints every site you have set up (or leave it Off).
 3. Open https://github.com/git/git or https://gitlab.com/gitlab-org/gitlab —
    the page is re-skinned immediately, with no reload. On a site you have set
    up, the popup's "Show this site with" picker switches that one host between

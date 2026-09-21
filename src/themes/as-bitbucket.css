@@ -1,0 +1,530 @@
+/* =====================================================================
+   gitalike — the Bitbucket skin (the applied product, not the source).
+   Every rule is scoped to html.gs-theme-bitbucket, so the file is inert until
+   the content script adds that class to <html>. It is registered alongside the
+   other skins on every configured host; which one paints is decided by the
+   class, never by the host.
+
+   Bitbucket is not a source the extension knows — no host is classified as it —
+   so this is a one-way target: a GitHub, GitLab or Gitea site painted in
+   Atlassian's palette and Bitbucket's words. Because neither of the other two
+   targets is Bitbucket's markup either, its tokens are mapped for *each* source:
+   Primer on GitHub, Pajamas on GitLab, and Gitea's own --color-* names. The
+   token names do not collide, so each mapping is inert on the other sources.
+
+   Bitbucket's shape (top bar + horizontal tab row) matches GitHub's, so the
+   structural passes and the layout CSS are shared through `gs-layout-github`;
+   this file only supplies the Atlassian colours and the tab accents.
+   ===================================================================== */
+
+/* ------------------------------------------------------------- palette -- */
+
+html.gs-theme-bitbucket {
+  color-scheme: light;
+
+  --gs-canvas: #ffffff;
+  --gs-canvas-subtle: #f4f5f7;
+  --gs-canvas-inset: #ebecf0;
+  --gs-canvas-overlay: #ffffff;
+
+  --gs-fg: #172b4d;
+  --gs-fg-muted: #5e6c84;
+  --gs-fg-subtle: #7a869a;
+
+  --gs-border: #dfe1e6;
+  --gs-border-muted: #ebecf0;
+
+  --gs-link: #0052cc;
+  --gs-accent: #0052cc;
+  --gs-accent-hover: #0065ff;
+  --gs-accent-subtle: #deebff;
+
+  --gs-success: #00875a;
+  --gs-success-subtle: #e3fcef;
+  --gs-danger: #de350b;
+  --gs-danger-subtle: #ffebe6;
+  --gs-attention: #974f0c;
+  --gs-attention-subtle: #fffae6;
+
+  /* Bitbucket's top bar is the Atlassian blue, with white text. */
+  --gs-header-bg: #0747a6;
+  --gs-header-fg: #ffffff;
+
+  --gs-radius-sm: 3px;
+  --gs-radius-md: 3px;
+  --gs-radius-lg: 8px;
+
+  --gs-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans",
+    "Helvetica Neue", Arial, sans-serif;
+  --gs-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* gitalike's own mark in Atlassian's palette: a gradient across the light
+     blues, so it reads on the blue bar. Original artwork — the extension ships
+     no vendor's logo, only a vendor palette. Source:
+     logos/gitalike-mark-bitbucket-colours.svg */
+  --gs-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='22 22 84 84'%3E%3Cdefs%3E%3ClinearGradient id='bitbucket' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='1' stop-color='%2385b8ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23bitbucket)' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M28 46h64M74 28l18 18-18 18'/%3E%3Cpath d='M100 82H36M54 64 36 82l18 18'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+html.gs-theme-bitbucket.gs-dark {
+  color-scheme: dark;
+
+  --gs-canvas: #1d2125;
+  --gs-canvas-subtle: #22272b;
+  --gs-canvas-inset: #161a1d;
+  --gs-canvas-overlay: #22272b;
+
+  --gs-fg: #b6c2cf;
+  --gs-fg-muted: #9fadbc;
+  --gs-fg-subtle: #8c9bab;
+
+  --gs-border: #454f59;
+  --gs-border-muted: #2c333a;
+
+  --gs-link: #579dff;
+  --gs-accent: #579dff;
+  --gs-accent-hover: #85b8ff;
+  --gs-accent-subtle: #1c2b41;
+
+  --gs-success: #7ee2b8;
+  --gs-success-subtle: #1c3329;
+  --gs-danger: #f87168;
+  --gs-danger-subtle: #42221f;
+  --gs-attention: #f5cd47;
+  --gs-attention-subtle: #3d2f16;
+
+  --gs-header-bg: #101214;
+  --gs-header-fg: #b6c2cf;
+}
+
+/* ------------------------------------ Primer tokens -> Atlassian (GitHub) -- */
+
+html.gs-theme-bitbucket {
+  /* surfaces */
+  --bgColor-default: var(--gs-canvas) !important;
+  --bgColor-muted: var(--gs-canvas-subtle) !important;
+  --bgColor-inset: var(--gs-canvas-inset) !important;
+  --bgColor-overlay: var(--gs-canvas-overlay) !important;
+  --color-canvas-default: var(--gs-canvas) !important;
+  --color-canvas-subtle: var(--gs-canvas-subtle) !important;
+  --color-canvas-inset: var(--gs-canvas-inset) !important;
+  --color-canvas-overlay: var(--gs-canvas-overlay) !important;
+
+  /* text */
+  --fgColor-default: var(--gs-fg) !important;
+  --fgColor-muted: var(--gs-fg-muted) !important;
+  --fgColor-subtle: var(--gs-fg-subtle) !important;
+  --fgColor-disabled: var(--gs-fg-subtle) !important;
+  --fgColor-accent: var(--gs-link) !important;
+  --fgColor-link: var(--gs-link) !important;
+  --fgColor-success: var(--gs-success) !important;
+  --fgColor-danger: var(--gs-danger) !important;
+  --fgColor-attention: var(--gs-attention) !important;
+  --color-fg-default: var(--gs-fg) !important;
+  --color-fg-muted: var(--gs-fg-muted) !important;
+  --color-fg-subtle: var(--gs-fg-subtle) !important;
+  --color-fg-disabled: var(--gs-fg-subtle) !important;
+  --color-accent-fg: var(--gs-link) !important;
+  --color-success-fg: var(--gs-success) !important;
+  --color-danger-fg: var(--gs-danger) !important;
+  --color-attention-fg: var(--gs-attention) !important;
+
+  /* borders */
+  --borderColor-default: var(--gs-border) !important;
+  --borderColor-muted: var(--gs-border-muted) !important;
+  --borderColor-subtle: var(--gs-border-muted) !important;
+  --color-border-default: var(--gs-border) !important;
+  --color-border-muted: var(--gs-border-muted) !important;
+  --color-border-subtle: var(--gs-border-muted) !important;
+  --color-border-overlay: var(--gs-border) !important;
+
+  /* accent emphasis */
+  --bgColor-accent-emphasis: var(--gs-accent) !important;
+  --bgColor-accent-muted: var(--gs-accent-subtle) !important;
+  --borderColor-accent-emphasis: var(--gs-accent) !important;
+  --color-accent-emphasis: var(--gs-accent) !important;
+  --color-accent-muted: var(--gs-accent) !important;
+  --color-accent-subtle: var(--gs-accent-subtle) !important;
+
+  /* the active-tab underline follows the accent, not Primer's amber */
+  --color-primer-border-active: var(--gs-accent) !important;
+  --underlineNav-borderColor-active: var(--gs-accent) !important;
+  --underlineNav-iconColor-rest: var(--gs-fg-muted) !important;
+  --color-underlinenav-border-active: var(--gs-accent) !important;
+  --color-underlinenav-text-active: var(--gs-fg) !important;
+}
+
+/* ---------------------------------- Pajamas tokens -> Atlassian (GitLab) -- */
+
+html.gs-theme-bitbucket {
+  --gl-text-color-default: var(--gs-fg) !important;
+  --gl-text-color-heading: var(--gs-fg) !important;
+  --gl-text-color-strong: var(--gs-fg) !important;
+  --gl-text-color-subtle: var(--gs-fg-muted) !important;
+  --gl-text-color-disabled: var(--gs-fg-subtle) !important;
+  --gl-text-color-link: var(--gs-link) !important;
+  --gl-text-color-success: var(--gs-success) !important;
+  --gl-text-color-danger: var(--gs-danger) !important;
+  --gl-text-color-warning: var(--gs-attention) !important;
+  --gl-text-color: var(--gs-fg) !important;
+  --gl-text-color-secondary: var(--gs-fg-muted) !important;
+  --gl-text-color-tertiary: var(--gs-fg-subtle) !important;
+
+  --gl-background-color-default: var(--gs-canvas) !important;
+  --gl-background-color-subtle: var(--gs-canvas-subtle) !important;
+  --gl-background-color-strong: var(--gs-canvas-subtle) !important;
+  --gl-background-color-overlap: var(--gs-canvas-overlay) !important;
+  --gl-background-color-section: var(--gs-canvas) !important;
+  --gl-background-color-disabled: var(--gs-canvas-subtle) !important;
+  --gl-background-color: var(--gs-canvas) !important;
+
+  --gl-border-color-default: var(--gs-border) !important;
+  --gl-border-color-subtle: var(--gs-border-muted) !important;
+  --gl-border-color-strong: var(--gs-border) !important;
+  --gl-border-color-section: var(--gs-border) !important;
+  --gl-border-color: var(--gs-border) !important;
+
+  --gl-feedback-info-background-color: var(--gs-accent-subtle) !important;
+  --gl-feedback-success-background-color: var(--gs-success-subtle) !important;
+  --gl-feedback-danger-background-color: var(--gs-danger-subtle) !important;
+  --gl-feedback-warning-background-color: var(--gs-attention-subtle) !important;
+  --gl-status-success-background-color: var(--gs-success-subtle) !important;
+  --gl-status-danger-background-color: var(--gs-danger-subtle) !important;
+  --gl-status-warning-background-color: var(--gs-attention-subtle) !important;
+  --gl-status-brand-background-color: var(--gs-accent-subtle) !important;
+  --gl-highlight-target-background-color: var(--gs-accent-subtle) !important;
+
+  --gl-control-background-color-default: var(--gs-canvas) !important;
+  --gl-control-border-color-default: var(--gs-border) !important;
+  --gl-control-border-color-focus: var(--gs-accent) !important;
+  --gl-control-placeholder-color: var(--gs-fg-subtle) !important;
+  --gl-control-border-radius: var(--gs-radius-md) !important;
+
+  --gl-border-radius-sm: var(--gs-radius-sm) !important;
+  --gl-border-radius-base: var(--gs-radius-md) !important;
+  --gl-border-radius-lg: var(--gs-radius-lg) !important;
+
+  --gl-color-neutral-0: #ffffff !important;
+  --gl-color-neutral-10: #f4f5f7 !important;
+  --gl-color-neutral-50: #ebecf0 !important;
+  --gl-color-neutral-100: #dfe1e6 !important;
+  --gl-color-neutral-200: #c1c7d0 !important;
+  --gl-color-neutral-300: #b3bac5 !important;
+  --gl-color-neutral-400: #7a869a !important;
+  --gl-color-neutral-500: #5e6c84 !important;
+  --gl-color-neutral-600: #505f79 !important;
+  --gl-color-neutral-700: #42526e !important;
+  --gl-color-neutral-800: #253858 !important;
+  --gl-color-neutral-900: #172b4d !important;
+  --gl-color-neutral-950: #091e42 !important;
+
+  --gl-color-blue-500: #0052cc !important;
+  --gl-color-blue-600: #0065ff !important;
+  --gl-color-blue-700: #0747a6 !important;
+  --gl-color-green-500: #00875a !important;
+  --gl-color-red-500: #de350b !important;
+  --gl-color-orange-500: #974f0c !important;
+}
+
+/* --------------------------------------------------------- structural -- */
+
+html.gs-theme-bitbucket body {
+  background-color: var(--gs-canvas) !important;
+  color: var(--gs-fg) !important;
+  font-family: var(--gs-font) !important;
+}
+
+html.gs-theme-bitbucket :is(code, pre, .code, .blob-content, .file-content) {
+  font-family: var(--gs-font-mono) !important;
+}
+
+/* The top bar is the loudest signal: gitlab.com's light bar and GitHub's slate
+   both become Bitbucket's Atlassian blue with white chrome. */
+html.gs-theme-bitbucket :is(
+    header[role="banner"],
+    .AppHeader,
+    .navbar,
+    .navbar-gitlab,
+    .header-content,
+    .gl-navbar,
+    .super-topbar,
+    .top-bar
+  ) {
+  background-color: var(--gs-header-bg) !important;
+  color: var(--gs-header-fg) !important;
+  border-bottom: 1px solid var(--gs-header-bg) !important;
+  box-shadow: none !important;
+}
+
+html.gs-theme-bitbucket
+  :is(header[role="banner"], .AppHeader, .navbar, .super-topbar)
+  :is(a, button, svg, .gl-icon) {
+  color: var(--gs-header-fg) !important;
+}
+
+/* Logos, in every source's shape: hide the site's mark and paint gitalike's. */
+html.gs-theme-bitbucket :is(
+    .octicon-mark-github,
+    .tanuki-logo,
+    .tanuki-logo-svg,
+    .gl-logo,
+    [data-testid="tanuki-logo"]
+  ) {
+  background: var(--gs-mark) center / contain no-repeat !important;
+  color: transparent !important;
+}
+
+html.gs-theme-bitbucket
+  :is(
+    .octicon-mark-github,
+    .tanuki-logo,
+    .tanuki-logo-svg,
+    .gl-logo,
+    [data-testid="tanuki-logo"]
+  )
+  :is(path, polygon, circle, rect, g, use) {
+  fill: transparent !important;
+  stroke: transparent !important;
+}
+
+/* Bitbucket's primary action is its blue, not GitHub's green or GitLab's
+   confirm-green. */
+html.gs-theme-bitbucket :is(
+    .Button--primary,
+    .btn-primary,
+    .btn-confirm,
+    .gl-button.btn-confirm,
+    .btn.btn-confirm,
+    button[data-testid="base-button"][data-variant="confirm"]
+  ) {
+  background-color: var(--gs-accent) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* Tabs: Bitbucket underlines the active tab in its blue. */
+html.gs-theme-bitbucket
+  :is(.gl-tabs-nav, .nav-links, .nav-tabs)
+  :is(a, .nav-link, .gl-tab-nav-item).active {
+  color: var(--gs-fg) !important;
+  border-bottom-color: transparent !important;
+  box-shadow: inset 0 -2px 0 var(--gs-accent) !important;
+}
+
+html.gs-theme-bitbucket
+  nav[aria-label="Repository"]
+  :is(a, .UnderlineNav-item)[aria-current="page"],
+html.gs-theme-bitbucket
+  nav[aria-label="Repository"]
+  :is(.selected, .UnderlineNav-item--selected) {
+  box-shadow: inset 0 -2px 0 var(--gs-accent) !important;
+  font-weight: 600 !important;
+}
+
+/* The rebuilt GitLab tab row is shared through `gs-layout-github`; only its
+   active underline is Bitbucket's blue rather than GitHub's amber. */
+html.gs-theme-bitbucket [data-gs-project-tabs] > li > a[data-gs-active] {
+  border-bottom-color: var(--gs-accent) !important;
+}
+
+/* Untokenised components. */
+html.gs-theme-bitbucket
+  :is(.gl-button, .btn, .gl-form-input, .form-control, .gl-badge, .badge, .gl-card, .card) {
+  border-radius: var(--gs-radius-md) !important;
+}
+
+html.gs-theme-bitbucket :is(.gl-card, .card) {
+  border: 1px solid var(--gs-border) !important;
+  background-color: var(--gs-canvas) !important;
+}
+
+html.gs-theme-bitbucket :is(.gl-badge, .badge) {
+  background-color: var(--gs-canvas-subtle) !important;
+  color: var(--gs-fg-muted) !important;
+  border: 1px solid var(--gs-border) !important;
+  font-weight: 500 !important;
+}
+
+html.gs-theme-bitbucket :is(.gl-table, .table) :is(th, td) {
+  border-color: var(--gs-border) !important;
+}
+
+html.gs-theme-bitbucket :is(.gl-table, .table) thead th {
+  background-color: var(--gs-canvas-subtle) !important;
+  color: var(--gs-fg) !important;
+}
+
+/* GitLab's full-width "Project information" block becomes a right-hand column,
+   as on the GitHub skin (Bitbucket keeps repository details beside the file
+   list). */
+html.gs-theme-bitbucket .project-page-layout:has(.project-page-sidebar-block) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 24px !important;
+}
+
+html.gs-theme-bitbucket
+  .project-page-layout:has(.project-page-sidebar-block)
+  > .project-page-layout-sidebar {
+  order: 2 !important;
+  flex: 0 0 296px !important;
+  width: 296px !important;
+  margin-top: 0 !important;
+}
+
+html.gs-theme-bitbucket
+  .project-page-layout:has(.project-page-sidebar-block)
+  > .project-page-layout-content {
+  order: 1 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+html.gs-theme-bitbucket
+  .project-page-sidebar-block
+  > :is(div.gl-mb-2, [data-testid="project-badges-content"], .project-badges) {
+  display: none !important;
+}
+
+/* --------------------------------------------------- Gitea / Forgejo -- */
+
+/* Gitea exposes its own --color-* names and states its nav colours on #navbar.
+   `[data-theme]` is Gitea's marker on <html>, so this block is inert on GitHub
+   and GitLab. Same mapping as the other two skins, Atlassian values. */
+
+html.gs-theme-bitbucket[data-theme] {
+  --color-body: var(--gs-canvas) !important;
+  --color-card: var(--gs-canvas-subtle) !important;
+  --color-box-body: var(--gs-canvas-subtle) !important;
+  --color-box-body-highlight: var(--gs-canvas-inset) !important;
+  --color-box-header: var(--gs-canvas-inset) !important;
+  --color-menu: var(--gs-canvas) !important;
+  --color-secondary-bg: var(--gs-canvas-subtle) !important;
+  --color-input-background: var(--gs-canvas) !important;
+  --color-input-toggle-background: var(--gs-canvas) !important;
+  --color-code-bg: var(--gs-canvas-subtle) !important;
+  --color-markup-code-block: var(--gs-canvas-inset) !important;
+  --color-markup-code-inline: var(--gs-canvas-inset) !important;
+  --color-header-wrapper: var(--gs-canvas-subtle) !important;
+  --color-diff-inactive: var(--gs-canvas-inset) !important;
+
+  --color-text: var(--gs-fg) !important;
+  --color-text-dark: var(--gs-fg) !important;
+  --color-text-light: var(--gs-fg-muted) !important;
+  --color-text-light-1: var(--gs-fg-muted) !important;
+  --color-text-light-2: var(--gs-fg-muted) !important;
+  --color-text-light-3: var(--gs-fg-subtle) !important;
+  --color-input-text: var(--gs-fg) !important;
+  --color-placeholder-text: var(--gs-fg-subtle) !important;
+  --color-label-text: var(--gs-fg) !important;
+
+  --color-input-border: var(--gs-border) !important;
+  --color-input-border-hover: var(--gs-fg-muted) !important;
+  --color-secondary: var(--gs-border) !important;
+  --color-light-border: var(--gs-border) !important;
+  --color-timeline: var(--gs-border-muted) !important;
+  --color-expand-button: var(--gs-border-muted) !important;
+
+  --color-primary: var(--gs-accent) !important;
+  --color-primary-dark-1: var(--gs-accent-hover) !important;
+  --color-primary-dark-2: var(--gs-accent-hover) !important;
+  --color-primary-light-1: var(--gs-accent) !important;
+  --color-primary-light-2: var(--gs-accent) !important;
+  --color-primary-light-3: var(--gs-accent) !important;
+  --color-primary-light-4: var(--gs-accent) !important;
+  --color-primary-light-5: var(--gs-accent-subtle) !important;
+  --color-primary-light-6: var(--gs-accent-subtle) !important;
+  --color-primary-light-7: var(--gs-accent-subtle) !important;
+  --color-primary-alpha-10: color-mix(in srgb, var(--gs-accent) 10%, transparent) !important;
+  --color-primary-alpha-20: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
+  --color-primary-alpha-30: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
+  --color-primary-alpha-40: color-mix(in srgb, var(--gs-accent) 40%, transparent) !important;
+  --color-primary-alpha-50: color-mix(in srgb, var(--gs-accent) 50%, transparent) !important;
+  --color-primary-alpha-60: color-mix(in srgb, var(--gs-accent) 60%, transparent) !important;
+  --color-primary-alpha-70: color-mix(in srgb, var(--gs-accent) 70%, transparent) !important;
+  --color-primary-alpha-80: color-mix(in srgb, var(--gs-accent) 80%, transparent) !important;
+  --color-primary-alpha-90: color-mix(in srgb, var(--gs-accent) 90%, transparent) !important;
+  --color-accent: var(--gs-accent) !important;
+  --color-small-accent: var(--gs-accent-subtle) !important;
+  --color-highlight-fg: var(--gs-accent) !important;
+  --color-highlight-bg: var(--gs-accent-subtle) !important;
+  --color-reaction-active-bg: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
+  --color-reaction-hover-bg: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
+}
+
+html.gs-theme-bitbucket[data-theme] #navbar {
+  --color-nav-bg: var(--gs-header-bg) !important;
+  --color-nav-hover-bg: color-mix(in srgb, var(--gs-header-fg) 14%, transparent) !important;
+  --color-text: var(--gs-header-fg) !important;
+}
+
+html.gs-theme-bitbucket[data-theme] a {
+  color: var(--gs-link) !important;
+}
+
+html.gs-theme-bitbucket[data-theme] #navbar a {
+  color: var(--gs-header-fg) !important;
+}
+
+html.gs-theme-bitbucket[data-theme] #navbar-logo .branding {
+  width: 30px;
+  height: 30px;
+  background: var(--gs-mark) center / contain no-repeat !important;
+}
+
+html.gs-theme-bitbucket[data-theme] #navbar-logo .branding img {
+  visibility: hidden !important;
+}
+
+/* The Gitea repo tab row, in Bitbucket's shape: a flat row, blue underline. */
+html.gs-theme-bitbucket[data-theme] .overflow-menu-items {
+  gap: 8px !important;
+}
+
+html.gs-theme-bitbucket[data-theme] .overflow-menu-items a.item {
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px !important;
+  color: var(--gs-fg-muted) !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+}
+
+html.gs-theme-bitbucket[data-theme] .overflow-menu-items a.item:hover {
+  color: var(--gs-fg) !important;
+  border-bottom-color: var(--gs-border) !important;
+}
+
+html.gs-theme-bitbucket[data-theme] .overflow-menu-items a.item.active {
+  box-shadow: none !important;
+  color: var(--gs-fg) !important;
+  border-bottom-color: var(--gs-accent) !important;
+  font-weight: 600 !important;
+}
+
+html.gs-theme-bitbucket[data-theme] .overflow-menu-items a.item::before,
+html.gs-theme-bitbucket[data-theme] .overflow-menu-items a.item::after {
+  display: none !important;
+}
+
+html.gs-theme-bitbucket[data-theme] .overflow-menu-items a.item .ui.small.label {
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  margin: 0 !important;
+  padding: 0 6px !important;
+  border: 1px solid var(--gs-border) !important;
+  border-radius: 999px !important;
+  background-color: var(--gs-canvas-subtle) !important;
+  color: var(--gs-fg) !important;
+  font-weight: 500 !important;
+  line-height: 18px;
+  text-align: center;
+}
+
+html.gs-theme-bitbucket[data-theme] .ui.tabs.divider {
+  border-top: 0 !important;
+  border-bottom: 1px solid var(--gs-border) !important;
+}

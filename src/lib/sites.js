@@ -34,10 +34,21 @@
    * A kind names the skin it wears by default; the popup lists these so a site
    * can be shown with any of them. A site wearing its own UI is left alone (see
    * `themeFor`), so only the other product's skin actually repaints it.
+   *
+   * `layout` is the shape the skin is built to: `github` is a top bar plus a
+   * horizontal tab row, `gitlab` is a left sidebar. It is not the source the
+   * skin is applied to — Bitbucket reuses GitHub's layout on any source — so
+   * the structural passes key on this rather than on the theme name.
    */
   const skins = {
-    gitlab: { product: 'GitLab', badge: 'GL', color: '#7759c2' },
-    github: { product: 'GitHub', badge: 'GH', color: '#24292f' },
+    gitlab: { product: 'GitLab', badge: 'GL', color: '#7759c2', layout: 'gitlab' },
+    github: { product: 'GitHub', badge: 'GH', color: '#24292f', layout: 'github' },
+    bitbucket: {
+      product: 'Bitbucket',
+      badge: 'BB',
+      color: '#0052cc',
+      layout: 'github',
+    },
   };
 
   /**
@@ -189,13 +200,14 @@
   }
 
   /**
-   * Is this kind's skin switched on? The predicate the popup rows, the badge
-   * and `themeFor` all share, so "on" is defined exactly once. The setting is
-   * stored under the kind's own name.
+   * Does this kind's hosts have a skin chosen? The setting under the kind's own
+   * key holds any theme from `skins` (or `'off'`), which is what lets a target
+   * that no kind defaults to — Bitbucket — be chosen for a whole kind. `themeFor`
+   * decides whether that skin actually repaints, or is the host's own UI.
    */
   function kindOn(kind, settings) {
     const meta = kinds[kind];
-    return Boolean(meta) && Boolean(settings) && settings[kind] === meta.theme;
+    return Boolean(meta) && Boolean(settings) && THEMES.includes(settings[kind]);
   }
 
   /**
@@ -222,7 +234,7 @@
     if (!kind) return null;
     const chosen = hostSkinFor(host, hostSettings);
     if (chosen === 'off') return null;
-    const wanted = chosen || (kindOn(kind, settings) ? kinds[kind].theme : null);
+    const wanted = chosen || (kindOn(kind, settings) ? settings[kind] : null);
     if (!wanted) return null;
     // A skin for the site's *own markup* is a no-op — it is already that UI, and
     // repainting it as itself would run the wrong vocabulary and shortcut tables.

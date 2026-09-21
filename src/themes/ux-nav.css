@@ -628,18 +628,18 @@ html.gs-theme-gitlab
 
 /* Collapse GitLab's two-column page grid so the content spans the full width
    once the sidebar leaves its column. */
-html.gs-theme-github .layout-page.page-with-super-sidebar {
+html.gs-layout-github .layout-page.page-with-super-sidebar {
   display: block !important;
   padding-left: 0 !important;
 }
 
-html.gs-theme-github .super-sidebar-wrapper {
+html.gs-layout-github .super-sidebar-wrapper {
   position: static !important;
   width: 100% !important;
 }
 
 /* The sidebar itself becomes a horizontal strip across the top. */
-html.gs-theme-github .super-sidebar {
+html.gs-layout-github .super-sidebar {
   position: static !important;
   width: 100% !important;
   height: auto !important;
@@ -649,13 +649,13 @@ html.gs-theme-github .super-sidebar {
   border-bottom: 1px solid var(--gs-border) !important;
 }
 
-html.gs-theme-github .super-sidebar :is(.contextual-nav, nav) {
+html.gs-layout-github .super-sidebar :is(.contextual-nav, nav) {
   height: auto !important;
   overflow: visible !important;
 }
 
 /* Lay the navigation lists out as a wrapping row of tabs. */
-html.gs-theme-github .super-sidebar ul {
+html.gs-layout-github .super-sidebar ul {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: wrap !important;
@@ -663,16 +663,16 @@ html.gs-theme-github .super-sidebar ul {
   gap: 4px !important;
 }
 
-html.gs-theme-github .super-sidebar li {
+html.gs-layout-github .super-sidebar li {
   width: auto !important;
 }
 
-html.gs-theme-github .super-sidebar a {
+html.gs-layout-github .super-sidebar a {
   white-space: nowrap !important;
 }
 
 /* The collapse control only makes sense on a vertical sidebar. */
-html.gs-theme-github .super-sidebar :is(
+html.gs-layout-github .super-sidebar :is(
     [data-testid*="collapse" i],
     [aria-label*="collapse" i]
   ) {
@@ -680,7 +680,7 @@ html.gs-theme-github .super-sidebar :is(
 }
 
 /* The rows were sized for a full-height sidebar; tighten them for a top strip. */
-html.gs-theme-github .super-sidebar [data-testid="nav-item-link"] {
+html.gs-layout-github .super-sidebar [data-testid="nav-item-link"] {
   padding-top: 2px !important;
   padding-bottom: 2px !important;
 }
@@ -691,32 +691,32 @@ html.gs-theme-github .super-sidebar [data-testid="nav-item-link"] {
    with `data-page="users:show"`; the original `.js-super-sidebar` shell (which
    carried the panel metadata) is replaced at render time, so the body marker is
    what survives. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   :is(.super-sidebar-context-header, .super-sidebar-help-center-dropdown) {
   display: none !important;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .contextual-nav
   > div:has(.super-sidebar-help-center-dropdown) {
   display: none !important;
 }
 
-html.gs-theme-github body[data-page="users:show"] .contextual-nav {
+html.gs-layout-github body[data-page="users:show"] .contextual-nav {
   padding-top: 0 !important;
 }
 
 /* GitLab-only profile bits GitHub does not show: the profile README's "Read
    more" expander (GitHub renders it in full) and the local-time row. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .js-read-more-trigger {
   display: none !important;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .profile-readme-wrapper
   :is(.read-more-container, .read-more-content) {
@@ -724,7 +724,7 @@ html.gs-theme-github
   overflow: visible !important;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   [data-testid="user-local-time"] {
   display: none !important;
@@ -733,18 +733,18 @@ html.gs-theme-github
 /* GitHub shows the follower and following counts under the photo rather than as
    navigation. The content script copies them into the card; the originals are
    hidden here. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .super-sidebar
   li:has(> a[data-track-label="followers_menu"]),
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .super-sidebar
   li:has(> a[data-track-label="following_menu"]) {
   display: none !important;
 }
 
-html.gs-theme-github [data-gs-profile-stats] {
+html.gs-layout-github [data-gs-profile-stats] {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -754,7 +754,7 @@ html.gs-theme-github [data-gs-profile-stats] {
   font-size: 14px;
 }
 
-html.gs-theme-github [data-gs-profile-stats] > a {
+html.gs-layout-github [data-gs-profile-stats] > a {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -766,24 +766,24 @@ html.gs-theme-github [data-gs-profile-stats] > a {
   text-decoration: none !important;
 }
 
-html.gs-theme-github [data-gs-profile-stats] > a:hover {
+html.gs-layout-github [data-gs-profile-stats] > a:hover {
   text-decoration: underline !important;
 }
 
-html.gs-theme-github [data-gs-profile-stats] > a + a::before {
+html.gs-layout-github [data-gs-profile-stats] > a + a::before {
   content: "·";
   margin-right: 6px;
   color: var(--gs-fg-muted);
 }
 
-html.gs-theme-github [data-gs-profile-stats] [data-testid="nav-item-start"] {
+html.gs-layout-github [data-gs-profile-stats] [data-testid="nav-item-start"] {
   order: 0;
   display: inline-flex;
   width: 16px;
   height: 16px;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   [data-gs-profile-stats]
   [data-testid="nav-item-start"]
   svg {
@@ -792,12 +792,12 @@ html.gs-theme-github
 }
 
 /* GitHub reads "129 followers": the count first, in lower case. */
-html.gs-theme-github [data-gs-profile-stats] [data-testid="nav-item-end"] {
+html.gs-layout-github [data-gs-profile-stats] [data-testid="nav-item-end"] {
   order: 1;
   display: inline;
 }
 
-html.gs-theme-github [data-gs-profile-stats] [data-testid="pill-badge"] {
+html.gs-layout-github [data-gs-profile-stats] [data-testid="pill-badge"] {
   margin: 0 !important;
   padding: 0 !important;
   background: none !important;
@@ -805,8 +805,8 @@ html.gs-theme-github [data-gs-profile-stats] [data-testid="pill-badge"] {
   font-size: inherit !important;
 }
 
-html.gs-theme-github [data-gs-profile-stats] .gl-nav-item-label,
-html.gs-theme-github [data-gs-profile-stats] .nav-item-link-label {
+html.gs-layout-github [data-gs-profile-stats] .gl-nav-item-label,
+html.gs-layout-github [data-gs-profile-stats] .nav-item-link-label {
   order: 2;
   display: inline !important;
   padding: 0 !important;
@@ -814,7 +814,7 @@ html.gs-theme-github [data-gs-profile-stats] .nav-item-link-label {
 }
 
 /* GitLab omits the count at zero; GitHub reads "0 following". */
-html.gs-theme-github
+html.gs-layout-github
   [data-gs-profile-stats]
   a[data-track-label="following_menu"]:not(:has([data-testid="pill-badge"]))
   .gl-nav-item-label::before {
@@ -831,7 +831,7 @@ html.gs-theme-github
    Achievements/Info/Contact rail form the left column, the README/activity the
    right. GitLab's profile container holds the header and `.user-profile`
    directly, so both are dissolved and their children placed on a grid. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .container-fluid.container-limited:has(> .user-profile-header) {
   display: grid;
@@ -840,7 +840,7 @@ html.gs-theme-github
   column-gap: 24px;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .container-fluid.container-limited:has(> .user-profile-header)
   > :is(.user-profile-header, .user-profile) {
@@ -848,7 +848,7 @@ html.gs-theme-github
 }
 
 /* The RSS/actions block is not part of GitHub's card. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .user-profile-header
   > div:first-child {
@@ -856,7 +856,7 @@ html.gs-theme-github
 }
 
 /* Avatar above the name, both left-aligned: GitHub's card header. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .user-profile-header
   > div:last-child {
@@ -868,7 +868,7 @@ html.gs-theme-github
   gap: 8px;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .user-profile-header
   .user-image
@@ -877,13 +877,13 @@ html.gs-theme-github
   height: 260px !important;
 }
 
-html.gs-theme-github body[data-page="users:show"] .user-profile-header h1 {
+html.gs-layout-github body[data-page="users:show"] .user-profile-header h1 {
   font-size: 24px !important;
   line-height: 1.25 !important;
 }
 
 /* The rail becomes the lower half of the card; the content the right column. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .user-profile
   > .user-profile-sidebar {
@@ -891,7 +891,7 @@ html.gs-theme-github
   grid-row: 2;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   body[data-page="users:show"]
   .user-profile
   > .user-profile-content {
@@ -908,34 +908,34 @@ html.gs-theme-github
    tabs live on a white row under the dark global bar, so the strip is white
    rather than dark. Its groups are left intact — flattening them duplicated
    items and dropped the project navigation. */
-html.gs-theme-github .super-sidebar-wrapper,
-html.gs-theme-github .super-sidebar {
+html.gs-layout-github .super-sidebar-wrapper,
+html.gs-layout-github .super-sidebar {
   background-color: var(--gs-canvas) !important;
   color: var(--gs-fg) !important;
 }
 
-html.gs-theme-github .super-sidebar :is(a, button, span, svg, .gl-icon) {
+html.gs-layout-github .super-sidebar :is(a, button, span, svg, .gl-icon) {
   color: var(--gs-fg) !important;
 }
 
-html.gs-theme-github .super-sidebar a[aria-current="page"] {
+html.gs-layout-github .super-sidebar a[aria-current="page"] {
   font-weight: 600 !important;
 }
 
 /* GitHub marks the active tab with a warm underline and a transparent
    background; GitLab marks it with a blue pill, which is neutralized here. */
-html.gs-theme-github .super-sidebar a {
+html.gs-layout-github .super-sidebar a {
   background-color: transparent !important;
   border-radius: 0 !important;
   border-bottom: 2px solid transparent !important;
   padding: 8px 8px 6px !important;
 }
 
-html.gs-theme-github .super-sidebar a:hover {
+html.gs-layout-github .super-sidebar a:hover {
   background-color: transparent !important;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   .super-sidebar
   :is(a[aria-current="page"], a.active, a[data-gs-active]) {
   background-color: transparent !important;
@@ -946,7 +946,7 @@ html.gs-theme-github
    set of collapsible groups, duplicating items and not rendering some
    (Wiki/Security) at all. For a GitHub-style strip content/ux.js rebuilds the
    tabs as GitHub's own, so GitLab's sections are hidden. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page^="projects:"]
   .super-sidebar
   :is(
@@ -959,7 +959,7 @@ html.gs-theme-github
 
 /* GitLab heads the sidebar with a "Project" label; GitHub's repo header has no
    such heading, so it is hidden on the GitHub skin. */
-html.gs-theme-github
+html.gs-layout-github
   body[data-page^="projects:"]
   .super-sidebar
   .super-sidebar-context-header {
@@ -969,7 +969,7 @@ html.gs-theme-github
 /* The rebuilt tab row, whether it sits in the sidebar (non-root project pages)
    or under the repository header (the root). GitHub's tabs are a flat row with
    a hairline rule and a warm underline on the active tab. */
-html.gs-theme-github [data-gs-project-tabs] {
+html.gs-layout-github [data-gs-project-tabs] {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: wrap !important;
@@ -980,11 +980,11 @@ html.gs-theme-github [data-gs-project-tabs] {
   list-style: none !important;
 }
 
-html.gs-theme-github [data-gs-project-tabs] > li {
+html.gs-layout-github [data-gs-project-tabs] > li {
   width: auto !important;
 }
 
-html.gs-theme-github [data-gs-project-tabs] > li > a {
+html.gs-layout-github [data-gs-project-tabs] > li > a {
   display: inline-flex !important;
   align-items: center !important;
   padding: 8px 8px 6px !important;
@@ -997,22 +997,22 @@ html.gs-theme-github [data-gs-project-tabs] > li > a {
   margin-bottom: -1px !important;
 }
 
-html.gs-theme-github [data-gs-project-tabs] > li > a[data-gs-active] {
+html.gs-layout-github [data-gs-project-tabs] > li > a[data-gs-active] {
   font-weight: 600 !important;
   border-bottom-color: #fd8c73 !important;
 }
 
 /* Hosted under the repository header, the row spans the content and the sidebar
    shell that carried the top strip is hidden. */
-html.gs-theme-github [data-gs-project-tabs][data-gs-tab-host="content"] {
+html.gs-layout-github [data-gs-project-tabs][data-gs-tab-host="content"] {
   border-bottom: 1px solid var(--gs-border) !important;
 }
 
-html.gs-theme-github .layout-page:has(main.content [data-gs-project-tabs]) {
+html.gs-layout-github .layout-page:has(main.content [data-gs-project-tabs]) {
   padding-left: 0 !important;
 }
 
-html.gs-theme-github
+html.gs-layout-github
   .layout-page:has(main.content [data-gs-project-tabs])
   .super-sidebar-wrapper {
   display: none !important;
@@ -1021,11 +1021,11 @@ html.gs-theme-github
 /* GitHub's bar lists its tabs directly; GitLab's sidebar hides them inside
    collapsible groups. Show the group contents and drop the group toggles so the
    items are on the bar, where NAV_KEEP then keeps only GitHub's own options. */
-html.gs-theme-github .super-sidebar [data-testid="menu-section-button"] {
+html.gs-layout-github .super-sidebar [data-testid="menu-section-button"] {
   display: none !important;
 }
 
-html.gs-theme-github .super-sidebar [data-testid="menu-section"] {
+html.gs-layout-github .super-sidebar [data-testid="menu-section"] {
   display: contents !important;
 }
 
@@ -1033,16 +1033,16 @@ html.gs-theme-github .super-sidebar [data-testid="menu-section"] {
    stacked blocks (static, pinned, groups), so the kept items landed on two rows
    with Code alone on the second. Flatten those blocks and order them as GitHub
    does: Code, then Issues, Pull requests, Actions. */
-html.gs-theme-github .super-sidebar [data-testid="nav-container"] {
+html.gs-layout-github .super-sidebar [data-testid="nav-container"] {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: wrap !important;
   align-items: center !important;
 }
 
-html.gs-theme-github .super-sidebar [data-testid="nav-container"] > div,
-html.gs-theme-github .super-sidebar [data-testid="nav-container"] > div > div,
-html.gs-theme-github
+html.gs-layout-github .super-sidebar [data-testid="nav-container"] > div,
+html.gs-layout-github .super-sidebar [data-testid="nav-container"] > div > div,
+html.gs-layout-github
   .super-sidebar
   [data-testid="nav-container"]
   > div
@@ -1051,15 +1051,15 @@ html.gs-theme-github
   display: contents !important;
 }
 
-html.gs-theme-github .super-sidebar ul[data-testid="static-items-section"] {
+html.gs-layout-github .super-sidebar ul[data-testid="static-items-section"] {
   order: 0 !important;
 }
 
-html.gs-theme-github .super-sidebar ul[data-testid="non-static-items-section"] {
+html.gs-layout-github .super-sidebar ul[data-testid="non-static-items-section"] {
   order: 1 !important;
 }
 
-html.gs-theme-github .super-sidebar ul[data-testid="pinned-nav-items"] {
+html.gs-layout-github .super-sidebar ul[data-testid="pinned-nav-items"] {
   order: 2 !important;
 }
 
@@ -1089,18 +1089,18 @@ html.gs-theme-gitlab .ContributionCalendar-day[data-level="4"] {
   background-color: #303470 !important;
 }
 
-html.gs-theme-github rect.user-contrib-cell[data-level="1"] {
+html.gs-layout-github rect.user-contrib-cell[data-level="1"] {
   fill: #aceebb !important;
 }
 
-html.gs-theme-github rect.user-contrib-cell[data-level="2"] {
+html.gs-layout-github rect.user-contrib-cell[data-level="2"] {
   fill: #4ac26b !important;
 }
 
-html.gs-theme-github rect.user-contrib-cell[data-level="3"] {
+html.gs-layout-github rect.user-contrib-cell[data-level="3"] {
   fill: #2da44e !important;
 }
 
-html.gs-theme-github rect.user-contrib-cell[data-level="4"] {
+html.gs-layout-github rect.user-contrib-cell[data-level="4"] {
   fill: #116329 !important;
 }

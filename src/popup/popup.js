@@ -93,29 +93,34 @@
   }
 
   // One skin is active for the whole extension. The stored settings are still
-  // per kind, so the single choice is mapped onto them; only one kind is on.
+  // per kind, and now hold any theme (not only the kind's default), so a target
+  // no kind defaults to — Bitbucket — can be chosen for every host.
   function globalSkin(state) {
     for (const kind of Object.keys(SITES.kinds)) {
-      if (SITES.kindOn(kind, state)) return SITES.kinds[kind].theme;
+      if (SITES.kindOn(kind, state)) return state[kind];
     }
     return 'off';
   }
 
   function settingsForSkin(theme) {
+    const value = theme === 'off' ? 'off' : theme;
     const next = {};
-    for (const kind of Object.keys(SITES.kinds)) {
-      next[kind] = SITES.kinds[kind].theme === theme ? theme : 'off';
-    }
+    for (const kind of Object.keys(SITES.kinds)) next[kind] = value;
     return next;
   }
 
+  // The hosts a skin actually repaints: every configured host whose markup is
+  // not already that UI. So "GitHub UI" lists the GitLab hosts and Codeberg,
+  // while Bitbucket — which is no site's own UI — lists them all.
   function hostsForSkin(theme) {
+    if (theme === 'off') return [];
+    const hosts = [];
     for (const kind of Object.keys(SITES.kinds)) {
-      if (SITES.kinds[kind].theme === theme) {
-        return SITES.hostsFor(kind, instances);
+      for (const host of SITES.hostsFor(kind, instances)) {
+        if (SITES.sourceFor(host, instances) !== theme) hosts.push(host);
       }
     }
-    return [];
+    return hosts;
   }
 
   // One radio per skin, plus off, built from the shared `skins` table.
@@ -174,7 +179,7 @@
 
     const chosen = SITES.hostSkinFor(host, hostSettings);
     const fallback = SITES.kindOn(currentKind, settings)
-      ? SITES.kinds[currentKind].theme
+      ? settings[currentKind]
       : null;
     // What the group should show selected: the explicit choice, else the
     // product's default, else off. (A site's own skin and `off` both leave it

@@ -286,12 +286,12 @@ in `themes/ux-nav.css`.
 
 ## Adding another forge — contributions welcome
 
-gitalike knows two products, GitHub and GitLab, and skins each as the other.
-Codeberg (Forgejo) and gitea.com (Gitea) are bundled as GitHub-flavoured forges,
-shown with the GitLab UI. **More are wanted.** Bitbucket and Sourcehut are
-genuinely different products and need their own skin; that is probably the single
-most useful thing to help with. There are two levels, and the easy one is real
-work, not a consolation prize.
+gitalike knows two source products, GitHub and GitLab, and paints three skins —
+GitLab, GitHub and Bitbucket. Codeberg (Forgejo) and gitea.com (Gitea) are
+bundled as GitHub-flavoured sources, shown with the GitLab UI. **More are
+wanted.** Sourcehut is a genuinely different product that needs its own skin; a
+new *source* forge (one people host) also needs classifying. There are two
+levels, and the easy one is real work, not a consolation prize.
 
 ### A forge that already speaks one of the two dialects
 
@@ -332,34 +332,43 @@ it works out of the box.
 
 ### A genuinely different product
 
-Bitbucket or Sourcehut are not GitHub with a different logo; they need their own
-skin and their own vocabulary. That means five files:
+Sourcehut is not GitHub with a different logo; it needs its own skin and its own
+vocabulary. **Bitbucket is the worked example**: it is a *target only* — no host
+is classified as Bitbucket — so it can be worn by any source. Adding a target
+means:
 
 | # | File | What goes there |
 | - | ---- | --------------- |
-| 1 | `src/themes/<a>-as-<b>.css` | the skin — a palette block plus a token mapping |
-| 2 | `src/lib/ux.js` | `PHRASES`, `NAV`, `NAV_RULES`, `SELECTORS`, `SHORTCUTS` keyed by the new theme/source name |
-| 3 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color` (its key is the theme name and joins `THEMES` automatically) — and, if it is a new kind, a `kinds` entry naming its default skin |
-| 4 | `src/popup/popup.html` + `popup.css` | a row for the kind, and its accent colour |
-| 5 | `tests/` | cases for the skin, the host table and the vocabulary |
+| 1 | `src/themes/as-<target>.css` | the skin — a palette block, a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), and the structural rules |
+| 2 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color`, `layout` — which joins `THEMES` automatically |
+| 3 | `src/lib/ux.js` | the target's `PHRASES`, `NAV`, `LABELS`, `CHROME`, `UNMAPPED`, `NAV_RULES`, `NAV_KEEP`, and its tab set in `PROJECT_TABS` (and `PROFILE_MENU` if the layout rebuilds profiles) |
+| 4 | `src/background.js` | add the stylesheet to `CONTENT_CSS` |
+| 5 | `tests/` | cases for the tables, `projectTabs`, `activeTabFor` and the vocabulary |
+
+A target's `layout` (`github` = top bar + tab row, `gitlab` = left sidebar) is
+the shape it is built to. Two skins that share a shape share the structural CSS
+(through the `gs-layout-*` class) and the structural passes, so Bitbucket reuses
+GitHub's and only supplies Atlassian's colours and its own words. The stylesheets
+scope by *token name*, which is how one file maps three sources: `--fgColor-*`
+(Primer) is inert on GitLab and Gitea, `--gl-*` on the others, and Gitea's
+`[data-theme]` block picks up only Gitea.
+
+`SELECTORS` is keyed by **source**, not by the skin applied, and a target skin
+usually adds none. If your product is also a site people host (a new forge), see
+[Support another Git instance](#support-another-git-instance) and
+[A forge that already speaks one of the two dialects](#a-forge-that-already-speaks-one-of-the-two-dialects);
+its markup goes in `SELECTORS` and a `CANARY_PAGES` entry, so the canary watches
+the hooks the skin uses.
 
 Whichever forge you add, its logo stays out of the bundle. The theme carries a
-`--gs-mark` and paints gitalike's own mark in that forge's palette — the two
+`--gs-mark` and paints gitalike's own mark in that forge's palette — the
 existing skins are the pattern. Do not paste a forge's logo, or its vector path
 data, into a theme: recolouring someone else's mark is still shipping their
 mark. This covers Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut alike.
 
-The popup's per-site picker is generated from `THEMES`, so a new skin appears
-there with no popup change. A `skins` entry is also what the badge and the picker
-label read, so a new skin names itself once.
-
-**Open an issue about the mapping first.** `kinds` names one default skin per
-kind: `github` defaults to GitLab, `gitlab` to GitHub. The per-site picker can
-give any host any skin, but the CSS is written per *source* product, so a skin
-only repaints a site built on that product's markup. Supporting every pair is
-N×(N−1) skins. For most forges the honest answer is probably "one GitHub-like
-skin and one GitLab-like skin", not all six — but that is worth agreeing before
-anyone writes CSS.
+The popup's global radio and the per-site picker are generated from `THEMES`, so
+a new skin appears there with no popup change; a `skins` entry is what the badge
+and the picker labels read, so a new skin names itself once.
 
 Whatever you add has to hold the same line as the existing two: inert when the
 skin is off, no rewriting inside code, inputs or editable regions, and every

@@ -28,16 +28,29 @@
   if (!SITES) return;
 
   const CACHE_KEY = 'gitSame.theme';
+  // The layout names in use ('github', 'gitlab'), derived from the shared skins
+  // table so a new layout is toggled without a list here.
+  const LAYOUTS = [
+    ...new Set(Object.values(SITES.skins).map((skin) => skin.layout)),
+  ];
 
   const root = document.documentElement;
   const host = location.hostname;
 
   /* ---------------------------------------------------------------- mode -- */
 
-  /** @param {'gitlab'|'github'|null} theme */
+  /** @param {'gitlab'|'github'|'bitbucket'|null} theme */
   function apply(theme) {
     for (const name of SITES.THEMES) {
       root.classList.toggle(`gs-theme-${name}`, name === theme);
+    }
+    // A layout class as well, so structural CSS shared by two skins that have
+    // the same shape (GitHub and Bitbucket are both top bar + tab row) can be
+    // written once, against the layout, instead of per theme.
+    const layout =
+      (theme && SITES.skins[theme] && SITES.skins[theme].layout) || null;
+    for (const name of LAYOUTS) {
+      root.classList.toggle(`gs-layout-${name}`, name === layout);
     }
     syncDark();
   }
