@@ -1161,10 +1161,10 @@
             <span class="chip skin">+ any instance you add</span>
           </div>
           <p class="chips-note">
-            Add any instance by visiting it or typing its address — no rebuild,
-            no permission prompt. Bitbucket is a skin, not a source, so it is a
-            target rather than a site you point the extension at. Sourcehut is
-            the next candidate.
+            Add any instance by visiting it or typing its address — no rebuild.
+            Adding a self-hosted host asks the browser to grant that one origin.
+            Bitbucket is a skin, not a source, so it is a target rather than a
+            site you point the extension at. Sourcehut is the next candidate.
           </p>
         </div>
       </section>
@@ -1187,14 +1187,14 @@
               <p><a href="privacy.html">Read the full privacy policy →</a></p>
             </div>
             <div class="panel">
-              <h3>Why it asks for all-sites access</h3>
+              <h3>Which sites it can reach</h3>
               <p style="color: var(--muted); font-size: 14px; margin: 0">
-                GitHub Enterprise Server and self-hosted GitLab live on
-                hostnames nobody can predict, and a manifest match pattern
-                cannot wildcard a host's middle. So gitalike matches all pages
-                but decides at runtime: its scripts are registered only for the
-                hosts you have set up, and on any other host it does nothing at
-                all.
+                Only four hosts are granted at install — github.com,
+                gitlab.com, codeberg.org and gitea.com. A self-hosted instance
+                is granted when you add it: the popup asks for that one origin,
+                a prompt you only see if you asked for that host. There is no
+                all-sites grant, and its scripts load only on hosts you have set
+                up and granted.
               </p>
             </div>
           </div>
@@ -1219,22 +1219,22 @@
               </p>
             </details>
             <details>
-              <summary>Why does it ask for access to all sites?</summary>
+              <summary>Which sites can it access?</summary>
               <p>
-                GitHub Enterprise Server and self-hosted GitLab live on
-                hostnames nobody can predict, and a manifest match pattern
-                cannot wildcard a host's middle. So gitalike matches all pages
-                but decides at runtime: its scripts are registered only for the
-                hosts you have set up. On any other host it does nothing at all.
+                The four bundled hosts — github.com, gitlab.com, codeberg.org
+                and gitea.com — are granted at install. Everything else is
+                asked for one origin at a time, when you add it, so a
+                self-hosted GitHub Enterprise or GitLab instance triggers a
+                single prompt for its host, and nothing is granted before that.
               </p>
             </details>
             <details>
               <summary>Does it work on my self-hosted instance?</summary>
               <p>
                 Yes. Add the host by visiting it or typing its address — no
-                rebuild, no per-site permission prompt. GitHub Enterprise
-                Server and self-hosted GitLab both work, and Codeberg (Forgejo)
-                and gitea.com are bundled.
+                rebuild. Adding it asks the browser to grant that one origin.
+                GitHub Enterprise Server and self-hosted GitLab both work, and
+                Codeberg (Forgejo) and gitea.com are already covered.
               </p>
             </details>
             <details>
