@@ -709,7 +709,34 @@
         border-radius: 12px;
         padding: 22px;
       }
-      .panel h3 { margin: 0 0 10px; font-size: 17px; }
+      .panel h3 { margin: 0 0 10px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+      .blogo { display: block; width: 18px; height: 18px; flex: none; }
+      .btn .blogo {
+        width: 16px;
+        height: 16px;
+        background: #fff;
+        border-radius: 50%;
+        padding: 2px;
+        box-sizing: content-box;
+      }
+      .panel .blogo { width: 20px; height: 20px; }
+      .panel ul.browsers {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        margin: 14px 0 0;
+        padding: 0;
+      }
+      .panel ul.browsers li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .panel ul.browsers img { display: block; width: 18px; height: 18px; flex: none; }
       .panel ol, .panel ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
       .panel li { margin: 4px 0; }
       .panel li b { color: var(--fg); }
@@ -872,7 +899,7 @@
           <a
             class="btn small"
             href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"
-            >Download</a
+            ><img class="blogo" src="browsers/chromium.svg" alt="" width="16" height="16" />Download</a
           >
         </nav>
       </div>
@@ -898,12 +925,12 @@
               <a
                 class="btn"
                 href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"
-                >Download for Chromium</a
+                ><img class="blogo" src="browsers/chromium.svg" alt="" width="16" height="16" />Download for Chromium</a
               >
               <a
                 class="btn secondary"
                 href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"
-                >Download for Firefox</a
+                ><img class="blogo" src="browsers/firefox.svg" alt="" width="16" height="16" />Download for Firefox</a
               >
               <a class="btn ghost" href="https://github.com/ranjithrajv/gitalike">Source</a>
             </div>
@@ -1555,7 +1582,7 @@
           </div>
           <div class="split">
             <div class="panel">
-              <h3>Chromium</h3>
+              <h3><img class="blogo" src="browsers/chromium.svg" alt="" width="20" height="20" />Chromium</h3>
               <p class="note" style="margin-top: 0">
                 Chrome, Edge, Brave, Opera, Vivaldi and the other
                 Chromium-based browsers share the API — one build.
@@ -1577,7 +1604,7 @@
               </p>
             </div>
             <div class="panel">
-              <h3>Firefox</h3>
+              <h3><img class="blogo" src="browsers/firefox.svg" alt="" width="20" height="20" />Firefox</h3>
               <p class="note" style="margin-top: 0">
                 Needs Firefox 142 or newer, and works in the forks that track
                 it (LibreWolf, Floorp, Zen, …). The ZIP is unsigned, so Firefox
@@ -1608,6 +1635,18 @@
               It is on its way to the Chrome Web Store, Microsoft Edge
               Add-ons, addons.mozilla.org and Opera Add-ons.
             </p>
+            <ul class="browsers" aria-label="Browsers gitalike runs in">
+              <li><img src="browsers/chromium.svg" alt="" width="18" height="18" />Chromium</li>
+              <li><img src="browsers/chrome.svg" alt="" width="18" height="18" />Chrome</li>
+              <li><img src="browsers/edge.svg" alt="" width="18" height="18" />Edge</li>
+              <li><img src="browsers/brave.svg" alt="" width="18" height="18" />Brave</li>
+              <li><img src="browsers/opera.svg" alt="" width="18" height="18" />Opera</li>
+              <li><img src="browsers/vivaldi.svg" alt="" width="18" height="18" />Vivaldi</li>
+              <li><img src="browsers/firefox.svg" alt="" width="18" height="18" />Firefox</li>
+              <li><img src="browsers/librewolf.svg" alt="" width="18" height="18" />LibreWolf</li>
+              <li><img src="browsers/floorp.svg" alt="" width="18" height="18" />Floorp</li>
+              <li><img src="browsers/zen.svg" alt="" width="18" height="18" />Zen</li>
+            </ul>
           </div>
 
           <div class="panel" style="margin-top: 16px">
@@ -1642,7 +1681,9 @@ node tools/compare/e2e.mjs       # Playwright end-to-end test against the live s
           sponsored by GitHub, Inc. or GitLab Inc. It ships none of their
           artwork; the mark it paints is its own. GitHub is a trademark of
           GitHub, Inc. GITLAB is a trademark of GitLab Inc. in the United States
-          and other countries and regions.
+          and other countries and regions. Browser names and logos shown here to
+          indicate compatibility are the trademarks of their respective owners
+          and are used nominatively.
         </p>
       </div>
     </footer>
