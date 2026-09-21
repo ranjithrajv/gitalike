@@ -1981,9 +1981,9 @@ node tools/compare/e2e.mjs       # Playwright end-to-end test against the live s
       }
 
       // One comparison at a time: the two tab rows pick a page kind and a
-      // source forge, and only the matching card is shown. Profiles have no
-      // Codeberg capture, so that tab sits out while Profiles is selected; a
-      // deep link (#gitlab-profile) still opens the card it names.
+      // source forge, and only the matching card is shown. Every forge has a
+      // card for both kinds; a deep link (#gitlab-profile) still opens the card
+      // it names.
       const seeDemos = document.getElementById('see-demos');
       const seeTabs = [...document.querySelectorAll('.see-tab')];
       if (seeDemos && seeTabs.length) {
@@ -1999,8 +1999,6 @@ node tools/compare/e2e.mjs       # Playwright end-to-end test against the live s
             tab.setAttribute('aria-pressed', String(tab.dataset.kind === kind));
           }
           for (const tab of forgeTabs) {
-            // Only the project pages have a Codeberg source capture.
-            tab.hidden = kind === 'profile' && tab.dataset.forge === 'codeberg';
             tab.setAttribute('aria-pressed', String(tab.dataset.forge === forge));
           }
           for (const card of cards) {
@@ -2013,12 +2011,8 @@ node tools/compare/e2e.mjs       # Playwright end-to-end test against the live s
         for (const tab of seeTabs) {
           tab.addEventListener('click', () => {
             if (tab.dataset.kind) {
-              // Keep the forge across a switch, unless the new kind lacks it.
-              const forge =
-                tab.dataset.kind === 'profile' && state.forge === 'codeberg'
-                  ? 'github'
-                  : state.forge;
-              show(tab.dataset.kind, forge);
+              // Keep the forge across a kind switch.
+              show(tab.dataset.kind, state.forge);
             } else {
               show(state.kind, tab.dataset.forge);
             }
