@@ -17,7 +17,10 @@ Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ so each lo
 ## Description
 
 ```
-gitalike re-skins the big forges so they look — and read — like each other:
+gitalike re-skins the big forges so they look — and read — like each other, in
+both directions: GitHub shown as GitLab, and GitLab shown as GitHub. That
+two-way swap is what keeps your muscle memory — the words, the navigation, the
+shortcuts — working on whichever forge you happen to be using:
 
     a GitHub-flavoured site + GitLab™ UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
@@ -27,6 +30,10 @@ becomes "Merge request", a #42 reference becomes !42, the repository navigation
 is relabelled and reordered, and the other product's g-shortcuts work. It changes
 nothing about what the site does — no requests are intercepted and no data is
 touched — and every change is reverted the moment you switch a skin off.
+
+A theme changes the colours. gitalike also changes the words ("Pull request"
+becomes "Merge request"), the reference markers (#42 becomes !42), the
+navigation's labels and order, and the other product's keyboard shortcuts.
 
 The rewriting is conservative by design. Copy is never touched inside code,
 inputs or editable regions; a control label changes only on an exact whole-label
@@ -45,8 +52,9 @@ Features
 - Add any instance by visiting it, or by typing its address. It is remembered.
 - Alt+Shift+G toggles the site you are on; the toolbar badge shows GL, GH or BB.
 - Light and dark, following the site's own mode.
-- No network access at all: the stylesheets are bundled and the mark is an
-  inline data URI. Nothing is sent anywhere.
+- No network access at all: no CDN, no remote configuration, no telemetry. The
+  stylesheets are bundled and the mark is an inline data URI. Nothing is sent
+  anywhere.
 
 Permissions, plainly: gitalike is granted the public forges and Codeberg
 (github.com, gitlab.com, codeberg.org, gitea.com) at install.
