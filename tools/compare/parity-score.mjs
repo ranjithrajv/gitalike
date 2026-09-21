@@ -222,7 +222,11 @@ const PROFILE = [
     // The profile passes are wired for GitHub's, GitLab's and (partly) Gitea's
     // markup; a Bitbucket source has no profile hooks.
     share: ({ source, skin, native }) =>
-      native ? 1 : cap(source).profile ? (skin === 'bitbucket' ? 0.6 : 1) : 0.1,
+      native
+        ? 1
+        : cap(source).profile
+          ? cap(source).profile * (skin === 'bitbucket' ? 0.6 : 1)
+          : 0.1,
   },
   {
     key: 'menu',
@@ -244,8 +248,7 @@ const PROFILE = [
     share: ({ source, skin, native }) => {
       if (native) return 1;
       if (!cap(source).profile) return 0.1;
-      if (skin === 'bitbucket') return 0.3;
-      return 1;
+      return cap(source).profile * (skin === 'bitbucket' ? 0.3 : 1);
     },
   },
   {
@@ -256,8 +259,8 @@ const PROFILE = [
     share: ({ source, skin, native }) => {
       if (native) return 1;
       if (!cap(source).profile) return 0.2;
-      if (skin === 'bitbucket') return 0.2;
-      return skin === 'gitlab' ? 0.8 : 0.5;
+      const full = skin === 'bitbucket' ? 0.2 : skin === 'gitlab' ? 0.8 : 0.5;
+      return cap(source).profile * full;
     },
   },
   {

@@ -64,10 +64,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   that the page carries the skin's `gs-layout-*` class and that its navigation
   is oriented as that layout is (row for `github`, column for `gitlab`),
   reporting group headings and profile shape. A pair whose source declared no
-  navigation or profile capability (`compare.nav`/`compare.profile` of 0) is
-  reported `n/a` rather than failed. Unlike the other parity reads it exits
-  non-zero on a mismatch, so a layout regression fails a run instead of lowering
-  a score.
+  navigation or profile capability is reported `n/a` rather than failed; every
+  source declares one now. Unlike the other parity reads it exits non-zero on a
+  mismatch, so a layout regression fails a run instead of lowering a score.
+- **Layout parity raised across the sources.** Gitea/Forgejo and Bitbucket
+  profile navigation is reoriented to the applied layout
+  (`themes/ux-nav.css`: Gitea's profile tab menu becomes a sidebar list under a
+  sidebar layout, Bitbucket's workspace nav becomes a row under the GitHub
+  layout), and Gerrit's header navigation is reoriented too — PolyGerrit's roots
+  are *open*, so `paintGerritNav` reaches the nav and injects a style into its
+  shadow root, which a document stylesheet cannot. The three sources declare
+  `compare.profile` (and Gerrit `compare.nav`), and the rubric now uses
+  `compare.profile` as a fraction, so partial profile coverage scores partially.
+  `layout-parity` is now 24/24 gated and passing, and an independent jev pass
+  over the same signals grades every pair 9.3–9.9 (was 2.8–9.9).
 - A **compare-recipe contract** (`tests/compare/recipes.test.mjs`): every
   registry source must have a capture recipe (or a documented exclusion),
   project and profile style-parity selectors, and all of its `compare`

@@ -62,7 +62,7 @@
         "nav": 0.9,
         "page": 1,
         "metadata": 0,
-        "profile": 0,
+        "profile": 0.5,
         "refs": 1
       },
       "selectors": [
@@ -82,10 +82,10 @@
       "hosts": [],
       "compare": {
         "palette": 0.6,
-        "nav": 0,
+        "nav": 0.5,
         "page": 0,
         "metadata": 0,
-        "profile": 0,
+        "profile": 0.5,
         "refs": 0.3
       },
       "selectors": [
@@ -110,7 +110,7 @@
         "nav": 1,
         "page": 1,
         "metadata": 0,
-        "profile": 0,
+        "profile": 0.5,
         "refs": 1
       },
       "selectors": [

@@ -113,7 +113,7 @@ at a time from the popup).
 | Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
 | **Bitbucket** | 10.0 | 6.5 | 5.9 |
-| **Gerrit** | 1.4 | 1.5 | 1.5 |
+| **Gerrit** | 4.8 | 4.8 | 4.5 |
 | **Gitea / Forgejo** | 8.0 | 8.1 | 7.9 |
 | **GitHub** | 8.4 | 10.0 | 9.7 |
 | **GitLab** | 8.4 | 9.7 | 10.0 |
@@ -122,9 +122,9 @@ at a time from the popup).
 
 | Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
-| **Bitbucket** | 10.0 | 4.5 | 4.5 |
-| **Gerrit** | 1.8 | 1.9 | 1.9 |
-| **Gitea / Forgejo** | 3.9 | 4.5 | 4.5 |
+| **Bitbucket** | 10.0 | 5.6 | 5.7 |
+| **Gerrit** | 2.1 | 3.0 | 3.1 |
+| **Gitea / Forgejo** | 4.2 | 5.6 | 5.7 |
 | **GitHub** | 6.7 | 10.0 | 9.9 |
 | **GitLab** | 6.7 | 9.5 | 10.0 |
 
@@ -139,9 +139,10 @@ excused.
 Layout is a gated read of its own: `tools/compare/layout-parity.mjs`
 (`npm run layout-parity`) drives the live pages and fails unless every skinned
 page carries its skin's `gs-layout-*` class and its navigation is oriented the
-way that layout is — row for `github`, column for `gitlab`. Pairs whose source
-declared no navigation (or profile) capability are reported `n/a` rather than
-failed, since there is nothing to reorient.
+way that layout is — row for `github`, column for `gitlab`. Every source now
+declares a navigation and profile capability, so every pair is gated; a future
+source that declares none is reported `n/a` rather than failed, since there is
+nothing to reorient.
 
 ### Where the points are lost
 
@@ -175,30 +176,35 @@ failed, since there is nothing to reorient.
   Bitbucket's own destinations, but Bitbucket has no public profile of its own,
   so the identity card is not re-shaped (the rail and stats passes are
   GitLab/GitHub only) and shortcuts are unmapped.
-- **Gitea → any skin, profile (3.9–4.5)** — the profile passes are keyed to
+- **Gitea → any skin, profile (4.2–5.7)** — the profile passes are keyed to
   GitHub's and GitLab's profile markup (`SELECTORS.github.profile*`,
   `SELECTORS.gitlab.profile*`), so a Gitea/Forgejo profile gets the shared
-  palette, copy, account-chrome and reference-marker work but none of the menu,
-  rail or card rebuilding. This is the largest scoring gap, and the docs make no
-  profile claim for Gitea/Forgejo; the `codeberg-profile-*.png` captures show
-  exactly that — the shared palette and copy, not a rebuilt Gitea profile.
-- **Bitbucket as a source (6.5 / 5.9 project, 4.5 profile)** — it gains two
-  passes. Its palette: Bitbucket Cloud exposes Atlassian's `--ds-*` design
+  palette, copy, account-chrome and reference-marker work, and its profile
+  navigation is reoriented to the layout (`themes/ux-nav.css`: the tab menu
+  becomes a column under a sidebar layout), but its menu, rail and card are not
+  rebuilt. This is the largest remaining scoring gap; the `codeberg-profile-*.png`
+  captures show the shared palette, copy and reoriented nav, not a rebuilt Gitea
+  profile.
+- **Bitbucket as a source (6.5 / 5.9 project, 5.6 / 5.7 profile)** — it gains
+  three passes. Its palette: Bitbucket Cloud exposes Atlassian's `--ds-*` design
   tokens on <html>, so the skins re-point them at their own palette, header
   included (`themes/gs-tokens.css`). Its navigation: `paintBitbucketNav`
   reorients and relabels the repository bar, found inside the declared `#root`
-  hook. It still loses the dimensions that need a rule or a captured shape:
-  there is no `NAV_RULES` entry, so the nav is not reordered or filtered, no
-  metadata shape, and no shortcut table. The diagonal is 10.0 because a source
-  on its own UI needs no transformation.
-- **Gerrit as a source (1.4–1.5 project, 1.8–1.9 profile)** — the lowest row: only its
-  palette reaches it, and even that is partial. PolyGerrit reads its colours
-  from root custom properties that inherit across its shadow boundary, so the
-  skins re-point text, links, borders and feedback (`themes/gs-tokens.css`) but
-  not its surfaces or header. The copy, navigation and profile passes cannot
-  reach inside the shadow roots, and Gerrit numbers a change
-  (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so `refs` is
-  partial too.
+  hook, and the workspace profile navigation is reoriented to the layout
+  (`themes/ux-nav.css`). It still loses the dimensions that need a rule or a
+  captured shape: there is no `NAV_RULES` entry, so the nav is not reordered or
+  filtered, no metadata shape, and no shortcut table. The diagonal is 10.0
+  because a source on its own UI needs no transformation.
+- **Gerrit as a source (4.5–4.8 project, 2.1–3.1 profile)** — its palette is
+  partial: PolyGerrit reads its colours from root custom properties that inherit
+  across its shadow boundary, so the skins re-point text, links, borders and
+  feedback (`themes/gs-tokens.css`) but not its surfaces or header. Its header
+  navigation *is* reoriented to the layout, though — PolyGerrit's roots are open,
+  so `paintGerritNav` reaches the nav and injects a style into its shadow root
+  (`row` for the GitHub layout, `column` for the others). The page-wide copy and
+  label passes still cannot reach inside the shadow roots, and Gerrit numbers a
+  change (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so
+  `refs` is partial too.
 
 The scores are computed by `tools/compare/parity-score.mjs` (`npm run parity`, or
 `npm run parity -- --detail` for the per-dimension breakdown) and

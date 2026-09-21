@@ -1163,3 +1163,31 @@ html.gs-layout-github rect.user-contrib-cell[data-level="3"] {
 html.gs-layout-github rect.user-contrib-cell[data-level="4"] {
   fill: #116329 !important;
 }
+
+/* ============================================================================
+   Source profile navigation, reoriented to the applied skin's layout.
+
+   GitHub's and GitLab's own profile navs are reshaped by the profile passes
+   (`paintProfileRail` / `paintProfileStats`). Two sources have their own profile
+   pages that the generic passes do not reach, so their navigation is reoriented
+   here, from the *source* marker (`data-gs-source`, set by content/theme.js) and
+   the *applied layout* class, so the page sits in the skin's shape:
+
+     - Gitea / Forgejo (Codeberg, gitea.com) profiles use a horizontal tab menu;
+       under a sidebar layout it becomes a vertical list.
+     - Bitbucket's workspace page uses a vertical side nav; under the GitHub
+       layout (a top bar plus a row) it becomes a horizontal row.
+   ========================================================================= */
+
+html[data-gs-source='gitea'].gs-layout-gitlab
+  :is(.ui.tabular.menu, .ui.secondary.pointing.menu) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+html[data-gs-source='bitbucket'].gs-layout-github [data-gs-bb-nav] {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+}

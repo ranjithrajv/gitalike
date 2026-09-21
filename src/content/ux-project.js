@@ -437,10 +437,51 @@
     }
   }
 
+  // PolyGerrit renders its chrome inside *open* shadow roots, so a content
+  // script can reach them, but a document stylesheet cannot: the injected CSS
+  // never crosses the boundary. Reorient the header navigation to the applied
+  // layout by injecting a small style into the shadow root that owns it — a row
+  // for the GitHub layout, a column (sidebar) for the GitLab/Bitbucket layout.
+  // It is a reorientation of the nav, not a rebuild of PolyGerrit's page.
+  function paintGerritNav(t) {
+    if (document.documentElement.dataset.gsSource !== 'gerrit') return;
+    const deepFirst = (selector) => {
+      const walk = (scope) => {
+        const hit = scope.querySelector(selector);
+        if (hit) return hit;
+        for (const el of scope.querySelectorAll('*')) {
+          if (el.shadowRoot) {
+            const found = walk(el.shadowRoot);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      return walk(document);
+    };
+    const nav = deepFirst('gr-main-header nav') || deepFirst('nav');
+    if (!nav) return;
+    const root = nav.getRootNode();
+    if (!(root instanceof ShadowRoot)) return;
+
+    const direction = t === 'github' ? 'row' : 'column';
+    ledger(nav, 'gerrit-nav', () => ({
+      restore: () => root.querySelector('style[data-gs-gerrit-nav]')?.remove(),
+    }));
+    let style = root.querySelector('style[data-gs-gerrit-nav]');
+    if (!style) {
+      style = document.createElement('style');
+      style.setAttribute('data-gs-gerrit-nav', '');
+      root.append(style);
+    }
+    style.textContent = `nav{display:flex !important;flex-direction:${direction} !important;}`;
+  }
+
   rt.once('project', () => {
     rt.globalPasses.push(
       paintGiteaNav,
       paintBitbucketNav,
+      paintGerritNav,
       paintMetadata,
       paintAboutExtras,
       paintHeadings,

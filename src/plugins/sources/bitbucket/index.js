@@ -24,13 +24,14 @@
     label: 'Bitbucket',
     // Palette and the page-wide passes land, and `paintBitbucketNav` reorients
     // the bar (0.9: relabelled and reoriented, not reordered or filtered); it
-    // keeps its own metadata and has no profile hooks.
+    // keeps its own metadata, and its workspace navigation is reoriented to the
+    // layout (`themes/ux-nav.css`) but its profile menu/card are not rebuilt.
     compare: {
       palette: 1,
       nav: 0.9,
       page: 1,
       metadata: 0,
-      profile: 0,
+      profile: 0.5,
       refs: 1,
     },
     selectors: {
