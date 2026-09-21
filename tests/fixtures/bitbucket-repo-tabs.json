@@ -1,0 +1,16 @@
+{
+  "note": "Bitbucket's repository menu, taken from an archived Bitbucket repository page. The labels and weights are copied from the page's own navigation model; the tab order is the weights ascending. The stylesheet, the colours and the repo-tab set are not verified against live Bitbucket — it no longer serves public repository pages — so this capture is the reference the skin is pinned to.",
+  "source": "archived bitbucket.org repository page (Wayback Machine)",
+  "url": "https://web.archive.org/web/2023/https://bitbucket.org/atlassian/atlaskit-mk-2/src/master/",
+  "tabs": [
+    { "label": "Source", "weight": 200 },
+    { "label": "Commits", "weight": 300 },
+    { "label": "Branches", "weight": 400 },
+    { "label": "Pull requests", "weight": 500 },
+    { "label": "Pipelines", "weight": 550 },
+    { "label": "Deployments", "weight": 560 },
+    { "label": "Jira issues", "weight": 600 },
+    { "label": "Security", "weight": 610 },
+    { "label": "Downloads", "weight": 800 }
+  ]
+}

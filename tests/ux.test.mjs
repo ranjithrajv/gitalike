@@ -1151,3 +1151,96 @@ describe('Bitbucket skin', () => {
     assert.deepEqual(sources, ['gitea', 'github']);
   });
 });
+
+// The Bitbucket skin is pinned to a real capture. Bitbucket no longer serves
+// public repository pages, so its own menu model — saved to a fixture — is the
+// reference: the skin must reorder to exactly those tabs, build exactly those
+// tabs on a rebuilt page, show only those tabs, and add no group headings.
+describe('Bitbucket skin, pinned to a capture', () => {
+  const capture = JSON.parse(
+    readFileSync(
+      new URL('./fixtures/bitbucket-repo-tabs.json', import.meta.url),
+      'utf8',
+    ),
+  );
+  const captured = [...capture.tabs]
+    .sort((a, b) => a.weight - b.weight)
+    .map((tab) => tab.label);
+  const order = () =>
+    NAV_RULES.bitbucket.find((r) => r.source === 'gitea').order;
+
+  test('the capture names a real source and a non-trivial tab set', () => {
+    assert.match(capture.url, /^https:\/\/web\.archive\.org\//);
+    assert.ok(captured.length > 3, 'the capture has enough tabs to be useful');
+  });
+
+  test('the Gitea tab bar reorders to exactly the captured tabs', () => {
+    assert.deepEqual(order(), captured);
+  });
+
+  test('a rebuilt project page builds exactly the captured tabs', () => {
+    assert.deepEqual(
+      projectTabs('/o/r', {}, 'bitbucket').map(([label]) => label),
+      captured,
+    );
+  });
+
+  test('only the captured tabs are kept', () => {
+    assert.deepEqual(NAV_KEEP.bitbucket, captured);
+  });
+
+  test('Bitbucket has no group headings', () => {
+    for (const label of captured) {
+      assert.equal(navGroupFor(label, 'bitbucket'), null, label);
+    }
+  });
+
+  test('a Gitea tab bar shown as Bitbucket drops the tabs Bitbucket lacks', () => {
+    const gitea = [
+      { href: '/o/r', label: 'Code', active: true },
+      { href: '/o/r/issues', label: 'Issues' },
+      { href: '/o/r/pulls', label: 'Pull requests' },
+      { href: '/o/r/actions', label: 'Actions' },
+      { href: '/o/r/projects', label: 'Projects' },
+      { href: '/o/r/releases', label: 'Releases' },
+      { href: '/o/r/packages', label: 'Packages' },
+      { href: '/o/r/activity', label: 'Activity' },
+    ];
+    const entries = repoNav(gitea, 'bitbucket', order());
+    assert.deepEqual(
+      entries.map((entry) => entry.label),
+      ['Source', 'Pull requests', 'Pipelines', 'Jira issues'],
+    );
+    assert.equal(
+      entries.some((entry) => entry.group),
+      false,
+      'no group headings on Bitbucket’s flat sidebar',
+    );
+    assert.equal(entries[0].active, true);
+  });
+
+  test('the same Gitea tab bar is grouped and unfiltered under the GitLab skin', () => {
+    // The contrast that pins the fix: same Gitea source, same list — GitLab
+    // groups it and keeps the extra items.
+    const gitea = [
+      { href: '/o/r', label: 'Code', active: true },
+      { href: '/o/r/issues', label: 'Issues' },
+      { href: '/o/r/pulls', label: 'Pull requests' },
+      { href: '/o/r/actions', label: 'Actions' },
+      { href: '/o/r/releases', label: 'Releases' },
+    ];
+    const entries = repoNav(
+      gitea,
+      'gitlab',
+      NAV_RULES.gitlab.find((r) => r.source === 'gitea').order,
+    );
+    assert.ok(
+      entries.some((entry) => entry.group),
+      'GitLab groups its sidebar',
+    );
+    assert.ok(
+      entries.some((entry) => entry.label === 'Releases'),
+      'GitLab keeps Releases',
+    );
+  });
+});

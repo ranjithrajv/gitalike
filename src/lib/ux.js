@@ -857,25 +857,33 @@
     ],
   };
 
-  // Gitea/Forgejo's repo navigation, arranged as GitLab's sidebar: the items the
-  // page renders, relabelled to the applied product, ordered by the same rule
-  // the live reorder uses, and gathered under GitLab's group headings. `items`
-  // is `{ href, label, active }` read from the page (label without its counter);
+  // Gitea/Forgejo's repo navigation, arranged as the applied skin's menu: the
+  // items the page renders, relabelled to the applied product, ordered by the
+  // same rule the live reorder uses, filtered to the skin's own tabs, and
+  // gathered under that skin's group headings. `items` is
+  // `{ href, label, active }` read from the page (label without its counter);
   // the result mixes `{ group }` headings with `{ href, label, raw, active }`
   // rows, so the DOM builder and the unit tests share one decision.
-  function repoNav(items, theme, order, layout = theme) {
+  //
+  // Grouping and filtering follow the *skin*, not the layout. Two skins can share
+  // a shape (GitLab and Bitbucket are both left sidebars) while differing on both
+  // counts: GitLab groups its sidebar and shows extra items, Bitbucket is a flat
+  // list of its own tabs. Keying on the layout put GitLab's groups and items on
+  // Bitbucket's sidebar.
+  function repoNav(items, theme, order) {
     const nav = NAV[theme] || {};
     const labels = items.map(
       (item) => nav[item.label] ?? translate(item.label, theme),
     );
+    const keep = NAV_KEEP[theme];
+    const visible = (label) =>
+      keep ? navKeep(label, theme) : !navHidden(label, theme);
     const entries = [];
     let last = null;
     for (const index of orderIndexes(labels, order || [])) {
       const label = labels[index];
-      // Grouping follows the *layout*, not the skin: any skin built to the same
-      // shape gets the same group headings, matching the layout guard that
-      // decides whether this rebuild runs at all.
-      const group = navGroupFor(label, layout);
+      if (!visible(label)) continue;
+      const group = navGroupFor(label, theme);
       if (group && group !== last) {
         entries.push({ group });
         last = group;
