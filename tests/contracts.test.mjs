@@ -4,11 +4,11 @@
  * GitAlike has two independent axes a contributor can extend:
  *
  *   - a *source* is a forge's markup (github, gitlab, gitea): the DOM a page is
- *     built on. Its home is `SELECTORS`, the canary pages, and the source-keyed
- *     scopes in ux.js.
+ *     built on. Its home is `src/plugins/sources/<name>.js` (`selectors` and
+ *     `canary`), plus the source-keyed scopes in ux.js.
  *   - a *skin* is a target UI (github, gitlab, bitbucket): the product a page is
- *     made to look like. Its home is the vocabulary and order tables in ux.js,
- *     the `skins` entry in sites.js, and one stylesheet.
+ *     made to look like. Its home is `src/plugins/skins/<name>.js` (the
+ *     vocabulary and order tables) and one stylesheet.
  *
  * This file is the single definition of "complete" for both. A half-added skin
  * or source fails here with the missing pieces named, instead of with a dozen
@@ -21,12 +21,9 @@
  */
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
-import '../src/lib/skins.js';
-import '../src/lib/sites.js';
-import '../src/lib/sources.js';
-import '../src/lib/ux.js';
+import '../tools/plugins.mjs';
 import { registryObject, registryProblems } from '../tools/registry.mjs';
 
 const SITES = globalThis.GITALIKE;
@@ -80,16 +77,17 @@ describe('skin contract', () => {
         }
       }
 
-      const css = `src/themes/as-${skin}.css`;
+      // A skin is a self-contained folder: its definition, its stylesheet and
+      // its test beside each other.
+      const css = `src/plugins/skins/${skin}/as-${skin}.css`;
       if (!hasFile(css)) {
         missing.push(`${css} — the palette and structure`);
       } else if (!file(css).includes(`gs-theme-${skin}`)) {
         missing.push(`${css} must scope its rules to html.gs-theme-${skin}`);
       }
-      if (!file('src/background.js').includes(`themes/as-${skin}.css`)) {
-        missing.push(
-          `src/background.js CONTENT_CSS must register themes/as-${skin}.css`,
-        );
+      const cssPath = `plugins/skins/${skin}/as-${skin}.css`;
+      if (!file('src/background.js').includes(cssPath)) {
+        missing.push(`src/background.js CONTENT_CSS must register ${cssPath}`);
       }
 
       assert.deepEqual(
@@ -194,24 +192,31 @@ describe('the plugin constructors', () => {
   });
 
   test('defineSkin fills the optional capabilities and freezes', () => {
-    // Only the required tables, so the defaults are what is under test.
-    const skin = SKINS.defineSkin({
-      product: 'Sourcehut',
-      badge: 'SH',
-      color: '#000000',
-      layout: 'github',
-      phrases: {},
-      nav: {},
-      labels: {},
-      chrome: {},
-      unmapped: {},
-      navRules: [],
-      profileMenu: () => [],
-    });
-    assert.deepEqual(skin.shortcuts, {});
-    assert.deepEqual(skin.hide, []);
-    assert.equal(skin.projectTabs, null);
-    assert.equal(Object.isFrozen(skin), true);
+    // Bitbucket declares `keep` and `projectTabs` but not `shortcuts`, `hide` or
+    // `topbarHide`, so those are the defaults under test.
+    const { bitbucket } = SKINS.SKINS;
+    assert.deepEqual(bitbucket.shortcuts, {});
+    assert.deepEqual(bitbucket.hide, []);
+    assert.deepEqual(bitbucket.topbarHide, []);
+    assert.ok(bitbucket.keep.length > 0, 'a declared capability is kept');
+    assert.equal(Object.isFrozen(bitbucket), true);
+  });
+
+  test('defineSkin rejects a half-added skin with the whole list', () => {
+    assert.throws(
+      () => SKINS.defineSkin('half-added', { product: 'X' }),
+      (error) =>
+        error.message.includes("'half-added' is incomplete") &&
+        error.message.includes('badge') &&
+        error.message.includes('profileMenu'),
+    );
+  });
+
+  test('defineSkin rejects a name that is already declared', () => {
+    assert.throws(
+      () => SKINS.defineSkin('gitlab', SKINS.SKINS.gitlab),
+      /'gitlab' is declared twice/,
+    );
   });
 
   test('a complete source has no problems', () => {
@@ -225,6 +230,82 @@ describe('the plugin constructors', () => {
       'selectors — an object with at least one DOM hook',
       'canary — an array of pages, each with a name, a url and keys',
     ]);
+  });
+});
+
+describe('the plugins folder', () => {
+  const pluginNames = (group) =>
+    readdirSync(new URL(`../src/plugins/${group}`, import.meta.url), {
+      withFileTypes: true,
+    })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+
+  test('every plugin folder registers a skin or a source', () => {
+    // The folder is the registry: a folder that does not register, or a skin not
+    // backed by a folder, is a mismatch in one direction or the other.
+    assert.deepEqual(Object.keys(SKINS.SKINS).sort(), pluginNames('skins'));
+    assert.deepEqual(
+      Object.keys(SOURCE_LIB.SOURCES).sort(),
+      pluginNames('sources'),
+    );
+  });
+
+  test('every plugin folder is self-contained', () => {
+    // A plugin is a folder: its entry, a test beside it, and — for a skin — its
+    // own stylesheet. A folder without a test is a plugin that ships untested;
+    // `index.js` is what every load list names.
+    const missing = [];
+    for (const group of ['skins', 'sources']) {
+      for (const name of pluginNames(group)) {
+        const dir = `src/plugins/${group}/${name}/`;
+        if (!hasFile(`${dir}index.js`)) missing.push(`${dir}index.js`);
+        if (!hasFile(`${dir}${name}.test.mjs`)) {
+          missing.push(`${dir}${name}.test.mjs (its tests)`);
+        }
+      }
+    }
+    for (const name of pluginNames('skins')) {
+      const css = `src/plugins/skins/${name}/as-${name}.css`;
+      if (!hasFile(css)) missing.push(`${css} (its palette)`);
+    }
+    assert.deepEqual(
+      missing,
+      [],
+      `incomplete plugin folders:\n  - ${missing.join('\n  - ')}`,
+    );
+  });
+
+  test('every plugin entry is wired into every load list', () => {
+    // Each runtime context loads classic scripts by an explicit list; a folder
+    // that is present but missing from one list silently does nothing there. The
+    // lists are checked together so the fix is one edit each.
+    const paths = [
+      'plugins/core.js',
+      ...pluginNames('skins').map((name) => `plugins/skins/${name}/index.js`),
+      ...pluginNames('sources').map(
+        (name) => `plugins/sources/${name}/index.js`,
+      ),
+    ];
+    const lists = {
+      'src/background.js': file('src/background.js'),
+      'src/popup/popup.html': file('src/popup/popup.html'),
+      'tools/plugins.mjs': file('tools/plugins.mjs'),
+    };
+    const missing = [];
+    for (const path of paths) {
+      for (const [where, text] of Object.entries(lists)) {
+        if (!text.includes(path)) missing.push(`${path} in ${where}`);
+      }
+    }
+    assert.deepEqual(missing, [], `not wired: ${missing.join(', ')}`);
+  });
+
+  test('the Firefox manifest list is derived from the folder', () => {
+    // build.mjs reads `src/plugins/`, so a new folder needs no edit there; this
+    // pins that it stays generated rather than becoming a hand-kept array.
+    assert.match(file('build.mjs'), /readdir\(join\(SRC, 'plugins'/);
   });
 });
 

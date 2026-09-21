@@ -22,9 +22,7 @@ import { launch, retry, waitForTheme } from './harness.mjs';
 
 // The skin's own tables, so the live checks name the same labels the pass hides
 // rather than a second copy that can drift.
-import '../../src/lib/skins.js';
-import '../../src/lib/sources.js';
-import '../../src/lib/ux.js';
+import '../plugins.mjs';
 
 const { TOPBAR_HIDE, TOPBAR_SCOPE } = globalThis.GITALIKE_UX;
 

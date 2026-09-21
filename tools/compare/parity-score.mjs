@@ -31,15 +31,12 @@
 import { pathToFileURL } from 'node:url';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-import '../../src/lib/skins.js';
-import '../../src/lib/sites.js';
-import '../../src/lib/sources.js';
-import '../../src/lib/ux.js';
+import '../plugins.mjs';
 
 const SITES = globalThis.GITALIKE;
 const UX = globalThis.GITALIKE_UX;
 if (!SITES?.skins || !UX?.NAV) {
-  console.error('src/lib/sites.js and src/lib/ux.js did not publish');
+  console.error('the plugin registry did not publish the skin tables');
   process.exit(1);
 }
 

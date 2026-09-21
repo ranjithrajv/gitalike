@@ -309,8 +309,9 @@ link opens a prefilled issue with the host and skin already filled in. The
 developer guide — build, test, the ground rules, and how to add a forge or a
 translation — is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-New **plugins** are welcome: a *skin* (a target UI) is one object plus one
-stylesheet, and a *source* (a forge's markup) is one object.
+New **plugins** are welcome: a *skin* (a target UI) or a *source* (a forge's
+markup) is one self-contained folder under `src/plugins/` — its definition, its
+tests, and, for a skin, its stylesheet.
 `node tools/new-plugin.mjs skin <name>` scaffolds one and relists it; the
 registry is also published as [`plugins.json`](plugins.json). See
 [Adding a skin](CONTRIBUTING.md#adding-a-skin) and

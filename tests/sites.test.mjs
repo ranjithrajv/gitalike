@@ -14,8 +14,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import '../src/lib/skins.js';
-import '../src/lib/sites.js';
+import '../tools/plugins.mjs';
 
 const SITES = globalThis.GITALIKE;
 const {

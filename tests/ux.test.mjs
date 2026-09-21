@@ -11,10 +11,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 
 // `guessForge` reads the bundled host -> markup table from sites.js, so the two
 // modules are loaded together here exactly as every runtime context loads them.
-import '../src/lib/skins.js';
-import '../src/lib/sites.js';
-import '../src/lib/sources.js';
-import '../src/lib/ux.js';
+import '../tools/plugins.mjs';
 
 const UX = globalThis.GITALIKE_UX;
 const {
@@ -1125,11 +1122,21 @@ describe('SELECTORS / CANARY_PAGES', () => {
   test('every selector a stylesheet owns appears in a stylesheet', () => {
     // `SELECTORS` marks the entries a stylesheet owns with `// css`; CSS cannot
     // read the table, so this is the only thing that proves the two agree.
-    const themes = readdirSync(new URL('../src/themes/', import.meta.url))
-      .filter((name) => name.endsWith('.css'))
-      .map((name) =>
-        readFileSync(new URL(`../src/themes/${name}`, import.meta.url), 'utf8'),
-      )
+    // Shared CSS lives in `src/themes/`, each skin's own palette in its plugin
+    // folder; a `// css` hook can be answered by either.
+    const themes = [
+      ...readdirSync(new URL('../src/themes/', import.meta.url))
+        .filter((name) => name.endsWith('.css'))
+        .map((name) => `../src/themes/${name}`),
+      ...readdirSync(new URL('../src/plugins/skins/', import.meta.url), {
+        withFileTypes: true,
+      })
+        .filter((entry) => entry.isDirectory())
+        .map(
+          (entry) => `../src/plugins/skins/${entry.name}/as-${entry.name}.css`,
+        ),
+    ]
+      .map((rel) => readFileSync(new URL(rel, import.meta.url), 'utf8'))
       .join('\n');
     // The classes, ids and attribute tests a selector names, so a compound
     // selector is checked token by token rather than as one exact string.
@@ -1144,10 +1151,15 @@ describe('SELECTORS / CANARY_PAGES', () => {
         for (const m of bare.matchAll(/\.([\w-]+)/g)) found.push(`.${m[1]}`);
         return found;
       });
-    const source = readFileSync(
-      new URL('../src/lib/sources.js', import.meta.url),
-      'utf8',
-    );
+    // The hooks are declared one folder per source under `src/plugins/sources/`,
+    // so the `// css` markers live in each folder's `index.js`.
+    const sourceDir = new URL('../src/plugins/sources/', import.meta.url);
+    const source = readdirSync(sourceDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) =>
+        readFileSync(new URL(`${entry.name}/index.js`, sourceDir), 'utf8'),
+      )
+      .join('\n');
     let checked = 0;
     for (const m of source.matchAll(
       /^\s*[A-Za-z0-9_]+:\s*'([^']+)',\s*\/\/ css\s*$/gm,

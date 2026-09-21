@@ -3,14 +3,15 @@
 GitAlike re-skins one forge's interface onto another. This is the map of the
 source products it handles — GitHub, GitLab, Gitea/Forgejo (Codeberg,
 `gitea.com`), Bitbucket and Gerrit — and the three UIs it can paint them with:
-**GitLab**, **GitHub** and **Bitbucket**. The skins live in
-`src/lib/skins.js`, the forge markup hooks in `src/lib/sources.js`, and the
-structural passes in `src/lib/ux.js`; this file is the map and the reasoning.
+**GitLab**, **GitHub** and **Bitbucket**. The skins live one file each under
+`src/plugins/skins/`, the forge markup hooks under `src/plugins/sources/`, and
+the structural passes in `src/content/ux-*.js`; this file is the map and the
+reasoning.
 
 ## The skins
 
 A skin is a *target* UI: its key is the `html.gs-theme-<name>` class and its
-stylesheet is `themes/as-<name>.css`. There are three — `gitlab`, `github` and
+stylesheet is `as-<name>.css` in its `src/plugins/skins/<name>/` folder. There are three — `gitlab`, `github` and
 `bitbucket` — and each names the shape it is built to in
 `SITES.skins[<name>].layout` (`gitlab` = top bar plus left sidebar, `github` =
 top bar plus horizontal tab row). Bitbucket reuses the GitLab layout, so the
@@ -27,11 +28,11 @@ time. The popup picks one skin at a time, with a per-site override — see
 ## Directions
 
 - **G→L** — a GitHub-flavoured site shown with the GitLab UI
-  (`html.gs-theme-gitlab`, `themes/as-gitlab.css`)
+  (`html.gs-theme-gitlab`, `src/plugins/skins/gitlab/`)
 - **L→G** — a GitLab-flavoured site shown with the GitHub UI
-  (`html.gs-theme-github`, `themes/as-github.css`)
+  (`html.gs-theme-github`, `src/plugins/skins/github/`)
 - **→B** — any source shown with the Bitbucket UI
-  (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`)
+  (`html.gs-theme-bitbucket`, `src/plugins/skins/bitbucket/`)
 - **B→G / B→L** — a Bitbucket source shown with the GitHub or GitLab UI, with
   no structural pass yet (see [Other forges](#other-forges))
 - **Ger→G / Ger→L** — a Gerrit source shown with the GitHub or GitLab UI, the
@@ -125,7 +126,7 @@ item is **Repository** while the clone button is still **Code**. So
 prose it would corrupt the clone button. This is exactly why `NAV` is matched
 only within `NAV_SCOPE` (`nav[aria-label="Repository"]`, `.super-sidebar`, …)
 and never through `PHRASES` — see
-[`src/lib/skins.js`](../src/lib/skins.js) and
+[`src/plugins/skins/`](../src/plugins/skins/) and
 [UX-PARITY.md](UX-PARITY.md#navigation).
 
 ### 5. Namespace depth
@@ -412,7 +413,7 @@ hosts issue different usernames, so there is no path to map between them.
 ### See also
 
 - [UX-PARITY.md](UX-PARITY.md) — the full parity status matrix
-- [`src/lib/skins.js`](../src/lib/skins.js) — the vocabulary, navigation and shortcut tables, one object per skin
+- [`src/plugins/skins/`](../src/plugins/skins/) — the vocabulary, navigation and shortcut tables, one file per skin
 - [`themes/ux-nav.css`](../src/themes/ux-nav.css) — the orientation rules
 
 ## Other forges
@@ -453,5 +454,5 @@ The current forge specifics — which Gitea selector each pass hooks, the
 
 - [UX-PARITY.md](UX-PARITY.md) — the full parity status matrix
 - [`index.html`](index.html) — live orientation captures
-- [`src/lib/skins.js`](../src/lib/skins.js) — the vocabulary, navigation and shortcut tables, one object per skin
+- [`src/plugins/skins/`](../src/plugins/skins/) — the vocabulary, navigation and shortcut tables, one file per skin
 - [`themes/ux-nav.css`](../src/themes/ux-nav.css) — the orientation rules

@@ -23,8 +23,8 @@
     'gitlab.com': 'gitlab',
     // GitHub-flavoured forges: they speak GitHub's dialect, so they are the
     // 'github' kind and are shown with the GitLab UI. Codeberg runs Forgejo and
-    // gitea.com runs Gitea; both are Gitea's markup, so themes/as-gitlab.css
-    // carries a token block for them (see "Gitea / Forgejo").
+    // gitea.com runs Gitea; both are Gitea's markup, so the GitLab skin's
+    // as-gitlab.css carries a token block for them (see "Gitea / Forgejo").
     'codeberg.org': 'github',
     'gitea.com': 'github',
     // Bitbucket is a source product as well as a target: a Bitbucket host can
@@ -35,10 +35,11 @@
 
   /**
    * Every skin the extension can paint, keyed by the product whose UI it is.
-   * Declared in `skins.js` (one object per target UI); this projects just the
-   * part the host/picker logic needs — name, badge, colour and layout — so a
-   * skin is named exactly once. `skins.js` is loaded before this file
-   * everywhere (see `background.js` CONTENT_JS and `build.mjs`).
+   * Declared one file per skin under `src/plugins/skins/`; `lib/skins.js` derives
+   * the tables and this projects just the part the host/picker logic needs —
+   * name, badge, colour and layout — so a skin is named exactly once.
+   * `lib/skins.js` is loaded before this file everywhere (see `background.js`
+   * CONTENT_JS and `build.mjs`).
    *
    * A kind names the skin it wears by default; the popup lists these so a site
    * can be shown with any of them. A site wearing its own UI is left alone (see
@@ -50,7 +51,7 @@
    * the structural passes key on this rather than on the theme name.
    */
   if (!globalThis.GITALIKE_SKINS) {
-    throw new Error('GitAlike: skins.js must be loaded before sites.js');
+    throw new Error('GitAlike: lib/skins.js must be loaded before sites.js');
   }
   const skins = Object.fromEntries(
     Object.entries(globalThis.GITALIKE_SKINS.SKINS).map(([name, skin]) => [

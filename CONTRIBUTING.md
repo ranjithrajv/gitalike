@@ -23,10 +23,11 @@ would like to keep it that way. The only data that leaves the machine is
 settings and the hostnames they added, never anything read from a page.
 
 **One source of truth per concern.** Hosts, kinds, address parsing and the
-storage schema live in `src/lib/sites.js`; the **skins** — one object per target
-UI, carrying its vocabulary, navigation order, profile menu and shortcuts — live
-in `src/lib/skins.js`; the **sources** — one object per forge markup family,
-carrying its DOM hooks and canary pages — live in `src/lib/sources.js`; and the
+storage schema live in `src/lib/sites.js`; each **skin** — a target UI's
+vocabulary, navigation order, profile menu and shortcuts — is one file under
+`src/plugins/skins/`; each **source** — a forge markup family's DOM hooks and
+canary pages — is one file under `src/plugins/sources/`; `src/lib/skins.js` and
+`src/lib/sources.js` derive the flat tables from those registrations; and the
 pure helpers that compose them (path translation, forge selection, the shared
 nav scopes) live in `src/lib/ux.js`. None touches the DOM, which is what makes
 them unit-testable. The manifest repeats hostnames only because the manifest
@@ -116,29 +117,37 @@ fails there.
 src/
 ├── manifest.base.json   shared manifest; the build adds `background` + `version`
 ├── background.js        keyboard shortcuts and per-tab badge
+├── plugins/             ONE FOLDER PER PLUGIN
+│   ├── core.js          the defineSkin/defineSource API + validation
+│   ├── skins/<name>/    index.js + <name>.test.mjs + as-<name>.css
+│   └── sources/<name>/  index.js + <name>.test.mjs
 ├── lib/
+│   ├── skins.js         derives the skin tables from plugins/skins/ — pure
+│   ├── sources.js       derives SELECTORS/CANARY_PAGES — pure
 │   ├── sites.js         hosts, kinds, parseHost, schema — pure, no DOM
 │   └── ux.js            vocabulary/nav/shortcut/path/selector tables — pure, no DOM
 ├── content/
 │   ├── theme.js         applies the theme classes, tracks light/dark
 │   └── ux.js            performs the text and nav rewrites, undoably
-├── themes/              ONE AXIS: as-gitlab.css and as-github.css are keyed by
-│                        the applied skin (not the source forge), plus
-│                        ux-markers.css and ux-nav.css for shared structure
+├── themes/              the CSS shared across skins: gs-tokens.css, the
+│                        ux-markers.css no-counterpart badge and the ux-nav.css
+│                        orientation rules (a skin's own palette is in its folder)
 ├── popup/               toolbar UI
 └── icons/
 logos/                   editable logo sources, inlined into the themes
 docs/                    the GitHub Pages preview + UX-PARITY.md — the parity matrix
-tests/                   node:test, covers src/lib/ only
-tools/                   store and docs screenshots, the Playwright end-to-end
-                         test, and the live selector canary
+tests/                   node:test, covers src/lib/ and the plugin contract
+tools/                   the plugin registry + scaffold, the store and docs
+                         screenshots, the Playwright end-to-end test, and the
+                         live selector canary
 store/                   submission copy and screenshots
 ```
 
-`src/lib/*` is pure data and side-effect-free helpers published on
-`globalThis.GITALIKE` / `globalThis.GITALIKE_UX`, shared by the content scripts,
-the popup, the background and the tests. `src/content/*` is the only code that
-touches a page.
+`src/plugins/*` registers the skins and sources on
+`globalThis.GITALIKE_PLUGINS`; `src/lib/*` is pure data and side-effect-free
+helpers derived from it and published on `globalThis.GITALIKE` /
+`globalThis.GITALIKE_UX`, shared by the content scripts, the popup, the
+background and the tests. `src/content/*` is the only code that touches a page.
 
 ## How it works
 
@@ -153,8 +162,8 @@ So GitAlike mostly re-points those properties at the other design system's
 palette, then fixes up a few structural things the tokens cannot reach (the top
 bar, the logo, active-tab accents, navigation orientation). The stylesheets and
 two classes do the visual half; a second content script does the copy,
-reference, navigation and keyboard half, driven by the tables in
-`src/lib/skins.js` and `src/lib/sources.js`.
+reference, navigation and keyboard half, driven by the tables derived from the
+plugin files (`src/plugins/skins/`, `src/plugins/sources/`).
 
 ```
 content script (document_start, registered for the configured hosts only)
@@ -164,7 +173,7 @@ content script (document_start, registered for the configured hosts only)
   └─ reacts to storage + DOM changes
 
 ux content script (inert unless a theme class is present)
-  ├─ rewrites page copy and nav labels        -> src/lib/skins.js tables
+  ├─ rewrites page copy and nav labels        -> the skin's plugin tables
   ├─ rewrites # / ! reference markers          by the link's href
   ├─ reorders the repo navigation              into the other product's order
   ├─ marks features the other product lacks    -> a .gs-no-equiv badge
@@ -232,8 +241,9 @@ Each theme file has three parts:
    Add a line here whenever you find a spot the skin misses.
 
    If the fix is structural rather than colour, add the selector itself to
-   `SELECTORS` in `src/lib/sources.js` — keyed by the *source* product (the site's
-   markup), not the skin applied to it — and read it from `src/content/ux-*.js`.
+   `SELECTORS` in the source's plugin file under `src/plugins/sources/` — keyed
+   by the *source* product (the site's markup), not the skin applied to it — and
+   read it from `src/content/ux-*.js`.
    A literal there cannot be checked by `npm run canary`; a `SELECTORS` entry
    can, and the canary probes every entry a `CANARY_PAGES` page names.
 
@@ -267,14 +277,16 @@ mark rather than copying a forge's.
 
 1. Edit the SVG in `logos/` (these are the editable sources).
 2. Re-encode it as a data URI into the relevant theme variable — `--gs-mark` in
-   both `themes/as-gitlab.css` and `themes/as-github.css`.
+   both `src/plugins/skins/gitlab/as-gitlab.css` and
+   `src/plugins/skins/github/as-github.css`.
    Injected CSS cannot resolve extension-relative URLs, which is why it is
    inlined rather than linked.
 3. Check both light and dark: the two palettes are chosen for their background.
 
 ### Add a label translation
 
-1. Add it to the right table in `src/lib/skins.js`. `PHRASES` is ordinary page copy,
+1. Add it to the right table in the skin's plugin file under
+   `src/plugins/skins/`. `PHRASES` is ordinary page copy,
    `NAV` is navigation labels, `LABELS`/`CHROME` are whole control and account
    labels, `UNMAPPED` is features the other product lacks. Longest key wins, so
    add the plural before the singular.
@@ -284,13 +296,13 @@ mark rather than copying a forge's.
 
 ### Add a keyboard shortcut
 
-`SHORTCUTS` in `src/lib/skins.js`, plus a test. A combo that has a navigation link
+`SHORTCUTS` in the skin's plugin file under `src/plugins/skins/`, plus a test. A combo that has a navigation link
 is delivered as a click (`SHORTCUT_TARGETS`); the rest fall back to synthetic key
 events.
 
 ### Change the navigation order or orientation
 
-`NAV_RULES` in `src/lib/skins.js` holds the desired item order; orientation is CSS
+`NAV_RULES` in the skin's plugin file under `src/plugins/skins/` holds the desired item order; orientation is CSS
 in `themes/ux-nav.css`.
 
 - **G→L** turns GitHub's repo tab bar into a left sidebar by making `main` a grid
@@ -340,11 +352,11 @@ const builtin = {
 
 Add the host to `tests/sites.test.mjs`. If the forge is Gitea-family it does not
 use GitHub's Primer tokens, so the classification alone only changes the words —
-`themes/as-gitlab.css` and `themes/as-github.css` each have a
+`src/plugins/skins/gitlab/as-gitlab.css` and `src/plugins/skins/github/as-github.css` each have a
 **Gitea / Forgejo** block that re-points its `--color-*` custom properties at that
-skin's palette, `src/lib/sources.js` adds its markup hooks to `SELECTORS.gitea`
-so the canary can watch them, and `src/lib/skins.js` adds its repo tab list to
-each skin's `navRules` (with the shared `NAV_SCOPE` in `ux.js` covering its
+skin's palette, `src/plugins/sources/gitea.js` adds its markup hooks to
+`SELECTORS.gitea` so the canary can watch them, and each skin's plugin file adds
+its repo tab list to `navRules` (with the shared `NAV_SCOPE` in `ux.js` covering its
 region) so its tabs are relabelled and reordered. The GitLab skin also rebuilds
 those tabs as a grouped sidebar:
 `content/ux-project.js` `paintGiteaNav` and the `UX.repoNav` model, keyed off Gitea's
@@ -366,23 +378,24 @@ vocabulary. **Bitbucket is the worked example**: it began as a *target only* —
 no host was classified as it, so it could be worn by any source — and is now a
 source in its own right as well. Adding a target means:
 
-`node tools/new-plugin.mjs skin <name>` writes steps 1–3 for you; the rest is
-the part that needs judgement.
+A skin is a self-contained folder. `node tools/new-plugin.mjs skin <name>` writes
+steps 1–4 for you; the rest is the part that needs judgement.
 
 | # | File | What goes there |
 | - | ---- | --------------- |
-| 1 | `src/lib/skins.js` | one `defineSkin({ … })` object: `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab'), every required table (`phrases`, `nav`, `labels`, `chrome`, `unmapped`, `navRules`, `profileMenu`), and whichever optional capabilities (`repoOrder`, `shortcuts`, `topbarHide`, `groups`, `keep`/`hide`, `projectTabs`) it needs. The name is the key, so it joins `THEMES`, the popup and the badge with no other edit |
-| 2 | `src/themes/as-<target>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
-| 3 | `src/background.js` | add the stylesheet to `CONTENT_CSS` |
-| 4 | `tests/` | cases for the tables, `projectTabs`, `activeTabFor` and the vocabulary — the pinned Bitbucket suite is the template |
+| 1 | `src/plugins/skins/<name>/index.js` | one `defineSkin('<name>', { … })` call: `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab'), every required table (`phrases`, `nav`, `labels`, `chrome`, `unmapped`, `navRules`, `profileMenu`), and whichever optional capabilities (`repoOrder`, `shortcuts`, `topbarHide`, `groups`, `keep`/`hide`, `projectTabs`) it needs. The name is the key, so it joins `THEMES`, the popup and the badge with no other edit |
+| 2 | `src/plugins/skins/<name>/as-<name>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
+| 3 | `src/plugins/skins/<name>/<name>.test.mjs` | the skin's own tests, beside it. `npm test` discovers them; the cross-skin invariants stay in `tests/ux.test.mjs` |
+| 4 | load lists | the entry is added to `PLUGIN_JS` and `CONTENT_CSS` in `src/background.js`, `src/popup/popup.html` and `tools/plugins.mjs`; the Firefox manifest derives its list from the folder. `tools/new-plugin.mjs` does this for you |
 | 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and `npm run registry` to relist it on the site |
 
 The completeness gate is **`tests/contracts.test.mjs`**: it derives the skin and
 source lists and fails with the parts a new one is still missing, by name. Run
 `npm test` after each edit rather than discovering the gaps at the end.
-`src/themes/ux-markers.css` and the popup need no edit — the no-counterpart
-badge targets any `gs-theme-*` class, and the global radio and per-site picker
-are generated from `THEMES`.
+`src/themes/ux-markers.css` needs no edit — the no-counterpart badge targets any
+`gs-theme-*` class — and the popup's UI needs none either: the global radio and
+per-site picker are generated from `THEMES`. (The popup's script list is the one
+line `tools/new-plugin.mjs` adds; a hand-added skin needs it too.)
 
 A target's `layout` (`github` = top bar + tab row, `gitlab` = left sidebar) is
 the shape it is built to. Two skins that share a shape share the structural CSS
@@ -397,8 +410,8 @@ scope by *token name*, which is how one file maps three sources: `--fgColor-*`
 usually adds none. If your product is also a site people host (a new forge), see
 [Support another Git instance](#support-another-git-instance) and
 [A forge that already speaks one of the two dialects](#a-forge-that-already-speaks-one-of-the-two-dialects);
-its markup goes in `SELECTORS` and a `CANARY_PAGES` entry, so the canary watches
-the hooks the skin uses.
+its markup and canary go in a `src/plugins/sources/<name>/` folder, so the canary
+watches the hooks the skin uses.
 
 Whichever forge you add, its logo stays out of the bundle. The theme carries a
 `--gs-mark` and paints GitAlike's own mark in that forge's palette — the
@@ -441,7 +454,7 @@ exit code is non-zero.
 `npm run canary` (`tools/compare/selector-canary.mjs`) is the live selector canary: a
 plain `fetch` of the pages the skins are verified against, asserting the anchors
 they key on are still in the served HTML. The hooks are not written in the tool:
-it reads `SELECTORS` and `CANARY_PAGES` from `src/lib/sources.js`, the same table
+it reads `SELECTORS` and `CANARY_PAGES` derived from `src/plugins/sources/`, the same table
 `src/content/ux-*.js` reads, so a rename is one edit there that both the skin and
 the canary pick up. It runs daily on a schedule, not on a pull request, so an
 upstream rename is caught without making every PR depend on the forges' markup;

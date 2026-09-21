@@ -26,13 +26,11 @@
  * printed so a persistent block is visible.
  */
 
-import '../../src/lib/skins.js';
-import '../../src/lib/sources.js';
-import '../../src/lib/ux.js';
+import '../plugins.mjs';
 
 const UX = globalThis.GITALIKE_UX;
 if (!UX?.SELECTORS || !UX?.CANARY_PAGES) {
-  console.error('src/lib/ux.js did not publish SELECTORS/CANARY_PAGES');
+  console.error('the plugin registry did not publish SELECTORS/CANARY_PAGES');
   process.exit(1);
 }
 

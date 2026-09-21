@@ -116,6 +116,15 @@
       <span>toggles this site</span>
     </footer>
 
+    <!-- The plugin files register themselves; the lib files derive from them. -->
+    <script src="../plugins/core.js"></script>
+    <script src="../plugins/skins/bitbucket/index.js"></script>
+    <script src="../plugins/skins/github/index.js"></script>
+    <script src="../plugins/skins/gitlab/index.js"></script>
+    <script src="../plugins/sources/gitea/index.js"></script>
+    <script src="../plugins/sources/github/index.js"></script>
+    <script src="../plugins/sources/gitlab/index.js"></script>
+    <!-- plugins:anchor — `node tools/new-plugin.mjs` inserts above. -->
     <script src="../lib/skins.js"></script>
     <script src="../lib/sites.js"></script>
     <script src="../lib/sources.js"></script>

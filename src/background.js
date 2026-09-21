@@ -8,12 +8,30 @@
  */
 'use strict';
 
+// The plugin files and the libraries that derive from them, in load order. The
+// plugins register themselves with `defineSkin`/`defineSource`; `lib/skins.js`
+// and `lib/sources.js` compose those registrations into the tables the rest of
+// the code reads, `lib/sites.js` derives the host/skin map, and `lib/ux.js`
+// composes the UX tables. Every plugin file lives under `src/plugins/` and
+// `tools/new-plugin.mjs` inserts at the anchor below (the contract test checks
+// this list against the folder).
+const PLUGIN_JS = [
+  'plugins/core.js',
+  'plugins/skins/bitbucket/index.js',
+  'plugins/skins/github/index.js',
+  'plugins/skins/gitlab/index.js',
+  'plugins/sources/gitea/index.js',
+  'plugins/sources/github/index.js',
+  'plugins/sources/gitlab/index.js',
+  // plugins:js-anchor — `node tools/new-plugin.mjs` inserts above.
+];
+const LIB_JS = ['lib/skins.js', 'lib/sites.js', 'lib/sources.js', 'lib/ux.js'];
+
 // Chromium runs this as a classic service worker, where importScripts() is how
 // you pull in a sibling file. Firefox runs both scripts listed in the manifest
 // in one shared scope, so there it is already defined and importScripts does
 // not exist.
-if (typeof importScripts === 'function')
-  importScripts('lib/skins.js', 'lib/sites.js', 'lib/sources.js', 'lib/ux.js');
+if (typeof importScripts === 'function') importScripts(...PLUGIN_JS, ...LIB_JS);
 
 const api = globalThis.browser ?? globalThis.chrome;
 const SITES = globalThis.GITALIKE;
@@ -80,10 +98,8 @@ async function refreshAllBadges() {
 const SCRIPT_ID = 'gitalike-ux';
 const CSS_ID = 'gitalike-theme';
 const CONTENT_JS = [
-  'lib/skins.js',
-  'lib/sites.js',
-  'lib/sources.js',
-  'lib/ux.js',
+  ...PLUGIN_JS,
+  ...LIB_JS,
   'content/theme.js',
   // The UX scripts load in this order: the core builds the runtime, each pass
   // group registers into it (and the order they are listed is the order they
@@ -100,10 +116,10 @@ const CONTENT_CSS = [
   // The token mappings shared by more than one skin, first so a skin's own
   // rule of equal specificity still wins where it deliberately diverges.
   'themes/gs-tokens.css',
-  'themes/as-gitlab.css',
-  'themes/as-github.css',
-  'themes/as-bitbucket.css',
-  // plugins:anchor — `node tools/new-plugin.mjs skin <name>` inserts above.
+  'plugins/skins/gitlab/as-gitlab.css',
+  'plugins/skins/github/as-github.css',
+  'plugins/skins/bitbucket/as-bitbucket.css',
+  // plugins:css-anchor — `node tools/new-plugin.mjs skin <name>` inserts above.
   'themes/ux-markers.css',
   'themes/ux-nav.css',
 ];

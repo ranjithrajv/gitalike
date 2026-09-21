@@ -28,7 +28,10 @@ const HEX = /^#[0-9a-f]{6}$/;
 // before its `.gs-dark` override.
 function lightPalette(product) {
   const css = readFileSync(
-    new URL(`../../src/themes/as-${product}.css`, import.meta.url),
+    new URL(
+      `../../src/plugins/skins/${product}/as-${product}.css`,
+      import.meta.url,
+    ),
     'utf8',
   );
   const start = css.indexOf(`html.gs-theme-${product} {`);

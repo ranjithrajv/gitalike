@@ -19,11 +19,14 @@
 (() => {
   'use strict';
 
-  // The skin vocabulary and order tables are declared in skins.js, one object
-  // per skin; this file composes them. skins.js is loaded first everywhere
-  // (background CONTENT_JS, the Firefox manifest, popup.html, the tests).
+  // The skin vocabulary and order tables are declared one file per skin under
+  // `plugins/skins/`, registering with `plugins/core.js`; `lib/skins.js` derives
+  // the flat tables and is loaded first everywhere (background CONTENT_JS, the
+  // Firefox manifest, popup.html, the tests).
   if (!globalThis.GITALIKE_SKINS) {
-    throw new Error('GitAlike: skins.js must be loaded before ux.js');
+    throw new Error(
+      'GitAlike: the plugin registry must be loaded before ux.js',
+    );
   }
   const {
     PHRASES,
@@ -42,10 +45,13 @@
     PROFILE_MENU,
   } = globalThis.GITALIKE_SKINS;
 
-  // The source markup hooks and the canary pages are declared in sources.js,
-  // one object per source. Loaded first everywhere, like skins.js.
+  // The source markup hooks and the canary pages are declared one file per
+  // source under `plugins/sources/`; `lib/sources.js` derives them. Loaded first
+  // everywhere, like `lib/skins.js`.
   if (!globalThis.GITALIKE_SOURCES) {
-    throw new Error('GitAlike: sources.js must be loaded before ux.js');
+    throw new Error(
+      'GitAlike: the plugin registry must be loaded before ux.js',
+    );
   }
   const { SELECTORS, CANARY_PAGES } = globalThis.GITALIKE_SOURCES;
 

@@ -1,14 +1,14 @@
 # UX parity
 
 What GitAlike matches between GitHub and GitLab beyond colour, and where the two
-directions still differ. The tables themselves live in `src/lib/skins.js` (the
-skins) and `src/lib/sources.js`; this file
+directions still differ. The tables themselves live one file per skin under
+`src/plugins/skins/` and one per source under `src/plugins/sources/`; this file
 is the map and the scorecard.
 
 ## Skins
 
 A skin is a *target* UI — its key is the `html.gs-theme-<name>` class and its
-stylesheet is `themes/as-<name>.css`. There are three: **GitLab**, **GitHub** and
+stylesheet is `as-<name>.css` in its `src/plugins/skins/<name>/` folder. There are three: **GitLab**, **GitHub** and
 **Bitbucket**. Bitbucket is both a target and a source — a Bitbucket host wears
 the GitHub or GitLab UI, and any source can be pinned to the Bitbucket UI.
 Gerrit is a source only. A skin
@@ -17,17 +17,17 @@ bar + tab row, `gitlab` = left sidebar); Bitbucket's repo nav is a left
 sidebar, so it reuses GitLab's layout, but its menu is flat — grouping follows
 the skin, so it gets no GitLab group headings — and only its palette, words and
 tab set differ. The directional tables below still describe the two-way pair;
-Bitbucket's are in `src/lib/skins.js` under `bitbucket` and are covered by
+Bitbucket's are in `src/plugins/skins/bitbucket.js` and are covered by
 `tests/ux.test.mjs`.
 
 ## Directions
 
 - **G→L** — a GitHub-flavoured site shown with the GitLab UI
-  (`html.gs-theme-gitlab`, `themes/as-gitlab.css`)
+  (`html.gs-theme-gitlab`, `src/plugins/skins/gitlab/`)
 - **L→G** — a GitLab-flavoured site shown with the GitHub UI
-  (`html.gs-theme-github`, `themes/as-github.css`)
+  (`html.gs-theme-github`, `src/plugins/skins/github/`)
 - **→B** — any source shown with the Bitbucket UI
-  (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`, layout `gitlab`)
+  (`html.gs-theme-bitbucket`, `src/plugins/skins/bitbucket/`, layout `gitlab`)
 - **B→G / B→L** — a Bitbucket source shown with the GitHub or GitLab UI. There
   are no Bitbucket selectors or nav rules yet (its page is a client-rendered SPA
   with no capturable public repository page), so the structure stays Bitbucket's;
@@ -79,7 +79,7 @@ It is a coverage estimate, not a quality judgement, and it says nothing about
 the source's own features — only how closely the applied UI reads as the product
 it is pretending to be.
 
-The score is derived from the tables in `src/lib/skins.js` and the pass gating in
+The score is derived from the tables in `src/plugins/skins/` and the pass gating in
 `src/content/ux-*.js`, not measured. Each page type has its own rubric, a set of
 weighted dimensions; a cell is the sum of (weight × share reproduced), rounded
 to one decimal.

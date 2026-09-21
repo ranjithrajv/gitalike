@@ -19,31 +19,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   new plugin cannot ship without appearing there.
 - The selector canary now watches **gitea.com** as well as Codeberg, so both
   hosts of the shared Gitea/Forgejo markup family are covered and a divergence
-  between the two projects' UIs would fail the daily job (`src/lib/sources.js`).
+  between the two projects' UIs would fail the daily job (`src/plugins/sources/`).
 - `defineSkin`/`defineSource` constructors wrap every registry entry. They fill
   the optional capabilities, validate the required ones, and fail at load with
   the whole list of what a plugin is missing, so a half-added skin or source is
   one clear error rather than a silent no-op on a page. The API version travels
-  in the published registry (`src/lib/skins.js`, `src/lib/sources.js`).
+  in the published registry (`src/plugins/core.js`).
 - A generated **plugin registry**: `npm run registry` emits `plugins.json` from
   the source registries and rewrites the site's Plugins chips, and
   `tools/registry.mjs` is the one place both come from. `npm run registry:check`
   fails CI when either is out of date, so a plugin cannot ship unlisted.
-- `node tools/new-plugin.mjs skin <name>` (or `source <name>`) scaffolds a plugin
-  to the anchor in the registry, its stylesheet and `CONTENT_CSS` entry, and
-  relists it on the site — the "one object plus one stylesheet" made literal.
+- `node tools/new-plugin.mjs skin <name>` (or `source <name>`) scaffolds a
+  self-contained plugin folder — its `index.js`, a test beside it, and, for a
+  skin, its stylesheet and `CONTENT_CSS` entry — wires the entry into every load
+  list and relists it on the site.
 
 ### Changed
 
-- The skin and source data now live in dedicated registries: `src/lib/skins.js`
-  declares each target UI in one object (its name, badge, layout, vocabulary,
-  navigation order, nav rules, profile menu and shortcuts), and
-  `src/lib/sources.js` declares each forge markup family in one object (its DOM
-  hooks and canary pages). `src/lib/ux.js` composes them and keeps the pure
-  helpers and the shared scopes; `src/lib/sites.js` derives its skin list from
-  the registry too. The tables and their consumers are unchanged, so adding a
-  skin or source is now one object plus its stylesheet or host entry, and
-  `tests/contracts.test.mjs` names anything missing.
+- The skins and sources are now self-contained folders under `src/plugins/`:
+  `src/plugins/skins/<name>/` holds the definition (`index.js`), the palette
+  (`as-<name>.css`) and the plugin's own tests (`<name>.test.mjs`), and
+  `src/plugins/sources/<name>/` holds the definition and its tests. Each
+  `index.js` registers with `defineSkin`/`defineSource` from
+  `src/plugins/core.js`, which validates the shape at load. `src/lib/skins.js`
+  and `src/lib/sources.js` are now pure derivations of those registrations;
+  `src/lib/ux.js` keeps the pure helpers and the shared scopes, and
+  `src/lib/sites.js` derives its skin list from the registry. `themes/` now holds
+  only the CSS shared across skins. Every plugin entry is wired into each load
+  list (the background's `PLUGIN_JS`/`CONTENT_JS`, `popup.html`, the Node loader
+  `tools/plugins.mjs`); the Firefox manifest list is generated from the folder by
+  `build.mjs`, which also drops the per-plugin tests from the bundle.
+  `tests/contracts.test.mjs` checks each folder is self-contained and wired, and
+  `npm test` discovers the per-plugin tests. The tables and their consumers are
+  unchanged.
 
 ### Fixed
 

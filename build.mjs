@@ -14,7 +14,7 @@
  *   node build.mjs firefox    # one target
  */
 
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,10 +27,30 @@ const { version } = JSON.parse(
   await readFile(join(root, 'package.json'), 'utf8'),
 );
 
+// The plugin files, in the same stable order `background.js` and `popup.html`
+// list them: the API first, then one file per skin and per source, sorted.
+// Reading the directory means a new plugin file is picked up by the Firefox
+// manifest without a second edit; the contract test checks the other lists
+// against the same folder.
+const pluginFiles = async (group) =>
+  (await readdir(join(SRC, 'plugins', group), { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+    .map((name) => `plugins/${group}/${name}/index.js`);
+const PLUGIN_JS = [
+  'plugins/core.js',
+  ...(await pluginFiles('skins')),
+  ...(await pluginFiles('sources')),
+];
+
 // Only the files the extension actually loads should reach the bundle. Drop
 // editor/OS junk and source maps that happen to sit in src/, so a stray backup
-// or debug artifact cannot be shipped to the stores.
-const SHIPPED_JUNK = /(^|\/)\.[^/]+$|\.(map|swp|swo|bak|orig|tmp|log)$|~$/;
+// or debug artifact cannot be shipped to the stores — and the per-plugin tests,
+// which live beside their plugin under src/plugins/ but are not part of the
+// extension.
+const SHIPPED_JUNK =
+  /(^|\/)\.[^/]+$|\.(map|swp|swo|bak|orig|tmp|log)$|\.(test|spec)\.(c|m)?js$|~$/;
 
 const TARGETS = {
   chromium: (manifest) => ({
@@ -39,11 +59,12 @@ const TARGETS = {
   }),
   firefox: (manifest) => ({
     ...manifest,
-    // Firefox runs these in one shared scope, so the lib files just have to
-    // come before background.js. Chromium reaches them via importScripts()
-    // (see background.js).
+    // Firefox runs these in one shared scope, so the plugin files and the lib
+    // files just have to come before background.js. Chromium reaches them via
+    // importScripts() (see background.js).
     background: {
       scripts: [
+        ...PLUGIN_JS,
         'lib/skins.js',
         'lib/sites.js',
         'lib/sources.js',

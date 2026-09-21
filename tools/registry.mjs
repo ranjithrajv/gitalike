@@ -2,13 +2,13 @@
 /**
  * GitAlike — the published plugin registry.
  *
- * The registry is *authored* in the source: one `defineSkin` object in
- * `src/lib/skins.js`, one `defineSource` in `src/lib/sources.js`. This tool is
- * the only thing that turns that into the two public faces — `plugins.json` for
- * tooling and the Plugins chips in `docs/index.html` — so a plugin cannot ship
- * while the site or the JSON still lists the old set. It is standard-library
- * only and reads the same modules the extension loads, so what it publishes is
- * exactly what ships.
+ * The registry is *authored* in the source: one `defineSkin` file under
+ * `src/plugins/skins/`, one `defineSource` under `src/plugins/sources/`. This
+ * tool is the only thing that turns that into the two public faces —
+ * `plugins.json` for tooling and the Plugins chips in `docs/index.html` — so a
+ * plugin cannot ship while the site or the JSON still lists the old set. It is
+ * standard-library only and loads the same files the extension loads, so what it
+ * publishes is exactly what ships.
  *
  *   node tools/registry.mjs            # check (the CI / pre-commit gate)
  *   node tools/registry.mjs --write    # regenerate both faces
@@ -21,8 +21,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import '../src/lib/skins.js';
-import '../src/lib/sources.js';
+import './plugins.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 

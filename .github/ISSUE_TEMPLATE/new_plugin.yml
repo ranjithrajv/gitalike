@@ -7,10 +7,10 @@ body:
     attributes:
       value: |
         GitAlike's registry has two kinds of plugin. A **skin** is a target UI a
-        page is made to look like (`src/lib/skins.js`); a **source** is a forge's
-        markup (`src/lib/sources.js`). Each is one object — plus, for a skin, one
-        stylesheet; `node tools/new-plugin.mjs <skin|source> <name>` writes that
-        skeleton. `tests/contracts.test.mjs` names anything a new one is still
+        page is made to look like (`src/plugins/skins/`); a **source** is a
+        forge's markup (`src/plugins/sources/`). Each is one file — plus, for a
+        skin, one stylesheet; `node tools/new-plugin.mjs <skin|source> <name>`
+        writes that skeleton. `tests/contracts.test.mjs` names anything a new one is still
         missing. The ground rules are in
         [CONTRIBUTING.md](https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md#ground-rules).
   - type: dropdown

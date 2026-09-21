@@ -2,10 +2,10 @@
   "apiVersion": 1,
   "skins": [
     {
-      "name": "gitlab",
-      "product": "GitLab",
-      "badge": "GL",
-      "color": "#7759c2",
+      "name": "bitbucket",
+      "product": "Bitbucket",
+      "badge": "BB",
+      "color": "#0052cc",
       "layout": "gitlab"
     },
     {
@@ -16,14 +16,31 @@
       "layout": "github"
     },
     {
-      "name": "bitbucket",
-      "product": "Bitbucket",
-      "badge": "BB",
-      "color": "#0052cc",
+      "name": "gitlab",
+      "product": "GitLab",
+      "badge": "GL",
+      "color": "#7759c2",
       "layout": "gitlab"
     }
   ],
   "sources": [
+    {
+      "name": "gitea",
+      "label": "Gitea / Forgejo",
+      "selectors": [
+        "repoNavList",
+        "repoMenu",
+        "themeMarker",
+        "topBar",
+        "repoHeader",
+        "pullLink"
+      ],
+      "canary": [
+        "https://codeberg.org/forgejo/forgejo",
+        "https://codeberg.org/forgejo/forgejo/pulls",
+        "https://gitea.com/gitea/act"
+      ]
+    },
     {
       "name": "github",
       "label": "GitHub — Primer",
@@ -66,23 +83,6 @@
       "canary": [
         "https://gitlab.com/gitlab-org/gitlab",
         "https://gitlab.com/dzaporozhets"
-      ]
-    },
-    {
-      "name": "gitea",
-      "label": "Gitea / Forgejo",
-      "selectors": [
-        "repoNavList",
-        "repoMenu",
-        "themeMarker",
-        "topBar",
-        "repoHeader",
-        "pullLink"
-      ],
-      "canary": [
-        "https://codeberg.org/forgejo/forgejo",
-        "https://codeberg.org/forgejo/forgejo/pulls",
-        "https://gitea.com/gitea/act"
       ]
     }
   ]
