@@ -514,7 +514,52 @@
         padding: 1px 5px;
         font-size: 12.5px;
       }
-      .terms-head { margin: 30px 0 4px; font-size: 18px; }
+      /* The vocabulary table is the payoff of "not just a theme", so it sits in
+         its own raised panel rather than trailing the feature grid. */
+      .words {
+        margin-top: 40px;
+        padding: 26px 26px 18px;
+        border: 1px solid var(--border);
+        border-top: 3px solid var(--accent);
+        border-radius: 14px;
+        background: linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent) 8%, var(--surface-2)) 0%,
+          var(--surface-2) 62%
+        );
+        box-shadow: var(--shadow);
+      }
+      .words-head { max-width: 66ch; margin: 0 0 18px; }
+      .words-head h3 {
+        font-size: clamp(19px, 2.5vw, 25px);
+        letter-spacing: -0.015em;
+        margin: 0 0 8px;
+      }
+      .words-head p { margin: 0; color: var(--muted); font-size: 14px; }
+      .words-head code {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 12.5px;
+      }
+      .swatch {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        margin-right: 7px;
+        vertical-align: middle;
+      }
+      .swatch.github { background: var(--github); }
+      .swatch.gitlab { background: var(--gitlab); }
+      .swatch.bitbucket { background: var(--bitbucket); }
+      table.terms th.col-github,
+      table.terms th.col-gitlab,
+      table.terms th.col-bitbucket { color: var(--fg); }
+      @media (max-width: 560px) {
+        .words { padding: 16px 16px 10px; }
+      }
 
       /* ----------------------------------------------------------------- faq -- */
       .faq { display: grid; gap: 10px; max-width: 74ch; }
@@ -911,28 +956,38 @@
             </div>
           </div>
 
-          <h3 class="terms-head">The same page, in each product's words</h3>
-          <div class="table-wrap">
-            <table class="terms">
-              <thead>
-                <tr>
-                  <th scope="col">Concept</th>
-                  <th scope="col">GitHub UI</th>
-                  <th scope="col">GitLab UI</th>
-                  <th scope="col">Bitbucket UI</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Code review</td><td>Pull request</td><td>Merge request</td><td>Pull request</td></tr>
-                <tr><td>Continuous integration</td><td>Actions</td><td>CI/CD</td><td>Pipelines</td></tr>
-                <tr><td>Source tab</td><td>Code</td><td>Repository</td><td>Source</td></tr>
-                <tr><td>Issue tracking</td><td>Issues</td><td>Work items</td><td>Jira issues</td></tr>
-                <tr><td>Insights</td><td>Insights</td><td>Analytics</td><td>Insights</td></tr>
-                <tr><td>File finder</td><td>Go to file</td><td>Find file</td><td>Go to file</td></tr>
-                <tr><td>Snippets</td><td>Gists</td><td>Snippets</td><td>Snippets</td></tr>
-                <tr><td>Reference marker</td><td><code>#42</code></td><td><code>!42</code></td><td><code>#42</code></td></tr>
-              </tbody>
-            </table>
+          <div class="words" id="words">
+            <div class="words-head">
+              <h3>The same page, in each product's words</h3>
+              <p>
+                The vocabulary is the point: the same action, named the way the
+                applied product names it. The mapping comes from the tables in
+                <code>src/lib/ux.js</code>, so a label cannot drift from the
+                skin it belongs to.
+              </p>
+            </div>
+            <div class="table-wrap">
+              <table class="terms">
+                <thead>
+                  <tr>
+                    <th scope="col">Concept</th>
+                    <th scope="col" class="col-github"><span class="swatch github"></span>GitHub UI</th>
+                    <th scope="col" class="col-gitlab"><span class="swatch gitlab"></span>GitLab UI</th>
+                    <th scope="col" class="col-bitbucket"><span class="swatch bitbucket"></span>Bitbucket UI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Code review</td><td>Pull request</td><td>Merge request</td><td>Pull request</td></tr>
+                  <tr><td>Continuous integration</td><td>Actions</td><td>CI/CD</td><td>Pipelines</td></tr>
+                  <tr><td>Source tab</td><td>Code</td><td>Repository</td><td>Source</td></tr>
+                  <tr><td>Issue tracking</td><td>Issues</td><td>Work items</td><td>Jira issues</td></tr>
+                  <tr><td>Insights</td><td>Insights</td><td>Analytics</td><td>Insights</td></tr>
+                  <tr><td>File finder</td><td>Go to file</td><td>Find file</td><td>Go to file</td></tr>
+                  <tr><td>Snippets</td><td>Gists</td><td>Snippets</td><td>Snippets</td></tr>
+                  <tr><td>Reference marker</td><td><code>#42</code></td><td><code>!42</code></td><td><code>#42</code></td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
