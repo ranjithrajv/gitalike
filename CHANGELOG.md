@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to gitalike are documented here. The format is based on
+All notable changes to GitAlike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -158,6 +158,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The product is now **GitAlike** — *any git platform, preferred UX.* The
+  extension, its toolbar title, the popup, both store listings and the docs use
+  it. The lowercase `gitalike` slug is unchanged where it is an address or an
+  identifier — the repository and Pages URLs, `package.json`'s name, the mark
+  files, the `GITALIKE_UX` global, the `gitalike-theme`/`gitalike-ux` script ids
+  and the release asset names — so existing links, the `gitalike@riseup.net`
+  Gecko id and installed copies keep working. The store name fits Chrome's
+  45-character limit.
 - Permissions are scoped. The bundled hosts (`github.com`, `gitlab.com`,
   `codeberg.org`, `gitea.com`) are granted at install, and a self-hosted
   instance is granted one origin at a time from the popup's Add a site click
@@ -167,7 +175,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   host list in step with the `builtin` table (`src/manifest.base.json`,
   `src/background.js`, `src/popup/popup.js`, `tests/sites.test.mjs`).
 - The GitLab skin shows GitHub's top bar instead of hiding it, restyled to
-  GitLab's light bar with a hairline border and gitalike's mark. GitLab has a
+  GitLab's light bar with a hairline border and GitAlike's mark. GitLab has a
   light top bar above its sidebar, so hiding GitHub's was the stale half of a
   contradictory pair (`src/themes/as-gitlab.css`).
 - The popup's two product checkboxes are one **Show the web with** radio group —
@@ -226,6 +234,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The GitLab skin hides GitHub's **signed-in app header** (`.AppHeader`,
   `header.GlobalNav`) — GitLab has no top menubar. The logged-out marketing
   header is still restyled to GitLab's light bar (`src/themes/as-gitlab.css`).
+- The Chrome Web Store and addons.mozilla.org listings no longer say
+  `code.swecha.org` is bundled — it was unbundled in 0.1.3 — and now list
+  `bitbucket.org` among the five hosts granted at install, in the permission
+  justifications and the privacy text as well as the description.
+- The store short descriptions and the manifest description name Bitbucket
+  alongside GitHub and GitLab, matching the three skins the extension ships.
 
 ## [0.1.2] - 2026-09-21
 
@@ -233,7 +247,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - A privacy policy is published with the GitHub Pages preview at
   `docs/privacy.html`, linked from the preview, the README and both store
-  listings. It records what gitalike does not collect, what it stores
+  listings. It records what GitAlike does not collect, what it stores
   (`storage.sync` choices and instances, the page-local theme cache), and what
   it accesses and why (`docs/privacy.html`, `README.md`, `store/`).
 - Store publishing is scripted. `npm run publish:chromium` uploads and submits
@@ -295,7 +309,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- The in-page mark is now gitalike's own two-way swap arrow, recoloured to the
+- The in-page mark is now GitAlike's own two-way swap arrow, recoloured to the
   other product's palette, instead of a recoloured copy of the other product's
   logo. The extension no longer bundles GitHub's Octocat or GitLab's Tanuki
   artwork; only the palette is borrowed (`logos/`, `themes/*.css`).
@@ -304,7 +318,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the copy, reference-marker, navigation and shortcut parity shipped
   (`store/listing-chrome.md`, `store/listing-firefox.md`).
 - The GitHub Pages preview's screenshot pairs were recaptured, so the skinned
-  shots show the gitalike mark. The project-page pairs, previously captured by
+  shots show the GitAlike mark. The project-page pairs, previously captured by
   hand, now have a tool (`tools/project-screenshots.mjs`) matching the profile
   pairs'.
 - Added the trademark attributions the platforms' brand guidelines ask for —
@@ -313,9 +327,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   description.
 - Relicensed from MIT to GPL-3.0-or-later. A distributed fork now has to stay
   free software, and a new `NOTICE` records the copyright and an additional term
-  under GPLv3 section 7 reserving the gitalike name and the GitHub/GitLab marks.
+  under GPLv3 section 7 reserving the GitAlike name and the GitHub/GitLab marks.
 - Performance: content scripts and stylesheets are now registered only for the
-  hosts gitalike is set up on, instead of being injected into every page, so an
+  hosts GitAlike is set up on, instead of being injected into every page, so an
   unconfigured page parses neither. This adds the `scripting` permission; the
   all-sites access is unchanged (`manifest.base.json`, `background.js`).
 - Performance: the UX content script's whole-body mutation observer is attached
@@ -421,7 +435,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] - 2026-09-20
 
-First public release. gitalike re-skins GitHub as GitLab and GitLab as GitHub:
+First public release. GitAlike re-skins GitHub as GitLab and GitLab as GitHub:
 it repaints the interface from the other product's design tokens, then matches
 its words and habits. It never changes what the site *does* — no requests are
 intercepted, no data is touched — and every change is reverted when a skin is

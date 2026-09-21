@@ -2,7 +2,7 @@
   "name": "gitalike",
   "version": "0.1.3",
   "private": true,
-  "description": "Use any forge, keep your muscle memory. Re-skins GitHub and GitLab as each other, locally.",
+  "description": "Use any forge, keep your muscle memory. Re-skins GitHub, GitLab and Bitbucket as each other, locally.",
   "type": "module",
   "license": "GPL-3.0-or-later",
   "scripts": {
