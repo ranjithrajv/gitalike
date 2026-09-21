@@ -65,7 +65,7 @@
     gitlab: { theme: 'github' },
   };
 
-  const isKind = (value) => value === 'github' || value === 'gitlab';
+  const isKind = (value) => Object.hasOwn(kinds, value);
 
   /**
    * The storage keys gitalike owns, kept beside the schema that gives them

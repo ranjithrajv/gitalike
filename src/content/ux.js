@@ -598,7 +598,7 @@
       .filter((item) => item.label);
     if (items.length < 2) return;
     const rule = (UX.NAV_RULES[t] || []).find((r) => r.source === 'gitea');
-    const entries = UX.repoNav(items, t, rule && rule.order);
+    const entries = UX.repoNav(items, t, rule && rule.order, layoutOf(t));
     const signature = `${location.pathname}|${items
       .map((item) => `${item.href}:${item.label}:${item.active ? 1 : 0}`)
       .join('|')}`;
@@ -770,7 +770,7 @@
   // when the headings no longer match — otherwise our own insertions would feed
   // back through the mutation observer.
   function paintNavGroups(t) {
-    if (!UX.NAV_GROUPS[t]) return;
+    if (!UX.NAV_GROUPS[layoutOf(t)]) return;
     // The group headings apply to the same list paintOrder resolves, so reuse
     // that container instead of re-scanning every NAV_SCOPE region per flush.
     const rule = (UX.NAV_RULES[t] || []).find((r) => r.container);
@@ -783,7 +783,7 @@
     let last = null;
     for (const li of items) {
       const label = (li.textContent || '').replace(/\s+/g, ' ').trim();
-      const group = UX.navGroupFor(label, t);
+      const group = UX.navGroupFor(label, layoutOf(t));
       if (group && group !== last) {
         desired.push({ group, before: li });
         last = group;

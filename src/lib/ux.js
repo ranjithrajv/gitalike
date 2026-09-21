@@ -304,9 +304,13 @@
   };
 
   // The GitLab project sidebar groups its items (Plan, Code, Build, …). GitHub's
-  // repo tabs are flat, so on the GitLab skin they are gathered under the same
-  // group headings, using the *displayed* label (after translation). An item not
-  // listed here stands alone, with no heading.
+  // repo tabs are flat, so on a GitLab-shaped skin they are gathered under the
+  // same group headings, using the *displayed* label (after translation). An item
+  // not listed here stands alone, with no heading.
+  //
+  // Keyed by *layout* (see sites.js `skins[].layout`), not by skin: the grouping
+  // is part of the shape, and the pass that applies it is guarded on the layout
+  // too, so any skin built to this shape gets the same headings.
   const NAV_GROUPS = {
     gitlab: {
       Members: 'Manage',
@@ -333,6 +337,10 @@
   // Menu items the *applied* product has no page for, by their displayed label
   // (after translation). They are hidden rather than marked, so the navigation
   // is the applied product's menu and not a mix of both.
+  //
+  // Superseded by NAV_KEEP: where a skin has a keep-list, `paintNavHide` uses it
+  // *instead of* this hide-list, so a hide-list entry for a kept skin would do
+  // nothing. Add to the keep-list, not here, for a skin that has one.
   const NAV_HIDE = {
     // GitLab's sidebar items with no GitHub counterpart.
     github: [
@@ -365,6 +373,10 @@
   // project-page options are shown, so the navigation is that product's menu
   // exactly rather than the source product's menu with a few items hidden.
   // These are GitHub's repo tabs, after translation.
+  //
+  // A keep-list supersedes NAV_HIDE for its skin: `paintNavHide` reads one or
+  // the other, never both, so a skin with a keep-list must list everything it
+  // wants shown here (anything unlisted is hidden, NAV_HIDE notwithstanding).
   const NAV_KEEP = {
     github: [
       'Code',
@@ -680,9 +692,9 @@
     return withoutCounter(text) === label;
   }
 
-  /** The GitLab-style group heading a nav item belongs under, or null. */
-  function navGroupFor(label, theme) {
-    const map = NAV_GROUPS[theme];
+  /** The group heading a nav item belongs under for a layout, or null. */
+  function navGroupFor(label, layout) {
+    const map = NAV_GROUPS[layout];
     if (!map) return null;
     for (const [key, group] of Object.entries(map)) {
       if (labelMatches(label, key)) return group;
@@ -843,14 +855,17 @@
   // is `{ href, label, active }` read from the page (label without its counter);
   // the result mixes `{ group }` headings with `{ href, label, raw, active }`
   // rows, so the DOM builder and the unit tests share one decision.
-  function repoNav(items, theme, order) {
+  function repoNav(items, theme, order, layout = theme) {
     const nav = NAV[theme] || {};
     const labels = items.map((item) => nav[item.label] ?? translate(item.label, theme));
     const entries = [];
     let last = null;
     for (const index of orderIndexes(labels, order || [])) {
       const label = labels[index];
-      const group = navGroupFor(label, theme);
+      // Grouping follows the *layout*, not the skin: any skin built to the same
+      // shape gets the same group headings, matching the layout guard that
+      // decides whether this rebuild runs at all.
+      const group = navGroupFor(label, layout);
       if (group && group !== last) {
         entries.push({ group });
         last = group;

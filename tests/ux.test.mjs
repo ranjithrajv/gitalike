@@ -132,15 +132,6 @@ describe('NAV tables', () => {
 });
 
 describe('LABELS', () => {
-  test('round-trip exactly between the two directions', () => {
-    for (const [from, to] of Object.entries(LABELS.gitlab)) {
-      assert.equal(LABELS.github[to], from, `github["${to}"] should be "${from}"`);
-    }
-    for (const [from, to] of Object.entries(LABELS.github)) {
-      assert.equal(LABELS.gitlab[to], from, `gitlab["${to}"] should be "${from}"`);
-    }
-  });
-
   test('translateControl maps a whole control label', () => {
     assert.equal(translateControl('Merge', 'github'), 'Merge pull request');
     assert.equal(translateControl('Merge pull request', 'gitlab'), 'Merge');
@@ -165,15 +156,6 @@ describe('LABELS', () => {
 });
 
 describe('CHROME', () => {
-  test('round-trips between the two directions', () => {
-    for (const [from, to] of Object.entries(CHROME.gitlab)) {
-      assert.equal(CHROME.github[to], from, `github["${to}"] should be "${from}"`);
-    }
-    for (const [from, to] of Object.entries(CHROME.github)) {
-      assert.equal(CHROME.gitlab[to], from, `gitlab["${to}"] should be "${from}"`);
-    }
-  });
-
   test('translateControl maps account/menu chrome', () => {
     assert.equal(translateControl('Your repositories', 'gitlab'), 'Your projects');
     assert.equal(translateControl('Your projects', 'github'), 'Your repositories');
@@ -184,6 +166,61 @@ describe('CHROME', () => {
   test('chrome wording is never rewritten in prose', () => {
     assert.equal(translate('Your repositories', 'gitlab'), 'Your repositories');
     assert.equal(translate('Your projects', 'github'), 'Your projects');
+  });
+});
+
+describe('control-label coverage', () => {
+  // The old invariant was a round-trip, which only held for a pair of skins.
+  // With three targets the tables are functions into each target's vocabulary
+  // (Bitbucket is deliberately many-to-one: both "Squash and merge" and
+  // "Squash commits" become "Squash"), so what still holds is coverage: every
+  // source label any target names is either translated by every target or
+  // explicitly marked as having no counterpart. A label that is already a
+  // target's own word (a value in its table) needs no entry.
+  const tables = { LABELS, CHROME };
+  const targets = Object.keys(tables.LABELS);
+  const universe = new Set();
+  for (const table of Object.values(tables)) {
+    for (const map of Object.values(table)) {
+      for (const key of Object.keys(map)) universe.add(key);
+    }
+  }
+
+  test('every target covers or explicitly lacks every source label', () => {
+    for (const target of targets) {
+      const known = new Set(Object.keys(UNMAPPED[target] || {}));
+      for (const table of Object.values(tables)) {
+        for (const [key, value] of Object.entries(table[target] || {})) {
+          known.add(key);
+          known.add(value);
+        }
+      }
+      for (const label of universe) {
+        assert.ok(
+          known.has(label),
+          `${target} neither translates "${label}" nor marks it in UNMAPPED`,
+        );
+      }
+    }
+  });
+
+  test('every target names every source label the others do', () => {
+    // The same property from the other side: no target's table is missing a
+    // source label that another target translates to something new.
+    for (const label of universe) {
+      for (const target of targets) {
+        const table = tables.LABELS[target] || {};
+        const other = tables.CHROME[target] || {};
+        const own = new Set([...Object.values(table), ...Object.values(other)]);
+        assert.ok(
+          label in table ||
+            label in other ||
+            own.has(label) ||
+            label in (UNMAPPED[target] || {}),
+          `${target} does not account for "${label}"`,
+        );
+      }
+    }
   });
 });
 
@@ -501,6 +538,14 @@ describe('NAV_GROUPS', () => {
   test('items with no group, and the other theme, return null', () => {
     assert.equal(navGroupFor('Discussions', 'gitlab'), null);
     assert.equal(navGroupFor('Merge requests', 'github'), null);
+  });
+
+  test('is keyed by layout, not by skin', () => {
+    // Only the GitLab layout groups its sidebar; the skin that wears it is
+    // irrelevant, matching the layout guard that calls this.
+    assert.deepEqual(Object.keys(NAV_GROUPS), ['gitlab']);
+    assert.equal(navGroupFor('Repository', 'gitlab'), 'Code');
+    assert.equal(navGroupFor('Repository', 'bitbucket'), null);
   });
 
   test('every group heading is a non-empty string', () => {

@@ -4,8 +4,14 @@
    These rules are scoped by two axes, and use whichever fits:
      html.gs-theme-<skin>    the skin being applied (gitlab, github, bitbucket)
      html.gs-layout-<shape>  the shape the skin is built to (gitlab, github), so
-                             rules two skins share — GitHub and Bitbucket are
-                             both "top bar + tab row" — are written once.
+                             rules two skins share are written once. Structure
+                             (display, grid, position, spacing) keys on the
+                             layout; colour is carried by the theme-scoped
+                             `--gs-*` variables each skin defines in its own
+                             as-*.css, so a rule stays layout-scoped and still
+                             resolves per skin. Bitbucket reuses the GitLab
+                             layout that way, and the GitHub/Bitbucket pair
+                             shares the github layout.
 
    Sections below, in file order:
 
@@ -21,8 +27,7 @@
                     GitLab's page is a grid (`.layout-page.page-with-super-
                     sidebar` is `232px 1032px …`), so that grid is collapsed to
                     one column first — otherwise the content keeps the narrow
-                    column and shrinks to ~277px. Shared by the GitHub and
-                    Bitbucket skins, which have the same shape.
+                    column and shrinks to ~277px.
    layout: github · sidebar strip and profile
                     the strip's colour, and the profile surfaces.
    heatmaps         contribution / activity graphs in each palette.
