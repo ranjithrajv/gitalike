@@ -793,21 +793,64 @@ html.gs-theme-github
   display: none !important;
 }
 
-html.gs-theme-github
-  body[data-page^="projects:"]
-  .super-sidebar
-  [data-gs-project-tabs] {
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-}
-
 /* GitLab heads the sidebar with a "Project" label; GitHub's repo header has no
    such heading, so it is hidden on the GitHub skin. */
 html.gs-theme-github
   body[data-page^="projects:"]
   .super-sidebar
   .super-sidebar-context-header {
+  display: none !important;
+}
+
+/* The rebuilt tab row, whether it sits in the sidebar (non-root project pages)
+   or under the repository header (the root). GitHub's tabs are a flat row with
+   a hairline rule and a warm underline on the active tab. */
+html.gs-theme-github [data-gs-project-tabs] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+html.gs-theme-github [data-gs-project-tabs] > li {
+  width: auto !important;
+}
+
+html.gs-theme-github [data-gs-project-tabs] > li > a {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 8px 8px 6px !important;
+  color: var(--gs-fg) !important;
+  font-size: 14px !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  background-color: transparent !important;
+  border-bottom: 2px solid transparent !important;
+  margin-bottom: -1px !important;
+}
+
+html.gs-theme-github [data-gs-project-tabs] > li > a[data-gs-active] {
+  font-weight: 600 !important;
+  border-bottom-color: #fd8c73 !important;
+}
+
+/* Hosted under the repository header, the row spans the content and the sidebar
+   shell that carried the top strip is hidden. */
+html.gs-theme-github [data-gs-project-tabs][data-gs-tab-host="content"] {
+  border-bottom: 1px solid var(--gs-border) !important;
+}
+
+html.gs-theme-github .layout-page:has(main.content [data-gs-project-tabs]) {
+  padding-left: 0 !important;
+}
+
+html.gs-theme-github
+  .layout-page:has(main.content [data-gs-project-tabs])
+  .super-sidebar-wrapper {
   display: none !important;
 }
 

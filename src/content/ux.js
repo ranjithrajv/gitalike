@@ -331,7 +331,9 @@
     const page = (document.body && document.body.dataset.page) || '';
     const rule = L2G_ACTIVE.find(([re]) => re.test(page));
     const label = rule ? rule[1] : null;
-    for (const anchor of document.querySelectorAll('.super-sidebar a')) {
+    for (const anchor of document.querySelectorAll(
+      '.super-sidebar a, [data-gs-project-tabs] a',
+    )) {
       const text = (anchor.textContent || '').replace(/\s+/g, ' ').trim();
       if (label && UX.labelMatches(text, label)) {
         anchor.setAttribute('data-gs-active', '');
@@ -405,8 +407,8 @@
     const page = (document.body && document.body.dataset.page) || '';
     if (!page.startsWith('projects:')) return;
     const sidebar = document.querySelector('.super-sidebar');
-    const nav = sidebar && sidebar.querySelector('[data-testid="nav-container"]');
-    if (!nav) return;
+    if (!sidebar) return;
+    const nav = sidebar.querySelector('[data-testid="nav-container"]');
     const anchors = [...sidebar.querySelectorAll('a:not([data-gs-project-tab])')];
     const findHref = (labels) => {
       for (const a of anchors) {
@@ -424,7 +426,10 @@
       .find(Boolean);
     if (!base) return;
     const signature = `${base}:${location.pathname}`;
-    let list = nav.querySelector('[data-gs-project-tabs]');
+    // A document-wide lookup: once the row is hosted in the content it is no
+    // longer inside the sidebar, and a nav-scoped lookup would miss it and
+    // append a fresh copy on every flush.
+    let list = document.querySelector('[data-gs-project-tabs]');
     if (list && list.getAttribute('data-gs-signature') === signature) return;
     if (list) list.remove();
     const tabs = [
@@ -451,7 +456,20 @@
       item.appendChild(anchor);
       list.appendChild(item);
     }
-    nav.insertBefore(list, nav.firstChild);
+    // GitHub puts the tab row under the repository header, not at the very top
+    // of the page. When the project page has that header (the repository root),
+    // the strip is hosted there and the sidebar shell is hidden by CSS; other
+    // project pages keep the top strip.
+    const files = document.querySelector('.project-show-files');
+    if (files && files.parentElement) {
+      files.parentElement.insertBefore(list, files);
+      list.setAttribute('data-gs-tab-host', 'content');
+    } else if (nav) {
+      nav.insertBefore(list, nav.firstChild);
+      list.setAttribute('data-gs-tab-host', 'sidebar');
+    } else {
+      list.remove();
+    }
   }
 
   function paintUnmapped(node, t) {
