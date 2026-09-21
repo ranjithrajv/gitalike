@@ -499,3 +499,18 @@ html.gs-theme-bitbucket[data-theme] .ui.tabs.divider {
   border-top: 0 !important;
   border-bottom: 1px solid var(--gs-border) !important;
 }
+
+/* ------------------------------------------------------------- profile -- */
+
+/* Bitbucket Cloud has no public user profile: its account pages show the
+   identity and the account's repositories/projects, with no About/Info/Contact
+   rail and no contribution graph. Under the Bitbucket skin those are dropped.
+   Scoped by the source, since the rail is GitLab's and the graph GitHub's. */
+html.gs-theme-bitbucket[data-gs-source="gitlab"]
+  :is(.user-profile-sidebar, .js-contrib-calendar) {
+  display: none !important;
+}
+
+html.gs-theme-bitbucket[data-gs-source="github"] .js-yearly-contributions {
+  display: none !important;
+}
