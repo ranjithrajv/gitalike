@@ -315,6 +315,81 @@
         .swipe .tag { display: none; }
       }
 
+      /* ------------------------------------------------ multi-skin comparison -- */
+      .multi { margin: 0; }
+      .multi-stage {
+        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        touch-action: pan-y;
+        user-select: none;
+      }
+      .multi-layer { display: block; width: 100%; height: auto; pointer-events: none; }
+      .multi-layer:not([data-i="0"]) { position: absolute; inset: 0; }
+      .multi-handle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        margin-left: -1.5px;
+        background: currentColor;
+        color: var(--accent);
+        cursor: ew-resize;
+        touch-action: none;
+      }
+      .multi-handle::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 26px;
+        height: 26px;
+        margin: -13px 0 0 -13px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+      }
+      .multi-handle[data-skin="gitlab"] { color: var(--gitlab); }
+      .multi-handle[data-skin="github"] { color: var(--github); }
+      .multi-handle[data-skin="bitbucket"] { color: var(--bitbucket); }
+      .multi-label { display: none; }
+      .multi-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .multi-legend .key { display: inline-flex; align-items: center; gap: 6px; }
+      .multi-legend .key::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: var(--muted);
+      }
+      .multi-legend .key[data-skin="gitlab"]::before { background: var(--gitlab); }
+      .multi-legend .key[data-skin="github"]::before { background: var(--github); }
+      .multi-legend .key[data-skin="bitbucket"]::before { background: var(--bitbucket); }
+      @media (max-width: 640px) {
+        /* Stack the captures on a phone: side-by-side at 1280px is unreadable,
+           and several handles on a narrow image are fiddly. */
+        .multi-layer:not([data-i="0"]) { position: static; }
+        .multi-handle { display: none; }
+        .multi-label {
+          display: block;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--muted);
+          padding: 8px 2px;
+        }
+        .multi-legend { display: none; }
+      }
+
       /* ------------------------------------------------------------ sections -- */
       section { padding: 48px 0; }
       .section-head { max-width: 60ch; margin: 0 0 24px; }
@@ -563,150 +638,151 @@
           <div class="section-head">
             <h2>See it</h2>
             <p>
-              Live captures of the real sites at 1280×900. Drag the handle,
-              click, or use the arrow keys to swap between the plain site and
-              the skinned one; on a narrow screen the two captures stack.
+              Live captures of the real sites at 1280×900. Each one shows the
+              source page and every skin it can wear — drag a divider to reveal
+              one, or focus it and use the arrow keys. On a narrow screen the
+              captures stack.
             </p>
           </div>
 
           <div class="demos">
             <div class="card">
-              <h3>GitLab project page</h3>
-              <p class="sub">
-                Left: GitLab as it ships — a vertical
-                <b class="gitlab">sidebar</b>. Right: the same page skinned as
-                GitHub — GitHub's flat <b class="github">tab row</b>, rebuilt
-                from GitLab's scattered sidebar and hosted under the repository
-                header.
-              </p>
-              <div class="swipe">
-                <picture><source srcset="gitlab-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-default.png" alt="GitLab project page, default" /></picture>
-                <picture><source srcset="gitlab-github.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" /></picture>
-                <span class="tag left">GitLab default · sidebar</span>
-                <span class="tag right">GitHub skin · tab row</span>
-                <span class="divider"></span>
-                <span class="knob">↔</span>
-                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab project page" />
-              </div>
-            </div>
-
-            <div class="card">
               <h3>GitHub project page</h3>
               <p class="sub">
-                Left: GitHub as it ships — a horizontal
-                <b class="github">tab bar</b>. Right: the same page skinned as
-                GitLab — a vertical <b class="gitlab">sidebar-style column</b>.
+                A horizontal <b class="github">tab bar</b>, shown as GitLab — a vertical
+                <b class="gitlab">sidebar-style column</b> — and as Bitbucket — a
+                <b class="bitbucket">Source / Pull requests / Pipelines</b> sidebar in
+                Atlassian blue.
               </p>
-              <div class="swipe">
-                <picture><source srcset="github-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-default.png" alt="GitHub project page, default" /></picture>
-                <picture><source srcset="github-gitlab.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" /></picture>
-                <span class="tag left">GitHub default · tab bar</span>
-                <span class="tag right">GitLab skin · sidebar column</span>
-                <span class="divider"></span>
-                <span class="knob">↔</span>
-                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub project page" />
-              </div>
+              <figure class="multi">
+                <div class="multi-stage">
+                  <picture><source srcset="github-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-default.png" alt="GitHub project page, default" /></picture>
+                  <span class="multi-label">Default · GitHub</span>
+                  <picture><source srcset="github-gitlab.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" /></picture>
+                  <span class="multi-label">GitLab UI</span>
+                  <picture><source srcset="github-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-bitbucket.png" alt="GitHub project page skinned as Bitbucket" /></picture>
+                  <span class="multi-label">Bitbucket UI</span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <figcaption class="multi-legend">
+                  <span class="key">Default · GitHub</span>
+                  <span class="key" data-skin="gitlab">GitLab UI</span>
+                  <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                </figcaption>
+              </figure>
             </div>
 
             <div class="card">
-              <h3>Codeberg (Gitea) → GitLab</h3>
+              <h3>GitLab project page</h3>
               <p class="sub">
-                Left: Codeberg as it ships — a flat
-                <b class="github">tab row</b>. Right: the same page skinned as
-                GitLab — <b class="gitlab">Plan / Code / Build / Deploy</b>
-                group headings in a left sidebar.
+                GitLab's scattered sidebar rebuilt as GitHub's flat
+                <b class="github">tab row</b> under the repository header, and as
+                Bitbucket's <b class="bitbucket">Source / Pull requests / Pipelines</b>
+                sidebar.
               </p>
-              <div class="swipe">
-                <picture><source srcset="codeberg-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
-                <picture><source srcset="codeberg-gitlab.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" /></picture>
-                <span class="tag left">Gitea default · tab row</span>
-                <span class="tag right">GitLab skin · sidebar</span>
-                <span class="divider"></span>
-                <span class="knob">↔</span>
-                <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as GitLab" />
-              </div>
+              <figure class="multi">
+                <div class="multi-stage">
+                  <picture><source srcset="gitlab-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-default.png" alt="GitLab project page, default" /></picture>
+                  <span class="multi-label">Default · GitLab</span>
+                  <picture><source srcset="gitlab-github.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" /></picture>
+                  <span class="multi-label">GitHub UI</span>
+                  <picture><source srcset="gitlab-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-bitbucket.png" alt="GitLab project page skinned as Bitbucket" /></picture>
+                  <span class="multi-label">Bitbucket UI</span>
+                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <figcaption class="multi-legend">
+                  <span class="key">Default · GitLab</span>
+                  <span class="key" data-skin="github">GitHub UI</span>
+                  <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                </figcaption>
+              </figure>
             </div>
 
             <div class="card">
-              <h3>Codeberg (Gitea) → GitHub</h3>
+              <h3>Codeberg (Gitea) project page</h3>
               <p class="sub">
-                Left: Codeberg as it ships. Right: the same page skinned as
-                GitHub — a dark bar and GitHub's flat
-                <b class="github">tab row</b> with the warm active underline.
+                GitHub-flavoured, so it can wear all three: GitLab's grouped
+                <b class="gitlab">Plan / Code / Build / Deploy</b> sidebar, GitHub's
+                underlined <b class="github">tab row</b>, or Bitbucket's
+                <b class="bitbucket">Source / Pull requests / Pipelines</b> sidebar.
               </p>
-              <div class="swipe">
-                <picture><source srcset="codeberg-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
-                <picture><source srcset="codeberg-github.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" /></picture>
-                <span class="tag left">Gitea default · tab row</span>
-                <span class="tag right">GitHub skin · tab row</span>
-                <span class="divider"></span>
-                <span class="knob">↔</span>
-                <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as GitHub" />
-              </div>
-            </div>
-
-            <div class="card">
-              <h3>Codeberg (Gitea) → Bitbucket</h3>
-              <p class="sub">
-                Left: Codeberg as it ships. Right: the same page skinned as
-                Bitbucket — a <b class="gitlab">left sidebar</b> and Atlassian's
-                palette, with Bitbucket's words:
-                <b class="bitbucket">Source, Commits, Branches, Pull requests,
-                Pipelines, Deployments, Jira issues, Security, Downloads</b>.
-              </p>
-              <div class="swipe">
-                <picture><source srcset="codeberg-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
-                <picture><source srcset="codeberg-bitbucket.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" /></picture>
-                <span class="tag left">Gitea default · tab row</span>
-                <span class="tag right">Bitbucket skin · sidebar</span>
-                <span class="divider"></span>
-                <span class="knob">↔</span>
-                <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as Bitbucket" />
-              </div>
-            </div>
-
-            <div class="card">
-              <h3>GitLab profile page</h3>
-              <p class="sub">
-                Left: GitLab as it ships — a vertical
-                <b class="gitlab">super-sidebar</b> starting at the person's
-                name. Right: the same page skinned as GitHub — a flat
-                <b class="github">row of tabs</b> rebuilt as GitHub's
-                (Overview, Repositories, Projects, Packages, Stars), with the
-                identity in a left <b class="github">card</b> under a large
-                avatar.
-              </p>
-              <div class="swipe">
-                <picture><source srcset="gitlab-profile-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" /></picture>
-                <picture><source srcset="gitlab-profile-github.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" /></picture>
-                <span class="tag left">GitLab default · sidebar</span>
-                <span class="tag right">GitHub skin · top strip</span>
-                <span class="divider"></span>
-                <span class="knob">↔</span>
-                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab profile page" />
-              </div>
+              <figure class="multi">
+                <div class="multi-stage">
+                  <picture><source srcset="codeberg-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
+                  <span class="multi-label">Default · Gitea</span>
+                  <picture><source srcset="codeberg-gitlab.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" /></picture>
+                  <span class="multi-label">GitLab UI</span>
+                  <picture><source srcset="codeberg-github.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" /></picture>
+                  <span class="multi-label">GitHub UI</span>
+                  <picture><source srcset="codeberg-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="3" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" /></picture>
+                  <span class="multi-label">Bitbucket UI</span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="github" data-i="2" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="3" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <figcaption class="multi-legend">
+                  <span class="key">Default · Gitea</span>
+                  <span class="key" data-skin="gitlab">GitLab UI</span>
+                  <span class="key" data-skin="github">GitHub UI</span>
+                  <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                </figcaption>
+              </figure>
             </div>
 
             <div class="card">
               <h3>GitHub profile page</h3>
               <p class="sub">
-                Left: GitHub as it ships — a horizontal
-                <b class="github">profile tab row</b>. Right: the same page
-                skinned as GitLab — a full-height
-                <b class="gitlab">super-sidebar</b> headed "Profile" and
-                rebuilt as GitLab's menu, with the profile header moved into the
-                content and an About/Info/Contact <b class="gitlab">rail</b> on
-                the right.
+                A horizontal profile <b class="github">tab row</b>, shown as GitLab's
+                full-height <b class="gitlab">super-sidebar</b> and as Bitbucket's
+                <b class="bitbucket">sidebar</b>, with the identity moved into the
+                content.
               </p>
-              <div class="swipe">
-                <picture><source srcset="github-profile-default.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-profile-default.png" alt="GitHub profile page, default" /></picture>
-                <picture><source srcset="github-profile-gitlab.webp" type="image/webp" /><img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" /></picture>
-                <span class="tag left">GitHub default · tab row</span>
-                <span class="tag right">GitLab skin · left rail</span>
-                <span class="divider"></span>
-                <span class="knob">↔</span>
-                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub profile page" />
-              </div>
+              <figure class="multi">
+                <div class="multi-stage">
+                  <picture><source srcset="github-profile-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-default.png" alt="GitHub profile page, default" /></picture>
+                  <span class="multi-label">Default · GitHub</span>
+                  <picture><source srcset="github-profile-gitlab.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" /></picture>
+                  <span class="multi-label">GitLab UI</span>
+                  <picture><source srcset="github-profile-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-bitbucket.png" alt="GitHub profile page skinned as Bitbucket" /></picture>
+                  <span class="multi-label">Bitbucket UI</span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <figcaption class="multi-legend">
+                  <span class="key">Default · GitHub</span>
+                  <span class="key" data-skin="gitlab">GitLab UI</span>
+                  <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                </figcaption>
+              </figure>
+            </div>
+
+            <div class="card">
+              <h3>GitLab profile page</h3>
+              <p class="sub">
+                A vertical <b class="gitlab">super-sidebar</b>, shown as GitHub's flat
+                <b class="github">row of tabs</b> and as Bitbucket's
+                <b class="bitbucket">sidebar</b>, with the counts brought down into
+                the profile card.
+              </p>
+              <figure class="multi">
+                <div class="multi-stage">
+                  <picture><source srcset="gitlab-profile-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-default.png" alt="GitLab profile page, default" /></picture>
+                  <span class="multi-label">Default · GitLab</span>
+                  <picture><source srcset="gitlab-profile-github.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" /></picture>
+                  <span class="multi-label">GitHub UI</span>
+                  <picture><source srcset="gitlab-profile-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-bitbucket.png" alt="GitLab profile page skinned as Bitbucket" /></picture>
+                  <span class="multi-label">Bitbucket UI</span>
+                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <figcaption class="multi-legend">
+                  <span class="key">Default · GitLab</span>
+                  <span class="key" data-skin="github">GitHub UI</span>
+                  <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                </figcaption>
+              </figure>
             </div>
           </div>
         </div>
@@ -1091,6 +1167,75 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
             raf = 0;
           }
         }).observe(hero);
+      }
+
+      // Multi-skin comparison: the base capture plus one clipped layer per skin,
+      // with a draggable (and keyboard-operable) divider for each skin. Layer i
+      // shows between divider i-1 and divider i; the last skin runs to the edge.
+      for (const multi of document.querySelectorAll('.multi')) {
+        const stage = multi.querySelector('.multi-stage');
+        const layers = [...multi.querySelectorAll('.multi-layer')];
+        const handles = [...multi.querySelectorAll('.multi-handle')];
+        if (!handles.length) continue;
+        const n = handles.length;
+        const pos = handles.map((_, i) => ((i + 1) * 100) / (n + 1));
+        const MIN_GAP = 5;
+
+        const apply = () => {
+          layers.forEach((img, i) => {
+            if (i === 0) {
+              img.style.clipPath = '';
+              return;
+            }
+            const left = pos[i - 1];
+            const right = i < n ? pos[i] : 100;
+            img.style.clipPath = `inset(0 ${100 - right}% 0 ${left}%)`;
+          });
+          handles.forEach((handle, i) => {
+            handle.style.left = `${pos[i]}%`;
+            handle.setAttribute('aria-valuenow', String(Math.round(pos[i])));
+          });
+        };
+        const setPos = (i, value) => {
+          const lo = i === 0 ? 0 : pos[i - 1] + MIN_GAP;
+          const hi = i === n - 1 ? 100 : pos[i + 1] - MIN_GAP;
+          pos[i] = Math.max(lo, Math.min(hi, value));
+        };
+
+        handles.forEach((handle, i) => {
+          handle.addEventListener('pointerdown', (event) => {
+            event.preventDefault();
+            const rect = stage.getBoundingClientRect();
+            const move = (e) => {
+              setPos(i, ((e.clientX - rect.left) / rect.width) * 100);
+              apply();
+            };
+            const up = () => {
+              window.removeEventListener('pointermove', move);
+              window.removeEventListener('pointerup', up);
+            };
+            window.addEventListener('pointermove', move);
+            window.addEventListener('pointerup', up);
+          });
+          handle.addEventListener('keydown', (event) => {
+            const step = event.shiftKey ? 10 : 2;
+            const moves = { ArrowLeft: -step, ArrowRight: step };
+            if (event.key in moves) {
+              event.preventDefault();
+              setPos(i, pos[i] + moves[event.key]);
+            } else if (event.key === 'Home') {
+              event.preventDefault();
+              setPos(i, 0);
+            } else if (event.key === 'End') {
+              event.preventDefault();
+              setPos(i, 100);
+            } else {
+              return;
+            }
+            apply();
+          });
+        });
+        apply();
       }
     </script>
   </body>

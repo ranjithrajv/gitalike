@@ -39,8 +39,8 @@ the mark it paints on a skinned page is its own. GitHub is a trademark of
 GitHub, Inc. GITLAB is a trademark of GitLab Inc. in the United States and other
 countries and regions.
 
-**Live preview:** <https://ranjithrajv.github.io/gitalike/> — swipe between each
-site and its skin.
+**Live preview:** <https://ranjithrajv.github.io/gitalike/> — swipe each site
+against every skin it can wear.
 
 ## Install
 
