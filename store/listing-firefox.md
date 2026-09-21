@@ -106,8 +106,8 @@ The manifest declares:
 
 AMO has no fixed screenshot size. Upload, in order:
 
-1. `store/screenshots/01-github-as-gitlab.png`
-2. `store/screenshots/02-gitlab-as-github.png`
+1. `store/screenshots/01-as-gitlab.png`
+2. `store/screenshots/02-as-github.png`
 3. `store/screenshots/03-popup.png`
 
 ## Notes for review

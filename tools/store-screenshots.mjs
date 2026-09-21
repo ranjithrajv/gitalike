@@ -47,8 +47,8 @@ const VIEWPORT = { width: 1280, height: 720 };
 // A repo page and a project page, both public and both carrying the site's
 // real chrome (header, token colours, logo) that the skins repaint.
 const SITES = [
-  { url: 'https://github.com/microsoft/vscode', cls: 'gs-theme-gitlab', file: '01-github-as-gitlab.png' },
-  { url: 'https://gitlab.com/gitlab-org/gitlab', cls: 'gs-theme-github', file: '02-gitlab-as-github.png' },
+  { url: 'https://github.com/microsoft/vscode', cls: 'gs-theme-gitlab', file: '01-as-gitlab.png' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab', cls: 'gs-theme-github', file: '02-as-github.png' },
 ];
 
 await mkdir(OUT, { recursive: true });
