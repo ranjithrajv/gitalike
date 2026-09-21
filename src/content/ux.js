@@ -255,6 +255,21 @@
     }
   }
 
+  // GitLab's About column ends with a "Created on" block, for which GitHub's
+  // About has no counterpart, so it is hidden on the GitHub skin.
+  function paintAboutExtras(t) {
+    if (t !== 'github') return;
+    for (const block of document.querySelectorAll('.project-page-sidebar-block')) {
+      if (!/^Created on\b/i.test(block.textContent.trim())) continue;
+      if (!metadataHiddenOrig.has(block)) {
+        metadataHiddenOrig.set(block, block.style.display);
+      }
+      if (block.style.display !== 'none') {
+        block.style.setProperty('display', 'none', 'important');
+      }
+    }
+  }
+
   // Each product heads the repository metadata block differently — GitHub's
   // "About" sidebar, GitLab's "Project information" block. CSS moves the block;
   // the heading is renamed here so its label matches the product being imitated.
@@ -909,6 +924,7 @@
     paintOrder(t);
     paintNavGroups(t);
     paintMetadata(t);
+    paintAboutExtras(t);
     paintHeadings(t);
     paintActiveTab(t);
     paintProjectTabs(t);
@@ -1089,6 +1105,7 @@
       paintOrder(current);
       paintNavGroups(current);
       paintMetadata(current);
+      paintAboutExtras(current);
       paintHeadings(current);
       paintActiveTab(current);
       paintProjectTabs(current);
