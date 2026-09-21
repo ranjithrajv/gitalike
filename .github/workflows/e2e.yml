@@ -45,3 +45,9 @@ jobs:
       # moves it.
       - name: Run the end-to-end suite
         run: node tools/compare/e2e.mjs
+
+      # The graded computed-style parity score: exact, content-free fidelity per
+      # source × skin. Same live sites and browser as the e2e suite; exits
+      # non-zero if a skin stops applying to a real cell.
+      - name: Computed-style parity
+        run: node tools/compare/style-parity.mjs

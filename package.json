@@ -17,6 +17,7 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "parity": "node tools/compare/parity-score.mjs",
+    "style-parity": "node tools/compare/style-parity.mjs",
     "test": "node --test",
     "canary": "node tools/compare/selector-canary.mjs",
     "package": "npm run package:chromium && npm run package:firefox",
