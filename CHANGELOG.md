@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Code is linted and formatted with the **Vite+ / Oxc** tools:
+  [`oxlint`](https://oxc.rs/docs/guide/usage/linter) (`npm run lint:js`) and
+  [`oxfmt`](https://oxc.rs/docs/guide/usage/formatter) (`npm run fmt`,
+  `npm run fmt:check`). Both run in the pre-commit gate and in CI. Only code is
+  formatted — the hand-wrapped Markdown, the YAML, the HTML and the theme CSS
+  are left alone (`.oxlintrc.json`, `.oxfmtrc.json`).
 - A third skin: **Bitbucket**. It is a *target only* — no host is classified as
   Bitbucket — so any configured GitHub, GitLab or Gitea site can wear it. Its
   Atlassian palette is mapped for each source's own tokens (Primer on GitHub,

@@ -55,6 +55,8 @@ npm run build        # -> dist/chromium and dist/firefox
 npm test             # unit tests, no browser needed
 node tools/e2e.mjs   # Playwright end-to-end test against the live sites
 npm run lint         # web-ext lint over the Firefox build
+npm run lint:js      # oxlint (Vite+ / Oxc) over src, tools and tests
+npm run fmt          # oxfmt — format the code in place
 npm run package      # store-ready zips -> dist/artifacts/
 npm run screenshots  # regenerate store/screenshots/
 npm run screenshots:projects  # refresh the docs/ project-page captures
@@ -73,12 +75,15 @@ To try it, load `dist/chromium` unpacked — see
 [Install](README.md#install) for the click-by-click.
 
 There are no runtime or build dependencies: `build.mjs` uses only Node's
-standard library, and the tests use Node's built-in `node:test`. Two dev
+standard library, and the tests use Node's built-in `node:test`. Four dev
 dependencies exist: [`web-ext`](https://github.com/mozilla/web-ext) for
-`npm run lint` and `npm run package`, and
+`npm run lint` and `npm run package`,
 [`playwright-core`](https://playwright.dev/) for `npm run screenshots` and
-`node tools/e2e.mjs`, both of which drive the system Chromium and download no
-browser of their own.
+`node tools/e2e.mjs` (both drive the system Chromium and download no browser of
+their own), and the **[Vite+](https://viteplus.dev)/Oxc** pair
+[`oxlint`](https://oxc.rs/docs/guide/usage/linter) and
+[`oxfmt`](https://oxc.rs/docs/guide/usage/formatter) for `npm run lint:js` and
+`npm run fmt`.
 
 ### The pre-commit gate
 
@@ -86,8 +91,8 @@ Every commit runs a gate first. It reads the *staged* blobs — not the working
 tree — and rejects merge conflict markers, CRLF line endings, missing final
 newlines, invalid JSON, JavaScript that fails `node --check`, oversized files
 and leaked credentials. It then checks that `package.json` and
-`package-lock.json` are in lockstep, and runs `npm test` and `npm run lint`, the
-same two commands CI runs.
+`package-lock.json` are in lockstep, and runs `npm test`, `npm run lint`,
+`npm run lint:js` and `npm run fmt:check` — the same commands CI runs.
 
 `npm install` wires it up through the `prepare` script (`.githooks/`); if you
 cloned before the hooks existed, apply them with:
@@ -540,7 +545,9 @@ read.
 ## Style
 
 - 2-space indent, single quotes, semicolons, trailing commas in multi-line
-  literals.
+  literals. `npm run fmt` (oxfmt) applies exactly this; the pre-commit gate
+  checks it with `npm run fmt:check`. Only code is formatted — the hand-wrapped
+  Markdown, the YAML, the HTML and the theme CSS are left alone.
 - `src/lib/*` and `src/content/*` are **classic scripts, not ES modules** — they
   share one scope, so publish through `globalThis.GITALIKE*` and wrap in an IIFE.
 - The background context has to work both ways: Chromium runs `background.js` as
@@ -556,8 +563,9 @@ read.
 ## Pull requests
 
 - One concern per pull request.
-- `npm test && npm run lint` must pass, and `node tools/e2e.mjs` if you touched
-  what it covers. The pre-commit gate enforces the first two; do not treat
+- `npm test && npm run lint && npm run lint:js && npm run fmt:check` must pass,
+  and `node tools/e2e.mjs` if you touched what it covers. The pre-commit gate
+  enforces these; do not treat
   `--no-verify` as a normal workflow.
 - Behaviour changes need a `README.md` update, and an entry under
   `## [Unreleased]` in `CHANGELOG.md`.

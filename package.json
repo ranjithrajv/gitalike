@@ -13,6 +13,9 @@
     "build:chromium": "node build.mjs chromium",
     "build:firefox": "node build.mjs firefox",
     "lint": "npm run build:firefox && web-ext lint --source-dir dist/firefox",
+    "lint:js": "oxlint --deny-warnings src tools tests build.mjs",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
     "test": "node --test",
     "canary": "node tools/selector-canary.mjs",
     "package": "npm run package:chromium && npm run package:firefox",
@@ -28,6 +31,8 @@
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "devDependencies": {
+    "oxfmt": "^0.68.0",
+    "oxlint": "^1.83.0",
     "playwright-core": "^1.63.0",
     "web-ext": "^10.6.0"
   },

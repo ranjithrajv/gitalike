@@ -75,7 +75,13 @@ const git = (...args) => run('git', args);
 
 // The index, not the worktree. `-z` keeps paths containing spaces or newlines
 // intact; the filter drops deletions, which have no blob to inspect.
-const staged = git('diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z')
+const staged = git(
+  'diff',
+  '--cached',
+  '--name-only',
+  '--diff-filter=ACMR',
+  '-z',
+)
   .stdout.split('\0')
   .filter(Boolean);
 
@@ -90,7 +96,8 @@ const isText = (buf) => buf && buf.length > 0 && !buf.includes(0);
 /** @type {{name: string, failures: string[], warnings: string[]}[]} */
 const checks = [];
 const add = (name, failures, warnings = []) => {
-  if (failures.length || warnings.length) checks.push({ name, failures, warnings });
+  if (failures.length || warnings.length)
+    checks.push({ name, failures, warnings });
 };
 
 // --- Staged content ---------------------------------------------------------
@@ -115,9 +122,12 @@ const add = (name, failures, warnings = []) => {
 
     const text = buf.toString('utf8');
 
-    if (conflict.test(text)) failures.push(`${path} contains merge conflict markers`);
+    if (conflict.test(text))
+      failures.push(`${path} contains merge conflict markers`);
     if (text.includes('\r')) {
-      failures.push(`${path} uses CRLF line endings — this repository is LF-only`);
+      failures.push(
+        `${path} uses CRLF line endings — this repository is LF-only`,
+      );
     }
     if (!text.endsWith('\n')) {
       failures.push(`${path} has no final newline`);
@@ -140,7 +150,9 @@ const add = (name, failures, warnings = []) => {
     try {
       JSON.parse(text);
     } catch (error) {
-      failures.push(`${path} is not valid JSON — ${String(error.message).split('\n')[0]}`);
+      failures.push(
+        `${path} is not valid JSON — ${String(error.message).split('\n')[0]}`,
+      );
     }
   }
 
@@ -190,7 +202,9 @@ const add = (name, failures, warnings = []) => {
   const pkg = blobs.has('package.json')
     ? blobs.get('package.json')
     : tryRead(join(root, 'package.json'));
-  const head = run('git', ['show', 'HEAD:package.json'], { maxBuffer: 64 * 1024 * 1024 });
+  const head = run('git', ['show', 'HEAD:package.json'], {
+    maxBuffer: 64 * 1024 * 1024,
+  });
   const p = pkg && parse(pkg);
   const l = lock && parse(lock);
   const previous = head.status === 0 ? parse(head.stdout) : null;
@@ -204,12 +218,19 @@ const add = (name, failures, warnings = []) => {
       );
     }
 
-    const DEP_FIELDS = ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies'];
+    const DEP_FIELDS = [
+      'dependencies',
+      'devDependencies',
+      'optionalDependencies',
+      'peerDependencies',
+    ];
     for (const field of DEP_FIELDS) {
       const now = JSON.stringify(p[field] ?? {});
       const inLock = JSON.stringify(l.packages?.['']?.[field] ?? {});
       if (now !== inLock) {
-        failures.push(`${field} differ from package-lock.json — run \`npm install\` to resync`);
+        failures.push(
+          `${field} differ from package-lock.json — run \`npm install\` to resync`,
+        );
       } else if (
         previous &&
         staged.includes('package.json') &&
@@ -245,6 +266,8 @@ const add = (name, failures, warnings = []) => {
 for (const [label, args] of [
   ['npm test', ['test']],
   ['npm run lint', ['run', 'lint']],
+  ['npm run lint:js', ['run', 'lint:js']],
+  ['npm run fmt:check', ['run', 'fmt:check']],
 ]) {
   const res = run(NPM, args);
   if (res.status === 0) continue;
@@ -258,7 +281,9 @@ const failures = checks.reduce((sum, check) => sum + check.failures.length, 0);
 const warnings = checks.reduce((sum, check) => sum + check.warnings.length, 0);
 
 if (failures) {
-  console.error(`\npre-commit: ${failures} problem(s) in ${staged.length} staged file(s)\n`);
+  console.error(
+    `\npre-commit: ${failures} problem(s) in ${staged.length} staged file(s)\n`,
+  );
   for (const check of checks) {
     if (!check.failures.length) continue;
     console.error(`  ✗ ${check.name}`);
@@ -267,12 +292,15 @@ if (failures) {
   for (const check of checks) {
     for (const message of check.warnings) console.error(`  ! ${message}`);
   }
-  console.error('\n  Fix the above, or bypass with `git commit --no-verify`.\n');
+  console.error(
+    '\n  Fix the above, or bypass with `git commit --no-verify`.\n',
+  );
   process.exit(1);
 }
 
 if (warnings) {
   for (const check of checks) {
-    for (const message of check.warnings) console.warn(`pre-commit: ${message}`);
+    for (const message of check.warnings)
+      console.warn(`pre-commit: ${message}`);
   }
 }

@@ -29,6 +29,11 @@ jobs:
       - name: Test
         run: npm test
 
+      # Oxlint + Oxfmt — the Vite+ (Oxc) lint and format pair. Code only; the
+      # hand-wrapped Markdown, YAML, HTML and CSS are deliberately not formatted.
+      - name: Lint and format check
+        run: npm run lint:js && npm run fmt:check
+
       # Builds the Firefox target and validates it with web-ext.
       - name: Lint the extension
         run: npm run lint
