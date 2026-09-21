@@ -12,6 +12,8 @@ import '../src/plugins/core.js';
 import '../src/plugins/skins/bitbucket/index.js';
 import '../src/plugins/skins/github/index.js';
 import '../src/plugins/skins/gitlab/index.js';
+import '../src/plugins/sources/bitbucket/index.js';
+import '../src/plugins/sources/gerrit/index.js';
 import '../src/plugins/sources/gitea/index.js';
 import '../src/plugins/sources/github/index.js';
 import '../src/plugins/sources/gitlab/index.js';

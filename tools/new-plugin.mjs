@@ -20,7 +20,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -48,6 +48,19 @@ const titleCase = (name) =>
     .replace(/(^|[-_])([a-z0-9])/g, (_, __, c) => ` ${c.toUpperCase()}`)
     .trim();
 
+const DRY_RUN = process.argv.includes('--dry-run');
+
+// Write a file, creating its folder, or in `--dry-run` say what would happen.
+// One code path for both, so a dry run cannot describe something different.
+async function write(path, content) {
+  if (DRY_RUN) {
+    console.log(`would write ${relative(root, path)}`);
+    return;
+  }
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, content);
+}
+
 // Insert `snippet` on its own lines immediately before the anchor line. Text
 // before the anchor line is kept, so an existing entry list is preserved.
 async function insertBeforeAnchor(path, anchor, snippet) {
@@ -55,6 +68,10 @@ async function insertBeforeAnchor(path, anchor, snippet) {
   const index = text.indexOf(anchor);
   if (index === -1) {
     throw new Error(`${path} has no "${anchor}" marker`);
+  }
+  if (DRY_RUN) {
+    console.log(`would add to ${relative(root, path)}: ${snippet.trim()}`);
+    return;
   }
   const lineStart = text.lastIndexOf('\n', index) + 1;
   await writeFile(
@@ -83,6 +100,7 @@ function skinContent(name, product, badge, color) {
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSkin('${name}', {
+    description: 'TODO: one line on what the ${product} UI is.',
     product: '${product}',
     badge: '${badge}',
     color: '${color}',
@@ -120,6 +138,7 @@ function sourceContent(name, label) {
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSource('${name}', {
+    description: 'TODO: one line on this forge’s markup.',
     label: '${label}',
 
     // TODO: the DOM hooks the skins read on this forge's pages. Mark a hook a
@@ -182,11 +201,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import '../../core.js';
-import './index.js';
-import '../../../lib/skins.js';
+import { loadSkin } from '../../../../tools/plugin-test.mjs';
 
-const SKIN = globalThis.GITALIKE_PLUGINS.skins['${name}'];
+const { skin: SKIN } = await loadSkin('${name}');
 
 test('${name} registers a complete skin', () => {
   assert.ok(SKIN, 'the skin registered');
@@ -214,11 +231,9 @@ function sourceTest(name, label) {
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import '../../core.js';
-import './index.js';
-import '../../../lib/sources.js';
+import { loadSource } from '../../../../tools/plugin-test.mjs';
 
-const SOURCE = globalThis.GITALIKE_PLUGINS.sources['${name}'];
+const { source: SOURCE } = await loadSource('${name}');
 
 test('${name} registers a complete source', () => {
   assert.ok(SOURCE, 'the source registered');
@@ -255,16 +270,12 @@ async function scaffoldSkin(name, flags) {
   const color = flags.color ?? '#000000';
 
   const dir = `src/plugins/skins/${name}`;
-  await mkdir(join(root, dir), { recursive: true });
-  await writeFile(
+  await write(
     join(root, dir, 'index.js'),
     skinContent(name, product, badge, color),
   );
-  await writeFile(
-    join(root, dir, `as-${name}.css`),
-    skinStylesheet(name, product),
-  );
-  await writeFile(
+  await write(join(root, dir, `as-${name}.css`), skinStylesheet(name, product));
+  await write(
     join(root, dir, `${name}.test.mjs`),
     skinTest(name, product, badge),
   );
@@ -293,9 +304,8 @@ async function scaffoldSkin(name, flags) {
 async function scaffoldSource(name, flags) {
   const label = flags.label ?? titleCase(name);
   const dir = `src/plugins/sources/${name}`;
-  await mkdir(join(root, dir), { recursive: true });
-  await writeFile(join(root, dir, 'index.js'), sourceContent(name, label));
-  await writeFile(join(root, dir, `${name}.test.mjs`), sourceTest(name, label));
+  await write(join(root, dir, 'index.js'), sourceContent(name, label));
+  await write(join(root, dir, `${name}.test.mjs`), sourceTest(name, label));
 
   await wire(
     `plugins/sources/${name}/index.js`,
@@ -340,7 +350,13 @@ if (!['skin', 'source'].includes(kind) || !name) {
       ? await scaffoldSkin(name, flags)
       : await scaffoldSource(name, flags);
 
-  // Relist it on the site and in plugins.json, now that the registry loads.
+  if (DRY_RUN) {
+    console.log(`\nwould scaffold ${result.what} (dry run — nothing written)`);
+    process.exit(0);
+  }
+
+  // Relist it on the site and in plugins.json, now that the registry loads (and
+  // validate that the new plugin loads at all, which is the same import).
   const registry = spawnSync(
     'node',
     [join(root, 'tools/registry.mjs'), '--write'],

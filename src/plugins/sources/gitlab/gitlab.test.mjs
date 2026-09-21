@@ -7,12 +7,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import '../../core.js';
-import './index.js';
-import '../../../lib/sources.js';
+import { loadSource } from '../../../../tools/plugin-test.mjs';
 
-const SOURCE = globalThis.GITALIKE_PLUGINS.sources.gitlab;
-const { SELECTORS, CANARY_PAGES } = globalThis.GITALIKE_SOURCES;
+const { source: SOURCE, SELECTORS, CANARY_PAGES } = await loadSource('gitlab');
 
 test('gitlab registers its Pajamas hooks', () => {
   assert.ok(SOURCE, 'the source registered');

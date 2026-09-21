@@ -13,6 +13,7 @@
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSkin('github', {
+    description: 'The GitHub UI, worn by a GitLab-flavoured site.',
     product: 'GitHub',
     badge: 'GH',
     color: '#24292f',

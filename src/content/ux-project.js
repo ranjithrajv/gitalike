@@ -380,10 +380,13 @@
       ? UX.BITBUCKET_NAV_WORDS || []
       : BITBUCKET_PROFILE_WORDS;
     const itemText = (el) => (el.textContent || '').replace(/\s+/g, ' ').trim();
+    // Bitbucket's app mounts in the source's declared root; scoping the search
+    // to it reads the declared hook and skips the page chrome outside it.
+    const app = document.querySelector(UX.SELECTORS.bitbucket.app) || document;
     // The bar's items are a mix — a link, a button, a bare span — so the
     // selector is broad and `labelMatches` (whole-label only) keeps it precise.
     const items = [
-      ...document.querySelectorAll(
+      ...app.querySelectorAll(
         'a, button, [role="menuitem"], [role="tab"], [role="link"], span',
       ),
     ].filter((el) => words.some((word) => UX.labelMatches(itemText(el), word)));

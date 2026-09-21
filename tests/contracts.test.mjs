@@ -36,6 +36,8 @@ const file = (rel) =>
 const hasFile = (rel) => existsSync(new URL(`../${rel}`, import.meta.url));
 
 const THEMES = SITES.THEMES;
+// Every source is a plugin; only a *markup* source has `SELECTORS` and a canary.
+const ALL_SOURCES = Object.keys(SOURCE_LIB.SOURCES);
 const SOURCES = Object.keys(UX.SELECTORS);
 
 /**
@@ -139,6 +141,30 @@ describe('source contract', () => {
     });
   }
 
+  test('a vocabulary-only source declares no hooks and no canary', () => {
+    // Bitbucket and Gerrit are client-rendered, so they carry only a label. A
+    // stray selector or canary would mean the source was half-classified.
+    for (const source of ALL_SOURCES.filter(
+      (name) => !SOURCES.includes(name),
+    )) {
+      const plugin = SOURCE_LIB.SOURCES[source];
+      assert.equal(plugin.markup, false, `${source} is vocabulary-only`);
+      assert.deepEqual(plugin.selectors, {}, `${source} has no hooks`);
+      assert.deepEqual(plugin.canary, [], `${source} has no canary`);
+    }
+  });
+
+  test('every kind a site can be is a registered source', () => {
+    // `sites.js` decides which product a host is; that product must be a source
+    // plugin, so the registry and the picker cannot disagree about what exists.
+    for (const kind of Object.keys(SITES.kinds)) {
+      assert.ok(
+        Object.hasOwn(SOURCE_LIB.SOURCES, kind),
+        `kind '${kind}' has no source plugin`,
+      );
+    }
+  });
+
   test('every nav rule names a known markup source', () => {
     // A rule whose `source` is not in SELECTORS could never be selected.
     const known = new Set(SOURCES);
@@ -167,69 +193,32 @@ describe('source contract', () => {
   });
 });
 
-describe('the plugin constructors', () => {
-  test('a complete skin has no problems', () => {
-    for (const skin of Object.values(SKINS.SKINS)) {
-      assert.deepEqual(SKINS.skinProblems(skin), []);
+describe('the registered plugins', () => {
+  // The constructors' own behaviour — what they fill, freeze and reject — is
+  // tested beside it in `src/plugins/core.test.mjs`; here every *shipped* plugin
+  // is checked against the same definitions, so a half-added folder still fails
+  // this suite by name.
+  test('every registered skin is complete', () => {
+    for (const [name, skin] of Object.entries(SKINS.SKINS)) {
+      assert.deepEqual(SKINS.skinProblems(skin), [], name);
     }
   });
 
-  test('a half-added skin is named part by part', () => {
-    // The whole list comes back at once, so an author is not chasing one field
-    // per run. `product` is present; everything else is the complaint.
-    const problems = SKINS.skinProblems({ product: 'Sourcehut' });
-    assert.ok(problems.some((p) => p.startsWith('badge')));
-    assert.ok(problems.some((p) => p.startsWith('color')));
-    assert.ok(problems.some((p) => p.startsWith('phrases')));
-    assert.ok(problems.some((p) => p.startsWith('profileMenu')));
-    assert.ok(!problems.some((p) => p.startsWith('product')));
+  test('every registered source is complete', () => {
+    for (const [name, source] of Object.entries(SOURCE_LIB.SOURCES)) {
+      assert.deepEqual(SOURCE_LIB.sourceProblems(source), [], name);
+    }
   });
 
-  test('a malformed skin field is caught, not just a missing one', () => {
-    const { gitlab } = SKINS.SKINS;
-    const problems = SKINS.skinProblems({ ...gitlab, color: 'purple' });
-    assert.deepEqual(problems, ['color — a #rrggbb string']);
-  });
-
-  test('defineSkin fills the optional capabilities and freezes', () => {
-    // Bitbucket declares `keep` and `projectTabs` but not `shortcuts`, `hide` or
-    // `topbarHide`, so those are the defaults under test.
+  test('a skin declares the capabilities it fills', () => {
+    // Bitbucket declares `keep` and `projectTabs` but not `shortcuts` or `hide`,
+    // so the filled defaults are present on the object while the derived tables
+    // omit them (checked by the derivation tests).
     const { bitbucket } = SKINS.SKINS;
     assert.deepEqual(bitbucket.shortcuts, {});
     assert.deepEqual(bitbucket.hide, []);
-    assert.deepEqual(bitbucket.topbarHide, []);
-    assert.ok(bitbucket.keep.length > 0, 'a declared capability is kept');
+    assert.ok(bitbucket.keep.length > 0);
     assert.equal(Object.isFrozen(bitbucket), true);
-  });
-
-  test('defineSkin rejects a half-added skin with the whole list', () => {
-    assert.throws(
-      () => SKINS.defineSkin('half-added', { product: 'X' }),
-      (error) =>
-        error.message.includes("'half-added' is incomplete") &&
-        error.message.includes('badge') &&
-        error.message.includes('profileMenu'),
-    );
-  });
-
-  test('defineSkin rejects a name that is already declared', () => {
-    assert.throws(
-      () => SKINS.defineSkin('gitlab', SKINS.SKINS.gitlab),
-      /'gitlab' is declared twice/,
-    );
-  });
-
-  test('a complete source has no problems', () => {
-    for (const source of Object.values(SOURCE_LIB.SOURCES)) {
-      assert.deepEqual(SOURCE_LIB.sourceProblems(source), []);
-    }
-  });
-
-  test('a source with no hooks or canary is named', () => {
-    assert.deepEqual(SOURCE_LIB.sourceProblems({}), [
-      'selectors — an object with at least one DOM hook',
-      'canary — an array of pages, each with a name, a url and keys',
-    ]);
   });
 });
 
@@ -310,12 +299,13 @@ describe('the plugins folder', () => {
 });
 
 describe('the published registry', () => {
-  test('plugins.json and docs/index.html match the registry', () => {
-    // One gate for both public faces: a new plugin that is not relisted, or a
+  test('plugins.json, PLUGINS.md and docs/index.html match the registry', () => {
+    // One gate for every public face: a new plugin that is not relisted, or a
     // hand-edit to a generated block, fails here with the fix named.
     const problems = registryProblems(
       file('docs/index.html'),
       file('plugins.json'),
+      file('PLUGINS.md'),
     );
     assert.deepEqual(problems, [], problems.join('; '));
   });
@@ -329,7 +319,7 @@ describe('the published registry', () => {
     );
     assert.deepEqual(
       registry.sources.map((source) => source.name),
-      SOURCES,
+      ALL_SOURCES,
     );
   });
 });

@@ -329,6 +329,7 @@
 
   globalThis.GITALIKE = {
     kinds,
+    builtin,
     skins,
     THEMES,
     SETTINGS_KEY,

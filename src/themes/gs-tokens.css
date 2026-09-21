@@ -243,3 +243,49 @@ html[data-theme]:is(
   --color-reaction-active-bg: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
   --color-reaction-hover-bg: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
 }
+
+/* ------------------ Atlassian tokens -> GitAlike (Bitbucket Cloud) -- */
+/* Bitbucket Cloud's React app reads Atlassian Design System custom
+   properties from the root. Custom properties inherit, so re-pointing the
+   ones a live bitbucket.org page resolves recolours the app on every skin
+   without reaching into the React tree. */
+
+html[class*="gs-theme-"] {
+  --ds-surface: var(--gs-canvas) !important;
+  --ds-surface-raised: var(--gs-canvas-overlay) !important;
+  --ds-surface-overlay: var(--gs-canvas-overlay) !important;
+  --ds-surface-sunken: var(--gs-canvas-subtle) !important;
+  --ds-surface-hovered: var(--gs-canvas-subtle) !important;
+  --ds-surface-pressed: var(--gs-canvas-subtle) !important;
+  --ds-text: var(--gs-fg) !important;
+  --ds-text-subtle: var(--gs-fg-muted) !important;
+  --ds-text-subtlest: var(--gs-fg-subtle) !important;
+  --ds-text-inverse: var(--gs-canvas) !important;
+  --ds-text-brand: var(--gs-link) !important;
+  --ds-link: var(--gs-link) !important;
+  --ds-link-pressed: var(--gs-link) !important;
+  --ds-border: var(--gs-border) !important;
+  --ds-border-focused: var(--gs-accent) !important;
+  --ds-background-neutral: var(--gs-canvas-subtle) !important;
+  --ds-background-selected: var(--gs-accent-subtle) !important;
+  --ds-icon: var(--gs-fg) !important;
+  --ds-icon-subtle: var(--gs-fg-muted) !important;
+}
+
+/* ------------------- PolyGerrit tokens -> GitAlike (Gerrit) -- */
+/* PolyGerrit reads these from the root and they inherit across its shadow
+   boundary, so the palette lands without reaching inside the app. Only the
+   names a live Gerrit resolves are listed; its header text is left alone so
+   it stays legible on Gerrit's own bar. */
+
+html[class*="gs-theme-"] {
+  --primary-text-color: var(--gs-fg) !important;
+  --link-color: var(--gs-link) !important;
+  --border-color: var(--gs-border) !important;
+  --selection-background-color: var(--gs-accent-subtle) !important;
+  --hover-background-color: var(--gs-canvas-subtle) !important;
+  --info-background: var(--gs-accent-subtle) !important;
+  --success-background: var(--gs-success-subtle) !important;
+  --warning-background: var(--gs-attention-subtle) !important;
+  --error-background: var(--gs-danger-subtle) !important;
+}

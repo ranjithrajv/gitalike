@@ -322,17 +322,22 @@ in `themes/ux-nav.css`.
 ## Adding another forge — contributions welcome
 
 GitAlike knows five source products — GitHub, GitLab, Gitea/Forgejo, Bitbucket
-and Gerrit — and paints three skins: GitLab, GitHub and Bitbucket. Codeberg
-(Forgejo) and gitea.com (Gitea) are bundled as GitHub-flavoured sources, shown
-with the GitLab UI; Bitbucket is bundled as its own source, shown with the GitHub
-UI. Gerrit is a source with no bundled host, added one instance at a time. **More
-are wanted.** Sourcehut is a genuinely different product that needs its own skin;
-a new *source* forge (one people host) also needs classifying. There are two
-levels, and the easy one is real work, not a consolation prize. Either way,
-`tests/contracts.test.mjs` is the checklist — it fails with the source or skin
-pieces still missing. `node tools/new-plugin.mjs source <name>` writes the markup
-object (its hooks and its canary page) to the anchor; classifying a host and
-adding the new vocabulary are the parts that still need judgement.
+and Gerrit — each one folder under `src/plugins/sources/`, and paints three
+skins: GitLab, GitHub and Bitbucket. Every source carries the DOM hooks a skin
+keys on and a canary page. A source whose UI is client-rendered is recoloured
+through the custom properties it reads rather than by reaching into its tree —
+Bitbucket Cloud's Atlassian `--ds-*` tokens, PolyGerrit's `--primary-text-color`
+and friends — which is what `themes/gs-tokens.css` maps (`markup: false` is still
+available for a source with no hooks at all). Codeberg (Forgejo) and gitea.com
+(Gitea) are bundled as GitHub-flavoured, shown with the GitLab UI; Bitbucket is
+bundled as its own source, shown with the GitHub UI; Gerrit has no bundled host,
+and is added one instance at a time. **More are wanted.** Sourcehut is a genuinely different product that needs its own skin; a
+new *source* forge (one people host) also needs classifying. Either way,
+`tests/contracts.test.mjs` is the checklist — it fails with the pieces still
+missing — and `node tools/new-plugin.mjs source <name>` writes the folder (its
+definition and a test). Classifying a host and adding the vocabulary are the
+parts that still need judgement. [`PLUGINS.md`](PLUGINS.md) is the generated
+author catalog, and `npm run plugins` prints the registry.
 
 ### A forge that already speaks one of the two dialects
 
@@ -387,7 +392,7 @@ steps 1–4 for you; the rest is the part that needs judgement.
 | 2 | `src/plugins/skins/<name>/as-<name>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
 | 3 | `src/plugins/skins/<name>/<name>.test.mjs` | the skin's own tests, beside it. `npm test` discovers them; the cross-skin invariants stay in `tests/ux.test.mjs` |
 | 4 | load lists | the entry is added to `PLUGIN_JS` and `CONTENT_CSS` in `src/background.js`, `src/popup/popup.html` and `tools/plugins.mjs`; the Firefox manifest derives its list from the folder. `tools/new-plugin.mjs` does this for you |
-| 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and `npm run registry` to relist it on the site |
+| 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and `npm run registry` to relist it in the site, `plugins.json` and `PLUGINS.md` |
 
 The completeness gate is **`tests/contracts.test.mjs`**: it derives the skin and
 source lists and fails with the parts a new one is still missing, by name. Run
@@ -464,13 +469,22 @@ the table — so update a theme rule and its `SELECTORS` entry together. The
 Gitea source canaries both of its hosts (gitea.com and codeberg.org), so the two
 halves of that shared markup family are watched separately.
 
+Each plugin's own tests live in its folder (`src/plugins/<group>/<name>/`) and
+are discovered by `npm test`. They load just that plugin through
+`tools/plugin-test.mjs` (`loadSkin` / `loadSource`), so run under `npm test` with
+no extra wiring; the cross-plugin invariants stay in `tests/*.test.mjs`. The
+plugin API's own rejection cases are in `src/plugins/core.test.mjs`.
+
 The **plugin registry** is generated, not hand-maintained: `npm run registry`
-rewrites `plugins.json` and the site's Plugins chips from the two registries, and
-`npm run registry:check` (run by CI and the pre-commit hook, beside `npm test`)
-fails when either is out of date. `tools/new-plugin.mjs` runs it for you after
-scaffolding. `defineSkin`/`defineSource` validate a plugin's shape at load, so a
-half-added one fails once with the whole missing list; `tests/contracts.test.mjs`
-is the same checklist from the outside.
+rewrites `plugins.json`, the author catalog `PLUGINS.md` and the site's Plugins
+chips from the plugin folders, and `npm run registry:check` (run by CI and the
+pre-commit hook, beside `npm test`) fails when any is out of date.
+`npm run plugins` prints the registry. `tools/new-plugin.mjs` runs the generator
+for you after scaffolding (and `--dry-run` says what it would do without
+writing). `defineSkin`/`defineSource` validate a plugin's shape at load, and
+`lib/skins.js` / `lib/sources.js` validate the cross-references, so a half-added
+or mis-wired plugin fails by name; `tests/contracts.test.mjs` is the same
+checklist from the outside.
 
 The single most useful habit: after a change, load the extension and check the
 site with the skin **off** as well as on. A skin that leaks when disabled is the

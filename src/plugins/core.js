@@ -2,23 +2,33 @@
  * GitAlike — the plugin API.
  *
  * A *skin* (a target UI: GitLab, GitHub, Bitbucket) and a *source* (a forge's
- * markup: GitHub/Primer, GitLab/Pajamas, Gitea/Forgejo) are each one file under
+ * markup: GitHub/Primer, GitLab/Pajamas, Gitea/Forgejo, or a vocabulary-only
+ * product such as Bitbucket or Gerrit) are each one folder under
  * `src/plugins/`. A plugin registers itself here, once:
  *
- *   plugins/skins/<name>.js     defineSkin('<name>', { … })
- *   plugins/sources/<name>.js   defineSource('<name>', { … })
+ *   plugins/skins/<name>/index.js     defineSkin('<name>', { … })
+ *   plugins/sources/<name>/index.js   defineSource('<name>', { … })
  *
  * The constructor validates the object at load and fills its optional
  * capabilities, so a half-added plugin fails with the whole list of what is
  * missing rather than as a silent no-op on a page. The name is the theme key
  * (`gs-theme-<name>`) and the value the popup writes to storage.
  *
- * Loaded first, before any plugin file and before `lib/skins.js` /
+ * A source has a `label`; a *markup* source (`markup: true`, the default) also
+ * carries `selectors` and `canary`, because its pages are keyed on. A
+ * vocabulary-only source (`markup: false`) has neither — its product is
+ * client-rendered, so there is nothing to key a hook on, and only the
+ * copy/label passes reach it.
+ *
+ * A plugin may name the API it was written against with `minApiVersion`;
+ * `assertCompatible` fails when this GitAlike is older.
+ *
+ * Loaded first, before any plugin folder and before `lib/skins.js` /
  * `lib/sources.js`, which derive the flat tables the rest of the code reads:
  *
  *   plugins/core.js
- *   plugins/skins/*.js        defineSkin(...)
- *   plugins/sources/*.js      defineSource(...)
+ *   plugins/skins/<name>/index.js
+ *   plugins/sources/<name>/index.js
  *   lib/skins.js              GITALIKE_SKINS
  *   lib/sites.js
  *   lib/sources.js            GITALIKE_SOURCES
@@ -32,7 +42,8 @@
   /**
    * The plugin API version. Bumped when a skin or source object changes shape in
    * a way an out-of-tree plugin (or the published registry) could notice;
-   * `tools/registry.mjs` carries it into `plugins.json` so a consumer can pin it.
+   * `tools/registry.mjs` carries it into `plugins.json` and each plugin may pin
+   * the version it needs with `minApiVersion`.
    */
   const API_VERSION = 1;
 
@@ -67,42 +78,17 @@
   ];
 
   /**
-   * What a source must carry: the DOM hooks a skin reads, and the live page the
-   * canary watches so a rename upstream fails a scheduled check instead of a
-   * user.
-   * @type {[string, string, (value: unknown) => boolean][]}
-   */
-  const SOURCE_REQUIRED = [
-    [
-      'selectors',
-      'an object with at least one DOM hook',
-      (v) => isObject(v) && Object.keys(v).length > 0,
-    ],
-    [
-      'canary',
-      'an array of pages, each with a name, a url and keys',
-      (v) =>
-        Array.isArray(v) &&
-        v.length > 0 &&
-        v.every(
-          (page) =>
-            isString(page?.name) &&
-            isString(page?.url) &&
-            Array.isArray(page?.keys) &&
-            page.keys.length > 0,
-        ),
-    ],
-  ];
-
-  /**
    * The capabilities a skin opts into, with the value each takes when it does
    * not. Filling them keeps a skin's shape total, but the derived tables publish
    * only the ones a skin *declared*: an empty `keep` must not reach `navKeep`,
    * where it would read as a whitelist of nothing rather than no whitelist at
    * all. A `projectTabs` of null is the absent capability, so the runtime's
    * `PROJECT_TABS[target] || PROJECT_TABS.github` fallback keeps working.
+   * Published in the registry so a plugin's powers are visible without reading
+   * its file.
+   * @type {Record<string, unknown>}
    */
-  const skinDefaults = () => ({
+  const SKIN_CAPABILITIES = {
     repoOrder: [],
     hide: [],
     keep: [],
@@ -111,21 +97,84 @@
     shortcutTargets: {},
     topbarHide: [],
     projectTabs: null,
-  });
+  };
 
-  /** The required parts `object` is missing or has malformed, named. */
-  function problemsFor(required, object) {
-    return required
-      .filter(([key, , ok]) => !ok(object?.[key]))
-      .map(([key, want]) => `${key} — ${want}`);
+  // Fresh values, so two skins never share a default array or object.
+  const skinDefaults = () =>
+    Object.fromEntries(
+      Object.entries(SKIN_CAPABILITIES).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? [] : isObject(value) ? {} : value,
+      ]),
+    );
+
+  function canaryProblems(canary) {
+    const pages = Array.isArray(canary) ? canary : [];
+    if (!pages.length) {
+      return 'canary — an array of pages, each with a name, a url and keys';
+    }
+    const bad = pages.find(
+      (page) =>
+        !isString(page?.name) ||
+        !isString(page?.url) ||
+        !Array.isArray(page?.keys) ||
+        !page.keys.length,
+    );
+    return bad
+      ? 'canary — every page needs a name, a url and a non-empty keys list'
+      : null;
   }
 
   /** The required parts a skin is missing, named. Empty when complete. */
-  const skinProblems = (skin) => problemsFor(SKIN_REQUIRED, skin);
-  /** The required parts a source is missing, named. Empty when complete. */
-  const sourceProblems = (source) => problemsFor(SOURCE_REQUIRED, source);
+  function skinProblems(skin) {
+    return SKIN_REQUIRED.filter(([key, , ok]) => !ok(skin?.[key])).map(
+      ([key, want]) => `${key} — ${want}`,
+    );
+  }
 
-  // The registries, keyed by name; every plugin file fills one entry.
+  /**
+   * The required parts a source is missing, named. A markup source needs its
+   * hooks and a canary page; a vocabulary-only source must not carry either, so
+   * a half-declared one is caught rather than silently skipped.
+   */
+  function sourceProblems(source) {
+    if (!isString(source?.label)) return ['label — a display name, a string'];
+    if (source.markup === false) {
+      const problems = [];
+      if (isObject(source.selectors) && Object.keys(source.selectors).length) {
+        problems.push('selectors — a vocabulary-only source has none');
+      }
+      if (Array.isArray(source.canary) && source.canary.length) {
+        problems.push('canary — a vocabulary-only source has none');
+      }
+      return problems;
+    }
+    const problems = [];
+    if (!isObject(source.selectors) || !Object.keys(source.selectors).length) {
+      problems.push('selectors — an object with at least one DOM hook');
+    }
+    const canary = canaryProblems(source.canary);
+    if (canary) problems.push(canary);
+    return problems;
+  }
+
+  /**
+   * Fail when this GitAlike is older than the API `minApiVersion` a plugin was
+   * written against. `name` only shapes the message. Called by the constructors
+   * for a plugin's own `minApiVersion`, and exported for a caller that reads one
+   * from elsewhere (the registry, a future out-of-tree loader).
+   */
+  function assertCompatible(minApiVersion, name) {
+    if (minApiVersion === undefined) return;
+    if (typeof minApiVersion !== 'number' || minApiVersion > API_VERSION) {
+      throw new Error(
+        `GitAlike: '${name ?? 'this plugin'}' needs plugin API ${minApiVersion}, ` +
+          `but this GitAlike provides ${API_VERSION}`,
+      );
+    }
+  }
+
+  // The registries, keyed by name; every plugin folder fills one entry.
   const skins = {};
   const sources = {};
 
@@ -138,25 +187,22 @@
     }
   }
 
-  function assertComplete(kind, name, required, object) {
-    const problems = problemsFor(required, object);
-    if (problems.length) {
-      throw new Error(
-        `GitAlike: the ${kind} '${name}' is incomplete:\n  - ${problems.join('\n  - ')}`,
-      );
-    }
-  }
-
   /**
    * Register a skin. Fills the optional capabilities, records which ones were
    * declared (non-enumerably, so it never leaks into iteration or JSON), freezes
    * the object and returns it. Throws with the whole missing list if the skin is
-   * incomplete, and for a duplicate name.
+   * incomplete, and for a duplicate name or an unmet `minApiVersion`.
    */
   function defineSkin(name, partial) {
     assertNew('skin', skins, name);
-    assertComplete('skin', name, SKIN_REQUIRED, partial);
+    assertCompatible(partial?.minApiVersion, name);
     const skin = { ...skinDefaults(), ...partial };
+    const problems = skinProblems(skin);
+    if (problems.length) {
+      throw new Error(
+        `GitAlike: the skin '${name}' is incomplete:\n  - ${problems.join('\n  - ')}`,
+      );
+    }
     Object.defineProperty(skin, 'declared', {
       value: new Set(Object.keys(partial)),
       enumerable: false,
@@ -166,24 +212,33 @@
   }
 
   /**
-   * Register a source: its DOM hooks and its canary pages. Throws with the whole
-   * missing list if it is incomplete, and for a duplicate name.
+   * Register a source: its display label and, for a markup source, its DOM hooks
+   * and canary pages. Throws with the whole missing list if it is incomplete,
+   * and for a duplicate name or an unmet `minApiVersion`.
    */
   function defineSource(name, partial) {
     assertNew('source', sources, name);
-    assertComplete('source', name, SOURCE_REQUIRED, partial);
-    sources[name] = Object.freeze({ ...partial });
+    assertCompatible(partial?.minApiVersion, name);
+    const source = { markup: true, selectors: {}, canary: [], ...partial };
+    const problems = sourceProblems(source);
+    if (problems.length) {
+      throw new Error(
+        `GitAlike: the source '${name}' is incomplete:\n  - ${problems.join('\n  - ')}`,
+      );
+    }
+    sources[name] = Object.freeze(source);
     return sources[name];
   }
 
   globalThis.GITALIKE_PLUGINS = {
     API_VERSION,
     SKIN_REQUIRED,
-    SOURCE_REQUIRED,
+    SKIN_CAPABILITIES,
     defineSkin,
     defineSource,
     skinProblems,
     sourceProblems,
+    assertCompatible,
     skins,
     sources,
   };

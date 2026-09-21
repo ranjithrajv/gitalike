@@ -12,6 +12,7 @@
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSource('github', {
+    description: 'GitHub’s Primer markup.',
     // A display name for the registry, the site's chip and the docs.
     label: 'GitHub — Primer',
     // GitHub's markup (Primer).

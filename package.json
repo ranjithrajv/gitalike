@@ -24,6 +24,7 @@
     "canary": "node tools/compare/selector-canary.mjs",
     "registry": "node tools/registry.mjs --write",
     "registry:check": "node tools/registry.mjs",
+    "plugins": "node tools/registry.mjs --list",
     "new-plugin": "node tools/new-plugin.mjs",
     "package": "npm run package:chromium && npm run package:firefox",
     "package:chromium": "npm run build:chromium && web-ext build --source-dir dist/chromium --artifacts-dir dist/artifacts/chromium --overwrite-dest",

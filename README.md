@@ -278,8 +278,12 @@ short version:
   or editable regions.
 - **The keyboard remap is best-effort.** Where the destination has a link the
   combo clicks it; `g n` (notifications) has no link, so it works only on GitHub.
-- **Bitbucket and Gerrit as sources are vocabulary-only**, and Gerrit has no
-  bundled host — add it by instance.
+- **Bitbucket and Gerrit are client-rendered sources.** Their palettes are
+  re-pointed through the design tokens each reads (Atlassian `--ds-*` on
+  Bitbucket Cloud, PolyGerrit's root properties on Gerrit), Bitbucket's
+  repository bar is handled, and both app shells are canaried — but Gerrit's
+  copy and navigation live inside shadow DOM and are not reached yet. Gerrit has
+  no bundled host; add it by instance.
 - **The skin is cosmetic, and the page can influence it.** It is not a security
   boundary; do not treat it as a trust signal.
 - **Access is bundled hosts at install, one origin at a time after that.** There
@@ -313,7 +317,8 @@ New **plugins** are welcome: a *skin* (a target UI) or a *source* (a forge's
 markup) is one self-contained folder under `src/plugins/` — its definition, its
 tests, and, for a skin, its stylesheet.
 `node tools/new-plugin.mjs skin <name>` scaffolds one and relists it; the
-registry is also published as [`plugins.json`](plugins.json). See
+registry is published as [`plugins.json`](plugins.json) and the author catalog as
+[`PLUGINS.md`](PLUGINS.md), and `npm run plugins` lists it. See
 [Adding a skin](CONTRIBUTING.md#adding-a-skin) and
 [Adding another forge](CONTRIBUTING.md#adding-another-forge--contributions-welcome),
 or [propose one](https://github.com/ranjithrajv/gitalike/issues/new?template=new_plugin.yml).

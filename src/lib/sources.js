@@ -1,20 +1,24 @@
 /**
  * GitAlike — the derived source tables.
  *
- * The sources themselves are declared one file per plugin under
+ * The sources themselves are declared one folder per plugin under
  * `src/plugins/sources/`, registering with `defineSource` (`plugins/core.js`).
- * This file derives the shapes the rest of the code reads — `SELECTORS` keyed by
- * source, and a flat `CANARY_PAGES` list with the source named on each page —
- * and publishes `globalThis.GITALIKE_SOURCES`.
+ * Every source is registered, markup or not; this file derives the shapes the
+ * rest of the code reads — `SELECTORS` keyed by *markup* source, and a flat
+ * `CANARY_PAGES` list with the source named on each page — and publishes
+ * `globalThis.GITALIKE_SOURCES`.
  *
  * `SELECTORS` are the DOM hooks a skin reads. The stylesheets spell their
  * selectors out — CSS cannot read this table — so a hook a stylesheet owns is
- * marked `// css` in the plugin file, and `tests/contracts.test.mjs` checks the
- * two agree. `canary` is the live page `tools/compare/selector-canary.mjs`
+ * marked `// css` in the plugin folder, and `tests/contracts.test.mjs` checks
+ * the two agree. `canary` is the live page `tools/compare/selector-canary.mjs`
  * fetches and the keys it must still carry, so a renamed hook is one failing
  * check rather than a literal to hunt through three files.
  *
- * Loaded after every source plugin and before `ux.js`.
+ * Loaded after every source plugin and before `ux.js`. It validates the source
+ * structure at load — a selector that is not a string, a canary pinning a hook
+ * the source does not declare — so a typo fails here by name rather than as a
+ * canary that silently watches nothing.
  */
 (() => {
   'use strict';
@@ -31,10 +35,34 @@
     sources: SOURCES,
   } = globalThis.GITALIKE_PLUGINS;
 
-  const SELECTORS = Object.fromEntries(
-    Object.entries(SOURCES).map(([name, source]) => [name, source.selectors]),
+  const markupSources = Object.entries(SOURCES).filter(
+    ([, source]) => source.markup !== false,
   );
-  const CANARY_PAGES = Object.entries(SOURCES).flatMap(([name, source]) =>
+
+  for (const [name, source] of markupSources) {
+    for (const [key, selector] of Object.entries(source.selectors)) {
+      if (typeof selector !== 'string' || !selector.trim()) {
+        throw new Error(
+          `GitAlike: source '${name}' selector '${key}' is not a selector string`,
+        );
+      }
+    }
+    for (const page of source.canary) {
+      for (const key of page.keys) {
+        if (!Object.hasOwn(source.selectors, key)) {
+          throw new Error(
+            `GitAlike: source '${name}' canary '${page.name}' pins '${key}', ` +
+              `which is not one of its selectors`,
+          );
+        }
+      }
+    }
+  }
+
+  const SELECTORS = Object.fromEntries(
+    markupSources.map(([name, source]) => [name, source.selectors]),
+  );
+  const CANARY_PAGES = markupSources.flatMap(([name, source]) =>
     source.canary.map((page) => ({ ...page, source: name })),
   );
 

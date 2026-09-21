@@ -32,7 +32,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `node tools/new-plugin.mjs skin <name>` (or `source <name>`) scaffolds a
   self-contained plugin folder — its `index.js`, a test beside it, and, for a
   skin, its stylesheet and `CONTENT_CSS` entry — wires the entry into every load
-  list and relists it on the site.
+  list and relists it on the site; `--dry-run` reports the same plan without
+  writing.
+- **Bitbucket and Gerrit are full source plugins now**, with hooks and canary
+  pages like the other sources. Bitbucket Cloud is watched on its `#root` app
+  shell and, being light DOM, `paintBitbucketNav` reaches its repository bar;
+  Gerrit is watched on `gr-app#pg-app`. Both are recoloured by re-pointing the
+  design tokens each app reads from the root — Atlassian's `--ds-*`, and
+  PolyGerrit's `--primary-text-color` and friends, which inherit across Gerrit's
+  shadow boundary (`themes/gs-tokens.css`). Gerrit's copy and navigation inside
+  shadow DOM are not reached yet. A source with no hooks at all can still declare
+  `markup: false`, and `lib/sources.js` validates at load that a selector is a
+  string and that a canary page pins a declared hook.
+- A richer published registry: `plugins.json` carries each plugin's
+  `description`, a skin's declared `capabilities`, and a source's `markup` flag
+  and bundled hosts. `PLUGINS.md` is a generated author catalog and
+  `npm run plugins` prints the registry. A plugin may pin the API it was written
+  against with `minApiVersion`, checked by `assertCompatible`, and
+  `lib/skins.js` validates a skin's `navRules` source cross-references at load.
+- A shared test loader (`tools/plugin-test.mjs`) for the per-plugin tests, and
+  `src/plugins/core.test.mjs` for the plugin API's own acceptance and rejection
+  cases.
 
 ### Changed
 

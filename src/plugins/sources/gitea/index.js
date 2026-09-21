@@ -12,6 +12,8 @@
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSource('gitea', {
+    description:
+      'Gitea and Forgejo’s shared markup, on gitea.com and Codeberg.',
     label: 'Gitea / Forgejo',
     // Gitea and Forgejo share one markup family, so one source covers both
     // hosts: gitea.com (Gitea) and codeberg.org (Forgejo). Each host has its

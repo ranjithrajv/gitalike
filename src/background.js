@@ -20,6 +20,8 @@ const PLUGIN_JS = [
   'plugins/skins/bitbucket/index.js',
   'plugins/skins/github/index.js',
   'plugins/skins/gitlab/index.js',
+  'plugins/sources/bitbucket/index.js',
+  'plugins/sources/gerrit/index.js',
   'plugins/sources/gitea/index.js',
   'plugins/sources/github/index.js',
   'plugins/sources/gitlab/index.js',

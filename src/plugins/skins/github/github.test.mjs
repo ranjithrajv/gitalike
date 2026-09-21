@@ -9,12 +9,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import '../../core.js';
-import './index.js';
-import '../../../lib/skins.js';
+import { loadSkin } from '../../../../tools/plugin-test.mjs';
 
-const SKIN = globalThis.GITALIKE_PLUGINS.skins.github;
 const {
+  skin: SKIN,
   NAV,
   LABELS,
   CHROME,
@@ -25,7 +23,7 @@ const {
   NAV_RULES,
   PROJECT_TABS,
   PROFILE_MENU,
-} = globalThis.GITALIKE_SKINS;
+} = await loadSkin('github');
 
 test('github registers the GitHub meta and shape', () => {
   assert.ok(SKIN, 'the skin registered');

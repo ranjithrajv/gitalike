@@ -14,6 +14,7 @@
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSkin('bitbucket', {
+    description: 'The Bitbucket UI, worn by any configured site.',
     product: 'Bitbucket',
     badge: 'BB',
     color: '#0052cc',

@@ -13,6 +13,7 @@
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSkin('gitlab', {
+    description: 'The GitLab UI, worn by a GitHub- or Gitea-flavoured site.',
     product: 'GitLab',
     badge: 'GL',
     color: '#7759c2',

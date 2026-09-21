@@ -1,25 +1,24 @@
 /**
  * The Bitbucket skin's own tests, beside its definition and palette.
  *
- * Loads the plugin API and this skin alone, then the derivations. The pinned
- * suite at the bottom is the one anchored to a real capture rather than to the
- * source: Bitbucket no longer serves public repository pages, so a saved menu
- * model in `tests/fixtures/` is the reference. Node's test runner discovers it.
+ * The pinned suite at the bottom is the one anchored to a real capture rather
+ * than to the source: Bitbucket no longer serves public repository pages, so a
+ * saved menu model in `tests/fixtures/` is the reference. Node's test runner
+ * discovers it.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import '../../core.js';
-import './index.js';
-import '../../../lib/skins.js';
-import '../../../lib/sources.js';
-import '../../../lib/ux.js';
+import { loadSkin } from '../../../../tools/plugin-test.mjs';
 
-const SKIN = globalThis.GITALIKE_PLUGINS.skins.bitbucket;
-const { NAV, NAV_KEEP, NAV_RULES, PROJECT_TABS, PROFILE_MENU } =
-  globalThis.GITALIKE_SKINS;
 const {
+  skin: SKIN,
+  NAV,
+  NAV_KEEP,
+  NAV_RULES,
+  PROJECT_TABS,
+  PROFILE_MENU,
   translate,
   translateControl,
   noEquivalentFor,
@@ -27,7 +26,7 @@ const {
   navGroupFor,
   projectTabs,
   repoNav,
-} = globalThis.GITALIKE_UX;
+} = await loadSkin('bitbucket');
 
 test('bitbucket registers the Bitbucket meta and shape', () => {
   assert.ok(SKIN, 'the skin registered');

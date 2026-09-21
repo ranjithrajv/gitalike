@@ -9,14 +9,21 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import '../../core.js';
-import './index.js';
-import '../../../lib/skins.js';
+import { loadSkin } from '../../../../tools/plugin-test.mjs';
 
-const SKIN = globalThis.GITALIKE_PLUGINS.skins.gitlab;
-const { NAV, LABELS, CHROME, UNMAPPED, SHORTCUTS, TOPBAR_HIDE, NAV_GROUPS } =
-  globalThis.GITALIKE_SKINS;
-const { NAV_HIDE, NAV_RULES, PROFILE_MENU } = globalThis.GITALIKE_SKINS;
+const {
+  skin: SKIN,
+  NAV,
+  LABELS,
+  CHROME,
+  UNMAPPED,
+  SHORTCUTS,
+  TOPBAR_HIDE,
+  NAV_GROUPS,
+  NAV_HIDE,
+  NAV_RULES,
+  PROFILE_MENU,
+} = await loadSkin('gitlab');
 
 test('gitlab registers the GitLab meta and shape', () => {
   assert.ok(SKIN, 'the skin registered');

@@ -32,15 +32,53 @@
   const {
     API_VERSION,
     SKIN_REQUIRED,
+    SKIN_CAPABILITIES,
     defineSkin,
     skinProblems,
+    assertCompatible,
     skins: SKINS,
+    sources: ALL_SOURCES,
   } = globalThis.GITALIKE_PLUGINS;
 
   // Every nav rule ranks by its skin's `repoOrder`, filled in here so the rule
   // and the order cannot drift apart.
   for (const skin of Object.values(SKINS)) {
     for (const rule of skin.navRules) rule.order = skin.repoOrder;
+  }
+
+  // Validate the rules a skin can only state, never check, here: a rule that
+  // names no registered source, or has no container, silently never fires on a
+  // page. Failing at load names the skin, so a contributor sees it instead of a
+  // nav that quietly does not reorder.
+  for (const [name, skin] of Object.entries(SKINS)) {
+    for (const [index, rule] of skin.navRules.entries()) {
+      const where = `skin '${name}' navRules[${index}]`;
+      if (!Object.hasOwn(ALL_SOURCES, rule?.source)) {
+        throw new Error(
+          `GitAlike: ${where} names source '${rule?.source}', which is not registered`,
+        );
+      }
+      if (
+        typeof rule.container !== 'string' &&
+        typeof rule.scope !== 'string'
+      ) {
+        throw new Error(`GitAlike: ${where} needs a container or a scope`);
+      }
+      if (typeof rule.item !== 'string' || !rule.item) {
+        throw new Error(`GitAlike: ${where} needs an item selector`);
+      }
+      if (!Array.isArray(rule.order) || !rule.order.length) {
+        throw new Error(`GitAlike: ${where} needs a non-empty order`);
+      }
+    }
+    if (!skin.repoOrder.every((label) => typeof label === 'string' && label)) {
+      throw new Error(`GitAlike: skin '${name}' repoOrder has an empty label`);
+    }
+    if (skin.projectTabs !== null && typeof skin.projectTabs !== 'function') {
+      throw new Error(
+        `GitAlike: skin '${name}' projectTabs must be a function or null`,
+      );
+    }
   }
 
   // The tables a skin declares are published; the optional ones it leaves out
@@ -57,8 +95,10 @@
   globalThis.GITALIKE_SKINS = {
     API_VERSION,
     SKIN_REQUIRED,
+    SKIN_CAPABILITIES,
     defineSkin,
     skinProblems,
+    assertCompatible,
     SKINS,
     PHRASES: bySkin('phrases'),
     NAV: bySkin('nav'),

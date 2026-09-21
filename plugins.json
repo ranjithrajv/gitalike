@@ -6,27 +6,89 @@
       "product": "Bitbucket",
       "badge": "BB",
       "color": "#0052cc",
-      "layout": "gitlab"
+      "layout": "gitlab",
+      "description": "The Bitbucket UI, worn by any configured site.",
+      "capabilities": [
+        "keep",
+        "projectTabs",
+        "repoOrder"
+      ]
     },
     {
       "name": "github",
       "product": "GitHub",
       "badge": "GH",
       "color": "#24292f",
-      "layout": "github"
+      "layout": "github",
+      "description": "The GitHub UI, worn by a GitLab-flavoured site.",
+      "capabilities": [
+        "hide",
+        "keep",
+        "projectTabs",
+        "repoOrder",
+        "shortcutTargets",
+        "shortcuts",
+        "topbarHide"
+      ]
     },
     {
       "name": "gitlab",
       "product": "GitLab",
       "badge": "GL",
       "color": "#7759c2",
-      "layout": "gitlab"
+      "layout": "gitlab",
+      "description": "The GitLab UI, worn by a GitHub- or Gitea-flavoured site.",
+      "capabilities": [
+        "groups",
+        "hide",
+        "repoOrder",
+        "shortcutTargets",
+        "shortcuts",
+        "topbarHide"
+      ]
     }
   ],
   "sources": [
     {
+      "name": "bitbucket",
+      "label": "Bitbucket",
+      "description": "Bitbucket Cloud’s repository app, mounted in #root.",
+      "markup": true,
+      "hosts": [
+        "bitbucket.org"
+      ],
+      "selectors": [
+        "app",
+        "bootstrap",
+        "viewName"
+      ],
+      "canary": [
+        "https://bitbucket.org/tutorials/markdowndemo"
+      ]
+    },
+    {
+      "name": "gerrit",
+      "label": "Gerrit",
+      "description": "Gerrit’s PolyGerrit app; recoloured through its root custom properties.",
+      "markup": true,
+      "hosts": [],
+      "selectors": [
+        "app",
+        "body"
+      ],
+      "canary": [
+        "https://gerrit-review.googlesource.com/"
+      ]
+    },
+    {
       "name": "gitea",
       "label": "Gitea / Forgejo",
+      "description": "Gitea and Forgejo’s shared markup, on gitea.com and Codeberg.",
+      "markup": true,
+      "hosts": [
+        "codeberg.org",
+        "gitea.com"
+      ],
       "selectors": [
         "repoNavList",
         "repoMenu",
@@ -44,6 +106,11 @@
     {
       "name": "github",
       "label": "GitHub — Primer",
+      "description": "GitHub’s Primer markup.",
+      "markup": true,
+      "hosts": [
+        "github.com"
+      ],
       "selectors": [
         "repoNavList",
         "appHeader",
@@ -66,6 +133,11 @@
     {
       "name": "gitlab",
       "label": "GitLab — Pajamas",
+      "description": "GitLab’s Pajamas markup.",
+      "markup": true,
+      "hosts": [
+        "gitlab.com"
+      ],
       "selectors": [
         "superSidebar",
         "navContainer",

@@ -12,6 +12,7 @@
   'use strict';
 
   globalThis.GITALIKE_PLUGINS.defineSource('gitlab', {
+    description: 'GitLab’s Pajamas markup.',
     label: 'GitLab — Pajamas',
     // GitLab's markup (Pajamas, plus its older CSS).
     selectors: {

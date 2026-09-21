@@ -59,22 +59,30 @@ it stops short of a perfect reskin — the detail behind the short list in the
   `#0052CC` accent, and the Source/Commits/Branches/Pull requests/Pipelines/
   Deployments/Jira issues/Security/Downloads menu) rather than a live page. Its
   navigation is a left sidebar, so it reuses GitLab's layout, but its menu is
-  flat: it drops GitLab's group headings rather than inheriting them. It cannot
-  be watched by the selector canary for the same reason.
-- **Bitbucket as a source is vocabulary-only for now.** A Bitbucket host can be
-  classified and shown with the GitHub or GitLab UI, and its copy, control labels
-  and `/pull-requests/N` reference markers follow the applied product — but there
-  is no palette, navigation or metadata pass for Bitbucket markup. Bitbucket
-  Cloud renders its repository page client-side and serves no capturable public
-  page, so its structural hooks cannot be verified the way the other forges' are;
-  the skin stops at the source-agnostic passes until a capture exists.
-- **Gerrit as a source is vocabulary-only too, and has no bundled host.** A
-  Gerrit instance is added one origin at a time from the popup, and can be shown
-  with the GitHub or GitLab UI. Like Bitbucket, its PolyGerrit UI is
-  client-rendered with no capturable markup, so there is no palette, navigation
-  or metadata pass; and its changes are numbered (`/c/<project>/+/<N>`) with a
-  Change-Id rather than a `#`/`!` pull-request marker, so even the reference
-  markers do not apply. Copy and control labels are what reach it.
+  flat: it drops GitLab's group headings rather than inheriting them. (The
+  Bitbucket *source*'s app shell is canaried; the skin's repo-tab set, taken
+  from the capture, is not.)
+- **Bitbucket Cloud is canaried and palette-mapped, but it is a client-rendered
+  app.** Bitbucket mounts its repository page in `#root`; the server still serves
+  `#root` and two `<meta>` tags first, and that shell is what the canary watches.
+  The app is light DOM, so `paintBitbucketNav` reorients and relabels the
+  repository bar, and `themes/gs-tokens.css` re-points Atlassian's `--ds-*`
+  design tokens — which Bitbucket reads from the root — at the applied palette;
+  copy, control labels and `/pull-requests/N` markers follow the applied product
+  too. Bitbucket Data Center (`/projects/<key>/repos/<slug>`) is classified as
+  the same source but is a different, server-rendered markup family, and has no
+  public instance to canary.
+- **Gerrit is canaried and palette-mapped, but its content lives in shadow DOM.**
+  A Gerrit instance is added one origin at a time from the popup and can be shown
+  with the GitHub or GitLab UI. PolyGerrit serves a shell (`gr-app#pg-app`) and
+  renders inside shadow roots; the canary watches the shell, and because
+  PolyGerrit reads its colours from root custom properties
+  (`--primary-text-color`, `--link-color`, …), which inherit across the shadow
+  boundary, `themes/gs-tokens.css` recolours the whole app. Copy and navigation
+  *inside* the shadow roots are not reached yet — that needs the app's roots
+  opened at `document_start` — and its changes are numbered
+  (`/c/<project>/+/<N>`) with a Change-Id rather than a `#`/`!` pull-request
+  marker, so the reference-marker pass does not apply either.
 - **The Codeberg and gitea.com skin now re-orients the navigation, but not the
   whole page.** They are GitHub-flavoured, so they can wear either UI. Under the
   **GitLab UI** the repo tabs are rebuilt as a grouped left sidebar (GitLab's
