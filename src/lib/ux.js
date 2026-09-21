@@ -178,6 +178,19 @@
     'Settings',
   ];
 
+  // GitHub's repo tab order, shared by GitLab's sidebar (shown as GitHub) and
+  // Gitea's tab bar (shown as GitHub), so the two cannot drift.
+  const GITHUB_REPO_ORDER = [
+    'Code',
+    'Issues',
+    'Pull requests',
+    'Actions',
+    'Projects',
+    'Wiki',
+    'Security',
+    'Insights',
+  ];
+
   const NAV_RULES = {
     gitlab: [
       {
@@ -198,16 +211,15 @@
         scope: '.super-sidebar',
         contains: 'Code',
         item: 'li',
-        order: [
-          'Code',
-          'Issues',
-          'Pull requests',
-          'Actions',
-          'Projects',
-          'Wiki',
-          'Security',
-          'Insights',
-        ],
+        order: GITHUB_REPO_ORDER,
+      },
+      {
+        // Gitea/Forgejo repo tabs, shown with the GitHub UI. Its labels already
+        // read GitHub's ("Code", "Issues", "Pull requests"), so the order does
+        // most of the work; unknown labels rank after the known ones.
+        container: 'overflow-menu .overflow-menu-items',
+        item: 'a.item',
+        order: GITHUB_REPO_ORDER,
       },
     ],
   };

@@ -382,3 +382,107 @@ html.gs-theme-github
   > :is(div.gl-mb-2, [data-testid="project-badges-content"], .project-badges) {
   display: none !important;
 }
+
+/* --------------------------------------------------- Gitea / Forgejo -- */
+
+/* Codeberg (Forgejo) and gitea.com are GitHub-flavoured, so they can also be
+   shown with the *GitHub* UI. They do not use GitLab's Pajamas tokens, so this
+   block re-points Gitea's own `--color-*` custom properties at the same Primer
+   palette. `[data-theme]` is Gitea's marker on <html> and neither GitHub nor
+   GitLab sets it, so these rules are inert elsewhere. This is the counterpart of
+   the "Gitea / Forgejo" block in github-as-gitlab.css. */
+
+html.gs-theme-github[data-theme] {
+  /* surfaces */
+  --color-body: var(--gs-canvas) !important;
+  --color-card: var(--gs-canvas-subtle) !important;
+  --color-box-body: var(--gs-canvas-subtle) !important;
+  --color-box-body-highlight: var(--gs-canvas-inset) !important;
+  --color-box-header: var(--gs-canvas-inset) !important;
+  --color-menu: var(--gs-canvas) !important;
+  --color-secondary-bg: var(--gs-canvas-subtle) !important;
+  --color-input-background: var(--gs-canvas) !important;
+  --color-input-toggle-background: var(--gs-canvas) !important;
+  --color-code-bg: var(--gs-canvas-subtle) !important;
+  --color-markup-code-block: var(--gs-canvas-inset) !important;
+  --color-markup-code-inline: var(--gs-canvas-inset) !important;
+  --color-header-wrapper: var(--gs-canvas-subtle) !important;
+  --color-diff-inactive: var(--gs-canvas-inset) !important;
+
+  /* text */
+  --color-text: var(--gs-fg) !important;
+  --color-text-dark: var(--gs-fg) !important;
+  --color-text-light: var(--gs-fg-muted) !important;
+  --color-text-light-1: var(--gs-fg-muted) !important;
+  --color-text-light-2: var(--gs-fg-muted) !important;
+  --color-text-light-3: var(--gs-fg-subtle) !important;
+  --color-input-text: var(--gs-fg) !important;
+  --color-placeholder-text: var(--gs-fg-subtle) !important;
+  --color-label-text: var(--gs-fg) !important;
+
+  /* borders */
+  --color-input-border: var(--gs-border) !important;
+  --color-input-border-hover: var(--gs-fg-muted) !important;
+  --color-secondary: var(--gs-border) !important;
+  --color-light-border: var(--gs-border) !important;
+  --color-timeline: var(--gs-border-muted) !important;
+  --color-expand-button: var(--gs-border-muted) !important;
+
+  /* accent — GitHub's blue */
+  --color-primary: var(--gs-accent) !important;
+  --color-primary-dark-1: var(--gs-accent-hover) !important;
+  --color-primary-dark-2: var(--gs-accent-hover) !important;
+  --color-primary-light-1: var(--gs-accent) !important;
+  --color-primary-light-2: var(--gs-accent) !important;
+  --color-primary-light-3: var(--gs-accent) !important;
+  --color-primary-light-4: var(--gs-accent) !important;
+  --color-primary-light-5: var(--gs-accent-subtle) !important;
+  --color-primary-light-6: var(--gs-accent-subtle) !important;
+  --color-primary-light-7: var(--gs-accent-subtle) !important;
+  --color-primary-alpha-10: color-mix(in srgb, var(--gs-accent) 10%, transparent) !important;
+  --color-primary-alpha-20: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
+  --color-primary-alpha-30: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
+  --color-primary-alpha-40: color-mix(in srgb, var(--gs-accent) 40%, transparent) !important;
+  --color-primary-alpha-50: color-mix(in srgb, var(--gs-accent) 50%, transparent) !important;
+  --color-primary-alpha-60: color-mix(in srgb, var(--gs-accent) 60%, transparent) !important;
+  --color-primary-alpha-70: color-mix(in srgb, var(--gs-accent) 70%, transparent) !important;
+  --color-primary-alpha-80: color-mix(in srgb, var(--gs-accent) 80%, transparent) !important;
+  --color-primary-alpha-90: color-mix(in srgb, var(--gs-accent) 90%, transparent) !important;
+  --color-accent: var(--gs-accent) !important;
+  --color-small-accent: var(--gs-accent-subtle) !important;
+  --color-highlight-fg: var(--gs-accent) !important;
+  --color-highlight-bg: var(--gs-accent-subtle) !important;
+  --color-reaction-active-bg: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
+  --color-reaction-hover-bg: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
+}
+
+/* Gitea states its own nav colours on #navbar; GitHub's top bar is dark in both
+   modes, which is the cue that the site is wearing GitHub's UI. */
+html.gs-theme-github[data-theme] #navbar {
+  --color-nav-bg: var(--gs-header-bg) !important;
+  --color-nav-hover-bg: color-mix(in srgb, var(--gs-header-fg) 14%, transparent) !important;
+  --color-text: var(--gs-header-fg) !important;
+}
+
+html.gs-theme-github[data-theme] a {
+  color: var(--gs-link) !important;
+}
+
+html.gs-theme-github[data-theme] #navbar a {
+  color: var(--gs-header-fg) !important;
+}
+
+/* GitHub's primary buttons are green, Gitea's are the accent colour. */
+html.gs-theme-github[data-theme]
+  :is(.ui.primary.button, .ui.primary.buttons .button, button.primary) {
+  background-color: var(--gs-success) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+}
+
+/* GitHub underlines the active repo tab in orange; Gitea uses its accent. */
+html.gs-theme-github[data-theme] .overflow-menu-items a.item.active {
+  box-shadow: inset 0 -2px 0 #fd8c73 !important;
+  font-weight: 600 !important;
+}
+

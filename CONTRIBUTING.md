@@ -304,12 +304,15 @@ const builtin = {
 
 Add the host to `tests/sites.test.mjs`. If the forge is Gitea-family it does not
 use GitHub's Primer tokens, so the classification alone only changes the words —
-`themes/github-as-gitlab.css` has a **Gitea / Forgejo** block that re-points its
-`--color-*` custom properties at the palette, and `src/lib/ux.js` adds its repo
-tab list to `NAV_SCOPE`/`NAV_RULES` so its tabs are relabelled and reordered into
-GitLab's order. Copy those shapes for another token system or another tab bar.
-Only add vocabulary if the forge uses a different word — Forgejo says "Pull
-request", so there is nothing to do there.
+`themes/github-as-gitlab.css` and `themes/gitlab-as-github.css` each have a
+**Gitea / Forgejo** block that re-points its `--color-*` custom properties at that
+skin's palette, and `src/lib/ux.js` adds its repo tab list to
+`NAV_SCOPE`/`NAV_RULES` (for both themes) so its tabs are relabelled and
+reordered. Record it in `SOURCES` in `src/lib/sites.js` too, so the picker knows
+the site is *not* the product it is classified as (making the other UI a real
+skin) and the `g`-combo remap is skipped on it. Copy those shapes for another
+token system or another tab bar. Only add vocabulary if the forge uses a
+different word — Forgejo says "Pull request", so there is nothing to do there.
 
 You can already point gitalike at any instance without touching the source: the
 popup's **Add a site** flow exists for exactly that. A `builtin` entry just means
@@ -404,10 +407,10 @@ Covered:
   skinned; product on + host told Off → spared; no choice → follows the product;
   a site told to wear its own UI → left alone; and a choice alone never
   classifies an unknown host
-- **Codeberg (Forgejo)**, light and dark: classified as GitHub-flavoured, shown
-  with the GitLab UI — GitLab ink and surfaces, a dark top bar, repo tabs
-  relabelled ("Code" → "Repository", "Issues" → "Work items") and reordered into
-  GitLab's order, and Gitea's `data-theme` driving `gs-dark`
+- **Codeberg (Forgejo)**, light and dark, **with either UI**: GitHub-flavoured,
+  so the GitLab UI (GitLab ink, tabs relabelled and reordered) and the GitHub UI
+  (GitHub ink, tabs kept in GitHub's order, links `#0969da`, dark top bar) both
+  apply, with Gitea's `data-theme` driving `gs-dark`
 - re-skinning an already-open tab with no reload, and a clean revert
 - the popup, including that it lists every configured host, shows the per-site
   pin for a known host, and opens the prefilled report link

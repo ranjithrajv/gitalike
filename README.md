@@ -22,12 +22,12 @@ at — **GitHub Enterprise Server** included.
 
 gitalike starts with the two big forges, GitHub and GitLab, and grows from
 there. The GitHub-flavoured **Codeberg** (Forgejo) and **gitea.com** (Gitea) are
-bundled too — they speak GitHub's dialect, so they are shown with the GitLab UI
-(the colours, words and reference markers; Gitea's layout is its own). Bitbucket
-and Sourcehut are the next candidates. A forge that already speaks one of the two
-dialects needs only to be classified as that kind of site; until then, any
-instance works today through the popup's **Add a site** flow. If you would like
-to help add one, see
+bundled too — they speak GitHub's dialect, so by default they are shown with the
+GitLab UI, and the popup's per-site picker can show them with the GitHub UI
+instead. Bitbucket and Sourcehut are the next candidates. A forge that already
+speaks one of the two dialects needs only to be classified as that kind of site;
+until then, any instance works today through the popup's **Add a site** flow. If
+you would like to help add one, see
 [CONTRIBUTING.md](CONTRIBUTING.md#adding-another-forge--contributions-welcome).
 
 gitalike is an independent project. It is not affiliated with, endorsed by or
@@ -110,8 +110,10 @@ The popup highlights the row for the site you are currently on, and lists the
 hosts each switch covers. Below them, when you are on a site gitalike knows, a
 **Show *this site* with** picker lets you choose any of the skins for that one
 host — **Off**, **GitHub UI** or **GitLab UI** — so one enterprise instance can
-wear a different skin (or none) without changing `github.com`. Choosing the
-site's own UI is the same as **Off**: gitalike does not repaint a site as itself.
+wear a different skin (or none) without changing `github.com`. Codeberg and
+gitea.com can genuinely wear either UI (they are GitHub-flavoured but not
+GitHub's markup); for a site that already *is* the product, choosing its own UI
+is the same as **Off** — gitalike does not repaint a site as itself.
 **Follow the product switch** clears the choice.
 
 **Keyboard:** `Alt` + `Shift` + `G` toggles the current site (the same per-site
@@ -233,10 +235,12 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   for a single host, which is how an enterprise instance is skinned without
   `github.com`; there is no bulk per-host list beyond that.
 - **The Codeberg and gitea.com skin is token-level, with its navigation
-  relabelled and reordered.** They are GitHub-flavoured, so they get the GitLab
-  colours, words, reference markers and repo-tab order, but Gitea's layout is not
-  GitHub's: the navigation is not re-oriented into GitLab's sidebar, and the
-  structural rules that target GitHub's markup do not apply there.
+  relabelled and reordered.** They are GitHub-flavoured, so they can wear either
+  UI — colours, words, reference markers and repo-tab order — but Gitea's layout
+  is not GitHub's or GitLab's: the navigation is not re-oriented into a
+  sidebar/top bar, and the structural rules that target the two big forges'
+  markup do not apply there. Gitea's own keyboard shortcuts are left alone (the
+  GitHub/GitLab `g`-combo remap does not run on it).
 - **The shortcut cannot set up a new host**, only toggle one already classified,
   because classifying requires choosing which product it is.
 - **The in-page mark is gitalike's own, in the other product's palette.** The

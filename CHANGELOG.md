@@ -20,14 +20,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   than the site's product (`src/lib/sites.js`, `src/background.js`,
   `src/popup/`).
 - Codeberg (Forgejo) and `gitea.com` (Gitea) are bundled hosts. They are
-  GitHub-flavoured, so they are classified as the `github` kind and shown with
-  the GitLab UI: a token block re-points Gitea's `--color-*` custom properties at
-  the GitLab palette (including a dark top bar), their repo tabs are relabelled
-  ("Code" → "Repository", "Issues" → "Work items") and reordered into GitLab's
-  order, reference markers match Gitea's `/pulls/N` links, and the dark-mode
-  detection reads Gitea's `data-theme` (`src/lib/sites.js`, `src/lib/ux.js`,
-  `src/content/theme.js`, `src/content/ux.js`,
-  `src/themes/github-as-gitlab.css`).
+  GitHub-flavoured, so they are classified as the `github` kind and default to
+  the GitLab UI, and the per-site picker can show them with the **GitHub UI**
+  instead. Either way a token block re-points Gitea's `--color-*` custom
+  properties at the skin's palette (including a dark top bar), their repo tabs
+  are relabelled and reordered into that product's order, reference markers match
+  Gitea's `/pulls/N` links, and dark mode reads Gitea's `data-theme`
+  (`src/themes/github-as-gitlab.css`, `src/themes/gitlab-as-github.css`,
+  `src/lib/ux.js`). A `sources` table records that Gitea is not GitHub's markup,
+  so the GitHub UI is a real skin there rather than a no-op, and the
+  GitHub/GitLab `g`-combo remap is skipped on it so Gitea's own shortcuts are
+  left alone (`src/lib/sites.js`, `src/content/theme.js`, `src/content/ux.js`).
 - A selector canary, `tools/selector-canary.mjs` (`npm run canary`), with a
   scheduled workflow (`.github/workflows/canary.yml`). It fetches the live pages
   the skins are verified against — GitHub, GitLab and Codeberg (Forgejo

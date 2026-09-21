@@ -1212,6 +1212,12 @@
       if (!combo) return;
       const target = (UX.SHORTCUTS[theme] || {})[combo];
       if (!target) return;
+      // The remap translates *between* GitHub's and GitLab's combos. On a forge
+      // that is neither (Gitea), replaying the other product's combo would break
+      // the key the site actually implements, so its own shortcuts are left
+      // alone. `source` is set by content/theme.js from the shared tables.
+      const expectedSource = theme === 'github' ? 'gitlab' : 'github';
+      if (root.dataset.gsSource && root.dataset.gsSource !== expectedSource) return;
       // The real `g` already reached the site; swallow this second key and
       // deliver the destination the site's own product would have used.
       event.preventDefault();

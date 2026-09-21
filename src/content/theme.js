@@ -57,6 +57,11 @@
     const stored = await api.storage.sync.get(SITES.STORAGE_KEYS);
     const { settings, instances, hostSettings } = SITES.stateFrom(stored);
     const theme = SITES.themeFor(host, settings, instances, hostSettings);
+    // Which markup family the site is, for decisions the applied skin cannot
+    // make on its own — notably whether the g-combo remap applies. Set on the
+    // page so the UX script can read it at keypress time.
+    const source = SITES.sourceFor(host, instances);
+    if (source) root.dataset.gsSource = source;
     remember(theme);
     apply(theme);
   }

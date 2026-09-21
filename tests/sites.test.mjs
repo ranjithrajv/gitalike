@@ -25,6 +25,7 @@ const {
   isKind,
   kindOn,
   hostSkinFor,
+  sourceFor,
   themeFor,
   stateFrom,
   kinds,
@@ -48,6 +49,7 @@ describe('module shape', () => {
       isKind,
       kindOn,
       hostSkinFor,
+      sourceFor,
       themeFor,
       stateFrom,
     ]) {
@@ -390,6 +392,25 @@ describe('hostSkinFor', () => {
   });
 });
 
+describe('sourceFor', () => {
+  test('the public forges are their own markup', () => {
+    assert.equal(sourceFor('github.com', {}), 'github');
+    assert.equal(sourceFor('gitlab.com', {}), 'gitlab');
+    assert.equal(sourceFor('code.swecha.org', {}), 'gitlab');
+  });
+
+  test('the Gitea-family forges are Gitea markup, not GitHub', () => {
+    assert.equal(sourceFor('codeberg.org', {}), 'gitea');
+    assert.equal(sourceFor('gitea.com', {}), 'gitea');
+  });
+
+  test('a user-added host is assumed to be built on its product', () => {
+    assert.equal(sourceFor('gh.acme.com', { 'gh.acme.com': 'github' }), 'github');
+    assert.equal(sourceFor('gl.acme.com', { 'gl.acme.com': 'gitlab' }), 'gitlab');
+    assert.equal(sourceFor('unknown.example', {}), null);
+  });
+});
+
 describe('themeFor', () => {
   test('a github host is on for the gitlab skin', () => {
     assert.equal(themeFor('github.com', { github: 'gitlab' }, {}), 'gitlab');
@@ -453,7 +474,7 @@ describe('themeFor', () => {
     );
   });
 
-  test("a host wearing its own UI is left alone", () => {
+  test('a host wearing its own UI is left alone', () => {
     // Choosing GitHub's UI for a GitHub site is the same as off: it is already
     // that UI, and repainting it would run the wrong tables.
     assert.equal(
@@ -466,9 +487,26 @@ describe('themeFor', () => {
       null,
     );
     assert.equal(
-      themeFor('codeberg.org', {}, { }, { 'codeberg.org': 'github' }),
+      themeFor('gitlab.com', {}, {}, { 'gitlab.com': 'gitlab' }),
       null,
     );
+  });
+
+  test('Codeberg/Gitea can wear either UI', () => {
+    // Gitea is GitHub-flavoured but is not GitHub's markup, so the GitHub UI is
+    // a real skin there, not a no-op.
+    assert.equal(
+      themeFor('codeberg.org', {}, {}, { 'codeberg.org': 'github' }),
+      'github',
+    );
+    assert.equal(
+      themeFor('codeberg.org', {}, {}, { 'codeberg.org': 'gitlab' }),
+      'gitlab',
+    );
+    // ...and it follows its product switch (the GitHub-flavoured default is the
+    // GitLab UI) when no skin is chosen.
+    assert.equal(themeFor('codeberg.org', { github: 'gitlab' }, {}, {}), 'gitlab');
+    assert.equal(themeFor('gitea.com', { github: 'gitlab' }, {}, {}), 'gitlab');
   });
 
   test('a host can wear the other product\'s skin even when its own is offered', () => {

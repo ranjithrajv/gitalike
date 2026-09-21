@@ -257,6 +257,13 @@ describe('NAV_RULES', () => {
     assert.equal(rule.item, 'li');
   });
 
+  test('the Gitea rule for the GitHub skin shares GitHub’s order', () => {
+    const rule = NAV_RULES.github[1];
+    assert.match(rule.container, /overflow-menu/);
+    assert.equal(rule.item, 'a.item');
+    assert.equal(rule.order, NAV_RULES.github[0].order);
+  });
+
   test('the GitHub rule targets the flat repo tab list', () => {
     const rule = NAV_RULES.gitlab[0];
     assert.match(rule.container, /UnderlineNav-body/);

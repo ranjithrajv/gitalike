@@ -105,6 +105,23 @@
     return isKind(entry) ? entry : null;
   }
 
+  /**
+   * The markup and token family a host is built on. Normally this is its kind,
+   * but a GitHub-flavoured forge (Gitea/Forgejo) does not use GitHub's markup or
+   * Primer tokens, so showing it with the GitHub UI is a real skin rather than a
+   * no-op. Only the bundled forges differ this way; a user-added self-hosted
+   * instance is assumed to be built on its product's markup.
+   */
+  const SOURCES = {
+    'codeberg.org': 'gitea',
+    'gitea.com': 'gitea',
+  };
+
+  function sourceFor(host, added) {
+    if (Object.prototype.hasOwnProperty.call(SOURCES, host)) return SOURCES[host];
+    return kindFor(host, added);
+  }
+
   // A bare hostname — no scheme, port, path, query, whitespace or wildcard — is
   // the only shape that is safe to hand to `scripting.registerContentScripts`
   // as a match pattern. The instances map is synced user data and could hold
@@ -207,10 +224,10 @@
     if (chosen === 'off') return null;
     const wanted = chosen || (kindOn(kind, settings) ? kinds[kind].theme : null);
     if (!wanted) return null;
-    // A site wearing its own UI is already wearing it. Repainting it as itself
-    // would run the wrong vocabulary and shortcut tables, so it is left alone —
-    // which also means "the site's own UI" and "off" are the same thing.
-    return wanted === kind ? null : wanted;
+    // A skin for the site's *own markup* is a no-op — it is already that UI, and
+    // repainting it as itself would run the wrong vocabulary and shortcut tables.
+    // Gitea is not GitHub's markup, though, so the GitHub UI is a real skin there.
+    return wanted === sourceFor(host, added) ? null : wanted;
   }
 
   globalThis.GITALIKE = {
@@ -230,6 +247,7 @@
     parseHost,
     kindOn,
     hostSkinFor,
+    sourceFor,
     themeFor,
   };
 })();

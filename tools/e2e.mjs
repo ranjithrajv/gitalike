@@ -61,6 +61,11 @@ const context = await chromium.launchPersistentContext(profile, {
 
 const setSettings = (page, settings) =>
   page.evaluate((s) => chrome.storage.sync.set({ gitSameSettings: s }), settings);
+const setHostSettings = (page, hostSettings) =>
+  page.evaluate(
+    (s) => chrome.storage.sync.set({ gitSameHostSettings: s }),
+    hostSettings,
+  );
 
 try {
   let worker = context.serviceWorkers()[0];
@@ -285,12 +290,13 @@ try {
     )
     .catch(() => {});
   await cb.waitForTimeout(500);
-  const c = await cb.evaluate(() => ({
-    nav: [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].map((a) =>
-      (a.textContent || '').replace(/\s+/g, ' ').trim(),
-    ),
-  }));
-  await cb.close();
+  const readTabs = () =>
+    cb.evaluate(() =>
+      [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].map((a) =>
+        (a.textContent || '').replace(/\s+/g, ' ').trim(),
+      ),
+    );
+  const c = { nav: await readTabs() };
   check(
     'Codeberg (Gitea) tabs relabelled',
     c.nav.some((t) => t.startsWith('Repository')) && c.nav.some((t) => t.startsWith('Merge requests')),
@@ -304,6 +310,31 @@ try {
     giteaWorkItems > -1 && giteaWorkItems < giteaMerge && giteaMerge < giteaRepo,
     `${giteaWorkItems}/${giteaMerge}/${giteaRepo}`,
   );
+
+  // The same site, told to wear the GitHub UI instead.
+  await setHostSettings(popup, { 'codeberg.org': 'github' });
+  await cb
+    .waitForFunction(
+      () =>
+        document.documentElement.classList.contains('gs-theme-github') &&
+        [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].some((a) =>
+          /^Code\b/.test((a.textContent || '').replace(/\s+/g, ' ').trim()),
+        ),
+      null,
+      { timeout: 45000 },
+    )
+    .catch(() => {});
+  const cg = { nav: await readTabs() };
+  check(
+    'Codeberg (Gitea) can wear the GitHub UI',
+    cg.nav.findIndex((t) => t.startsWith('Code')) === 0 &&
+      cg.nav.findIndex((t) => t.startsWith('Issues')) === 1 &&
+      cg.nav.findIndex((t) => t.startsWith('Pull requests')) === 2,
+    cg.nav.join(', '),
+  );
+  await cb.close();
+  // Clear the per-site choice so it does not leak into the revert check.
+  await setHostSettings(popup, {});
 
   /* ---------------------------------- revert ----------------------------------- */
   await setSettings(popup, { github: 'off', gitlab: 'off' });
