@@ -1,5 +1,5 @@
 /**
- * gitalike — UX content script: project pages.
+ * GitAlike — UX content script: project pages.
  *
  * The metadata block, its heading, the rebuilt project tab strip and the active
  * tab; and Gitea/Forgejo's own rebuilt nav. See ux-core.js for the shared

@@ -1,6 +1,6 @@
 # Known limitations
 
-gitalike is deliberately conservative. This is the full accounting of where
+GitAlike is deliberately conservative. This is the full accounting of where
 it stops short of a perfect reskin — the detail behind the short list in the
 [README](../README.md#known-limitations).
 
@@ -36,7 +36,7 @@ it stops short of a perfect reskin — the detail behind the short list in the
   granted.** The background registers them for the configured hosts, so an
   unconfigured page parses neither. This is what the `scripting` permission is
   for.
-- **The skin is cosmetic, and the page can influence it.** Everything gitalike
+- **The skin is cosmetic, and the page can influence it.** Everything GitAlike
   does hangs off `html.gs-theme-*` classes and `data-gs-*` markers on the page
   itself, so the page can add, remove or spoof them, and it can mark its own
   content `[data-gs-ux-skip]` to opt out of translation. That is fine for a
@@ -86,8 +86,8 @@ it stops short of a perfect reskin — the detail behind the short list in the
   shortcuts are left alone (the GitHub/GitLab `g`-combo remap does not run on it).
 - **The shortcut cannot set up a new host**, only toggle one already classified,
   because classifying requires choosing which product it is.
-- **The in-page mark is gitalike's own, in the other product's palette.** The
-  site's brand logo is replaced by gitalike's two-way swap arrow, painted across
+- **The in-page mark is GitAlike's own, in the other product's palette.** The
+  site's brand logo is replaced by GitAlike's two-way swap arrow, painted across
   whichever palette the skin uses — GitLab's red→orange→yellow, or Primer's ink
   and accent blue. The extension ships no vendor artwork and borrows only the
   palette; the mark never pretends to be the other product's logo.

@@ -11,7 +11,7 @@ The list takes **codeless submissions** via its issue form
 (`.github/ISSUE_TEMPLATE/submit-extension.yml`). Fields, in order, with the
 values to use:
 
-- **Name of the browser extension**: `gitalike — GitHub ⇄ GitLab UI`
+- **Name of the browser extension**: `GitAlike — any git platform, preferred UX`
 - **A short description**: Re-skins GitHub and GitLab (plus Codeberg/Gitea and
   Bitbucket) as each other — colour, wording, navigation, reference markers and
   keyboard shortcuts — entirely locally, with no network access.
@@ -24,14 +24,14 @@ values to use:
 Issue title:
 
 ```
-Submit new extension: gitalike — GitHub ⇄ GitLab UI
+Submit new extension: GitAlike — any git platform, preferred UX
 ```
 
 Issue body (fields rendered as the form would; add `submit` label):
 
 ```markdown
 **Name of the browser extension**
-gitalike — GitHub ⇄ GitLab UI
+GitAlike — any git platform, preferred UX
 
 **A short description**
 Re-skins GitHub and GitLab (plus Codeberg/Gitea and Bitbucket) as each other —
@@ -58,7 +58,7 @@ Command (if filing with `gh`):
 gh issue create \
   --repo stefanbuck/awesome-browser-extensions-for-github \
   --label submit \
-  --title 'Submit new extension: gitalike — GitHub ⇄ GitLab UI' \
+  --title 'Submit new extension: GitAlike — any git platform, preferred UX' \
   --body-file market/awesome-submission.md
 ```
 
@@ -77,13 +77,13 @@ rewrite the listings.
 1. **Lead sentence — name the category.** Today both open with "re-skins the big
    forges so they look — and read — like each other". Add the owned claim:
 
-   > gitalike is the extension that re-skins **GitHub and GitLab as each
+   > GitAlike is the extension that re-skins **GitHub and GitLab as each
    > other** — and it is the only one that does it in both directions, so the
    > muscle memory you built on one forge keeps working on the other.
 
 2. **Add a "why not a theme?" line** to separate from userstyles and GitSkin:
 
-   > A theme changes the colours. gitalike also changes the words ("Pull
+   > A theme changes the colours. GitAlike also changes the words ("Pull
    > request" ⇄ "Merge request"), the reference markers (`#42` ⇄ `!42`), the
    > navigation's labels and order, and the other product's keyboard shortcuts.
 
@@ -103,12 +103,12 @@ Chrome keywords to keep: `github`, `gitlab`, `theme`, `ui`, `skin`,
 - [ ] Post to Hacker News (Show HN), r/github, r/gitlab, r/selfhosted,
       r/opensource — lead with the reciprocal-reskin demo/preview GIF.
 - [ ] Announce in the Forgejo/Codeberg community (Forgejo's own theming docs
-      warn it is fragile — gitalike is the client-side alternative).
+      warn it is fragile — GitAlike is the client-side alternative).
 - [ ] Cross-link with a multi-forge CLI (`git-pkgs/forge`, `git-forge`) and,
       where welcome, an interop note with GitSkin.
 - [ ] Add the live store links to the README install section and `docs/index.html`.
 - [ ] Reference the migration funnel in the docs: GitLab's GitHub importer /
-      `gh gl2gh` move the data; gitalike keeps the muscle memory.
+      `gh gl2gh` move the data; GitAlike keeps the muscle memory.
 - [ ] Consider a GitHub Sponsors / OpenCollective page, and an NLnet NGI Zero
       application framed as lowering the cost of switching forges.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Selector canary for gitalike.
+ * Selector canary for GitAlike.
  *
  * The skin leans on a handful of anchors in GitHub's, GitLab's and Gitea's
  * markup — `nav[aria-label="Repository"] ul.UnderlineNav-body`, `.super-sidebar`,

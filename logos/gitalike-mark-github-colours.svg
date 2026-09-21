@@ -1,17 +1,17 @@
 <!--
-  gitalike's own mark, wearing GitHub's colour scheme.
+  GitAlike's own mark, wearing GitHub's colour scheme.
 
   This is original artwork — the same two-way swap arrow as src/icons/icon.svg —
-  not a GitHub asset. gitalike never ships another product's logo; only the
+  not a GitHub asset. GitAlike never ships another product's logo; only the
   palette is borrowed. The gradient runs across Primer's dark-mode ink (#f0f6fc)
-  and accent blue (#4493f8). It lands on the dark header gitalike gives a
+  and accent blue (#4493f8). It lands on the dark header GitAlike gives a
   GitLab-flavoured site, where GitHub's own mark would be white — so this is
   best previewed on a dark background.
 
   Baked into src/themes/as-github.css as the gs-mark variable.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 84 84" role="img" aria-label="gitalike">
-  <title>gitalike mark in GitHub colours</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 84 84" role="img" aria-label="GitAlike">
+  <title>GitAlike mark in GitHub colours</title>
   <defs>
     <linearGradient id="github" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f0f6fc"/>

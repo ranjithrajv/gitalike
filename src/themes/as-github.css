@@ -1,5 +1,5 @@
 /* =====================================================================
-   gitalike — the GitHub skin (the applied product, not the source).
+   GitAlike — the GitHub skin (the applied product, not the source).
    Every rule is scoped to html.gs-theme-github, so the file is inert until the
    content script adds that class to <html>. It is registered alongside
    as-gitlab.css on every configured host; which one paints is decided by the
@@ -54,7 +54,7 @@ html.gs-theme-github {
   --gs-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
 
-  /* gitalike's own mark — the two-way swap arrow from the toolbar icon — takes
+  /* GitAlike's own mark — the two-way swap arrow from the toolbar icon — takes
      GitHub's colour scheme: a gradient across Primer's dark-mode ink and accent
      blue. It sits on the dark header, where the mark is the bright one. It is
      original artwork; the extension never ships a vendor's logo, only a vendor
@@ -201,7 +201,7 @@ html.gs-theme-github
   color: #ffffff !important;
 }
 
-/* The site's own mark is replaced by gitalike's mark in GitHub's palette. The
+/* The site's own mark is replaced by GitAlike's mark in GitHub's palette. The
    mark may be an inline <svg> (hide its shapes, paint a background) or an <img>
    (swap its content). */
 html.gs-theme-github :is(
@@ -224,7 +224,7 @@ html.gs-theme-github
 /* The brand mark is an <svg class="tanuki-logo"> today; keep a fallback for an
    <img>, but scope it to the bar the brand lives in. Unscoped, `alt*="gitlab"`
    also matches *project avatars* called "GitLab" and repaints them with the
-   gitalike mark on a white tile. */
+   GitAlike mark on a white tile. */
 html.gs-theme-github
   :is(.super-topbar, .navbar, .header-content)
   :is(img[src*="tanuki" i], img[alt*="gitlab" i]) {
@@ -358,7 +358,7 @@ html.gs-theme-github[data-theme] #navbar a {
   color: var(--gs-header-fg) !important;
 }
 
-/* Gitea's navbar mark is tuned for its own bar; replace it with gitalike's, as
+/* Gitea's navbar mark is tuned for its own bar; replace it with GitAlike's, as
    the other forges' marks are. Scoped to the navbar so the footer's copy of the
    same logo is left alone. */
 html.gs-theme-github[data-theme] #navbar-logo .branding {

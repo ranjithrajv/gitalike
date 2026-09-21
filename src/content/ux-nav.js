@@ -1,5 +1,5 @@
 /**
- * gitalike — UX content script: app navigation.
+ * GitAlike — UX content script: app navigation.
  *
  * Relabels nav items, hides the ones the applied product has no page for, marks
  * the ones with no counterpart, reorders a flat list, and inserts GitLab's group

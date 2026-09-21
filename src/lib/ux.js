@@ -1,7 +1,7 @@
 /**
- * gitalike — the UX tables.
+ * GitAlike — the UX tables.
  *
- * The skin is not only colour: the point of gitalike is that a GitHub site
+ * The skin is not only colour: the point of GitAlike is that a GitHub site
  * *reads* like GitLab (and the other way round), so this file carries the
  * vocabulary, reference and keyboard differences between the two products.
  *
@@ -1134,7 +1134,7 @@
   // Which forge a link belongs to, guessed from the link alone, so the popup can
   // pre-select the product for a site it has not been told about instead of
   // always asking. Nothing is fetched — a hostname and a path are all it reads —
-  // so this stays inside gitalike's no-network promise. A deep link is the
+  // so this stays inside GitAlike's no-network promise. A deep link is the
   // reliable signal: the two big forges spell the same page differently, and a
   // host we have never seen still reveals itself in its routes.
 

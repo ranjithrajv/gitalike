@@ -1,5 +1,5 @@
 /**
- * gitalike — toolbar popup.
+ * GitAlike — toolbar popup.
  *
  * The bundled hosts are granted at install; a self-hosted instance is added by
  * typing it here, which asks for that one origin (a click is a user gesture) and
@@ -453,7 +453,7 @@
   // A prefilled bug report. The issue form in `.github/ISSUE_TEMPLATE/` is the
   // source of the fields a reporter is asked for, so this fills the ones the
   // popup already knows — by the form's field ids — and leaves the rest for the
-  // reporter. It deliberately does not attach the page: gitalike reads nothing
+  // reporter. It deliberately does not attach the page: GitAlike reads nothing
   // from a page and sends nothing anywhere, and a report should not be the one
   // exception.
   function renderReport() {

@@ -1,5 +1,5 @@
 /**
- * gitalike — UX content script: core.
+ * GitAlike — UX content script: core.
  *
  * The colour skin is done entirely in CSS; the content scripts carry the part
  * CSS cannot: the words, the reference markers, the app-navigation order and

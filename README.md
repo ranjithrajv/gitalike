@@ -1,4 +1,4 @@
-# gitalike
+# GitAlike
 
 Use any forge, keep your muscle memory.
 
@@ -7,7 +7,7 @@ Use any forge, keep your muscle memory.
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Telemetry: none](https://img.shields.io/badge/telemetry-none-success)](https://ranjithrajv.github.io/gitalike/privacy.html)
 
-**Nothing else makes GitHub read like GitLab — and back.** gitalike re-skins the
+**Nothing else makes GitHub read like GitLab — and back.** GitAlike re-skins the
 forge in front of you as the product you know best — GitHub, GitLab or Bitbucket
 — down to the words, the navigation, the `#42` / `!42` reference markers and the
 `g`-shortcuts. It is reciprocal, in both directions, and it covers the forges
@@ -31,9 +31,9 @@ Three skins — **GitLab**, **GitHub** and **Bitbucket** — and any host you ha
 set up can wear any of them from the popup.
 
 ```
- a GitHub-flavoured site  + GitLab UI     ->  gitalike mark, purple accents, light bar
- a GitLab-flavoured site  + GitHub UI     ->  gitalike mark, blue accents, dark bar
- any site                 + Bitbucket UI  ->  gitalike mark, Atlassian blue bar
+ a GitHub-flavoured site  + GitLab UI     ->  GitAlike mark, purple accents, light bar
+ a GitLab-flavoured site  + GitHub UI     ->  GitAlike mark, blue accents, dark bar
+ any site                 + Bitbucket UI  ->  GitAlike mark, Atlassian blue bar
 ```
 
 - **Reciprocal.** GitHub shown as GitLab and GitLab shown as GitHub — both
@@ -49,7 +49,7 @@ It works on `github.com`, `gitlab.com`, `codeberg.org`, `gitea.com` and
 **GitHub Enterprise Server**, a Bitbucket Data Center, a **Gerrit** — is added
 from the popup, which asks for that one site's access.
 
-gitalike starts with the two big forges, GitHub and GitLab, and grows from
+GitAlike starts with the two big forges, GitHub and GitLab, and grows from
 there. The GitHub-flavoured **Codeberg** (Forgejo) and **gitea.com** (Gitea) are
 bundled too — they speak GitHub's dialect, so by default they are shown with the
 GitLab UI, and the per-site picker can show them with the GitHub or Bitbucket UI
@@ -61,7 +61,7 @@ instance works today through the popup's **Add a site** flow. If you would like
 to help add one, see
 [CONTRIBUTING.md](CONTRIBUTING.md#adding-another-forge--contributions-welcome).
 
-gitalike is an independent project. It is not affiliated with, endorsed by or
+GitAlike is an independent project. It is not affiliated with, endorsed by or
 sponsored by GitHub, Inc. or GitLab Inc., and it ships none of their artwork:
 the mark it paints on a skinned page is its own. GitHub is a trademark of
 GitHub, Inc. GITLAB is a trademark of GitLab Inc. in the United States and other
@@ -86,12 +86,12 @@ and watch each site wear every skin it can.
 
 ## Make GitHub look like GitLab, and back
 
-A theme repaints the palette and stops there. gitalike also changes the *words*
+A theme repaints the palette and stops there. GitAlike also changes the *words*
 the page uses, the *navigation* it shows, the reference markers and the keyboard
 shortcuts — reciprocally, and it undoes every change the moment you switch it
 off.
 
-| Capability | A userstyle or theme | gitalike |
+| Capability | A userstyle or theme | GitAlike |
 | --- | --- | --- |
 | Repaints the palette | yes | yes |
 | Renames the product's words ("Pull request" ⇄ "Merge request", "Actions" ⇄ "CI/CD") | no | yes |
@@ -104,12 +104,12 @@ off.
 
 ## Install
 
-> **Not on the extension stores yet.** gitalike is sideloaded for now: download
+> **Not on the extension stores yet.** GitAlike is sideloaded for now: download
 > the ZIP for your browser below and follow the steps. Store listings are
 > in progress.
 
-<a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download gitalike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>
-<a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"><img alt="Download gitalike for Firefox" src="https://img.shields.io/badge/Download-Firefox-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
+<a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download GitAlike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>
+<a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"><img alt="Download GitAlike for Firefox" src="https://img.shields.io/badge/Download-Firefox-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
 
 Both links follow the newest release. The asset names deliberately carry no
 version number, so `/releases/latest/download/...` keeps working as releases
@@ -179,12 +179,12 @@ time. Each option lists the hosts it covers:
 It starts on **Off**. A choice applies to every host it covers at once, and the
 option covering the site you are on is highlighted.
 
-When you are on a site gitalike knows, a **Show *this site* with** picker below
+When you are on a site GitAlike knows, a **Show *this site* with** picker below
 lets you choose the skin for that one host — **Off**, **GitHub UI**,
 **GitLab UI** or **Bitbucket UI** — so one enterprise instance can wear a
 different skin (or none) without changing `github.com`. Choosing a site's own UI
 (`github.com` shown as GitHub, `gitlab.com` shown as GitLab) is the same as
-**Off**, because gitalike does not repaint a site as itself. Bitbucket is never
+**Off**, because GitAlike does not repaint a site as itself. Bitbucket is never
 a site's own UI — no forge is Bitbucket's markup — so it always paints.
 **Follow the global skin** clears the per-site choice.
 
@@ -200,7 +200,7 @@ While a skin is active the toolbar icon shows a small **GL** or **GH** badge.
 ## Adding a self-hosted instance (GitHub Enterprise, GitLab, Bitbucket, Gerrit)
 
 Any host the extension has not seen before is left completely alone. There are
-two ways in, and they open the same form. **gitalike reads the address and
+two ways in, and they open the same form. **GitAlike reads the address and
 highlights the product it looks like** — a deep link such as
 `/-/merge_requests/42` names GitLab, `/pull/42` names GitHub, `/pulls/42` names
 Gitea/Forgejo, `/pull-requests/42` names Bitbucket and `/c/project/+/42` names
@@ -241,7 +241,7 @@ per-site skin choice on it.
 
 ## UX parity
 
-The skin is not only colour. While a skin is on, gitalike also matches the other
+The skin is not only colour. While a skin is on, GitAlike also matches the other
 product's *vocabulary and habits*:
 
 | Surface    | What changes                                                                                                     |
@@ -269,7 +269,7 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
 
 ## Known limitations
 
-gitalike is deliberately conservative, and it is honest about the edges. The
+GitAlike is deliberately conservative, and it is honest about the edges. The
 short version:
 
 - **UX parity is conservative, not exhaustive.** Only vocabulary that maps
@@ -294,7 +294,7 @@ capture, the Codeberg/Gitea partial pass, the mark’s provenance and the
 
 ## Privacy
 
-gitalike collects no data and makes no network requests. It stores only your
+GitAlike collects no data and makes no network requests. It stores only your
 on/off choices — including any per-site skin choices — and the list of instances
 you add, in the browser's own synced extension storage, and caches the per-site
 decision in the page's `localStorage` so a repeat visit does not flash the
@@ -313,17 +313,17 @@ translation — is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 GitHub and the Octocat are trademarks of GitHub, Inc. GITLAB is a trademark of
 GitLab Inc. in the United States and other countries and regions, and GitLab's
-Tanuki logo is a GitLab Inc. trademark. gitalike is not affiliated with,
+Tanuki logo is a GitLab Inc. trademark. GitAlike is not affiliated with,
 endorsed by or sponsored by either company. It names those products only to
 describe what it is compatible with, and it redistributes none of their logos
-or other brand artwork — the mark it paints on a page is gitalike's own.
+or other brand artwork — the mark it paints on a page is GitAlike's own.
 
 ## License
 
 GPL-3.0-or-later — see [LICENSE](LICENSE) for the full text and
 [NOTICE](NOTICE) for the copyright and the name/mark term.
 
-gitalike is free software: you can redistribute it and/or modify it under the
+GitAlike is free software: you can redistribute it and/or modify it under the
 terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
 version. It comes with no warranty. A fork that is distributed to others has to

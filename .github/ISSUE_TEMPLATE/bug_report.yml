@@ -12,7 +12,7 @@ body:
         this form with the host, the applied skin and the version already filled
         in.
 
-        gitalike makes no network requests and reads nothing from a page, so
+        GitAlike makes no network requests and reads nothing from a page, so
         please do not paste page contents or anything private unless you choose
         to. Screenshots are the most useful thing you can add.
   - type: input
@@ -75,7 +75,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: gitalike version
+      label: GitAlike version
       description: Shown at the top of the popup, or on the release you installed.
       placeholder: 0.1.2
     validations:
@@ -115,5 +115,5 @@ body:
         - label: I checked the site with the skin **off** as well as on.
         - label: I am running the latest release.
         - label: >-
-            I understand gitalike is cosmetic — the page can influence it — and
+            I understand GitAlike is cosmetic — the page can influence it — and
             is not a security boundary.

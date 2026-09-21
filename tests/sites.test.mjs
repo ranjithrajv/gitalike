@@ -1,5 +1,5 @@
 /**
- * Unit tests for src/lib/sites.js — the one piece of gitalike that is pure,
+ * Unit tests for src/lib/sites.js — the one piece of GitAlike that is pure,
  * side-effect-free logic and therefore worth locking down.
  *
  * Runs on Node's built-in test runner, so the project keeps its zero-dependency

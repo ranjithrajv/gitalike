@@ -1,5 +1,5 @@
 /**
- * gitalike — UX content script: profile pages.
+ * GitAlike — UX content script: profile pages.
  *
  * The About/Info/Contact rail, the follower/following copies and the rebuilt
  * profile menu. See ux-core.js for the shared runtime and ux.js for the entry.

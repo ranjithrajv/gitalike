@@ -53,7 +53,7 @@ export function questionsFor(direction) {
   return {
     [`${id}__reads_as`]: {
       type: 'choice',
-      instructions: `The page is a ${source} project shown with gitalike's ${target}. Using only the observed facts and the target definitions, which product's UI does the page read as?`,
+      instructions: `The page is a ${source} project shown with GitAlike's ${target}. Using only the observed facts and the target definitions, which product's UI does the page read as?`,
       criteria: {
         github:
           "GitHub UI: dark bar, horizontal tab row, right-hand About sidebar, GitHub's repo words",
@@ -66,7 +66,7 @@ export function questionsFor(direction) {
     },
     [`${id}__fidelity`]: {
       type: 'score',
-      instructions: `How closely does this page reproduce the UI of gitalike's ${target}, judging only the chrome, navigation, words and metadata placement shown?`,
+      instructions: `How closely does this page reproduce the UI of GitAlike's ${target}, judging only the chrome, navigation, words and metadata placement shown?`,
       criteria: [
         "0: does not read as the target at all; the source's own chrome is unchanged.",
         "2: only the palette hints at the target; navigation, words and metadata are still the source's.",

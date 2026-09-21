@@ -1,4 +1,4 @@
-# gitalike — positioning and competitive landscape
+# GitAlike — positioning and competitive landscape
 
 Internal strategy note. Not shipped with the extension, not served by GitHub
 Pages (`docs/` is the Pages root; this lives in `market/` on purpose).
@@ -10,7 +10,7 @@ magnitudes, and re-check before quoting in public copy.
 
 ## 1. The one-liner
 
-> **gitalike is the only extension that re-skins GitHub and GitLab as each
+> **GitAlike is the only extension that re-skins GitHub and GitLab as each
 > other — colour, words, navigation, reference markers and shortcuts — locally,
 > with no network access.**
 
@@ -30,7 +30,7 @@ Two independent axes define the field:
 
 ```
                         one-way                       reciprocal
- cosmetic        GitHub-Dark, GitSkin,            ── gitalike ──
+ cosmetic        GitHub-Dark, GitSkin,            ── GitAlike ──
                  Old School GitHub, Dark-GitLab,   (GitHub ⇄ GitLab)
                  Forgejo themes
  ─────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ Two independent axes define the field:
  migration       GitHub Enterprise Importer (gh gl2gh)
 ```
 
-gitalike is alone in the reciprocal column. The nearest neighbours are the
+GitAlike is alone in the reciprocal column. The nearest neighbours are the
 one-way cosmetic tools (GitSkin), the one-way UX enhancers (Refined GitHub) and
 the API-side multi-forge tools (`git-pkgs/forge`).
 
@@ -53,7 +53,7 @@ the API-side multi-forge tools (`git-pkgs/forge`).
 
 Legend: ✅ full · ➖ partial / adjacent · ❌ none
 
-| Capability | **gitalike** | GitSkin | Refined GitHub | Octotree | Userstyles (Stylus) | Multi-forge CLI¹ | Official importers² |
+| Capability | **GitAlike** | GitSkin | Refined GitHub | Octotree | Userstyles (Stylus) | Multi-forge CLI¹ | Official importers² |
 | --- | :--: | :--: | :--: | :--: | :--: | :--: | :--: |
 | Reciprocal reskin (GH→GL **and** GL→GH) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Third-forge skins (Gitea/Forgejo, Bitbucket) | ✅ | ❌ | ❌ | ➖ | ➖ | ✅ | ➖ |
@@ -73,7 +73,7 @@ Legend: ✅ full · ➖ partial / adjacent · ❌ none
 ¹ `git-pkgs/forge` (Go, MIT, GitHub/GitLab/Gitea/Forgejo/Bitbucket/Gerrit/Tangled), `Leleat/git-forge`, `gh`, `glab`, Emacs `magit/forge`.
 ² GitLab's GitHub importer; GitHub Enterprise Importer's `gh gl2gh` (GA Aug 2026).
 
-**Read:** gitalike wins the semantic reciprocal cell outright and is the only
+**Read:** GitAlike wins the semantic reciprocal cell outright and is the only
 tool that combines *no network* with *self-hosted coverage* and *third-forge
 skins*. It loses on marketplace/community theming (GitSkin, Stylus) and on
 API-level interop and migration (CLIs/importers) — neither of which it should
@@ -84,17 +84,17 @@ try to win.
 ### GitSkin (`gitsk.in`) — the competitor to watch, and the peer to partner with
 GitHub-only skinning with a theme marketplace and — importantly — a **semantic
 component model** where themes target abstract components, resolved to GitHub's
-DOM by **adapters served from a CDN**. It solves the same hard problem gitalike
+DOM by **adapters served from a CDN**. It solves the same hard problem GitAlike
 does (surviving upstream DOM churn), but by the opposite strategy: dynamic,
 network-delivered adapters. Its five-level scale (0 = Primer tokens, 4 = global
 CSS) is a good onboarding ramp.
 
 - **Threat**: if GitSkin adds GitLab, it owns "skinnable forge UI" with a
   marketplace flywheel and brand.
-- **Weakness gitalike exploits**: GitHub-only; CDN adapters mean network
-  requests (a privacy contrast gitalike can press); not about cross-product
+- **Weakness GitAlike exploits**: GitHub-only; CDN adapters mean network
+  requests (a privacy contrast GitAlike can press); not about cross-product
   muscle memory.
-- **Alliance**: gitalike's `SELECTORS` + canary is a static cousin of their
+- **Alliance**: GitAlike's `SELECTORS` + canary is a static cousin of their
   adapter spec. Contributing a GitLab adapter, or publishing an interop note,
   converts the nearest rival into a peer before a rivalry forms.
 
@@ -103,18 +103,18 @@ CSS) is a good onboarding ramp.
 GitHub-improvement brand, and its README notes **GitHub natively absorbed dozens
 of its features**. Two lessons: (1) a polished, documented, tested extension can
 own a large audience; (2) platforms absorb good ideas. GitHub absorbing "look
-like GitLab" is unlikely (brand), which makes gitalike's niche *more* defensible
+like GitLab" is unlikely (brand), which makes GitAlike's niche *more* defensible
 than a generic enhancer — but the precedent is worth stating in strategy.
 
 ### Octotree — the monetization precedent
 22k stars, freemium at ~$35/yr, "Terms of Use" (closed). Proves developers pay
-for GitHub workflow tooling. gitalike's GPL + no-backend model forecloses paid
+for GitHub workflow tooling. GitAlike's GPL + no-backend model forecloses paid
 tiers, so it should not chase this; the realistic analogue is sponsorship/grants.
 
 ### Old School GitHub — the cautionary tale
 A CSS-only "make GitHub look different" reskin, 238 stars, ~dozens of installs,
-last updated 2024, effectively abandoned. It shows the failure mode gitalike is
-built against: brittle structural CSS with no drift detection decays. gitalike's
+last updated 2024, effectively abandoned. It shows the failure mode GitAlike is
+built against: brittle structural CSS with no drift detection decays. GitAlike's
 daily selector canary is the explicit countermeasure.
 
 ### Userstyles (Stylus / GitHub-Dark / Dark-GitLab) — the DIY substitute
@@ -125,19 +125,19 @@ this audience.
 
 ### Multi-forge CLIs and official importers — collaborators, not rivals
 `git-pkgs/forge`, `gh`/`glab`, `magit/forge` unify forge **behaviour**; the
-GitLab importer and `gh gl2gh` move **data**. gitalike unifies **UI/muscle
+GitLab importer and `gh gl2gh` move **data**. GitAlike unifies **UI/muscle
 memory**. Same user pain (forge fragmentation), no overlap — ideal cross-linking
-partners and a natural migration funnel: *the importer moves the data, gitalike
+partners and a natural migration funnel: *the importer moves the data, GitAlike
 moves the muscle memory.*
 
 ## 5. Collaborative ecosystem
 
 | Ally | Why | How to engage |
 | --- | --- | --- |
-| **Forgejo / Codeberg** | gitalike already bundles them; Forgejo warns its own UI customisation is fragile/unsupported, so a client-side skin is complementary; both non-profit, FOSS-aligned | Offer it in Forgejo/Codeberg community lists; note the Gitea token block already matches their markup |
+| **Forgejo / Codeberg** | GitAlike already bundles them; Forgejo warns its own UI customisation is fragile/unsupported, so a client-side skin is complementary; both non-profit, FOSS-aligned | Offer it in Forgejo/Codeberg community lists; note the Gitea token block already matches their markup |
 | **GitSkin** | Same upstream-churn problem, opposite solution | Adapter interop note; contribute a GitLab adapter; list each other as "different axis" |
 | **ForgeFed / F3** | CC0, **NLnet NGI Zero-funded**; Forgejo implementing federation; the standards answer to forge lock-in | Cite as ecosystem context; **NLnet/NGI Zero Entrust is a credible grant funder** for "lower the cost of switching forges" |
-| **Multi-forge CLIs** | Complementary surface | Cross-links, "CLI for the terminal, gitalike for the browser" |
+| **Multi-forge CLIs** | Complementary surface | Cross-links, "CLI for the terminal, GitAlike for the browser" |
 | **Migrators** | Data → then familiarity | Docs/blog: migrate, then keep muscle memory |
 | **awesome-browser-extensions-for-github** (3.3k★) | Curated discovery; **codeless submission via an Issue** | File the submission (see `SUBMISSION-KIT.md`) |
 | **Stylus / userstyles.world** | Same audience, adjacent mechanism | Offer a lite userstyle or an interop note |
@@ -148,7 +148,7 @@ moves the muscle memory.*
    copy and the awesome-list entry: *the only extension that makes GitHub read
    like GitLab — and back.*
 2. **Neutralise GitSkin before it moves.** Publish an adapter/interop note and
-   offer a GitLab adapter; make gitalike the reference for *cross*-product skins.
+   offer a GitLab adapter; make GitAlike the reference for *cross*-product skins.
 3. **Submit to `awesome-browser-extensions-for-github` and the stores.** The
    awesome entry is near-zero effort and permanent discovery; store listings are
    the gate to TRL 8–9 (see `store/listing-*.md`).

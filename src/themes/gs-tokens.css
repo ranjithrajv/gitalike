@@ -1,7 +1,7 @@
 /* =====================================================================
-   gitalike — token mappings shared by more than one skin.
+   GitAlike — token mappings shared by more than one skin.
 
-   Every skin re-points the source forge's design tokens at the gitalike
+   Every skin re-points the source forge's design tokens at the GitAlike
    `--gs-*` palette, which is itself per-theme. When two skins map the *same*
    source tokens — GitHub's Pajamas on a GitLab source, or Gitea's `--color-*`
    on any source — the declaration list is identical because it only ever
@@ -13,7 +13,7 @@
    still wins where it deliberately diverges.
    ===================================================================== */
 
-/* ---------------------- Pajamas tokens -> gitalike (GitHub, Bitbucket) -- */
+/* ---------------------- Pajamas tokens -> GitAlike (GitHub, Bitbucket) -- */
 /* A GitLab source shown as either of these skins reads the same alias list;
    `--gs-*` carries the palette. The neutral ramp that follows in each skin
    file is palette-specific, so it stays there. */
@@ -75,7 +75,7 @@ html:is(.gs-theme-github, .gs-theme-bitbucket) {
   --gl-border-radius-lg: var(--gs-radius-lg) !important;
 }
 
-/* ---------------------- Bitbucket tokens -> gitalike (GitHub, GitLab) -- */
+/* ---------------------- Bitbucket tokens -> GitAlike (GitHub, GitLab) -- */
 /* Bitbucket Cloud is built on Atlassian's design system, whose semantic
    `--ds-*` tokens it exposes on <html>. Mapping them at the applied skin's
    palette repaints a Bitbucket page without any Bitbucket-specific markup
@@ -169,7 +169,7 @@ html[data-gs-source="bitbucket"]:is(.gs-theme-github, .gs-theme-gitlab)
   --ds-border: var(--gs-header-bg);
 }
 
-/* -------------------- Gitea tokens -> gitalike (every skin) -- */
+/* -------------------- Gitea tokens -> GitAlike (every skin) -- */
 /* Codeberg (Forgejo) and gitea.com expose Gitea's own `--color-*` names, on
    <html data-theme>, whichever skin is applied. The mapping is the same for
    all three skins because it reads `--gs-*`; each skin keeps its own #navbar

@@ -1,5 +1,5 @@
 /**
- * gitalike — UX content script: entry point.
+ * GitAlike — UX content script: entry point.
  *
  * The pass modules and the core are listed before this file in CONTENT_JS, so
  * by the time it runs every pass has registered. It only boots the core; the

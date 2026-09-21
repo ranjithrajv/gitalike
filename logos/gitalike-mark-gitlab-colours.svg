@@ -1,16 +1,16 @@
 <!--
-  gitalike's own mark, wearing GitLab's colour scheme.
+  GitAlike's own mark, wearing GitLab's colour scheme.
 
   This is original artwork — the same two-way swap arrow as src/icons/icon.svg —
-  not a GitLab asset. gitalike never ships another product's logo; only the
+  not a GitLab asset. GitAlike never ships another product's logo; only the
   palette is borrowed. The gradient runs across GitLab's palette (red #e24329,
-  orange #fc6d26, yellow #fca326). It lands on the light bar gitalike gives a
+  orange #fc6d26, yellow #fca326). It lands on the light bar GitAlike gives a
   GitHub-flavoured site.
 
   Baked into src/themes/as-gitlab.css as the gs-mark variable.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 84 84" role="img" aria-label="gitalike">
-  <title>gitalike mark in GitLab colours</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 84 84" role="img" aria-label="GitAlike">
+  <title>GitAlike mark in GitLab colours</title>
   <defs>
     <linearGradient id="gitlab" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#e24329"/>

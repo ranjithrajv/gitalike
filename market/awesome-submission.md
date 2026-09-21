@@ -1,5 +1,5 @@
 **Name of the browser extension**
-gitalike — GitHub ⇄ GitLab UI
+GitAlike — any git platform, preferred UX
 
 **A short description**
 Re-skins GitHub and GitLab (plus Codeberg/Gitea and Bitbucket) as each other —

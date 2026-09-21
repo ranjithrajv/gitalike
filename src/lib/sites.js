@@ -1,5 +1,5 @@
 /**
- * What gitalike knows about hosts, the skins it applies, and the storage schema
+ * What GitAlike knows about hosts, the skins it applies, and the storage schema
  * it reads them from.
  *
  * Loaded as a plain script by the content script, the popup and the background
@@ -87,7 +87,7 @@
   const isKind = (value) => Object.hasOwn(kinds, value);
 
   /**
-   * The storage keys gitalike owns, kept beside the schema that gives them
+   * The storage keys GitAlike owns, kept beside the schema that gives them
    * meaning (the `settings` map is keyed by kind, the `instances` map by host,
    * the `hostSettings` map by host). Every context reads the same triple through
    * `stateFrom`.

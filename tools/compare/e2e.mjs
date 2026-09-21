@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * End-to-end test for gitalike, driven with Playwright.
+ * End-to-end test for GitAlike, driven with Playwright.
  *
  * It launches a Chromium with `dist/chromium` loaded unpacked, turns both skins
  * on through the extension's own storage, visits the live sites — GitHub,

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Pre-commit gate for gitalike.
+ * Pre-commit gate for GitAlike.
  *
  * The point is to catch, before the commit exists, every failure that CI would
  * otherwise catch after a push — plus the cheap mistakes CI does not look for

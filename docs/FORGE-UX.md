@@ -1,6 +1,6 @@
 # Forge UX
 
-gitalike re-skins one forge's interface onto another. This is the map of the
+GitAlike re-skins one forge's interface onto another. This is the map of the
 source products it handles — GitHub, GitLab, Gitea/Forgejo (Codeberg,
 `gitea.com`), Bitbucket and Gerrit — and the three UIs it can paint them with:
 **GitLab**, **GitHub** and **Bitbucket**. The structural passes and the
@@ -160,7 +160,7 @@ makes the skin convincing at all:
   column they are drawn in.
 - Navigation for a feature is hidden until that feature is enabled.
 
-### What gitalike maps
+### What GitAlike maps
 
 The project page is the surface `src/lib/ux.js` was written against. The full
 status matrix is [UX-PARITY.md](UX-PARITY.md); the project-page rows are:
@@ -334,7 +334,7 @@ rather than a recoloured GitHub (`themes/ux-nav.css`).
 - A list of the account's **own repositories/projects**.
 - Company/group, location and website as identity metadata.
 
-### What gitalike maps
+### What GitAlike maps
 
 Most of the profile's vocabulary has no exact counterpart, so the copy tables
 (`PHRASES`, `LABELS`) do not carry it. What applies:

@@ -1,5 +1,5 @@
 /* =====================================================================
-   gitalike — the Bitbucket skin (the applied product, not the source).
+   GitAlike — the Bitbucket skin (the applied product, not the source).
    Every rule is scoped to html.gs-theme-bitbucket, so the file is inert until
    the content script adds that class to <html>. It is registered alongside the
    other skins on every configured host; which one paints is decided by the
@@ -60,7 +60,7 @@ html.gs-theme-bitbucket {
   --gs-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
 
-  /* gitalike's own mark in Atlassian's palette: a gradient across the light
+  /* GitAlike's own mark in Atlassian's palette: a gradient across the light
      blues, so it reads on the blue bar. Original artwork — the extension ships
      no vendor's logo, only a vendor palette. Source:
      logos/gitalike-mark-bitbucket-colours.svg */
@@ -218,7 +218,7 @@ html.gs-theme-bitbucket
   color: var(--gs-header-fg) !important;
 }
 
-/* Logos, in every source's shape: hide the site's mark and paint gitalike's. */
+/* Logos, in every source's shape: hide the site's mark and paint GitAlike's. */
 html.gs-theme-bitbucket :is(
     .octicon-mark-github,
     .tanuki-logo,

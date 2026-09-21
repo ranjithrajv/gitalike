@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        gitalike is deliberately small and conservative: it re-skins a page
+        GitAlike is deliberately small and conservative: it re-skins a page
         rather than re-implementing it, it stays inert when the skin is off, and
         it ships no vendor artwork. A proposal that holds those lines is much
         easier to take. The ground rules are in
@@ -37,7 +37,7 @@ body:
     attributes:
       label: Which product should it match, and why
       description: >-
-        Most of gitalike is one product's words and habits applied to another's
+        Most of GitAlike is one product's words and habits applied to another's
         page — name the product it should behave like, or the reason it has no
         counterpart and should be marked instead.
     validations:

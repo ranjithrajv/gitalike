@@ -1,4 +1,4 @@
-# Publishing gitalike to every extension store
+# Publishing GitAlike to every extension store
 
 Internal plan. The goal: one build per engine, submitted to every store that
 matters, so Chromium and Firefox **and their forks** can install it the normal

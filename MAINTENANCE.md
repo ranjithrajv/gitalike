@@ -1,6 +1,6 @@
 # Maintenance
 
-gitalike is a small, single-maintainer, best-effort project. This page records
+GitAlike is a small, single-maintainer, best-effort project. This page records
 what "supported" means, how a release is cut, where the boundaries are, and how
 to work in the shared checkout without stepping on another session.
 

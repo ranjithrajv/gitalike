@@ -1,4 +1,4 @@
-# Contributing to gitalike
+# Contributing to GitAlike
 
 Thanks for taking a look. It is a small extension with a few firm rules; the
 rest is straightforward. If you only read one section, read
@@ -35,7 +35,7 @@ known navigation region. Over-eager rewriting breaks search, copy/paste and
 screen readers. When markup is unfamiliar, prefer doing nothing.
 
 **Logos are original; never bundle a vendor's mark.** The mark painted on a
-skinned page is gitalike's own two-way swap arrow (`src/icons/icon.svg`), only
+skinned page is GitAlike's own two-way swap arrow (`src/icons/icon.svg`), only
 recoloured to the other product's palette. Never copy a forge's logo — or its
 vector path data — into `logos/` or a theme; recolouring someone else's mark is
 still shipping their artwork. Sources live in `logos/`; see
@@ -145,7 +145,7 @@ reads its colours from a handful of CSS custom properties:
   `--bgColor-*`, `--borderColor-*`, plus the legacy `--color-*` names)
 - GitLab → [Pajamas](https://design.gitlab.com/) (`--gl-*`)
 
-So gitalike mostly re-points those properties at the other design system's
+So GitAlike mostly re-points those properties at the other design system's
 palette, then fixes up a few structural things the tokens cannot reach (the top
 bar, the logo, active-tab accents, navigation orientation). The stylesheets and
 two classes do the visual half; a second content script does the copy,
@@ -233,7 +233,7 @@ Each theme file has three parts:
    A literal there cannot be checked by `npm run canary`; a `SELECTORS` entry
    can, and the canary probes every entry a `CANARY_PAGES` page names.
 
-3. **A logo data URI**, `--gs-mark`, that paints gitalike's own mark in the
+3. **A logo data URI**, `--gs-mark`, that paints GitAlike's own mark in the
    other product's palette — GitLab's red→orange→yellow in the GitHub→GitLab
    skin, Primer's ink and accent blue in the GitLab→GitHub one.
 
@@ -257,7 +257,7 @@ origin at runtime — see
 
 ### Add or change a logo
 
-The mark is gitalike's own — the same two-way swap arrow as the toolbar icon —
+The mark is GitAlike's own — the same two-way swap arrow as the toolbar icon —
 so there is no vendor artwork in the tree. Keep it that way: draw an original
 mark rather than copying a forge's.
 
@@ -305,7 +305,7 @@ in `themes/ux-nav.css`.
 
 ## Adding another forge — contributions welcome
 
-gitalike knows five source products — GitHub, GitLab, Gitea/Forgejo, Bitbucket
+GitAlike knows five source products — GitHub, GitLab, Gitea/Forgejo, Bitbucket
 and Gerrit — and paints three skins: GitLab, GitHub and Bitbucket. Codeberg
 (Forgejo) and gitea.com (Gitea) are bundled as GitHub-flavoured sources, shown
 with the GitLab UI; Bitbucket is bundled as its own source, shown with the GitHub
@@ -346,7 +346,7 @@ skin) and the `g`-combo remap is skipped on it. Copy those shapes for another
 token system or another tab bar. Only add vocabulary if the forge uses a
 different word — Forgejo says "Pull request", so there is nothing to do there.
 
-You can already point gitalike at any instance without touching the source: the
+You can already point GitAlike at any instance without touching the source: the
 popup's **Add a site** flow exists for exactly that. A `builtin` entry just means
 it works out of the box.
 
@@ -382,7 +382,7 @@ its markup goes in `SELECTORS` and a `CANARY_PAGES` entry, so the canary watches
 the hooks the skin uses.
 
 Whichever forge you add, its logo stays out of the bundle. The theme carries a
-`--gs-mark` and paints gitalike's own mark in that forge's palette — the
+`--gs-mark` and paints GitAlike's own mark in that forge's palette — the
 existing skins are the pattern. Do not paste a forge's logo, or its vector path
 data, into a theme: recolouring someone else's mark is still shipping their
 mark. This covers Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut alike.
@@ -527,7 +527,7 @@ read.
     white-on-white, so those get GitHub's translucent treatment instead.
   - The `<img>` fallback for the brand logo has to be scoped to the top bar:
     unscoped, `alt*="gitlab"` also matches **project avatars** named "GitLab"
-    and repaints them with the gitalike mark on a white tile.
+    and repaints them with the GitAlike mark on a white tile.
 - **GitLab's legacy CSS** does not use custom properties everywhere, so the
   GitLab→GitHub skin leans more on structural selectors and will be the first to
   drift. Self-hosted instances make this worse: `code.swecha.org` runs an older
@@ -609,7 +609,7 @@ To cut a release:
 ```sh
 npm test && npm run lint
 node tools/compare/e2e.mjs
-npm run package              # dist/artifacts/*/gitalike_github_gitlab_ui-X.Y.Z.zip
+npm run package              # dist/artifacts/*/*.zip
 npm run screenshots          # refresh store/screenshots/
 ```
 

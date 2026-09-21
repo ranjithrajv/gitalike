@@ -6,13 +6,13 @@ are noted; each draft fits.
 ## Product name (max 45)
 
 ```
-gitalike — GitHub ⇄ GitLab UI
+GitAlike — any git platform, preferred UX
 ```
 
 ## Short description (max 132)
 
 ```
-Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ as each other, locally: nothing collected.
+Use any forge, keep your muscle memory. Re-skins GitHub, GitLab™ and Bitbucket as each other, locally: nothing collected.
 ```
 
 ## Category
@@ -26,7 +26,7 @@ Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ as each ot
 ## Detailed description
 
 ```
-gitalike re-skins the big forges so they look — and read — like each other, in
+GitAlike re-skins the big forges so they look — and read — like each other, in
 both directions: GitHub shown as GitLab, and GitLab shown as GitHub. That
 two-way swap is what keeps your muscle memory — the words, the navigation, the
 shortcuts — working on whichever forge you happen to be using:
@@ -40,7 +40,7 @@ is relabelled and reordered, and the other product's g-shortcuts work. It change
 nothing about what the site does — no requests are intercepted and no data is
 touched — and every change is reverted the moment you switch a skin off.
 
-A theme changes the colours. gitalike also changes the words ("Pull request"
+A theme changes the colours. GitAlike also changes the words ("Pull request"
 becomes "Merge request"), the reference markers (#42 becomes !42), the
 navigation's labels and order, and the other product's keyboard shortcuts.
 
@@ -49,12 +49,11 @@ inputs or editable regions; a control label changes only on an exact whole-label
 match; and a feature the other product lacks is marked rather than guessed at.
 Search, copy/paste and screen readers keep working.
 
-Works on github.com, gitlab.com and bitbucket.org out of the box, on the bundled
-self-hosted instance code.swecha.org, on Codeberg (Forgejo) and gitea.com
-(Gitea), and on any other instance you point it at — GitHub Enterprise Server,
-Bitbucket Data Center and Gerrit included. Three skins — GitLab, GitHub and
-Bitbucket — and any site you have set up can wear any of them. Sourcehut is the
-next candidate.
+Works on github.com, gitlab.com, Codeberg (Forgejo), gitea.com (Gitea) and
+bitbucket.org out of the box, and on any other instance you point it at — GitHub
+Enterprise Server, self-hosted GitLab, Bitbucket Data Center and Gerrit
+included. Three skins — GitLab, GitHub and Bitbucket — and any site you have set
+up can wear any of them. Sourcehut is the next candidate.
 
 Runs in Chrome, Edge, Brave, Opera, Vivaldi and the other Chromium browsers,
 which share the extension API.
@@ -68,14 +67,14 @@ which share the extension API.
   stylesheets are bundled and the mark is an inline data URI. Nothing is sent
   anywhere.
 
-Permissions, plainly: gitalike is granted the public forges and Codeberg
-(github.com, gitlab.com, codeberg.org, gitea.com) at install.
-GitHub Enterprise Server and self-hosted GitLab live on hostnames that cannot be
-listed ahead of time, so a self-hosted instance is granted one origin at a time
-when you add it in the popup. On every site you have not set up, it does nothing
-at all.
+Permissions, plainly: GitAlike is granted the five bundled hosts (github.com,
+gitlab.com, codeberg.org, gitea.com, bitbucket.org) at install.
+GitHub Enterprise Server, self-hosted GitLab, Bitbucket Data Center and Gerrit
+live on hostnames that cannot be listed ahead of time, so a self-hosted instance
+is granted one origin at a time when you add it in the popup. On every site you
+have not set up, it does nothing at all.
 
-gitalike is free software, licensed GPL-3.0-or-later; the source is at
+GitAlike is free software, licensed GPL-3.0-or-later; the source is at
 github.com/ranjithrajv/gitalike.
 
 GitHub is a trademark of GitHub, Inc. GITLAB is a trademark of GitLab Inc. in
@@ -88,12 +87,12 @@ or GitLab.
 **Single purpose description**
 
 ```
-gitalike re-skins GitHub and GitLab pages to look and read like the other
-product. It re-points each site's own CSS design tokens, paints its own mark in
-the other product's palette, and relabels ordinary interface text and navigation
-to the other product's vocabulary, so that a GitHub site reads like GitLab, or a
-GitLab site reads like GitHub. It does not alter what the sites do: no requests
-are intercepted and no data is touched.
+GitAlike re-skins a forge's pages to look and read like one of the other
+forges — GitHub, GitLab or Bitbucket. It re-points each site's own CSS design
+tokens, paints its own mark in the imitated product's palette, and relabels
+ordinary interface text and navigation to that product's vocabulary, so that a
+GitHub site reads like GitLab, or a GitLab site reads like GitHub. It does not
+alter what the sites do: no requests are intercepted and no data is touched.
 ```
 
 **Permission justifications**
@@ -103,12 +102,14 @@ storage — Saves your on/off choices and the instances you add, using the
 browser's own synced storage. Nothing leaves your browser profile.
 
 Host permission (*://github.com/*, *://gitlab.com/*, *://codeberg.org/*,
-*://gitea.com/*) — the bundled forges, granted at install.
+*://gitea.com/*, *://bitbucket.org/*) — the five bundled forges, granted at
+install.
 
-Optional host permission (*://*/*) — GitHub Enterprise Server and self-hosted
-GitLab can live on any hostname, so no fixed list can cover them. When you add
-an instance in the popup, the extension asks for that one origin; until you do,
-it has no access to it. On any host you have not set up, it does nothing.
+Optional host permission (*://*/*) — GitHub Enterprise Server, self-hosted
+GitLab, Bitbucket Data Center and Gerrit can live on any hostname, so no fixed
+list can cover them. When you add an instance in the popup, the extension asks
+for that one origin; until you do, it has no access to it. On any host you have
+not set up, it does nothing.
 ```
 
 **Data usage** — answer "no" to collecting any category of user data. No remote

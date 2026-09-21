@@ -9,7 +9,7 @@ contact_links:
     about: Swipe every site against every skin it can wear, before filing.
   - name: README
     url: https://github.com/ranjithrajv/gitalike/blob/main/README.md
-    about: What gitalike does, how to install it, and its known limitations.
+    about: What GitAlike does, how to install it, and its known limitations.
   - name: Contributing guide
     url: https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md
     about: Build, test, the ground rules, and how to add a forge or a translation.

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "gitalike — GitHub ⇄ GitLab UI",
-  "short_name": "gitalike",
-  "description": "Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ as each other, locally; nothing collected.",
+  "name": "GitAlike — any git platform, preferred UX",
+  "short_name": "GitAlike",
+  "description": "Use any forge, keep your muscle memory. Re-skins GitHub, GitLab™ and Bitbucket as each other, locally; nothing collected.",
   "permissions": ["storage", "scripting"],
   "host_permissions": [
     "*://github.com/*",
@@ -13,7 +13,7 @@
   ],
   "optional_host_permissions": ["*://*/*"],
   "action": {
-    "default_title": "gitalike",
+    "default_title": "GitAlike",
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",

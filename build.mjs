@@ -53,7 +53,7 @@ const TARGETS = {
         // manifest self-consistent. Nothing in the extension needs anything
         // newer.
         strict_min_version: '142.0',
-        // Required by AMO for new extensions. gitalike sends nothing anywhere —
+        // Required by AMO for new extensions. GitAlike sends nothing anywhere —
         // it has no network access at all — so it declares "none".
         data_collection_permissions: {
           required: ['none'],

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * UX parity scoring for gitalike.
+ * UX parity scoring for GitAlike.
  *
  * The docs quote a score for every source × skin pair — how much of the
  * imitated product's surface the skin reproduces — and this is the one place

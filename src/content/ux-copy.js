@@ -1,5 +1,5 @@
 /**
- * gitalike — UX content script: copy, attributes and reference markers.
+ * GitAlike — UX content script: copy, attributes and reference markers.
  *
  * Node passes: they run over each added subtree, so they are cheap to re-run.
  * See ux-core.js for the shared runtime and ux.js for the entry point.

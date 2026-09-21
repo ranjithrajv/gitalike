@@ -5,19 +5,19 @@ Paste-ready copy for the AMO developer hub. Character limits are noted.
 ## Name (max 50)
 
 ```
-gitalike — GitHub ⇄ GitLab UI
+GitAlike — any git platform, preferred UX
 ```
 
 ## Summary (max 250)
 
 ```
-Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ so each looks and reads like the other, locally. No data is collected, and there is no network access at all. More forges are on the way.
+Use any forge, keep your muscle memory. Re-skins GitHub, GitLab™ and Bitbucket as each other — colour, wording, navigation and shortcuts — locally, with no network access and no data collected.
 ```
 
 ## Description
 
 ```
-gitalike re-skins the big forges so they look — and read — like each other, in
+GitAlike re-skins the big forges so they look — and read — like each other, in
 both directions: GitHub shown as GitLab, and GitLab shown as GitHub. That
 two-way swap is what keeps your muscle memory — the words, the navigation, the
 shortcuts — working on whichever forge you happen to be using:
@@ -31,7 +31,7 @@ is relabelled and reordered, and the other product's g-shortcuts work. It change
 nothing about what the site does — no requests are intercepted and no data is
 touched — and every change is reverted the moment you switch a skin off.
 
-A theme changes the colours. gitalike also changes the words ("Pull request"
+A theme changes the colours. GitAlike also changes the words ("Pull request"
 becomes "Merge request"), the reference markers (#42 becomes !42), the
 navigation's labels and order, and the other product's keyboard shortcuts.
 
@@ -40,12 +40,11 @@ inputs or editable regions; a control label changes only on an exact whole-label
 match; and a feature the other product lacks is marked rather than guessed at.
 Search, copy/paste and screen readers keep working.
 
-Works on github.com, gitlab.com and bitbucket.org out of the box, on the bundled
-self-hosted instance code.swecha.org, on Codeberg (Forgejo) and gitea.com
-(Gitea), and on any other instance you point it at — GitHub Enterprise Server,
-self-hosted GitLab, Bitbucket Data Center and Gerrit included. Three skins —
-GitLab, GitHub and Bitbucket — and any site you have set up can wear any of them.
-Sourcehut is the next candidate.
+Works on github.com, gitlab.com, Codeberg (Forgejo), gitea.com (Gitea) and
+bitbucket.org out of the box, and on any other instance you point it at — GitHub
+Enterprise Server, self-hosted GitLab, Bitbucket Data Center and Gerrit
+included. Three skins — GitLab, GitHub and Bitbucket — and any site you have set
+up can wear any of them. Sourcehut is the next candidate.
 
 Runs in Firefox 142 or newer, and in the forks that track it (LibreWolf,
 Floorp, Zen).
@@ -60,14 +59,14 @@ Features
   stylesheets are bundled and the mark is an inline data URI. Nothing is sent
   anywhere.
 
-Permissions, plainly: gitalike is granted the public forges and Codeberg
-(github.com, gitlab.com, codeberg.org, gitea.com) at install.
-GitHub Enterprise Server and self-hosted GitLab live on hostnames that cannot be
-listed ahead of time, so a self-hosted instance is granted one origin at a time
-when you add it in the popup. On every site you have not set up, it does nothing
-at all.
+Permissions, plainly: GitAlike is granted the five bundled hosts (github.com,
+gitlab.com, codeberg.org, gitea.com, bitbucket.org) at install.
+GitHub Enterprise Server, self-hosted GitLab, Bitbucket Data Center and Gerrit
+live on hostnames that cannot be listed ahead of time, so a self-hosted instance
+is granted one origin at a time when you add it in the popup. On every site you
+have not set up, it does nothing at all.
 
-gitalike is free software, licensed GPL-3.0-or-later; the source is at
+GitAlike is free software, licensed GPL-3.0-or-later; the source is at
 github.com/ranjithrajv/gitalike.
 
 GitHub is a trademark of GitHub, Inc. GITLAB is a trademark of GitLab Inc. in
@@ -93,13 +92,13 @@ later". See `LICENSE`; the source is <https://github.com/ranjithrajv/gitalike>.
 ## Privacy policy
 
 ```
-gitalike collects no data and makes no network requests. It stores only your
+GitAlike collects no data and makes no network requests. It stores only your
 on/off choices and the list of instances you add, in Firefox's own synced
 extension storage; that data stays within your browser profile and Mozilla
 Sync, and is never sent to the developer or anyone else.
 
-The extension is granted the bundled forges (github.com, gitlab.com,
-codeberg.org, gitea.com) at install. Self-hosted instances live
+The extension is granted the five bundled forges (github.com, gitlab.com,
+codeberg.org, gitea.com, bitbucket.org) at install. Self-hosted instances live
 on unpredictable hostnames, so one is granted a single origin when you add it in
 the popup. On hosts you have not set up, it does nothing.
 ```

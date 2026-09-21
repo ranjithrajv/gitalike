@@ -1,5 +1,5 @@
 /**
- * gitalike — content script.
+ * GitAlike — content script.
  *
  * Runs on http(s) pages at `document_start`. It never touches page structure;
  * all it does is keep two classes on <html> in sync:

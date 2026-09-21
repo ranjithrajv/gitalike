@@ -1,5 +1,5 @@
 /**
- * gitalike — background context.
+ * GitAlike — background context.
  *
  * A service worker on Chromium, an event page on Firefox. It handles the
  * keyboard command, the per-tab toolbar badge, and registering the content
@@ -50,7 +50,7 @@ async function refreshBadge(tabId, url, state) {
   const on = Boolean(theme && kind);
   const skin = on ? SITES.skins[theme] : null;
   const text = on ? skin.badge : '';
-  const title = on ? `gitalike — showing the ${skin.product} UI` : 'gitalike';
+  const title = on ? `GitAlike — showing the ${skin.product} UI` : 'GitAlike';
 
   const previous = shownBadge.get(tabId);
   if (previous && previous.text === text && previous.title === title) return;
@@ -263,7 +263,7 @@ function syncContentScripts({ injectNew = false } = {}) {
     .catch((error) => {
       // If registration fails the extension is silently inert; leave a trace in
       // the background console rather than swallowing it.
-      console.warn('gitalike: content-script registration failed', error);
+      console.warn('GitAlike: content-script registration failed', error);
     });
   return registration;
 }
