@@ -522,60 +522,73 @@
       h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.015em; margin: 0 0 8px; }
       .section-head p { color: var(--muted); margin: 0; font-size: 16px; }
 
-      /* The comparisons sub-nav: sticks under the header so a long gallery
-         stays navigable. */
-      .see-nav {
-        position: sticky;
-        top: 60px;
-        z-index: 5;
+      /* The comparison picker: one page kind × one source forge. Switching the
+         pair swaps the one visible card, so the section stays a single capture
+         tall instead of seven stacked captures. */
+      .see-tabs {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 24px 0 20px;
+      }
+      .see-tabs__row {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 4px 6px;
-        margin: 24px 0 20px;
-        padding: 8px 12px;
+        gap: 3px;
+        padding: 4px;
         border: 1px solid var(--border);
         border-radius: 12px;
-        font-size: 13px;
         background: var(--surface-2);
-        background: color-mix(in srgb, var(--surface-2) 92%, transparent);
-        backdrop-filter: blur(6px);
       }
-      .see-nav__group {
-        margin: 0 2px 0 8px;
-        color: var(--muted);
+      .see-tab {
+        font: inherit;
+        font-size: 13px;
         font-weight: 600;
-      }
-      .see-nav__group:first-child { margin-left: 0; }
-      .see-nav a {
-        padding: 4px 10px;
-        border: 1px solid transparent;
+        color: var(--muted);
+        background: none;
+        border: 0;
         border-radius: 999px;
-        color: var(--muted);
-        font-weight: 600;
-        text-decoration: none;
+        padding: 5px 12px;
+        cursor: pointer;
       }
-      .see-nav a:hover { color: var(--fg); }
-      .see-nav a.is-active {
+      .see-tab:hover { color: var(--fg); }
+      .see-tab[aria-pressed="true"] {
         color: var(--fg);
         background: var(--surface);
-        border-color: var(--border);
+        box-shadow: inset 0 0 0 1px var(--border);
       }
+      .see-tab:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      /* A forge tab carries the colour of the divider it stands for. */
+      .see-tab[data-forge] {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .see-tab[data-forge]::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+      .see-tab[data-forge="gitlab"]::before { background: var(--gitlab); }
+      .see-tab[data-forge="github"]::before { background: var(--github); }
+      .see-tab[data-forge="bitbucket"]::before { background: var(--bitbucket); }
+      /* Last, so it beats the inline-flex above for a forge tab that sits out. */
+      .see-tab[hidden] { display: none; }
       @media (max-width: 620px) {
-        .see-nav { top: 92px; }
         .card[id] { scroll-margin-top: 168px; }
       }
 
       .demos { display: grid; gap: 28px; }
-      .demos-group {
-        margin: 8px 0 -10px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--muted);
-      }
       .card[id] { scroll-margin-top: 132px; }
+      /* Only the selected comparison is shown; the rest keep their place. */
+      .card[hidden] { display: none; }
       /* Skip rendering the demos until they scroll near the viewport. */
       .card { content-visibility: auto; contain-intrinsic-size: auto 820px; }
       .card h3 { font-size: 16px; margin: 0 0 4px; }
@@ -891,29 +904,29 @@
           <div class="section-head">
             <h2>See it</h2>
             <p>
-              Live captures of the real sites at 1280×900. Each one shows the
-              source page and every skin it can wear — drag a divider to reveal
-              one, or focus it and use the arrow keys. On a narrow screen the
-              captures stack. The Bitbucket and Gerrit <em>sources</em> are
-              vocabulary-only for now, so they are not shown here.
+              Live captures of the real sites at 1280×900. Pick a page kind and
+              a source forge, and the capture shows that page wearing every skin
+              it can — drag a divider to reveal one, or focus it and use the
+              arrow keys. The Gerrit <em>source</em> is vocabulary-only for now,
+              so it is not shown here.
             </p>
           </div>
 
-          <nav class="see-nav" aria-label="Comparisons">
-            <span class="see-nav__group">Project pages</span>
-            <a href="#github-project">GitHub</a>
-            <a href="#gitlab-project">GitLab</a>
-            <a href="#codeberg-project">Codeberg</a>
-            <a href="#bitbucket-project">Bitbucket</a>
-            <span class="see-nav__group">Profile pages</span>
-            <a href="#github-profile">GitHub</a>
-            <a href="#gitlab-profile">GitLab</a>
-            <a href="#bitbucket-profile">Bitbucket</a>
-          </nav>
+          <div class="see-tabs">
+            <div class="see-tabs__row" role="group" aria-label="Page kind">
+              <button type="button" class="see-tab" data-kind="project" aria-pressed="true">Project pages</button>
+              <button type="button" class="see-tab" data-kind="profile" aria-pressed="false">Profile pages</button>
+            </div>
+            <div class="see-tabs__row" role="group" aria-label="Source forge">
+              <button type="button" class="see-tab" data-forge="github" aria-pressed="true">GitHub</button>
+              <button type="button" class="see-tab" data-forge="gitlab" aria-pressed="false">GitLab</button>
+              <button type="button" class="see-tab" data-forge="codeberg" aria-pressed="false">Codeberg</button>
+              <button type="button" class="see-tab" data-forge="bitbucket" aria-pressed="false">Bitbucket</button>
+            </div>
+          </div>
 
-          <div class="demos">
-            <p class="demos-group">Project pages</p>
-            <div class="card" id="github-project">
+          <div class="demos" id="see-demos">
+            <div class="card" id="github-project" data-kind="project" data-forge="github">
               <h3>GitHub project page</h3>
               <p class="sub">
                 A horizontal <b class="github">tab bar</b>, shown as GitLab — a vertical
@@ -953,7 +966,7 @@
               </figure>
             </div>
 
-            <div class="card" id="gitlab-project">
+            <div class="card" id="gitlab-project" data-kind="project" data-forge="gitlab" hidden>
               <h3>GitLab project page</h3>
               <p class="sub">
                 GitLab's scattered sidebar rebuilt as GitHub's flat
@@ -993,7 +1006,7 @@
               </figure>
             </div>
 
-            <div class="card" id="codeberg-project">
+            <div class="card" id="codeberg-project" data-kind="project" data-forge="codeberg" hidden>
               <h3>Codeberg (Gitea) project page</h3>
               <p class="sub">
                 GitHub-flavoured, so it can wear all three: GitLab's grouped
@@ -1038,7 +1051,7 @@
               </figure>
             </div>
 
-            <div class="card" id="bitbucket-project">
+            <div class="card" id="bitbucket-project" data-kind="project" data-forge="bitbucket" hidden>
               <h3>Bitbucket project page</h3>
               <p class="sub">
                 Bitbucket's own left <b class="bitbucket">source sidebar</b>. A
@@ -1079,8 +1092,7 @@
               </figure>
             </div>
 
-            <p class="demos-group">Profile pages</p>
-            <div class="card" id="github-profile">
+            <div class="card" id="github-profile" data-kind="profile" data-forge="github" hidden>
               <h3>GitHub profile page</h3>
               <p class="sub">
                 A horizontal profile <b class="github">tab row</b>, shown as GitLab's
@@ -1120,7 +1132,7 @@
               </figure>
             </div>
 
-            <div class="card" id="gitlab-profile">
+            <div class="card" id="gitlab-profile" data-kind="profile" data-forge="gitlab" hidden>
               <h3>GitLab profile page</h3>
               <p class="sub">
                 A vertical <b class="gitlab">super-sidebar</b>, shown as GitHub's flat
@@ -1160,7 +1172,7 @@
               </figure>
             </div>
 
-            <div class="card" id="bitbucket-profile">
+            <div class="card" id="bitbucket-profile" data-kind="profile" data-forge="bitbucket" hidden>
               <h3>Bitbucket profile page</h3>
               <p class="sub">
                 Bitbucket's <b class="bitbucket">workspace repositories</b> page
@@ -1799,29 +1811,57 @@ node tools/compare/e2e.mjs       # Playwright end-to-end test against the live s
         if (section) spy.observe(section);
       }
 
-      // …and the comparisons sub-nav for the widget in view.
-      const seeLinks = [...document.querySelectorAll('.see-nav a[href^="#"]')];
-      const seeTargets = seeLinks
-        .map((a) => document.getElementById(a.getAttribute('href').slice(1)))
-        .filter(Boolean);
-      if (seeTargets.length) {
-        const seeSpy = new IntersectionObserver(
-          (entries) => {
-            for (const entry of entries) {
-              if (!entry.isIntersecting) continue;
-              const active = seeLinks.find(
-                (a) => a.getAttribute('href') === `#${entry.target.id}`,
-              );
-              if (active) {
-                seeLinks.forEach((a) =>
-                  a.classList.toggle('is-active', a === active),
-                );
-              }
+      // One comparison at a time: the two tab rows pick a page kind and a
+      // source forge, and only the matching card is shown. Profiles have no
+      // Codeberg capture, so that tab sits out while Profiles is selected; a
+      // deep link (#gitlab-profile) still opens the card it names.
+      const seeDemos = document.getElementById('see-demos');
+      const seeTabs = [...document.querySelectorAll('.see-tab')];
+      if (seeDemos && seeTabs.length) {
+        const cards = [...seeDemos.querySelectorAll('.card')];
+        const kindTabs = seeTabs.filter((tab) => tab.dataset.kind);
+        const forgeTabs = seeTabs.filter((tab) => tab.dataset.forge);
+        const state = { kind: 'project', forge: 'github' };
+
+        const show = (kind, forge) => {
+          state.kind = kind;
+          state.forge = forge;
+          for (const tab of kindTabs) {
+            tab.setAttribute('aria-pressed', String(tab.dataset.kind === kind));
+          }
+          for (const tab of forgeTabs) {
+            // Only the project pages have a Codeberg source capture.
+            tab.hidden = kind === 'profile' && tab.dataset.forge === 'codeberg';
+            tab.setAttribute('aria-pressed', String(tab.dataset.forge === forge));
+          }
+          for (const card of cards) {
+            card.hidden = !(
+              card.dataset.kind === kind && card.dataset.forge === forge
+            );
+          }
+        };
+
+        for (const tab of seeTabs) {
+          tab.addEventListener('click', () => {
+            if (tab.dataset.kind) {
+              // Keep the forge across a switch, unless the new kind lacks it.
+              const forge =
+                tab.dataset.kind === 'profile' && state.forge === 'codeberg'
+                  ? 'github'
+                  : state.forge;
+              show(tab.dataset.kind, forge);
+            } else {
+              show(state.kind, tab.dataset.forge);
             }
-          },
-          { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
-        );
-        seeTargets.forEach((target) => seeSpy.observe(target));
+          });
+        }
+
+        const fromHash = () => {
+          const card = cards.find((c) => `#${c.id}` === location.hash);
+          if (card) show(card.dataset.kind, card.dataset.forge);
+        };
+        fromHash();
+        window.addEventListener('hashchange', fromHash);
       }
 
       // Back-to-top, once the hero is behind you.
