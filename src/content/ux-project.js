@@ -435,6 +435,40 @@
         break;
       }
     }
+
+    // The Bitbucket repository bar carries the same categories the applied skin
+    // groups (Repository, Merge requests, CI/CD, …), so group it like that
+    // skin's own menu — the GitLab skin's Plan/Code/Build/Deploy headings. Only
+    // where the skin groups, and only when the items share one parent to hang
+    // the headings on.
+    if (repoPage && UX.NAV_GROUPS[t]) {
+      const parent = items[0].parentElement;
+      if (parent && items.every((el) => el.parentElement === parent)) {
+        ledger(parent, 'bitbucket-groups', () => ({
+          restore: () =>
+            parent
+              .querySelectorAll(':scope > .gs-nav-group')
+              .forEach((el) => el.remove()),
+        }));
+        for (const el of parent.querySelectorAll(':scope > .gs-nav-group')) {
+          el.remove();
+        }
+        let last = null;
+        for (const el of items) {
+          if (!nav.contains(el)) continue;
+          const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+          const group = UX.navGroupFor(label, t);
+          if (group && group !== last) {
+            const heading = document.createElement('span');
+            heading.className = 'gs-nav-group';
+            heading.setAttribute('data-gs-ux-skip', '');
+            heading.textContent = group;
+            parent.insertBefore(heading, el);
+            last = group;
+          }
+        }
+      }
+    }
   }
 
   // PolyGerrit renders its chrome inside *open* shadow roots, so a content

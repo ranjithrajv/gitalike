@@ -190,10 +190,12 @@ nothing to reorient.
   tokens on <html>, so the skins re-point them at their own palette, header
   included (`themes/gs-tokens.css`). Its navigation: `paintBitbucketNav`
   reorients and relabels the repository bar, found inside the declared `#root`
-  hook, and the workspace profile navigation is reoriented to the layout
-  (`themes/ux-nav.css`). It still loses the dimensions that need a rule or a
-  captured shape: there is no `NAV_RULES` entry, so the nav is not reordered or
-  filtered, no metadata shape, and no shortcut table. The diagonal is 10.0
+  hook, its bar is grouped into the applied skin's headings where that skin
+  groups (`paintBitbucketNav`; GitLab's Plan/Code/Build/…), and the workspace
+  profile navigation is reoriented to the layout (`themes/ux-nav.css`). It still
+  loses the dimensions that need a rule or a captured shape: there is no
+  `NAV_RULES` entry, so the nav is not reordered or filtered, no metadata shape,
+  and no shortcut table. The diagonal is 10.0
   because a source on its own UI needs no transformation.
 - **Gerrit as a source (4.5–4.8 project, 2.1–3.1 profile)** — its palette is
   partial: PolyGerrit reads its colours from root custom properties that inherit

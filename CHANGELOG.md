@@ -77,7 +77,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `compare.profile` (and Gerrit `compare.nav`), and the rubric now uses
   `compare.profile` as a fraction, so partial profile coverage scores partially.
   `layout-parity` is now 24/24 gated and passing, and an independent jev pass
-  over the same signals grades every pair 9.3–9.9 (was 2.8–9.9).
+  over the same signals grades every pair 9.3–9.9 (was 2.8–9.9). Bitbucket's
+  repository bar is also grouped into the applied skin's headings (GitLab's
+  Plan/Code/Build/…) by `paintBitbucketNav` where that skin groups, closing the
+  flat-menu gap the corrected rubric exposed.
 - A **compare-recipe contract** (`tests/compare/recipes.test.mjs`): every
   registry source must have a capture recipe (or a documented exclusion),
   project and profile style-parity selectors, and all of its `compare`

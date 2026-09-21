@@ -1191,3 +1191,15 @@ html[data-gs-source='bitbucket'].gs-layout-github [data-gs-bb-nav] {
   flex-flow: row wrap;
   align-items: center;
 }
+
+/* Bitbucket's repository bar grouped under the GitLab skin: the headings
+   `paintBitbucketNav` inserts, styled like the GitLab sidebar's group labels. */
+html.gs-layout-gitlab [data-gs-bb-nav] .gs-nav-group {
+  display: block;
+  padding: 12px 8px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gs-fg-subtle);
+}
