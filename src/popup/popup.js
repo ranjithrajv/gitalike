@@ -165,8 +165,8 @@
   }
 
   // The per-site skin picker, shown only for a host the extension knows. The
-  // product switches above are the broad default; this picks *this* host's skin,
-  // or `off`, or back to following the product.
+  // global skin above is the broad default; this picks *this* host's skin, or
+  // `off`, or back to following the global choice.
   function renderSite(currentKind) {
     const known = Boolean(currentKind);
     siteWrap.hidden = !known;
@@ -322,7 +322,7 @@
     api.storage.sync.set({ [SITES.SETTINGS_KEY]: settingsForSkin(value) });
   });
 
-  // Pick this host's skin, independent of its product switch.
+  // Pick this host's skin, independent of the global skin.
   siteOptions.addEventListener('change', (event) => {
     const value = event.target?.value;
     if (!value) return;
@@ -331,7 +331,7 @@
     });
   });
 
-  // Drop the choice so the host follows the product switch again.
+  // Drop the choice so the host follows the global skin again.
   siteReset.addEventListener('click', () => {
     const next = { ...hostSettings };
     delete next[host];

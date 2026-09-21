@@ -10,14 +10,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - A per-site skin picker. The popup gains a **Show *this site* with** radio group
   — **Off**, **GitHub UI** or **GitLab UI** — so one host can wear a different
-  skin (or none) without touching its product switch, and a GitHub Enterprise
+  skin (or none) without changing the global choice, and a GitHub Enterprise
   instance can be skinned without `github.com`. The choice lives in a new
-  `gitSameHostSettings` map; choosing a site's own UI is treated as off, because
-  repainting a site as itself would run the wrong vocabulary and shortcut tables.
-  `Alt` + `Shift` + `G` toggles the current site's skin, and removing a site
-  clears its choice. The shared `skins` table now owns each skin's product name,
-  badge and colour, so the badge and the picker follow the *applied* skin rather
-  than the site's product (`src/lib/sites.js`, `src/background.js`,
+  `gitSameHostSettings` map; choosing the UI a site's markup already is (GitHub
+  for `github.com`, GitLab for `gitlab.com`) is treated as off, because
+  repainting a site as itself would run the wrong vocabulary and shortcut
+  tables. `Alt` + `Shift` + `G` toggles the current site's skin, and removing a
+  site clears its choice. The shared `skins` table now owns each skin's product
+  name, badge and colour, so the badge and the picker follow the *applied* skin
+  rather than the site's product (`src/lib/sites.js`, `src/background.js`,
   `src/popup/`).
 - Codeberg (Forgejo) and `gitea.com` (Gitea) are bundled hosts. They are
   GitHub-flavoured, so they are classified as the `github` kind and default to

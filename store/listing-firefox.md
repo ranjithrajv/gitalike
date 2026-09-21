@@ -39,8 +39,8 @@ other instance you point it at — GitHub Enterprise Server and self-hosted GitL
 included. Bitbucket and Sourcehut are the next candidates.
 
 Features
-- Two product switches, plus a per-site picker: choose Off, GitHub UI or GitLab UI
-  for the site you are on, without changing the rest.
+- One global skin — GitLab UI or GitHub UI (or Off) — plus a per-site picker for
+  the site you are on, without changing the rest.
 - Add any instance by visiting it, or by typing its address. It is remembered.
 - Alt+Shift+G toggles the site you are on; the toolbar badge shows GL or GH.
 - Light and dark, following the site's own mode.
@@ -108,13 +108,13 @@ AMO has no fixed screenshot size. Upload, in order:
 ## Notes for review
 
 - Reviewing needs no account: the skin applies on public pages
-  (`github.com/git/git`, `gitlab.com/gitlab-org/gitlab`) while logged out.
-  Toggle the switches in the toolbar popup; on a site you have set up, the
-  "Show this site with" picker switches that one host between Off, GitHub UI and
-  GitLab UI; Alt+Shift+G toggles the current site.
+  (`github.com/git/git`, `gitlab.com/gitlab-org/gitlab`) while logged out. Pick a
+  skin under "Show the web with" in the toolbar popup; on a site you have set up,
+  the "Show this site with" picker switches that one host between Off, GitHub UI
+  and GitLab UI; Alt+Shift+G toggles the current site.
 - The extension rewrites the page's own text, labels and CSS tokens locally. It
   is not a content blocker, intercepts no requests and makes no network
-  requests; switching both switches off reverts every change.
+  requests; choosing Off reverts every change.
 - This is a listed add-on; `browser_specific_settings.gecko.id` is
   `gitalike@riseup.net`.
 - `strict_min_version` is `142.0`, the first Firefox (desktop 140, Android 142)

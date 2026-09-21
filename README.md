@@ -96,25 +96,27 @@ through `about:debugging`.
 
 ## Use
 
-Open the toolbar popup. There are two switches, one per product:
+Open the toolbar popup. **Show the web with** is one radio group — **GitLab UI**,
+**GitHub UI** or **Off** — so exactly one skin is active at a time. Each option
+lists the hosts it covers:
 
-| Switch                       | Applies to                                      | Result                     |
-| ---------------------------- | ----------------------------------------------- | -------------------------- |
-| **Show with the GitLab UI**  | `github.com`, `codeberg.org`, `gitea.com`, your GitHub Enterprise instances | rendered as GitLab |
-| **Show with the GitHub UI**  | `gitlab.com`, `code.swecha.org`, your GitLab ones | rendered as GitHub        |
+| Choice         | Normally covers                                                              | Result              |
+| -------------- | ---------------------------------------------------------------------------- | ------------------- |
+| **GitLab UI**  | `github.com`, `codeberg.org`, `gitea.com`, your GitHub Enterprise instances   | rendered as GitLab  |
+| **GitHub UI**  | `gitlab.com`, `code.swecha.org`, your GitLab ones                             | rendered as GitHub  |
+| **Off**        | —                                                                            | each site's own UI  |
 
-Both start off. A switch is **per product**: turning on the GitLab UI covers
-every GitHub-flavoured site you have set up, at once.
+It starts on **Off**. A choice applies to every host of that flavour at once, and
+the option covering the site you are on is highlighted.
 
-The popup highlights the row for the site you are currently on, and lists the
-hosts each switch covers. Below them, when you are on a site gitalike knows, a
-**Show *this site* with** picker lets you choose any of the skins for that one
-host — **Off**, **GitHub UI** or **GitLab UI** — so one enterprise instance can
-wear a different skin (or none) without changing `github.com`. Codeberg and
-gitea.com can genuinely wear either UI (they are GitHub-flavoured but not
-GitHub's markup); for a site that already *is* the product, choosing its own UI
-is the same as **Off** — gitalike does not repaint a site as itself.
-**Follow the product switch** clears the choice.
+When you are on a site gitalike knows, a **Show *this site* with** picker below
+lets you choose the skin for that one host — **Off**, **GitHub UI** or
+**GitLab UI** — so one enterprise instance can wear a different skin (or none)
+without changing `github.com`. Codeberg and gitea.com can genuinely wear either
+UI (they are GitHub-flavoured but not GitHub's markup); for a site that already
+*is* the product — `github.com` shown as GitHub, `gitlab.com` shown as GitLab —
+choosing its own UI is the same as **Off**, because gitalike does not repaint a
+site as itself. **Follow the global skin** clears the per-site choice.
 
 **Keyboard:** `Alt` + `Shift` + `G` toggles the current site (the same per-site
 choice). It can only toggle a site that is already set up — telling GitHub from
@@ -231,11 +233,11 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   original theme; it is the only store readable synchronously at
   `document_start`. Being origin storage, the page can read or overwrite it, but
   `storage.sync` is reconciled immediately afterwards and wins.
-- **A product switch is all-or-nothing, unless you choose a skin per host.** The
-  two product switches cover every host of that product at once. The popup's
-  **Show *this site* with** picker (and `Alt` + `Shift` + `G`) chooses the skin
-  for a single host, which is how an enterprise instance is skinned without
-  `github.com`; there is no bulk per-host list beyond that.
+- **The global skin is all-or-nothing, unless you choose a skin per host.** The
+  **Show the web with** radio covers every host of that flavour at once. The
+  popup's **Show *this site* with** picker (and `Alt` + `Shift` + `G`) chooses
+  the skin for a single host, which is how an enterprise instance is skinned
+  without `github.com`; there is no bulk per-host list beyond that.
 - **The Codeberg and gitea.com skin is token-level, with its navigation
   relabelled and reordered.** They are GitHub-flavoured, so they can wear either
   UI — colours, words, reference markers and repo-tab order — but Gitea's layout

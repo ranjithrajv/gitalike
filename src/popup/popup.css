@@ -384,8 +384,8 @@ main {
 
 /* ------------------------------------------------------- per-site skin -- */
 
-/* Which skin this host wears, one host at a time. Set apart from the product
-   rows so it reads as "this site", not a third product switch. */
+/* Which skin this host wears, one host at a time. Set apart from the global
+   skin control so it reads as "this site", not another global choice. */
 .site {
   margin: 2px 4px 8px;
   padding: 8px 8px 6px;
