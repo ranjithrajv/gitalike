@@ -5,7 +5,7 @@
  *
  *   node tools/compare/screenshots.mjs project   # docs/ orientation pairs (repo pages)
  *   node tools/compare/screenshots.mjs profile   # docs/ orientation pairs (profiles)
- *   node tools/compare/screenshots.mjs store     # store/screenshots, 1280x720
+ *   node tools/compare/screenshots.mjs store     # store/screenshots, 1280x800
  *
  * What it captures lives in `tools/compare/captures.mjs`, which the tests and the page
  * are checked against; this file is only the capture loop.
@@ -25,7 +25,8 @@
  * `GS_ONLY=<name substring>` so one new capture does not rewrite every PNG.
  *
  * The store requirements this satisfies:
- *   - Chrome Web Store: at least one 1280x720 screenshot.
+ *   - Chrome Web Store: at least one 1280x800 screenshot (or 640x400), JPEG or
+ *     24-bit PNG with no alpha.
  *   - addons.mozilla.org: screenshots are optional but recommended.
  */
 
@@ -44,7 +45,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 const OFF = { github: 'off', gitlab: 'off' };
 const PAGE = { width: 1280, height: 900 };
-const STORE = { width: 1280, height: 720 };
+const STORE = { width: 1280, height: 800 };
 
 // How long to let the skin settle (fonts, token repaint) before the shot. One
 // place, so the captures cannot drift into different timing.
@@ -153,7 +154,7 @@ async function capturePopup(context, popup, out, viewport) {
     `    -> 03-popup.png (${Math.round(box.width)}x${Math.round(box.height)})`,
   );
 
-  // A Chrome Web Store shot must be exactly 1280x720, so frame the popup.
+  // A Chrome Web Store shot must be exactly 1280x800, so frame the popup.
   const frame = await context.newPage();
   await frame.setViewportSize(viewport);
   await frame.setContent(
@@ -163,8 +164,8 @@ async function capturePopup(context, popup, out, viewport) {
         box-shadow:0 24px 60px rgba(0,0,0,.35)" src="data:image/png;base64,${shot.toString('base64')}">
     </body></html>`,
   );
-  await frame.screenshot({ path: join(out, '04-popup-1280x720.png') });
-  console.log('    -> 04-popup-1280x720.png');
+  await frame.screenshot({ path: join(out, '04-popup-1280x800.png') });
+  console.log('    -> 04-popup-1280x800.png');
 }
 
 const mode = process.argv[2];

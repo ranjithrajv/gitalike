@@ -149,8 +149,8 @@ the page's own text, labels and CSS tokens locally.
 | Asset | Requirement | File |
 | --- | --- | --- |
 | Store icon | 128×128 PNG | `src/icons/icon-128.png` |
-| Screenshots | 1280×720 (or 640×400), 1–5 | `store/screenshots/01-as-gitlab.png`, `02-as-github.png`, `04-popup-1280x720.png` |
+| Screenshots | 1280×800 (or 640×400), JPEG or 24-bit PNG (no alpha), 1–5 | `store/screenshots/01-as-gitlab.png`, `02-as-github.png`, `04-popup-1280x800.png` |
 
-`03-popup.png` is the true 322px-wide popup and does **not** meet the 1280×720
+`03-popup.png` is the true 322px-wide popup and does **not** meet the 1280×800
 requirement, so it is not uploaded to Chrome — it is there for AMO and the
 README.
