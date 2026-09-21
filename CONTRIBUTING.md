@@ -41,9 +41,10 @@ vector path data — into `logos/` or a theme; recolouring someone else's mark i
 still shipping their artwork. Sources live in `logos/`; see
 [Add or change a logo](#add-or-change-a-logo).
 
-**Keep permissions minimal.** The extension asks for access to all sites, plus
-`scripting` to register the content scripts and stylesheets for the hosts it is
-set up on (see [Why it matches every site](#why-it-matches-every-site)). Adding
+**Keep permissions minimal.** The extension grants the bundled hosts at install,
+plus `scripting` to register the content scripts and stylesheets for the hosts it
+is set up on; a self-hosted instance is granted one origin at a time from the
+popup (see [Why it matches every site](#why-it-matches-every-site)). Adding
 another permission needs a very good argument.
 
 ## Getting set up
@@ -165,22 +166,26 @@ GitHub Enterprise Server and self-hosted GitLab live on hostnames nobody can
 predict: `github.acme.com`, `code.corp.example`, sometimes with no `github.`
 prefix at all. A manifest match pattern cannot wildcard a host's middle —
 `https://github.*/*` is not valid — so there is no host list to write at build
-time.
+time for *every* instance.
 
-So the extension declares access to all sites, but does not *inject* into all of
-them. `background.js` keeps `scripting.registerContentScripts` scoped to the
-hosts it knows — the bundled ones plus whatever the user added — and re-registers
-when the set changes. An unconfigured page therefore never parses the content
-scripts or the stylesheets.
+So the manifest grants only the bundled hosts (`github.com`, `gitlab.com`,
+`codeberg.org`, `gitea.com`), and declares
+`optional_host_permissions` for the rest. When you add an instance in the popup,
+it calls `permissions.request()` for that one origin — the Add a site click is a
+user gesture, so the browser allows it — and the origin is granted from then on.
+A user who never adds an instance sees a narrow install prompt and no dialog at
+all; a power user pointing the extension at `code.corp.example` sees one prompt,
+once, at the moment they asked for that host. `background.js` then keeps
+`scripting.registerContentScripts` scoped to the hosts it knows *and holds
+permission for* — the bundled ones plus whatever the user added — and
+re-registers when the set changes (a storage change or a permission grant). An
+unconfigured page therefore never parses the content scripts or the stylesheets.
 
-The alternative would be `optional_host_permissions`, asking for one origin the
-first time you visit it. That keeps the install prompt clean, at the cost of a
-permission dialog every time someone points the extension at a new instance.
-This build takes the other trade: request all-sites access once, decide at
-runtime, and never prompt.
+The test in `tests/sites.test.mjs` keeps `manifest.base.json`'s static host list
+in step with the `builtin` table, since the manifest cannot read `sites.js`.
 
 The extension is inert everywhere it has not been set up: the scripts are only
-registered on classified hosts, and every stylesheet is scoped to
+registered on classified, granted hosts, and every stylesheet is scoped to
 `html.gs-theme-*` classes that only get added there.
 
 ## Common tasks
@@ -226,16 +231,17 @@ source of truth shared by the content script, the popup and the background.
 ### Support another Git instance
 
 Usually you should not add it to the source at all — that is what the popup's
-**Add a site** flow is for, and it needs no permission prompt. Only add a
-*built-in* host for something we want to work out of the box:
+**Add a site** flow is for, which asks for that one origin when you click. Only
+add a *built-in* host for something we want to work out of the box:
 
 1. `src/lib/sites.js` — add it to the `builtin` table.
-2. `tests/sites.test.mjs` — cover it.
+2. `src/manifest.base.json` — add `*://<host>/*` to `host_permissions`, so it is
+   granted at install rather than requested per origin.
+3. `tests/sites.test.mjs` — the manifest-permissions test covers it.
 
-Nothing in the manifest needs touching. It already matches every `http(s)` page
-and decides at runtime — see
-[Why it matches every site](#why-it-matches-every-site) — so there is no
-per-host entry to keep in sync.
+A self-hosted instance needs no source or manifest change: the popup requests its
+origin at runtime — see
+[Why it matches every site](#why-it-matches-every-site).
 
 ### Add or change a logo
 
@@ -278,8 +284,8 @@ in `themes/ux-nav.css`.
   body items are forced `visibility: visible`. `NAV_GROUPS` gathers the items
   under GitLab's group headings, which the content script inserts after the
   reorder (`paintNavGroups`), and the CSS styles them. GitHub's top bar
-  (`header[role="banner"]`, `.AppHeader`, `.js-header-wrapper`) is hidden, since
-  GitLab has no equivalent.
+  (`header[role="banner"]`, `.AppHeader`, `.js-header-wrapper`) is restyled to
+  GitLab's light bar, since GitLab has a light top bar above its sidebar too.
 - **L→G** makes GitLab's sidebar horizontal, but GitLab's page is a grid
   (`.layout-page.page-with-super-sidebar`), so that grid is collapsed to one
   column first — otherwise the content keeps the narrow column.
@@ -304,7 +310,6 @@ be classified as the `github` kind, so the existing GitLab skin applies:
 const builtin = {
   'github.com': 'github',
   'gitlab.com': 'gitlab',
-  'code.swecha.org': 'gitlab',
   'codeberg.org': 'github', // Forgejo
   'gitea.com': 'github',    // Gitea
 };

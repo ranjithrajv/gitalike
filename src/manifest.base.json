@@ -4,7 +4,13 @@
   "short_name": "gitalike",
   "description": "Use any forge, keep your muscle memory. Re-skins GitHub and GitLab™ as each other, locally; nothing collected.",
   "permissions": ["storage", "scripting"],
-  "host_permissions": ["http://*/*", "https://*/*"],
+  "host_permissions": [
+    "*://github.com/*",
+    "*://gitlab.com/*",
+    "*://codeberg.org/*",
+    "*://gitea.com/*"
+  ],
+  "optional_host_permissions": ["*://*/*"],
   "action": {
     "default_title": "gitalike",
     "default_popup": "popup/popup.html",

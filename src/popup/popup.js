@@ -1,11 +1,11 @@
 /**
  * gitalike — toolbar popup.
  *
- * The extension matches the entire web, so there is no permission to request
- * and nothing to pre-configure: the popup classifies hosts and switches each
- * product on or off. It can classify the tab you are on, or a host you type in
- * — GitHub Enterprise addresses are not something you always want to visit
- * first.
+ * The bundled hosts are granted at install; a self-hosted instance is added by
+ * typing it here, which asks for that one origin (a click is a user gesture) and
+ * stores it. The popup classifies hosts and switches each product on or off, and
+ * can classify the tab you are on or a host you type in — GitHub Enterprise
+ * addresses are not something you always want to visit first.
  */
 (() => {
   'use strict';
@@ -49,6 +49,29 @@
 
   const HINT_INSECURE = (name) =>
     `${name} is on http:// — the connection is not encrypted.`;
+
+  // `permissions.request` is a promise in Firefox and a callback in Chromium;
+  // accept either. It must be reached while the click is still the active user
+  // gesture, so `addHost` calls it before any other await.
+  function permissionsRequest(details) {
+    if (!api.permissions?.request) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      let settled = false;
+      const done = (granted) => {
+        if (settled) return;
+        settled = true;
+        resolve(Boolean(granted));
+      };
+      try {
+        const maybe = api.permissions.request(details, done);
+        if (maybe && typeof maybe.then === 'function') {
+          maybe.then(done, () => done(false));
+        }
+      } catch {
+        done(false);
+      }
+    });
+  }
 
   /* ---------------------------------------------------------------- state -- */
 
@@ -251,12 +274,20 @@
   /* -------------------------------------------------------------- actions -- */
 
   async function addHost(hostname, kind) {
+    // Access to the one origin is asked for here, from the Add a site click (a
+    // user gesture). Bundled hosts are already granted; a self-hosted instance
+    // prompts once. Declining adds nothing.
+    if (api.permissions?.request) {
+      const granted = await permissionsRequest({ origins: [`*://${hostname}/*`] });
+      if (!granted) return false;
+    }
     // Asking to show a site implies showing it — don't make it a second click.
-    // With one skin active at a time, that also turns the other skin off.
+    // With one skin active at a time, that also turns the others off.
     await api.storage.sync.set({
       [SITES.INSTANCES_KEY]: { ...instances, [hostname]: kind },
       [SITES.SETTINGS_KEY]: settingsForSkin(SITES.kinds[kind].theme),
     });
+    return true;
   }
 
   async function removeHost(hostname) {
@@ -289,7 +320,12 @@
     const insecure =
       /^http:\/\//i.test(addInput.value.trim()) ||
       (hostname === host && pageProtocol === 'http:');
-    await addHost(hostname, kind);
+    const added = await addHost(hostname, kind);
+    if (!added) {
+      hint(`${hostname} was not granted access, so it was not added.`, true);
+      addInput.focus();
+      return;
+    }
     addInput.value = '';
     hint(insecure ? HINT_INSECURE(hostname) : HINT_DEFAULT, false);
   }
@@ -419,15 +455,8 @@
   (async () => {
     host = await currentHost();
     await load();
-    // A state stored before the one-skin rule could have both skins on; keep
-    // only one of them.
-    if (
-      Object.keys(SITES.kinds).filter((kind) => SITES.kindOn(kind, settings))
-        .length > 1
-    ) {
-      settings = settingsForSkin(globalSkin(settings));
-      await api.storage.sync.set({ [SITES.SETTINGS_KEY]: settings });
-    }
+    // `stateFrom` already collapses a pre-one-skin state (both kinds on) to a
+    // single skin, so the popup just renders what every other context sees.
     buildSkinOptions();
     buildSiteOptions();
     render();

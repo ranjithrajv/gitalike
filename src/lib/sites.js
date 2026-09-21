@@ -5,13 +5,14 @@
  * Loaded as a plain script by the content script, the popup and the background
  * context, so the tables cannot drift between them.
  *
- * The manifest matches the whole web rather than a host list. That is not
- * laziness — GitHub Enterprise Server and self-hosted GitLab sit on hostnames
+ * The manifest grants only the bundled hosts rather than the whole web. That is
+ * not laziness — GitHub Enterprise Server and self-hosted GitLab sit on hostnames
  * nobody can predict ahead of time (`github.acme.com`, `code.corp.example`,
  * sometimes no `github.` prefix at all), and a manifest match pattern cannot
- * wildcard a host's middle. Deciding at runtime is what lets an arbitrary
- * instance work with no permission prompt and no rebuild. The cost is that the
- * extension asks for access to all sites at install; see the README.
+ * wildcard a host's middle. A self-hosted instance is granted one origin at a
+ * time from the popup's Add a site click (`optional_host_permissions`), so
+ * deciding at runtime is what lets an arbitrary instance work with no rebuild;
+ * see CONTRIBUTING.md.
  */
 (() => {
   'use strict';
@@ -20,7 +21,6 @@
   const builtin = {
     'github.com': 'github',
     'gitlab.com': 'gitlab',
-    'code.swecha.org': 'gitlab',
     // GitHub-flavoured forges: they speak GitHub's dialect, so they are the
     // 'github' kind and are shown with the GitLab UI. Codeberg runs Forgejo and
     // gitea.com runs Gitea; both are Gitea's markup, so themes/as-gitlab.css
@@ -37,7 +37,7 @@
    *
    * `layout` is the shape the skin is built to: `github` is a top bar plus a
    * horizontal tab row, `gitlab` is a left sidebar. It is not the source the
-   * skin is applied to — Bitbucket reuses GitHub's layout on any source — so
+   * skin is applied to — Bitbucket reuses GitLab's sidebar on any source — so
    * the structural passes key on this rather than on the theme name.
    */
   const skins = {
@@ -47,7 +47,10 @@
       product: 'Bitbucket',
       badge: 'BB',
       color: '#0052cc',
-      layout: 'github',
+      // Bitbucket's repo navigation is a left sidebar (its own state marks the
+      // navigation "open" and sends no horizontal items), so it reuses GitLab's
+      // layout rather than GitHub's.
+      layout: 'gitlab',
     },
   };
 
@@ -82,7 +85,8 @@
   const THEMES = Object.keys(skins);
 
   /**
-   * The three stored maps with their defaults applied. Takes the raw result of
+   * The three stored maps with their defaults applied, and the one-skin rule
+   * enforced (at most one kind is on). Takes the raw result of
    * `storage.sync.get(STORAGE_KEYS)` so that the defaults live in one place.
    * @returns {{settings: object, instances: object, hostSettings: object}}
    */
@@ -94,8 +98,23 @@
   }
 
   function stateFrom(stored) {
+    const settings = plainObject(stored?.[SETTINGS_KEY])
+      ? { ...stored[SETTINGS_KEY] }
+      : {};
+    // Exactly one skin is active at a time: the popup writes the chosen skin to
+    // every kind, so two kinds holding different skins is a state from the
+    // older per-kind model. Collapse it here, deterministically, to the first
+    // kind's skin, so every reader (background, content script, popup) agrees
+    // instead of each picking whichever key it happens to read first. Cloned,
+    // not written back: storage is only normalised on read.
+    const chosen = Object.keys(kinds)
+      .map((kind) => settings[kind])
+      .filter((value) => THEMES.includes(value));
+    if (new Set(chosen).size > 1) {
+      for (const kind of Object.keys(kinds)) settings[kind] = chosen[0];
+    }
     return {
-      settings: plainObject(stored?.[SETTINGS_KEY]) ? stored[SETTINGS_KEY] : {},
+      settings,
       instances: plainObject(stored?.[INSTANCES_KEY])
         ? stored[INSTANCES_KEY]
         : {},

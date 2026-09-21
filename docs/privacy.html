@@ -146,11 +146,14 @@
           stored or transmitted.
         </li>
         <li>
-          <b>Host access (all sites).</b> The extension asks for access to all
-          sites because GitHub Enterprise Server and self-hosted GitLab can live
-          on any hostname, which a fixed manifest host list cannot cover. It
-          decides at runtime whether a host is one you set up; on any other host
-          it does nothing, and its scripts are not even loaded.
+          <b>Host access (bundled hosts, plus what you add).</b> The install
+          prompt covers the public forges and Codeberg — <code>github.com</code>,
+          <code>gitlab.com</code>, <code>codeberg.org</code> and
+          <code>gitea.com</code>. GitHub Enterprise Server and self-hosted GitLab
+          can live on any hostname, which a fixed manifest list cannot cover, so
+          a self-hosted instance is granted one origin at a time when you add it
+          in the popup. On any host you have not set up, the extension does
+          nothing, and its scripts are not even loaded.
         </li>
         <li>
           <b><code>scripting</code>.</b> Used to register the content scripts and

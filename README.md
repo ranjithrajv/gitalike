@@ -87,14 +87,14 @@ npm run build:firefox
 Then load `dist/chromium` as an unpacked extension, or `dist/firefox/manifest.json`
 through `about:debugging`.
 
-> **About the permission prompt.** Chromium will warn that gitalike can "read and
-> change all your data on all websites". That is accurate, and it is the price of
-> the design. The extension adds a class to `<html>` on sites you have explicitly
-> set up, does nothing elsewhere, and sends no data anywhere: there are no
-> network requests at all, both stylesheets are bundled, and the logos are inline
-> data URIs. The one thing that does leave the machine is `chrome.storage.sync` —
-> the settings and the hostnames you add are synced by your browser to your
-> account, and nothing read from a page is ever put there. The reasoning is in
+> **About the permission prompt.** The install prompt covers the public forges
+> and Codeberg; a self-hosted instance is granted one origin at a time when you
+> add it. The extension adds a class to `<html>` on sites you have explicitly set
+> up, does nothing elsewhere, and sends no data anywhere: there are no network
+> requests at all, both stylesheets are bundled, and the logos are inline data
+> URIs. The one thing that does leave the machine is `chrome.storage.sync` — the
+> settings and the hostnames you add are synced by your browser to your account,
+> and nothing read from a page is ever put there. The reasoning is in
 > [CONTRIBUTING.md](CONTRIBUTING.md#why-it-matches-every-site).
 
 ## Use
@@ -106,7 +106,7 @@ time. Each option lists the hosts it covers:
 | Choice            | Normally covers                                                             | Result               |
 | ----------------- | --------------------------------------------------------------------------- | -------------------- |
 | **GitLab UI**     | `github.com`, `codeberg.org`, `gitea.com`, your GitHub Enterprise instances  | rendered as GitLab   |
-| **GitHub UI**     | `gitlab.com`, `code.swecha.org`, `codeberg.org`, `gitea.com`, your GitLab ones | rendered as GitHub |
+| **GitHub UI**     | `gitlab.com`, `codeberg.org`, `gitea.com`, your GitLab ones                  | rendered as GitHub   |
 | **Bitbucket UI**  | every host you have set up                                                   | rendered as Bitbucket |
 | **Off**           | —                                                                           | each site's own UI   |
 
@@ -160,7 +160,7 @@ is the point when the address is one you would have to look up:
 
 Anything that is not a web address is refused rather than stored, including
 `javascript:` and other non-http schemes. Built-in hosts
-(`github.com`, `gitlab.com`, `code.swecha.org`, `codeberg.org`, `gitea.com`) are
+(`github.com`, `gitlab.com`, `codeberg.org`, `gitea.com`) are
 refused too — they are already set up and cannot be removed.
 
 To undo, open the popup on that host and choose **Remove**. That also clears any
@@ -175,7 +175,7 @@ product's *vocabulary and habits*:
 | ---------- | ---------------------------------------------------------------------------------------------------------------- |
 | Copy       | "Pull request(s)" ⇄ "Merge request(s)", "Insights" ⇄ "Analytics", "Actions" ⇄ "CI/CD", "Go to file" ⇄ "Find file", "Gists" ⇄ "Snippets", "Codespaces" ⇄ "Workspaces" |
 | Navigation | repo tabs are relabelled ("Code" ⇄ "Repository") and given the other product's tab set and order — GitLab's are rebuilt as GitHub's tabs, GitHub's are gathered under GitLab's group headings |
-| Orientation | GitHub's top bar is hidden (GitLab has none) and its repo/profile tabs become a GitLab-style left sidebar/rail with GitLab group headings; GitLab's scattered sidebar is rebuilt as GitHub's flat tab row, under the repository header |
+| Orientation | GitHub's top bar is restyled as GitLab's light bar, and its repo/profile tabs become a GitLab-style left sidebar/rail with GitLab group headings; GitLab's scattered sidebar is rebuilt as GitHub's flat tab row, under the repository header |
 | Metadata | GitHub's right-hand "About" becomes a full-width block on top (GitLab style); GitLab's "Project information" becomes a right sidebar (GitHub style) |
 | References | a pull/merge-request link shows the other product's marker — `#42` ⇄ `!42`                                        |
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
@@ -219,13 +219,15 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   under GitLab's group headings instead.
 - **"Open on the other host" covers the two public forges only.** A self-hosted
   instance has no pair to guess, so the action is absent there.
-- **Access to all sites.** The install prompt is the honest one; if that is not a
-  trade you want to make, the alternative is described in
-  [CONTRIBUTING.md](CONTRIBUTING.md#why-it-matches-every-site).
-- **The content scripts and stylesheets load only on hosts you have set up.** The
-  background registers them for the configured hosts, so an unconfigured page
-  parses neither. This is what the `scripting` permission is for; the all-sites
-  access the install prompt describes is unchanged.
+- **Access is bundled hosts at install, one origin at a time after that.** The
+  install prompt covers the public forges and Codeberg (`github.com`,
+  `gitlab.com`, `codeberg.org`, `gitea.com`). A self-hosted instance is granted
+  when you add it — the popup asks for that one origin, a prompt you only see if
+  you asked for that host. There is no all-sites grant.
+- **The content scripts and stylesheets load only on hosts you have set up and
+  granted.** The background registers them for the configured hosts, so an
+  unconfigured page parses neither. This is what the `scripting` permission is
+  for.
 - **The skin is cosmetic, and the page can influence it.** Everything gitalike
   does hangs off `html.gs-theme-*` classes and `data-gs-*` markers on the page
   itself, so the page can add, remove or spoof them, and it can mark its own
@@ -243,11 +245,13 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   `Alt` + `Shift` + `G`) chooses the skin for a single host, which is how an
   enterprise instance is skinned without `github.com`; there is no bulk per-host
   list beyond that.
-- **The Bitbucket skin is built to Atlassian's design, not verified against
-  live Bitbucket.** Bitbucket no longer serves public repository pages, so its
-  layout and palette come from the Atlassian Design System rather than a captured
-  page; the skin reuses GitHub's shape (top bar + repo tab row) and repaints it.
-  It cannot be checked by the selector canary for the same reason.
+- **The Bitbucket skin is verified from a capture, not live.** Bitbucket no
+  longer serves public repository pages, so its palette and repo-tab set were
+  taken from an archived Bitbucket repository page (Atlassian's `#0049B0` bar,
+  `#0052CC` accent, and the Source/Commits/Branches/Pull requests/Pipelines/
+  Deployments/Jira issues/Security/Downloads menu) rather than a live page. Its
+  navigation is a left sidebar, so it reuses GitLab's layout. It cannot be
+  watched by the selector canary for the same reason.
 - **The Codeberg and gitea.com skin now re-orients the navigation, but not the
   whole page.** They are GitHub-flavoured, so they can wear either UI. Under the
   **GitLab UI** the repo tabs are rebuilt as a grouped left sidebar (GitLab's

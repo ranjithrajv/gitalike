@@ -30,9 +30,12 @@ const EXT = process.env.GS_EXT ?? join(root, 'dist', 'chromium');
 
 const CHROME =
   process.env.GS_CHROME ??
-  ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome-stable'].find(
-    (p) => existsSync(p),
-  );
+  [
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+  ].find((p) => existsSync(p));
 
 if (!CHROME) {
   console.error('no Chromium found — set GS_CHROME=/path/to/chrome');
@@ -68,6 +71,27 @@ const setHostSettings = (page, hostSettings) =>
     hostSettings,
   );
 
+// Live-forge navigations fail intermittently (ERR_NETWORK_CHANGED, a slow TLS
+// handshake, a rate-limit page). Retry a couple of times so the run reports what
+// the skin did, not the network's mood; the class waits below already tolerate a
+// slow SPA by waiting on the rewrite rather than a fixed delay.
+async function gotoLive(page, url, options = {}) {
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+        ...options,
+      });
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
+  throw lastError;
+}
+
 try {
   let worker = context.serviceWorkers()[0];
   if (!worker) worker = await context.waitForEvent('serviceworker', { timeout: 25000 });
@@ -76,11 +100,14 @@ try {
   await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
   check('extension loads', Boolean(worker));
 
-  await setSettings(popup, { github: 'gitlab', gitlab: 'github' });
+  // One skin is active at a time, so the two directions are pinned per host
+  // rather than by setting both kinds — which `stateFrom` would collapse.
+  await setSettings(popup, { github: 'off', gitlab: 'off' });
+  await setHostSettings(popup, { 'github.com': 'gitlab', 'gitlab.com': 'github' });
 
   /* ------------------------------ GitHub -> GitLab ------------------------------ */
   const gh = await context.newPage();
-  await gh.goto('https://github.com/git/git', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await gotoLive(gh, 'https://github.com/git/git');
   await gh.waitForFunction(
     () => document.documentElement.classList.contains('gs-theme-gitlab'),
     null,
@@ -110,7 +137,9 @@ try {
         const h = document.querySelector(
           'header[role="banner"], header.GlobalNav, .AppHeader, .js-header-wrapper',
         );
-        return h ? getComputedStyle(h).display : null;
+        if (!h) return null;
+        const cs = getComputedStyle(h);
+        return { display: cs.display, bg: cs.backgroundColor };
       })(),
     };
   });
@@ -118,12 +147,20 @@ try {
   check('G→L nav relabelled', g.nav.includes('Repository') && g.nav.includes('Merge requests 387'), g.nav.slice(0, 4).join(', '));
   check('G→L reference marker #42 → !42', g.ref === '!42', g.ref);
   check('G→L no-counterpart badge', g.badge === '≠ GitLab', g.badge);
-  // GitLab has no top bar; its navigation is the sidebar alone.
-  check('G→L hides GitHub’s top bar', g.header === 'none', g.header);
+  // GitLab has a light top bar of its own, so GitHub's is shown, flipped light.
+  const isLight = (bg) => {
+    const m = /rgba?\((\d+), (\d+), (\d+)/.exec(bg || '');
+    return m ? Math.min(+m[1], +m[2], +m[3]) >= 200 : false;
+  };
+  check(
+    'G→L keeps GitHub’s top bar, restyled light',
+    Boolean(g.header) && g.header.display !== 'none' && isLight(g.header.bg),
+    JSON.stringify(g.header),
+  );
 
   /* GitHub profile, skinned as GitLab: the tab strip becomes a left rail. */
   const ghp = await context.newPage();
-  await ghp.goto('https://github.com/torvalds', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await gotoLive(ghp, 'https://github.com/torvalds');
   await ghp.waitForFunction(
     () => document.documentElement.classList.contains('gs-theme-gitlab'),
     null,
@@ -186,7 +223,7 @@ try {
 
   /* ------------------------------ GitLab -> GitHub ------------------------------ */
   const gl = await context.newPage();
-  await gl.goto('https://gitlab.com/gitlab-org/gitlab', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await gotoLive(gl, 'https://gitlab.com/gitlab-org/gitlab');
   await gl.waitForFunction(
     () => document.documentElement.classList.contains('gs-theme-github'),
     null,
@@ -224,7 +261,7 @@ try {
 
   /* GitLab profile, skinned as GitHub: counts move under the photo. */
   const glp = await context.newPage();
-  await glp.goto('https://gitlab.com/dzaporozhets', { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await gotoLive(glp, 'https://gitlab.com/dzaporozhets');
   await glp.waitForFunction(
     () => document.documentElement.classList.contains('gs-theme-github'),
     null,
@@ -277,11 +314,13 @@ try {
   check('L→G shortcut g p opens merge requests', /\/merge_requests$/.test(gl.url()), gl.url());
 
   /* ------------------------------ Codeberg (Gitea) ------------------------------ */
-  const cb = await context.newPage();
-  await cb.goto('https://codeberg.org/forgejo/forgejo', {
-    waitUntil: 'domcontentloaded',
-    timeout: 60000,
+  await setHostSettings(popup, {
+    'github.com': 'gitlab',
+    'gitlab.com': 'github',
+    'codeberg.org': 'gitlab',
   });
+  const cb = await context.newPage();
+  await gotoLive(cb, 'https://codeberg.org/forgejo/forgejo');
   await cb.waitForFunction(
     () => document.documentElement.classList.contains('gs-theme-gitlab'),
     null,
@@ -381,14 +420,15 @@ try {
 
   /* ------------------------------ Bitbucket skin ------------------------------ */
   // Bitbucket is a target only — no host is classified as it — so it is chosen
-  // per site (or globally). On a GitHub source it keeps GitHub's shape (top bar
-  // + tab row) but in Atlassian's palette and Bitbucket's words.
+  // per site (or globally). Its repository navigation is a left sidebar, like
+  // GitLab's, so a GitHub source is re-oriented into one and repainted in
+  // Atlassian's palette with Bitbucket's words.
   await setHostSettings(popup, { 'github.com': 'bitbucket' });
   await gh
     .waitForFunction(
       () =>
         document.documentElement.classList.contains('gs-theme-bitbucket') &&
-        document.querySelector('nav[aria-label="Repository"] a'),
+        document.querySelector('nav[aria-label="Repository"] ul'),
       null,
       { timeout: 45000 },
     )
@@ -399,10 +439,12 @@ try {
     const link = document.querySelector(
       'nav[aria-label="Repository"] a, .markdown-body a[href], #readme a[href]',
     );
+    const list = document.querySelector('nav[aria-label="Repository"] ul');
     return {
       cls: document.documentElement.className,
       header: header ? getComputedStyle(header).backgroundColor : null,
       link: link ? getComputedStyle(link).color : null,
+      direction: list ? getComputedStyle(list).flexDirection : null,
       nav: [...document.querySelectorAll('nav[aria-label="Repository"] a')]
         .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
         .filter(Boolean),
@@ -411,8 +453,13 @@ try {
   check('GitHub can wear the Bitbucket skin', /gs-theme-bitbucket/.test(bb.cls), bb.cls);
   check(
     'Bitbucket top bar is Atlassian blue',
-    bb.header === 'rgb(7, 71, 166)',
+    bb.header === 'rgb(0, 73, 176)',
     String(bb.header),
+  );
+  check(
+    'Bitbucket navigation is a left sidebar',
+    bb.direction === 'column',
+    String(bb.direction),
   );
   check(
     'Bitbucket repo tabs read Source / Pipelines',

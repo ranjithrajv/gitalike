@@ -1,0 +1,47 @@
+name: End-to-end
+
+# The e2e suite loads dist/chromium and drives the live sites — so it is
+# network-flaky and does not belong on every push. It runs on a schedule next to
+# the selector canary, and on demand, because it is the only test of the CSS and
+# DOM layer: the unit tests cover src/lib/ only, and a skin can regress without
+# any of them noticing.
+on:
+  schedule:
+    # An hour after the selector canary, so a markup rename it reports is not
+    # also drowning this run in red.
+    - cron: '47 6 * * *'
+  workflow_dispatch:
+
+# Only reads the repository.
+permissions:
+  contents: read
+
+# A scheduled run and a manual one should not race over the same network budget.
+concurrency:
+  group: e2e
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Pinned to a full commit SHA; see release.yml for why.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci --ignore-scripts
+
+      - name: Build the Chromium target
+        run: npm run build:chromium
+
+      # playwright-core drives a browser the runner already has (Google Chrome);
+      # nothing is downloaded. GS_CHROME overrides the search if a runner image
+      # moves it.
+      - name: Run the end-to-end suite
+        run: node tools/e2e.mjs

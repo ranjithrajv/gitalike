@@ -68,9 +68,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   host, the applied skin and the fields `CONTRIBUTING.md` asks for. Nothing is
   read from the page; the reporter pastes the element and property themselves
   (`src/popup/`).
+- The end-to-end suite runs on a schedule (and on demand) in
+  `.github/workflows/e2e.yml`, beside the selector canary. It drives the live
+  sites, so it is not a commit gate, but it is the only test of the CSS and DOM
+  layer and should not wait to be run by hand.
 
 ### Changed
 
+- Permissions are scoped. The bundled hosts (`github.com`, `gitlab.com`,
+  `codeberg.org`, `gitea.com`) are granted at install, and a self-hosted
+  instance is granted one origin at a time from the popup's Add a site click
+  (`optional_host_permissions`) instead of the extension holding access to all
+  sites. `code.swecha.org` is no longer bundled — it is a self-hosted GitLab, so
+  it goes through the same per-origin flow. A test keeps the manifest's static
+  host list in step with the `builtin` table (`src/manifest.base.json`,
+  `src/background.js`, `src/popup/popup.js`, `tests/sites.test.mjs`).
+- The GitLab skin shows GitHub's top bar instead of hiding it, restyled to
+  GitLab's light bar with a hairline border and gitalike's mark. GitLab has a
+  light top bar above its sidebar, so hiding GitHub's was the stale half of a
+  contradictory pair (`src/themes/as-gitlab.css`).
 - The popup's two product checkboxes are one **Show the web with** radio group —
   **GitLab UI**, **GitHub UI** or **Off** — so only one skin is ever active.
   Picking a skin turns the other off, and a state stored with both on is reduced
@@ -83,6 +99,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   author `display` rule outranks the UA stylesheet's `[hidden]`, so the popup's
   "open on the other host" button and the new reset link showed as empty boxes
   when they had nothing to say (`src/popup/popup.css`).
+- The one-skin rule is enforced where the data is read, not only in the popup:
+  `stateFrom` collapses a state whose kinds disagree to a single skin, so a
+  profile upgraded from the two-switch model cannot leave two skins active or
+  lose one silently when the popup first opens (`src/lib/sites.js`).
 
 ## [0.1.2] - 2026-09-21
 

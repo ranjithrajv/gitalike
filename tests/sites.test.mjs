@@ -12,6 +12,7 @@
  */
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import '../src/lib/sites.js';
 
@@ -85,8 +86,8 @@ describe('module shape', () => {
     assert.equal(skins.gitlab.product, 'GitLab');
     assert.equal(skins.github.product, 'GitHub');
     assert.equal(skins.bitbucket.product, 'Bitbucket');
-    // Bitbucket reuses GitHub's shape (top bar + tab row), not GitLab's sidebar.
-    assert.equal(skins.bitbucket.layout, 'github');
+    // Bitbucket's repo nav is a left sidebar, so it reuses GitLab's shape.
+    assert.equal(skins.bitbucket.layout, 'gitlab');
   });
 });
 
@@ -151,10 +152,11 @@ describe('kindFor', () => {
   test('knows the bundled hosts', () => {
     assert.equal(kindFor('github.com'), 'github');
     assert.equal(kindFor('gitlab.com', {}), 'gitlab');
-    assert.equal(kindFor('code.swecha.org', {}), 'gitlab');
     // GitHub-flavoured forges: the github kind, shown with the GitLab UI.
     assert.equal(kindFor('codeberg.org', {}), 'github');
     assert.equal(kindFor('gitea.com', {}), 'github');
+    // A self-hosted instance is not bundled; it is added by the user.
+    assert.equal(kindFor('code.swecha.org', {}), null);
   });
 
   test('falls back to the user-added map', () => {
@@ -187,10 +189,9 @@ describe('hostsFor', () => {
       'codeberg.org',
       'gitea.com',
     ]);
-    assert.deepEqual(hostsFor('gitlab', {}), ['gitlab.com', 'code.swecha.org']);
+    assert.deepEqual(hostsFor('gitlab', {}), ['gitlab.com']);
     assert.deepEqual(hostsFor('gitlab', { 'gl.acme.com': 'gitlab' }), [
       'gitlab.com',
-      'code.swecha.org',
       'gl.acme.com',
     ]);
   });
@@ -282,7 +283,7 @@ describe('isBuiltin / isKind', () => {
   test('recognises the bundled hosts and only those', () => {
     assert.equal(isBuiltin('github.com'), true);
     assert.equal(isBuiltin('gitlab.com'), true);
-    assert.equal(isBuiltin('code.swecha.org'), true);
+    assert.equal(isBuiltin('code.swecha.org'), false);
     assert.equal(isBuiltin('codeberg.org'), true);
     assert.equal(isBuiltin('gitea.com'), true);
     assert.equal(isBuiltin('github.acme.com'), false);
@@ -332,6 +333,33 @@ describe('stateFrom', () => {
       instances: {},
       hostSettings: {},
     });
+  });
+
+  test('collapses a legacy state whose kinds disagree, deterministically', () => {
+    // The one-skin rule is a property of the data, not of the popup: a state
+    // from the older per-kind model reads back with a single skin, written to
+    // every kind, so every context agrees.
+    assert.deepEqual(
+      stateFrom({ [SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' } }).settings,
+      { github: 'gitlab', gitlab: 'gitlab' },
+    );
+  });
+
+  test('leaves a state whose kinds agree alone', () => {
+    assert.deepEqual(
+      stateFrom({ [SETTINGS_KEY]: { github: 'bitbucket', gitlab: 'bitbucket' } }).settings,
+      { github: 'bitbucket', gitlab: 'bitbucket' },
+    );
+    assert.deepEqual(
+      stateFrom({ [SETTINGS_KEY]: { github: 'gitlab' } }).settings,
+      { github: 'gitlab' },
+    );
+  });
+
+  test('does not mutate the stored settings while normalising', () => {
+    const stored = { [SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' } };
+    stateFrom(stored);
+    assert.deepEqual(stored[SETTINGS_KEY], { github: 'gitlab', gitlab: 'github' });
   });
 
   test('rejects a stored value that is not a plain object', () => {
@@ -403,7 +431,11 @@ describe('sourceFor', () => {
   test('the public forges are their own markup', () => {
     assert.equal(sourceFor('github.com', {}), 'github');
     assert.equal(sourceFor('gitlab.com', {}), 'gitlab');
-    assert.equal(sourceFor('code.swecha.org', {}), 'gitlab');
+    // A self-hosted instance is its own markup once added.
+    assert.equal(
+      sourceFor('code.swecha.org', { 'code.swecha.org': 'gitlab' }),
+      'gitlab',
+    );
   });
 
   test('the Gitea-family forges are Gitea markup, not GitHub', () => {
@@ -556,6 +588,29 @@ describe('themeFor', () => {
     assert.equal(
       themeFor('github.com', { github: 'off' }, {}, { 'github.com': true }),
       null,
+    );
+  });
+});
+
+describe('manifest permissions', () => {
+  test('the bundled host_permissions match the builtin hosts', () => {
+    // The manifest cannot read sites.js, so its static host list repeats the
+    // bundled hosts; this is what stops the two from drifting. Everything else
+    // is requested one origin at a time from the popup.
+    const manifest = JSON.parse(
+      readFileSync(new URL('../src/manifest.base.json', import.meta.url), 'utf8'),
+    );
+    const expected = [...hostsFor('github', {}), ...hostsFor('gitlab', {})].map(
+      (host) => `*://${host}/*`,
+    );
+    assert.deepEqual([...manifest.host_permissions].sort(), expected.sort());
+    assert.ok(
+      (manifest.optional_host_permissions || []).length > 0,
+      'self-hosted origins are optional, not granted at install',
+    );
+    assert.ok(
+      !manifest.host_permissions.some((p) => /^\*:\/\/\*\/\*$/.test(p)),
+      'no host_permissions entry grants the whole web',
     );
   });
 });

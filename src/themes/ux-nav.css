@@ -1,22 +1,34 @@
 /* =====================================================================
    Git Same — navigation orientation.
-   GitHub's app navigation is a horizontal tab row; GitLab's is a vertical
-   sidebar. Each skin flips the orientation so a skinned site navigates the way
-   the product it is imitating does.
 
-   G→L: GitHub's repo tab bar becomes a GitLab-style left sidebar, beside the
-        repo header and content. The tab bar and the repo header share one
-        wrapper (`main > div.tmp-pt-3`), so the wrapper is made
-        `display: contents` to let both take part in a page grid; without that
-        the tabs can only sit above the content.
+   These rules are scoped by two axes, and use whichever fits:
+     html.gs-theme-<skin>    the skin being applied (gitlab, github, bitbucket)
+     html.gs-layout-<shape>  the shape the skin is built to (gitlab, github), so
+                             rules two skins share — GitHub and Bitbucket are
+                             both "top bar + tab row" — are written once.
 
-   L→G: GitLab's fixed sidebar becomes a horizontal top strip. GitLab's page is
-        a grid (`.layout-page.page-with-super-sidebar` is `232px 1032px …`),
-        so that grid is collapsed to one column first — otherwise the content
-        keeps the narrow column and shrinks to ~277px.
+   Sections below, in file order:
+
+   as-gitlab        GitHub's repo tab bar becomes a GitLab-style left sidebar,
+                    beside the repo header and content. The tab bar and the repo
+                    header share one wrapper (`main > div.tmp-pt-3`), so the
+                    wrapper is made `display: contents` to let both take part in
+                    a page grid; without that the tabs can only sit above the
+                    content.
+   as-gitlab · Gitea / Forgejo
+                    the same sidebar, rebuilt for Gitea's markup.
+   layout: github   GitLab's fixed sidebar becomes a horizontal top strip.
+                    GitLab's page is a grid (`.layout-page.page-with-super-
+                    sidebar` is `232px 1032px …`), so that grid is collapsed to
+                    one column first — otherwise the content keeps the narrow
+                    column and shrinks to ~277px. Shared by the GitHub and
+                    Bitbucket skins, which have the same shape.
+   layout: github · sidebar strip and profile
+                    the strip's colour, and the profile surfaces.
+   heatmaps         contribution / activity graphs in each palette.
    ===================================================================== */
 
-/* ---------------------------------------------------------------- G → L -- */
+/* ------------------------------------------------------------- as-gitlab -- */
 
 html.gs-theme-gitlab main:has(> div > nav[aria-label="Repository"]) {
   display: grid;
@@ -146,7 +158,7 @@ html.gs-theme-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
   margin-top: 4px;
 }
 
-/* ------------------------------------------------- Gitea → GitLab -- */
+/* ------------------------------------------ as-gitlab · Gitea / Forgejo -- */
 
 /* Gitea/Forgejo (Codeberg, gitea.com) is GitHub-flavoured, so the GitLab skin
    gets the same treatment its GitHub sibling does: the repo header moves to the
@@ -624,7 +636,7 @@ html.gs-theme-gitlab
 
 } /* @media (min-width: 768px) */
 
-/* ---------------------------------------------------------------- L → G -- */
+/* --------------------------------------------------------- layout: github -- */
 
 /* Collapse GitLab's two-column page grid so the content spans the full width
    once the sidebar leaves its column. */
@@ -902,7 +914,7 @@ html.gs-layout-github
 
 } /* @media (min-width: 768px) */
 
-/* ---------------------------------------------------------------- L → G -- */
+/* ---------------------------- layout: github · sidebar strip and profile -- */
 
 /* GitLab's sidebar becomes the horizontal strip; GitHub's repo and profile
    tabs live on a white row under the dark global bar, so the strip is white
@@ -1063,7 +1075,7 @@ html.gs-layout-github .super-sidebar ul[data-testid="pinned-nav-items"] {
   order: 2 !important;
 }
 
-/* ------------------------------------------------------------- heatmaps -- */
+/* ------------------------------------------------------------ heatmaps -- */
 
 /* GitHub's contribution graph is green; GitLab's activity graph is indigo.
    Each skin recolours the graph to the imitated product's palette. Level 0 is

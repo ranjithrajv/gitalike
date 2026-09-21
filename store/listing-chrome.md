@@ -56,9 +56,12 @@ Sourcehut is the next candidate.
 • No network access at all: the stylesheets are bundled and the mark is an
   inline data URI. Nothing is sent anywhere.
 
-Permissions, plainly: gitalike asks for access to all sites because GitHub
-Enterprise Server and self-hosted GitLab live on hostnames that cannot be
-listed ahead of time. On every site you have not set up, it does nothing at all.
+Permissions, plainly: gitalike is granted the public forges and Codeberg
+(github.com, gitlab.com, codeberg.org, gitea.com) at install.
+GitHub Enterprise Server and self-hosted GitLab live on hostnames that cannot be
+listed ahead of time, so a self-hosted instance is granted one origin at a time
+when you add it in the popup. On every site you have not set up, it does nothing
+at all.
 
 gitalike is free software, licensed GPL-3.0-or-later; the source is at
 github.com/ranjithrajv/gitalike.
@@ -87,11 +90,13 @@ are intercepted and no data is touched.
 storage — Saves your on/off choices and the instances you add, using the
 browser's own synced storage. Nothing leaves your browser profile.
 
-Host permission (http://*/*, https://*/*) — GitHub Enterprise Server and
-self-hosted GitLab can live on any hostname, so no manifest host list can cover
-them. The extension therefore matches all pages and decides at runtime whether a
-host is a forge you have set up. On any host you have not set up, it does 
-nothing.
+Host permission (*://github.com/*, *://gitlab.com/*, *://codeberg.org/*,
+*://gitea.com/*) — the bundled forges, granted at install.
+
+Optional host permission (*://*/*) — GitHub Enterprise Server and self-hosted
+GitLab can live on any hostname, so no fixed list can cover them. When you add
+an instance in the popup, the extension asks for that one origin; until you do,
+it has no access to it. On any host you have not set up, it does nothing.
 ```
 
 **Data usage** — answer "no" to collecting any category of user data. No remote
@@ -119,11 +124,11 @@ No account, credentials or special setup are needed.
    Off, GitHub UI and GitLab UI.
 4. Alt+Shift+G toggles the site you are on; choosing Off reverts every change.
 
-All-sites access is required because self-hosted GitHub/GitLab instances use
-hostnames that cannot be listed in advance. The extension decides at runtime and
-is inert on any host you have not set up — its scripts are not even loaded
-there. It makes no network requests and runs no remote code; it rewrites the
-page's own text, labels and CSS tokens locally.
+Access is granted per host: the bundled forges at install, a self-hosted
+instance when you add it (one origin, one prompt). The extension decides at
+runtime and is inert on any host you have not set up — its scripts are not even
+loaded there. It makes no network requests and runs no remote code; it rewrites
+the page's own text, labels and CSS tokens locally.
 ```
 
 ## Graphic assets

@@ -70,10 +70,11 @@ async function refreshAllBadges() {
 /* --------------------------------------------------- content scripts -- */
 
 // The content scripts and stylesheets are registered for exactly the hosts the
-// extension has been set up on, instead of being injected into all of them by
-// the manifest. An unconfigured page then never parses the vocabulary or the
-// two stylesheets. Registering needs no new host permission: the extension
-// already declares access to all sites.
+// extension has been set up on, and holds permission for. The bundled hosts are
+// granted at install (they are in `host_permissions`); a self-hosted instance is
+// granted one origin at a time from the popup's Add a site click, which is a
+// user gesture. An unconfigured page, or one whose permission was declined, is
+// never injected into.
 const SCRIPT_ID = 'gitalike-ux';
 const CSS_ID = 'gitalike-theme';
 const CONTENT_JS = [
@@ -92,6 +93,37 @@ const CONTENT_CSS = [
 
 const hostPattern = (host) => `*://${host}/*`;
 const patternHost = (pattern) => pattern.replace(/^\*:\/\//, '').replace(/\/\*$/, '');
+
+// `permissions.contains` is a promise in Firefox and a callback in Chromium;
+// accept either, and treat a browser without the API as "granted" so a host the
+// manifest already covers is never dropped by a missing API.
+function permissionsContain(details) {
+  if (!api.permissions?.contains) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (granted) => {
+      if (settled) return;
+      settled = true;
+      resolve(Boolean(granted));
+    };
+    try {
+      const maybe = api.permissions.contains(details, done);
+      if (maybe && typeof maybe.then === 'function') {
+        maybe.then(done, () => done(false));
+      }
+    } catch {
+      done(false);
+    }
+  });
+}
+
+async function grantedPatterns(patterns) {
+  const out = [];
+  for (const pattern of patterns) {
+    if (await permissionsContain({ origins: [pattern] })) out.push(pattern);
+  }
+  return out;
+}
 
 // Every host the extension knows, bundled and user-added, de-duplicated. Only
 // hosts that classify as a kind are returned, so junk in the instances map can
@@ -154,7 +186,7 @@ async function registerContentScripts(injectNew) {
   if (!api.scripting?.registerContentScripts) return;
 
   const { instances } = await readState();
-  const patterns = knownHosts(instances).map(hostPattern);
+  const patterns = await grantedPatterns(knownHosts(instances).map(hostPattern));
 
   // What was registered before unregistering, so a newly added host can be
   // injected into the tab that is already open on it.
@@ -271,6 +303,12 @@ api.storage.onChanged.addListener((changes, area) => {
     refreshAllBadges();
   }
 });
+
+// A host's permission can be granted or revoked outside a storage change — the
+// popup's Add a site asks for the origin, and the user can revoke it later — so
+// the registration is re-scoped either way.
+api.permissions?.onAdded?.addListener(() => syncContentScripts({ injectNew: true }));
+api.permissions?.onRemoved?.addListener(() => syncContentScripts());
 
 api.runtime.onInstalled.addListener(() => {
   syncContentScripts({ injectNew: true });

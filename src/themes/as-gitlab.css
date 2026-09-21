@@ -228,7 +228,7 @@ html.gs-theme-gitlab {
 
 /* --------------------------------------------------------- structural -- */
 
-html.gs-theme-gitlab body {
+html.gs-layout-gitlab body {
   background-color: var(--gs-canvas-subtle) !important;
   font-family: var(--gs-font) !important;
 }
@@ -237,12 +237,12 @@ html.gs-theme-gitlab body {
    octicon is an <svg> whose content is a single <path>; hiding it and painting
    a background image on the element keeps the swap purely presentational and
    picks up every instance (header, footer, mobile nav) at once. */
-html.gs-theme-gitlab .octicon-mark-github {
+html.gs-layout-gitlab .octicon-mark-github {
   background: var(--gs-mark) center / contain no-repeat !important;
   color: transparent !important;
 }
 
-html.gs-theme-gitlab .octicon-mark-github :is(path, polygon, circle) {
+html.gs-layout-gitlab .octicon-mark-github :is(path, polygon, circle) {
   display: none !important;
 }
 
@@ -251,7 +251,7 @@ html.gs-theme-gitlab .octicon-mark-github :is(path, polygon, circle) {
    Signed in, GitHub drops all of the above for a `GlobalNav` header that is
    already light — but grey, so it reads darker than the page. Matching it here
    gives it GitLab's bar instead. */
-html.gs-theme-gitlab :is(
+html.gs-layout-gitlab :is(
     .AppHeader,
     .AppHeader-globalBar,
     .Header,
@@ -271,7 +271,7 @@ html.gs-theme-gitlab :is(
    text with it, nested <span>s included — that is where Primer's marketing
    header actually keeps the colour. Every element up there sits on a
    transparent or light background, so there is nothing we need to keep light. */
-html.gs-theme-gitlab :is(
+html.gs-layout-gitlab :is(
     .AppHeader,
     .AppHeader-globalBar,
     .Header,
@@ -284,7 +284,7 @@ html.gs-theme-gitlab :is(
   color: var(--gs-header-fg) !important;
 }
 
-html.gs-theme-gitlab :is(
+html.gs-layout-gitlab :is(
     .AppHeader,
     .AppHeader-globalBar,
     .Header,
@@ -311,36 +311,36 @@ html.gs-theme-gitlab :is(
    we re-point at GitLab purple. */
 
 /* Active tab gets GitLab's purple indicator rather than GitHub's amber. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   :is(.UnderlineNav-item, .UnderlineNav-item--current, .prc-components-UnderlineItem)[aria-current="page"],
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   :is(.UnderlineNav-item, .prc-components-UnderlineItem)[role="tab"][aria-selected="true"] {
   color: var(--gs-fg) !important;
   font-weight: 600;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   :is(.UnderlineNav-item, .UnderlineNav-item--current, .prc-components-UnderlineItem)[aria-current="page"]::after,
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   :is(.UnderlineNav-item, .prc-components-UnderlineItem)[role="tab"][aria-selected="true"]::after {
   background-color: var(--gs-purple) !important;
 }
 
 /* GitLab leans on a slightly softer container radius than Primer's default. */
-html.gs-theme-gitlab :is(.Box, .Box--condensed, .border.rounded-2, .flash) {
+html.gs-layout-gitlab :is(.Box, .Box--condensed, .border.rounded-2, .flash) {
   border-radius: var(--gs-radius-lg);
 }
 
 /* GitHub's newer Button component reads its colours from a component-scoped
    variable the token mapping above cannot reach, so the primary button is
    painted directly. GitLab's primary is blue, not GitHub's green. */
-html.gs-theme-gitlab :is(.Button--primary, .btn-primary) {
+html.gs-layout-gitlab :is(.Button--primary, .btn-primary) {
   background-color: var(--gs-accent) !important;
   border-color: transparent !important;
   color: #ffffff !important;
 }
 
-html.gs-theme-gitlab :is(.Button--primary, .btn-primary):hover {
+html.gs-layout-gitlab :is(.Button--primary, .btn-primary):hover {
   background-color: var(--gs-accent-hover) !important;
 }
 
@@ -350,14 +350,14 @@ html.gs-theme-gitlab :is(.Button--primary, .btn-primary):hover {
    the top, so the two products read the same. GitHub's PageLayout is flex-based
    with the sidebar in a row-reversed pane; the class suffixes are hashed, so the
    selectors match on the stable prefix. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   [class*="PageLayoutContent-"]:has(
     > [class*="PaneWrapper-"] [class*="CodeViewSidebar-"]
   ) {
   flex-direction: column !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   [class*="PaneWrapper-"]:has([class*="CodeViewSidebar-"]) {
   order: -1 !important;
   flex: 0 0 auto !important;
@@ -366,14 +366,14 @@ html.gs-theme-gitlab
   padding-right: 0 !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   [class*="PaneWrapper-"]:has([class*="CodeViewSidebar-"])
   > * {
   width: 100% !important;
   max-width: none !important;
 }
 
-html.gs-theme-gitlab [class*="CodeViewSidebar-"] {
+html.gs-layout-gitlab [class*="CodeViewSidebar-"] {
   width: 100% !important;
   /* GitLab's "Project information" is one full-width column with the sections
      stacked, so the block is aligned the way GitLab's is rather than flowed
@@ -381,22 +381,10 @@ html.gs-theme-gitlab [class*="CodeViewSidebar-"] {
   grid-template-columns: minmax(0, 1fr) !important;
 }
 
-/* GitLab has no equivalent of GitHub's top bar — its navigation is the sidebar
-   alone — so on the GitLab skin the header is hidden and the sidebar carries
-   the navigation. */
-html.gs-theme-gitlab :is(
-    header[role="banner"],
-    header.GlobalNav,
-    .AppHeader,
-    .js-header-wrapper
-  ) {
-  display: none !important;
-}
-
 /* GitLab's project sidebar gathers its items under group headings (Plan, Code,
    Build, …); GitHub's repo tabs are flat. On the GitLab skin the tabs are
    gathered under the same headings, inserted by content/ux.js. */
-html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group {
+html.gs-layout-gitlab nav[aria-label="Repository"] .gs-nav-group {
   margin: 10px 0 2px;
   padding: 0 10px;
   font-size: 12px;
@@ -404,7 +392,7 @@ html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group {
   color: var(--gs-fg-muted);
 }
 
-html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group:first-child {
+html.gs-layout-gitlab nav[aria-label="Repository"] .gs-nav-group:first-child {
   margin-top: 0;
 }
 

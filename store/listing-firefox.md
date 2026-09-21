@@ -48,9 +48,12 @@ Features
 - No network access at all: the stylesheets are bundled and the mark is an
   inline data URI. Nothing is sent anywhere.
 
-Permissions, plainly: gitalike asks for access to all sites because GitHub
-Enterprise Server and self-hosted GitLab live on hostnames that cannot be
-listed ahead of time. On every site you have not set up, it does nothing at all.
+Permissions, plainly: gitalike is granted the public forges and Codeberg
+(github.com, gitlab.com, codeberg.org, gitea.com) at install.
+GitHub Enterprise Server and self-hosted GitLab live on hostnames that cannot be
+listed ahead of time, so a self-hosted instance is granted one origin at a time
+when you add it in the popup. On every site you have not set up, it does nothing
+at all.
 
 gitalike is free software, licensed GPL-3.0-or-later; the source is at
 github.com/ranjithrajv/gitalike.
@@ -83,9 +86,10 @@ on/off choices and the list of instances you add, in Firefox's own synced
 extension storage; that data stays within your browser profile and Mozilla
 Sync, and is never sent to the developer or anyone else.
 
-The extension requests access to all sites so that self-hosted instances on
-unpredictable hostnames can work without a per-site permission prompt. On hosts
-you have not set up, it does nothing.
+The extension is granted the bundled forges (github.com, gitlab.com,
+codeberg.org, gitea.com) at install. Self-hosted instances live
+on unpredictable hostnames, so one is granted a single origin when you add it in
+the popup. On hosts you have not set up, it does nothing.
 ```
 
 Hosted at <https://ranjithrajv.github.io/gitalike/privacy.html>.
