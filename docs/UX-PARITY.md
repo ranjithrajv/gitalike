@@ -136,6 +136,13 @@ registers as the `gerrit` kind for that run only (it is not a bundled host).
 `captures.mjs` fails loudly if a future source is neither captured nor explicitly
 excused.
 
+Layout is a gated read of its own: `tools/compare/layout-parity.mjs`
+(`npm run layout-parity`) drives the live pages and fails unless every skinned
+page carries its skin's `gs-layout-*` class and its navigation is oriented the
+way that layout is — row for `github`, column for `gitlab`. Pairs whose source
+declared no navigation (or profile) capability are reported `n/a` rather than
+failed, since there is nothing to reorient.
+
 ### Where the points are lost
 
 - **GitHub → GitLab, project (9.7)** — the reference direction. It loses only on

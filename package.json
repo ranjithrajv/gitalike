@@ -20,6 +20,7 @@
     "parity:write": "node tools/compare/parity-score.mjs --write",
     "parity:judge": "node tools/compare/parity-judge.mjs",
     "style-parity": "node tools/compare/style-parity.mjs",
+    "layout-parity": "node tools/compare/layout-parity.mjs",
     "test": "node --test",
     "canary": "node tools/compare/selector-canary.mjs",
     "registry": "node tools/registry.mjs --write",

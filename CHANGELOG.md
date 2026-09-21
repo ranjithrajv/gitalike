@@ -59,6 +59,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A shared test loader (`tools/plugin-test.mjs`) for the per-plugin tests, and
   `src/plugins/core.test.mjs` for the plugin API's own acceptance and rejection
   cases.
+- A **layout parity** read (`tools/compare/layout-parity.mjs`,
+  `npm run layout-parity`): for every source × skin it gates, on the live pages,
+  that the page carries the skin's `gs-layout-*` class and that its navigation
+  is oriented as that layout is (row for `github`, column for `gitlab`),
+  reporting group headings and profile shape. A pair whose source declared no
+  navigation or profile capability (`compare.nav`/`compare.profile` of 0) is
+  reported `n/a` rather than failed. Unlike the other parity reads it exits
+  non-zero on a mismatch, so a layout regression fails a run instead of lowering
+  a score.
 - A **compare-recipe contract** (`tests/compare/recipes.test.mjs`): every
   registry source must have a capture recipe (or a documented exclusion),
   project and profile style-parity selectors, and all of its `compare`
