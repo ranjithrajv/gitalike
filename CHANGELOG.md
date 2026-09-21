@@ -11,10 +11,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A third skin: **Bitbucket**. It is a *target only* — no host is classified as
   Bitbucket — so any configured GitHub, GitLab or Gitea site can wear it. Its
   Atlassian palette is mapped for each source's own tokens (Primer on GitHub,
-  Pajamas on GitLab, `--color-*` on Gitea), it carries GitHub's layout (top bar +
-  repo tab row), and its vocabulary is Bitbucket's (`Source`, `Pipelines`,
-  `Pull requests`, `Downloads`). The global **Show the web with** radio and the
-  per-site picker both offer it (`src/themes/as-bitbucket.css`, `src/lib/ux.js`,
+  Pajamas on GitLab, `--color-*` on Gitea), its repository navigation is a left
+  sidebar (so it reuses GitLab's layout), and its vocabulary and tab set are
+  Bitbucket's — taken from an archived Bitbucket repository page:
+  Source, Commits, Branches, Pull requests, Pipelines, Deployments, Jira issues,
+  Security, Downloads. The global **Show the web with** radio and the per-site
+  picker both offer it (`src/themes/as-bitbucket.css`, `src/lib/ux.js`,
   `src/lib/sites.js`, `src/background.js`).
 - A `layout` on each skin (`github` = top bar + tab row, `gitlab` = left
   sidebar) and a matching `gs-layout-*` class on `<html>`, so a skin that shares

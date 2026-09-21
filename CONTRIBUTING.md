@@ -352,8 +352,9 @@ means:
 
 A target's `layout` (`github` = top bar + tab row, `gitlab` = left sidebar) is
 the shape it is built to. Two skins that share a shape share the structural CSS
-(through the `gs-layout-*` class) and the structural passes, so Bitbucket reuses
-GitHub's and only supplies Atlassian's colours and its own words. The stylesheets
+(through the `gs-layout-*` class) and the structural passes, so Bitbucket — whose
+repo navigation is a left sidebar — reuses GitLab's and only supplies Atlassian's
+colours and its own words. The stylesheets
 scope by *token name*, which is how one file maps three sources: `--fgColor-*`
 (Primer) is inert on GitLab and Gitea, `--gl-*` on the others, and Gitea's
 `[data-theme]` block picks up only Gitea.

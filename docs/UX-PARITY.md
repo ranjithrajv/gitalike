@@ -11,11 +11,11 @@ stylesheet is `themes/as-<name>.css`. There are three: **GitLab** and **GitHub**
 which the two source products are shown with, and **Bitbucket**, which is a
 target only (no host is classified as it) and can be worn by any source. A skin
 names the shape it is built to in `SITES.skins[<name>].layout` (`github` = top
-bar + tab row, `gitlab` = left sidebar); Bitbucket reuses GitHub's, so the
-structural passes and the shared layout CSS apply to it unchanged and only its
-palette, words and tab set differ. This file's directional tables below still
-describe the two-way pair; Bitbucket's are in `src/lib/ux.js` under
-`bitbucket` and are covered by `tests/ux.test.mjs`.
+bar + tab row, `gitlab` = left sidebar); Bitbucket's repo nav is a left
+sidebar, so it reuses GitLab's, and the structural passes and the shared layout
+CSS apply unchanged while only its palette, words and tab set differ. The
+directional tables below still describe the two-way pair; Bitbucket's are in
+`src/lib/ux.js` under `bitbucket` and are covered by `tests/ux.test.mjs`.
 
 ## Directions
 
@@ -24,7 +24,7 @@ describe the two-way pair; Bitbucket's are in `src/lib/ux.js` under
 - **L→G** — a GitLab-flavoured site shown with the GitHub UI
   (`html.gs-theme-github`, `themes/as-github.css`)
 - **→B** — any source shown with the Bitbucket UI
-  (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`, layout `github`)
+  (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`, layout `gitlab`)
 
 ## Status
 

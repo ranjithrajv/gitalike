@@ -904,7 +904,9 @@ describe('Bitbucket skin', () => {
     assert.equal(NAV.bitbucket.Actions, 'Pipelines');
     assert.equal(NAV.bitbucket['CI/CD'], 'Pipelines');
     assert.equal(NAV.bitbucket['Merge requests'], 'Pull requests');
-    assert.equal(NAV.bitbucket['Work items'], 'Issues');
+    // Bitbucket lists issues in Jira, not as a repo tab of its own.
+    assert.equal(NAV.bitbucket['Work items'], 'Jira issues');
+    assert.equal(NAV.bitbucket.Issues, 'Jira issues');
   });
 
   test('maps the merge controls', () => {
@@ -924,8 +926,12 @@ describe('Bitbucket skin', () => {
   test('keeps only Bitbucket’s own repo tabs', () => {
     assert.ok(NAV_KEEP.bitbucket.includes('Source'));
     assert.ok(NAV_KEEP.bitbucket.includes('Pipelines'));
+    assert.ok(NAV_KEEP.bitbucket.includes('Jira issues'));
     assert.ok(!NAV_KEEP.bitbucket.includes('Projects'));
     assert.ok(!NAV_KEEP.bitbucket.includes('Insights'));
+    // Bitbucket has no repo Wiki or Settings tab; those live elsewhere.
+    assert.ok(!NAV_KEEP.bitbucket.includes('Wiki'));
+    assert.ok(!NAV_KEEP.bitbucket.includes('Settings'));
   });
 
   test('activeTabFor returns the tab in the applied product’s words', () => {
@@ -943,6 +949,9 @@ describe('Bitbucket skin', () => {
       'Branches',
       'Pull requests',
       'Pipelines',
+      'Deployments',
+      'Jira issues',
+      'Security',
       'Downloads',
     ]);
     assert.ok(!tabs.includes('Code'));
@@ -962,7 +971,7 @@ describe('Bitbucket skin', () => {
       NAV_RULES.bitbucket.find((r) => r.source === 'gitea').order,
     );
     const labels = entries.filter((e) => e.label).map((e) => e.label);
-    assert.deepEqual(labels, ['Source', 'Pull requests', 'Pipelines', 'Issues']);
+    assert.deepEqual(labels, ['Source', 'Pull requests', 'Pipelines', 'Jira issues']);
     assert.equal(entries[0].active, true);
   });
 

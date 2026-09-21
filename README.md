@@ -19,9 +19,9 @@ set up can wear any of them from the popup.
  any site                 + Bitbucket UI  ->  gitalike mark, Atlassian blue bar
 ```
 
-It works on `github.com` and `gitlab.com` out of the box, on the bundled
-self-hosted instance `code.swecha.org`, and on any other instance you point it
-at — **GitHub Enterprise Server** included.
+It works on `github.com`, `gitlab.com`, `codeberg.org` and `gitea.com` out of
+the box. Any other instance — a self-hosted GitLab, **GitHub Enterprise Server**
+— is added from the popup, which asks for that one site's access.
 
 gitalike starts with the two big forges, GitHub and GitLab, and grows from
 there. The GitHub-flavoured **Codeberg** (Forgejo) and **gitea.com** (Gitea) are

@@ -88,14 +88,16 @@
       'Issue boards': 'Projects',
     },
     // Bitbucket's repo tabs. GitHub/Gitea say "Code"/"Actions"; GitLab says
-    // "Repository"/"CI/CD"; all become "Source"/"Pipelines".
+    // "Repository"/"CI/CD"; all become "Source"/"Pipelines". Issues live in Jira
+    // in Bitbucket's model, so they read "Jira issues".
     bitbucket: {
       Code: 'Source',
       Repository: 'Source',
       Actions: 'Pipelines',
       'CI/CD': 'Pipelines',
       'Merge requests': 'Pull requests',
-      'Work items': 'Issues',
+      Issues: 'Jira issues',
+      'Work items': 'Jira issues',
     },
   };
 
@@ -234,7 +236,10 @@
     'Insights',
   ];
 
-  // Bitbucket's repo tab order, in Bitbucket's displayed labels.
+  // Bitbucket's repo tab order, in Bitbucket's displayed labels. Verified
+  // against an archived Bitbucket repository page's own menu model (Source,
+  // Commits, Branches, Pull requests, Pipelines, Deployments, Jira issues,
+  // Security, Downloads) — there is no repo Wiki or Settings tab.
   const BITBUCKET_REPO_ORDER = [
     'Source',
     'Commits',
@@ -242,10 +247,9 @@
     'Pull requests',
     'Pipelines',
     'Deployments',
+    'Jira issues',
+    'Security',
     'Downloads',
-    'Issues',
-    'Wiki',
-    'Settings',
   ];
 
   const NAV_RULES = {
@@ -374,7 +378,7 @@
       'Settings',
     ],
     // Bitbucket's own repo tabs; anything else the source shows (Projects,
-    // Insights, Security, Releases, Activity, …) is hidden rather than relabelled.
+    // Insights, Wiki, Releases, Activity, …) is hidden rather than relabelled.
     bitbucket: [
       'Source',
       'Commits',
@@ -382,10 +386,9 @@
       'Pull requests',
       'Pipelines',
       'Deployments',
+      'Jira issues',
+      'Security',
       'Downloads',
-      'Issues',
-      'Wiki',
-      'Settings',
     ],
   };
 
@@ -795,6 +798,9 @@
       ['Branches', `${base}/-/branches`],
       ['Pull requests', hrefs.pullRequests || `${base}/-/merge_requests`],
       ['Pipelines', hrefs.actions || `${base}/-/pipelines`],
+      ['Deployments', `${base}/-/environments`],
+      ['Jira issues', hrefs.issues || `${base}/-/issues`],
+      ['Security', `${base}/-/security/dashboard`],
       ['Downloads', `${base}/-/tags`],
     ],
   };

@@ -30,7 +30,7 @@
 
 /* ------------------------------------------------------------- as-gitlab -- */
 
-html.gs-theme-gitlab main:has(> div > nav[aria-label="Repository"]) {
+html.gs-layout-gitlab main:has(> div > nav[aria-label="Repository"]) {
   display: grid;
   grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
   align-items: start;
@@ -40,12 +40,12 @@ html.gs-theme-gitlab main:has(> div > nav[aria-label="Repository"]) {
 
 /* Lift the repo header and the tab bar out of their shared wrapper so the grid
    can place them independently. */
-html.gs-theme-gitlab main:has(> div > nav[aria-label="Repository"]) > div {
+html.gs-layout-gitlab main:has(> div > nav[aria-label="Repository"]) > div {
   display: contents;
 }
 
 /* Repo header (title, Notifications / Fork / Star): top of the right column. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(> div > nav[aria-label="Repository"])
   > div
   > div:first-child {
@@ -54,7 +54,7 @@ html.gs-theme-gitlab
 }
 
 /* The empty spacer GitHub keeps between the header and the tabs. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(> div > nav[aria-label="Repository"])
   > div
   > div:nth-child(2) {
@@ -62,7 +62,7 @@ html.gs-theme-gitlab
 }
 
 /* The tab bar, now a sidebar spanning both rows. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(> div > nav[aria-label="Repository"])
   > div
   > nav[aria-label="Repository"] {
@@ -79,7 +79,7 @@ html.gs-theme-gitlab
 }
 
 /* Content: right column, below the header. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(> div > nav[aria-label="Repository"])
   > turbo-frame {
   grid-column: 2;
@@ -88,7 +88,7 @@ html.gs-theme-gitlab
 }
 
 /* The list becomes a vertical column of GitLab-style rows. */
-html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body {
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
@@ -96,7 +96,7 @@ html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body {
   width: 100%;
 }
 
-html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
   display: block !important;
   width: 100%;
 }
@@ -104,14 +104,14 @@ html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
 /* GitHub's responsive tab bar hides items and clones them into an overflow menu
    once they stop fitting the bar. In a vertical sidebar we want the real rows,
    so they are forced back on. */
-html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li,
-html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li,
+html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
   visibility: visible !important;
 }
 
 /* A row: icon and label side by side. GitHub keeps the icon and label as
    separate block children, so the row layout has to be restored here. */
-html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
   display: flex !important;
   align-items: center;
   gap: 8px;
@@ -123,11 +123,11 @@ html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
   color: var(--gs-fg) !important;
 }
 
-html.gs-theme-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a:hover {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a:hover {
   background-color: var(--gs-canvas) !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   nav[aria-label="Repository"]
   ul.UnderlineNav-body
   a[aria-current="page"] {
@@ -138,7 +138,7 @@ html.gs-theme-gitlab
 
 /* GitHub positions the counter absolutely for the horizontal tab; in a row it
    belongs at the end of the flex line, inside the panel. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   nav[aria-label="Repository"]
   .UnderlineNav-item
   .Counter {
@@ -149,12 +149,12 @@ html.gs-theme-gitlab
 
 /* The active-tab underline belongs to the horizontal form; the tint above
    replaces it. */
-html.gs-theme-gitlab nav[aria-label="Repository"] .UnderlineNav-item::after {
+html.gs-layout-gitlab nav[aria-label="Repository"] .UnderlineNav-item::after {
   display: none !important;
 }
 
 /* The "additional navigation options" menu trails the rows. */
-html.gs-theme-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
+html.gs-layout-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
   margin-top: 4px;
 }
 
@@ -170,7 +170,7 @@ html.gs-theme-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
    stop fitting, so it cannot be the sidebar); the original menu is hidden below.
    `[data-theme]` is Gitea's marker on <html>; neither GitHub nor GitLab sets it,
    so nothing here can reach them. */
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu) {
   display: grid !important;
   grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
@@ -179,10 +179,10 @@ html.gs-theme-gitlab[data-theme]
   max-width: none !important;
 }
 
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu)
   > .secondary-nav,
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu)
   > .secondary-nav
   > div.ui.container {
@@ -190,7 +190,7 @@ html.gs-theme-gitlab[data-theme]
 }
 
 /* Repo header (avatar, owner/repo, Watch / Star / Fork): top of the content. */
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu)
   .repo-header {
   grid-column: 2;
@@ -203,7 +203,7 @@ html.gs-theme-gitlab[data-theme]
    `paintGiteaNav`, which rebuilds them as the sidebar below. (Hiding the menu
    outright would make the `overflow-menu` component detach every tab into a
    popup held in memory, with nothing left to rebuild from.) */
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu)
   > .secondary-nav
   > overflow-menu {
@@ -221,7 +221,7 @@ html.gs-theme-gitlab[data-theme]
 }
 
 /* The rebuilt sidebar: a GitLab-style super-sidebar panel. */
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] {
   grid-column: 1;
   grid-row: 1 / span 2;
   list-style: none;
@@ -238,7 +238,7 @@ html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] {
 }
 
 /* A row: icon and label side by side, like GitLab's super-sidebar item. */
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] a {
   display: flex !important;
   align-items: center;
   gap: 8px;
@@ -250,29 +250,29 @@ html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a {
   text-align: left !important;
 }
 
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a svg {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] a svg {
   flex: none;
   color: var(--gs-fg-muted) !important;
   fill: currentColor;
 }
 
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a:hover {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] a:hover {
   background-color: var(--gs-canvas) !important;
 }
 
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a.active {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] a.active {
   background-color: var(--gs-accent-subtle) !important;
   color: var(--gs-accent) !important;
   font-weight: 600 !important;
 }
 
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a.active svg {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] a.active svg {
   color: var(--gs-accent) !important;
 }
 
 /* GitLab's sidebar gathers its items under group headings; GitHub's flat tab row
    has none, so `UX.repoNav` inserts the headings (Plan, Code, Build, Deploy). */
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group {
   margin: 10px 0 2px;
   padding: 0 10px;
   color: var(--gs-fg-subtle);
@@ -282,12 +282,12 @@ html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group {
   text-transform: uppercase;
 }
 
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group:first-child {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group:first-child {
   margin-top: 0;
 }
 
 /* The count becomes a GitLab-style trailing figure, not a raised pill. */
-html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a .ui.small.label {
+html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] a .ui.small.label {
   margin-left: auto !important;
   background: transparent !important;
   border: 0 !important;
@@ -297,7 +297,7 @@ html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a .ui.small.label {
 }
 
 /* The tab row's bottom divider belongs to the horizontal form. */
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu)
   > .secondary-nav
   > .ui.tabs.divider {
@@ -305,7 +305,7 @@ html.gs-theme-gitlab[data-theme]
 }
 
 /* Content: right column, below the header. */
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu)
   > .ui.container {
   grid-column: 2;
@@ -316,7 +316,7 @@ html.gs-theme-gitlab[data-theme]
 }
 
 /* The footer spans both columns, so it does not fall into the sidebar. */
-html.gs-theme-gitlab[data-theme]
+html.gs-layout-gitlab[data-theme]
   .page-content.repository:has(> .secondary-nav > overflow-menu)
   > .page-footer {
   grid-column: 1 / -1;
@@ -334,7 +334,7 @@ html.gs-theme-gitlab[data-theme]
    identity column) moves into the content, as GitLab's profile header. GitHub
    splits the page across two `container-xl` wrappers — the sticky tab strip and
    the card+content Layout — so both are dissolved to grid items here. */
-html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) {
+html.gs-layout-gitlab main:has(nav[aria-label="User profile"]) {
   display: grid;
   grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
   align-items: stretch;
@@ -346,26 +346,26 @@ html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) {
 }
 
 /* The status banner GitHub keeps above the nav is empty here. */
-html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) > x-banner {
+html.gs-layout-gitlab main:has(nav[aria-label="User profile"]) > x-banner {
   display: none !important;
 }
 
 /* Dissolve the sticky tab strip and the card+content Layout so their children
    take part in the page grid. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"],
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   > .container-xl,
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   > .container-xl
   > .Layout,
-html.gs-theme-gitlab main:has(nav[aria-label="User profile"]) > .container-xl,
-html.gs-theme-gitlab
+html.gs-layout-gitlab main:has(nav[aria-label="User profile"]) > .container-xl,
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > .container-xl
   > .Layout {
@@ -373,7 +373,7 @@ html.gs-theme-gitlab
 }
 
 /* The tab strip's mini vcard duplicates the profile card; GitLab shows it once. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   > .container-xl
@@ -383,7 +383,7 @@ html.gs-theme-gitlab
 }
 
 /* The navigation: the left rail, spanning the page like GitLab's super-sidebar. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   > .container-xl
@@ -399,7 +399,7 @@ html.gs-theme-gitlab
 /* The profile card: GitLab keeps its identity block in the content beside the
    navigation, so the card moves to the top of the right column and is re-shaped
    into GitLab's header row. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > .container-xl
   > .Layout
@@ -412,7 +412,7 @@ html.gs-theme-gitlab
   margin-top: 0 !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > .container-xl
   > .Layout
@@ -425,7 +425,7 @@ html.gs-theme-gitlab
 
 /* GitLab's Follow is a compact button beside the identity, not GitHub's
    full-width block. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   .h-card
   .user-following-container
@@ -436,7 +436,7 @@ html.gs-theme-gitlab
 
 /* Avatar left, name and handle beside it: GitLab's profile header shape rather
    than GitHub's full-width avatar stacked above the name. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   .h-card
   .js-profile-editable-replace
@@ -446,13 +446,13 @@ html.gs-theme-gitlab
   gap: 16px;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   .h-card
   .js-profile-editable-replace
   > .clearfix
   .col-2,
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   .h-card
   .js-profile-editable-replace
@@ -463,7 +463,7 @@ html.gs-theme-gitlab
   max-width: 100% !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   .h-card
   .js-profile-editable-replace
@@ -476,7 +476,7 @@ html.gs-theme-gitlab
 /* GitHub-only profile features GitLab has no counterpart for: public
    achievements (owned, not public, on GitLab), pinned repositories (GitLab has
    no profile pinning) and sponsoring. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   .h-card
   .border-top:has(a[href*="tab=achievements"]) {
@@ -491,7 +491,7 @@ html.gs-theme-gitlab
    "About / Info / Contact" rail beside the identity. content/ux.js clones them
    into `[data-gs-profile-rail]`; the header becomes a two-column grid so the
    rail sits beside the identity rather than under it. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   .js-profile-editable-replace {
   display: grid !important;
@@ -500,36 +500,36 @@ html.gs-theme-gitlab
   align-items: start;
 }
 
-html.gs-theme-gitlab [data-gs-profile-rail] {
+html.gs-layout-gitlab [data-gs-profile-rail] {
   grid-column: 2;
   grid-row: 1 / span 4;
   color: var(--gs-fg-muted);
   font-size: 14px;
 }
 
-html.gs-theme-gitlab [data-gs-profile-rail] .gs-profile-rail-heading {
+html.gs-layout-gitlab [data-gs-profile-rail] .gs-profile-rail-heading {
   margin: 16px 0 4px;
   color: var(--gs-fg);
   font-size: 14px;
   font-weight: 600;
 }
 
-html.gs-theme-gitlab [data-gs-profile-rail] .gs-profile-rail-heading:first-child {
+html.gs-layout-gitlab [data-gs-profile-rail] .gs-profile-rail-heading:first-child {
   margin-top: 0;
 }
 
-html.gs-theme-gitlab [data-gs-profile-rail] .vcard-detail {
+html.gs-layout-gitlab [data-gs-profile-rail] .vcard-detail {
   margin: 0 0 4px;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   a[href*="/sponsors"] {
   display: none !important;
 }
 
 /* The content: below the header in the right column. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > .container-xl
   > .Layout
@@ -540,7 +540,7 @@ html.gs-theme-gitlab
 }
 
 /* The tab row becomes the full-height super-sidebar column. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   .UnderlineNav {
@@ -549,7 +549,7 @@ html.gs-theme-gitlab
   overflow: visible !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   nav[aria-label="User profile"] {
@@ -565,7 +565,7 @@ html.gs-theme-gitlab
 }
 
 /* GitLab heads a profile's navigation with a "Profile" group label. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   nav[aria-label="User profile"]::before {
@@ -578,7 +578,7 @@ html.gs-theme-gitlab
 
 /* GitHub clones overflowing tabs into an options menu once they stop fitting;
    a vertical column always fits them, so the real rows are forced back on. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   nav[aria-label="User profile"]
@@ -595,7 +595,7 @@ html.gs-theme-gitlab
   color: var(--gs-fg) !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   nav[aria-label="User profile"]
@@ -603,7 +603,7 @@ html.gs-theme-gitlab
   background-color: var(--gs-canvas) !important;
 }
 
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   nav[aria-label="User profile"]
@@ -614,7 +614,7 @@ html.gs-theme-gitlab
 }
 
 /* The counting tab keeps its count, but as a GitLab-style trailing pill. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   nav[aria-label="User profile"]
@@ -626,7 +626,7 @@ html.gs-theme-gitlab
 }
 
 /* The active-tab underline belongs to the horizontal form. */
-html.gs-theme-gitlab
+html.gs-layout-gitlab
   main:has(nav[aria-label="User profile"])
   > div[data-turbo-frame="user-profile-frame"]
   nav[aria-label="User profile"]
@@ -1081,22 +1081,22 @@ html.gs-layout-github .super-sidebar ul[data-testid="pinned-nav-items"] {
    Each skin recolours the graph to the imitated product's palette. Level 0 is
    #eff2f5 on both sides, so only levels 1–4 need repainting. The values are the
    products' own computed fills. */
-html.gs-theme-gitlab .ContributionCalendar-day[data-level="1"] {
+html.gs-layout-gitlab .ContributionCalendar-day[data-level="1"] {
   fill: #d2dcff !important;
   background-color: #d2dcff !important;
 }
 
-html.gs-theme-gitlab .ContributionCalendar-day[data-level="2"] {
+html.gs-layout-gitlab .ContributionCalendar-day[data-level="2"] {
   fill: #7992f5 !important;
   background-color: #7992f5 !important;
 }
 
-html.gs-theme-gitlab .ContributionCalendar-day[data-level="3"] {
+html.gs-layout-gitlab .ContributionCalendar-day[data-level="3"] {
   fill: #4e65cd !important;
   background-color: #4e65cd !important;
 }
 
-html.gs-theme-gitlab .ContributionCalendar-day[data-level="4"] {
+html.gs-layout-gitlab .ContributionCalendar-day[data-level="4"] {
   fill: #303470 !important;
   background-color: #303470 !important;
 }

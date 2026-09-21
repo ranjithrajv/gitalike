@@ -12,10 +12,10 @@
    Primer on GitHub, Pajamas on GitLab, and Gitea's own --color-* names. The
    token names do not collide, so each mapping is inert on the other sources.
 
-   Bitbucket's shape (top bar + horizontal tab row) matches GitHub's, so the
-   structural passes and the layout CSS are shared through `gs-layout-github`;
-   this file only supplies the Atlassian colours and the tab accents.
-   ===================================================================== */
+   Bitbucket's repository navigation is a left sidebar, so its shape matches
+   GitLab's: the structural passes and the layout CSS are shared through
+   `gs-layout-gitlab`, and this file supplies the Atlassian colours, the top bar
+   and the mark. ===================================================================== */
 
 /* ------------------------------------------------------------- palette -- */
 
@@ -46,8 +46,9 @@ html.gs-theme-bitbucket {
   --gs-attention: #974f0c;
   --gs-attention-subtle: #fffae6;
 
-  /* Bitbucket's top bar is the Atlassian blue, with white text. */
-  --gs-header-bg: #0747a6;
+  /* Bitbucket's top bar is the dark Atlassian blue it hands the browser as its
+     `theme-color` (#0049B0), with white text. */
+  --gs-header-bg: #0049b0;
   --gs-header-fg: #ffffff;
 
   --gs-radius-sm: 3px;
@@ -321,12 +322,6 @@ html.gs-theme-bitbucket
   font-weight: 600 !important;
 }
 
-/* The rebuilt GitLab tab row is shared through `gs-layout-github`; only its
-   active underline is Bitbucket's blue rather than GitHub's amber. */
-html.gs-theme-bitbucket [data-gs-project-tabs] > li > a[data-gs-active] {
-  border-bottom-color: var(--gs-accent) !important;
-}
-
 /* Untokenised components. */
 html.gs-theme-bitbucket
   :is(.gl-button, .btn, .gl-form-input, .form-control, .gl-badge, .badge, .gl-card, .card) {
@@ -354,33 +349,9 @@ html.gs-theme-bitbucket :is(.gl-table, .table) thead th {
   color: var(--gs-fg) !important;
 }
 
-/* GitLab's full-width "Project information" block becomes a right-hand column,
-   as on the GitHub skin (Bitbucket keeps repository details beside the file
-   list). */
-html.gs-theme-bitbucket .project-page-layout:has(.project-page-sidebar-block) {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: flex-start !important;
-  gap: 24px !important;
-}
-
-html.gs-theme-bitbucket
-  .project-page-layout:has(.project-page-sidebar-block)
-  > .project-page-layout-sidebar {
-  order: 2 !important;
-  flex: 0 0 296px !important;
-  width: 296px !important;
-  margin-top: 0 !important;
-}
-
-html.gs-theme-bitbucket
-  .project-page-layout:has(.project-page-sidebar-block)
-  > .project-page-layout-content {
-  order: 1 !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-}
-
+/* GitLab's full-width "Project information" block stays above the content under
+   the sidebar layout, close to where Bitbucket keeps a repository's description;
+   only its coverage bar and badges are dropped. */
 html.gs-theme-bitbucket
   .project-page-sidebar-block
   > :is(div.gl-mb-2, [data-testid="project-badges-content"], .project-badges) {
