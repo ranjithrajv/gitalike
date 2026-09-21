@@ -59,8 +59,15 @@ npm run package      # store-ready zips -> dist/artifacts/
 npm run screenshots  # regenerate store/screenshots/
 npm run screenshots:projects  # refresh the docs/ project-page captures
 npm run screenshots:profiles  # refresh the docs/ profile-page captures
+npm run webp         # generate the docs/ WebP a local preview needs
 npm run clean        # remove dist/
 ```
+
+The docs/ captures are committed as PNGs; the WebP variants `docs/index.html`
+prefers are generated at deploy time by `.github/workflows/pages.yml`. A browser
+does not fall back to the PNG once a `<picture>` source fails, so run
+`npm run webp` after a fresh clone (or after `npm run screenshots`) or the local
+preview shows blank captures.
 
 To try it, load `dist/chromium` unpacked — see
 [Install](README.md#install) for the click-by-click.

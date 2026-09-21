@@ -24,6 +24,7 @@
     "screenshots": "node tools/screenshots.mjs store",
     "screenshots:projects": "node tools/screenshots.mjs project",
     "screenshots:profiles": "node tools/screenshots.mjs profile",
+    "webp": "node tools/webp.mjs",
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "devDependencies": {
