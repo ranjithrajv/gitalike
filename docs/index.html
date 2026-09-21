@@ -897,6 +897,7 @@
           <a href="#how">How</a>
           <a href="#features">Features</a>
           <a href="#forges">Forges</a>
+          <a href="#plugins">Plugins</a>
           <a href="#privacy">Privacy</a>
           <a href="#faq">Questions</a>
           <a href="#install">Install</a>
@@ -1509,6 +1510,84 @@
             a source; Gerrit is a source with no bundled host, so you add your
             instance. Adding a self-hosted host asks the browser to grant that
             one origin. Sourcehut is the next candidate.
+          </p>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------- plugins -->
+      <section id="plugins">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>Plugins</h2>
+            <p>
+              GitAlike is assembled from two kinds of plugin, and the registry
+              is open. A <b>skin</b> is a target UI a page is made to look
+              like; a <b>source</b> is a forge's markup. They are independent —
+              any source can wear any skin — and each is a single object in the
+              source, plus a stylesheet for a skin.
+            </p>
+          </div>
+          <div class="split">
+            <div class="panel">
+              <h3>Skins</h3>
+              <p class="note" style="margin-top: 0">
+                One object in <code>src/lib/skins.js</code>: the product's
+                vocabulary, navigation order, profile menu and shortcuts — not
+                just its palette. <code>tests/contracts.test.mjs</code> names
+                anything a new skin is missing.
+              </p>
+              <div class="chips">
+                <span class="chip" data-plugin="skin:gitlab">GitLab UI</span>
+                <span class="chip" data-plugin="skin:github">GitHub UI</span>
+                <span class="chip" data-plugin="skin:bitbucket">Bitbucket UI</span>
+              </div>
+              <p class="note">
+                <a
+                  href="https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md#adding-a-skin"
+                  >Add a skin →</a
+                >
+              </p>
+            </div>
+            <div class="panel">
+              <h3>Sources</h3>
+              <p class="note" style="margin-top: 0">
+                One object in <code>src/lib/sources.js</code>: the DOM hooks a
+                skin reads, and the live page the daily canary watches, so a
+                rename upstream fails a check instead of a user.
+              </p>
+              <div class="chips">
+                <span class="chip" data-plugin="source:github"
+                  >GitHub — Primer</span
+                >
+                <span class="chip" data-plugin="source:gitlab"
+                  >GitLab — Pajamas</span
+                >
+                <span class="chip" data-plugin="source:gitea"
+                  >Gitea / Forgejo</span
+                >
+              </div>
+              <p class="note">
+                Bitbucket and Gerrit are sources too — vocabulary-only, because
+                their markup is client-rendered and serves no page to key hooks
+                on.
+              </p>
+              <p class="note">
+                <a
+                  href="https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md#adding-another-forge--contributions-welcome"
+                  >Add a source →</a
+                >
+              </p>
+            </div>
+          </div>
+          <p class="chips-note">
+            Adding one is meant to be small: a skin is one object plus one
+            stylesheet; a source is one object plus, for a forge people host, a
+            host entry. The rules are the same for everyone — GPL-3.0-or-later,
+            no monetisation, and your own original mark rather than a vendor's.
+            <a
+              href="https://github.com/ranjithrajv/gitalike/issues/new?template=new_plugin.yml"
+              >Propose a plugin →</a
+            >
           </p>
         </div>
       </section>

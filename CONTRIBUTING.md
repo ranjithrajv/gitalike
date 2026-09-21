@@ -357,7 +357,7 @@ You can already point GitAlike at any instance without touching the source: the
 popup's **Add a site** flow exists for exactly that. A `builtin` entry just means
 it works out of the box.
 
-### A genuinely different product
+### Adding a skin
 
 Sourcehut is not GitHub with a different logo; it needs its own skin and its own
 vocabulary. **Bitbucket is the worked example**: it began as a *target only* —

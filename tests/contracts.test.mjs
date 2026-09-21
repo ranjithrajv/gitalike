@@ -153,3 +153,28 @@ describe('source contract', () => {
     }
   });
 });
+
+describe('the published registry', () => {
+  test('docs/index.html lists every skin and source', () => {
+    // The Plugins section is the public face of the registry; pin it so a new
+    // plugin cannot ship without appearing there. Each entry carries a
+    // `data-plugin` marker the page and this test agree on.
+    const page = file('docs/index.html');
+    const missing = [];
+    for (const skin of THEMES) {
+      if (!page.includes(`data-plugin="skin:${skin}"`)) {
+        missing.push(`skin:${skin}`);
+      }
+    }
+    for (const source of SOURCES) {
+      if (!page.includes(`data-plugin="source:${source}"`)) {
+        missing.push(`source:${source}`);
+      }
+    }
+    assert.deepEqual(
+      missing,
+      [],
+      `docs/index.html does not list: ${missing.join(', ')}`,
+    );
+  });
+});

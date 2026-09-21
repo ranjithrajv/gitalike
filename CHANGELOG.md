@@ -13,6 +13,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   part a new skin or source must supply, so a contributor gets a checklist
   rather than unrelated failures. `tests/ux.test.mjs` now derives the same lists
   and scans every theme file for the `// css` selectors.
+- A **Plugins** section on the site and a **Plugin proposal** issue template
+  publish the registry — the three skins and the three sources — and invite new
+  ones. The page is pinned to the registries by `tests/contracts.test.mjs`, so a
+  new plugin cannot ship without appearing there.
 
 ### Changed
 

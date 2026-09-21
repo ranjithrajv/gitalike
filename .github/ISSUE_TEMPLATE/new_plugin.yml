@@ -1,0 +1,75 @@
+name: Plugin proposal (skin or source)
+description: Propose a new skin (a target UI) or source (a forge's markup) for the registry.
+title: '[Plugin]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        GitAlike's registry has two kinds of plugin. A **skin** is a target UI a
+        page is made to look like (`src/lib/skins.js`); a **source** is a forge's
+        markup (`src/lib/sources.js`). Each is one object — plus, for a skin, one
+        stylesheet. `tests/contracts.test.mjs` names anything a new one is still
+        missing. The ground rules are in
+        [CONTRIBUTING.md](https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md#ground-rules).
+  - type: dropdown
+    id: plugin-kind
+    attributes:
+      label: What are you proposing?
+      options:
+        - A skin (a target UI)
+        - A source (a forge's markup)
+        - Both (a new product, as Bitbucket is)
+    validations:
+      required: true
+  - type: input
+    id: product
+    attributes:
+      label: The product
+      description: The UI or forge you want added.
+      placeholder: Sourcehut
+    validations:
+      required: true
+  - type: input
+    id: design-system
+    attributes:
+      label: Its design system or markup, if it has one
+      description: >-
+        The token family a skin would re-point (like Primer or Pajamas), or the
+        template set a source's hooks would key on.
+    validations:
+      required: false
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it belongs in the registry
+      description: >-
+        Who uses it, and what they gain from it wearing — or being worn as —
+        another product's UI.
+    validations:
+      required: true
+  - type: input
+    id: links
+    attributes:
+      label: Links
+      description: The product's site, a public instance, and any design-token docs.
+    validations:
+      required: false
+  - type: dropdown
+    id: implement
+    attributes:
+      label: Would you like to implement it?
+      options:
+        - Yes, I can open a pull request
+        - I can help, but would need guidance
+        - No — proposing only
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: The ground rules
+      options:
+        - label: The plugin would ship its own original mark, never the product's logo or vector path data.
+        - label: It would be contributed under GPL-3.0-or-later, with no monetisation.
+        - label: It would need no new permission and make no network request.
