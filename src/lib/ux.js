@@ -19,94 +19,30 @@
 (() => {
   'use strict';
 
+  // The skin vocabulary and order tables are declared in skins.js, one object
+  // per skin; this file composes them. skins.js is loaded first everywhere
+  // (background CONTENT_JS, the Firefox manifest, popup.html, the tests).
+  if (!globalThis.GITALIKE_SKINS) {
+    throw new Error('GitAlike: skins.js must be loaded before ux.js');
+  }
+  const {
+    PHRASES,
+    NAV,
+    LABELS,
+    CHROME,
+    UNMAPPED,
+    TOPBAR_HIDE,
+    SHORTCUTS,
+    SHORTCUT_TARGETS,
+    NAV_HIDE,
+    NAV_KEEP,
+    NAV_GROUPS,
+    NAV_RULES,
+    PROJECT_TABS,
+    PROFILE_MENU,
+  } = globalThis.GITALIKE_SKINS;
+
   /* ------------------------------------------------------- terminology -- */
-
-  // Multi-word copy, safe to fix up wherever it appears in normal page text
-  // (outside code, inputs and editable regions). Longest key wins, so
-  // "Pull requests" is rewritten before "Pull request".
-  const PHRASES = {
-    gitlab: {
-      'Pull requests': 'Merge requests',
-      'Pull request': 'Merge request',
-      'pull requests': 'merge requests',
-      'pull request': 'merge request',
-      'Go to file': 'Find file',
-      Gists: 'Snippets',
-      Gist: 'Snippet',
-      Insights: 'Analytics',
-      Codespaces: 'Workspaces',
-      'GitHub Actions': 'CI/CD',
-      Dependabot: 'Dependency scanning',
-    },
-    github: {
-      'Merge requests': 'Pull requests',
-      'Merge request': 'Pull request',
-      'merge requests': 'pull requests',
-      'merge request': 'pull request',
-      'Find file': 'Go to file',
-      Snippets: 'Gists',
-      Snippet: 'Gist',
-      Analytics: 'Insights',
-      Workspaces: 'Codespaces',
-      'CI/CD': 'Actions',
-      'Dependency scanning': 'Dependabot',
-    },
-    // Bitbucket is a target only: its table maps each source product's words onto
-    // Bitbucket's. GitHub and Gitea say "Pull request"/"Actions"; GitLab says
-    // "Merge request"/"CI/CD". Both read Bitbucket's way after this.
-    bitbucket: {
-      'Merge requests': 'Pull requests',
-      'Merge request': 'Pull request',
-      'merge requests': 'pull requests',
-      'merge request': 'pull request',
-      'GitHub Actions': 'Pipelines',
-      'CI/CD': 'Pipelines',
-      Gists: 'Snippets',
-      Gist: 'Snippet',
-    },
-  };
-
-  // Short app-navigation labels. These are only replaced when an element's
-  // *whole* trimmed label matches, and only inside a navigation region — so a
-  // bare "Actions" in a marketing menu can never be rewritten to "CI/CD".
-  const NAV = {
-    gitlab: {
-      Code: 'Repository',
-      Actions: 'CI/CD',
-      Issues: 'Work items',
-      'Pull requests': 'Merge requests',
-      Insights: 'Analytics',
-      Projects: 'Issue boards',
-      // A Bitbucket source's repository bar.
-      Source: 'Repository',
-      Pipelines: 'CI/CD',
-      'Jira issues': 'Work items',
-    },
-    github: {
-      Repository: 'Code',
-      'CI/CD': 'Actions',
-      'Work items': 'Issues',
-      Pipelines: 'Actions',
-      'Merge requests': 'Pull requests',
-      Analytics: 'Insights',
-      'Issue boards': 'Projects',
-      // A Bitbucket source's repository bar.
-      Source: 'Code',
-      'Jira issues': 'Issues',
-    },
-    // Bitbucket's repo tabs. GitHub/Gitea say "Code"/"Actions"; GitLab says
-    // "Repository"/"CI/CD"; all become "Source"/"Pipelines". Issues live in Jira
-    // in Bitbucket's model, so they read "Jira issues".
-    bitbucket: {
-      Code: 'Source',
-      Repository: 'Source',
-      Actions: 'Pipelines',
-      'CI/CD': 'Pipelines',
-      'Merge requests': 'Pull requests',
-      Issues: 'Jira issues',
-      'Work items': 'Jira issues',
-    },
-  };
 
   // Bitbucket Cloud's repository bar, by its displayed labels. Its classes are
   // hashed, so a pass finds the bar by content — the ancestor holding the most
@@ -132,34 +68,6 @@
     'Downloads',
   ];
 
-  // Exact labels on *controls* — buttons, menu items, tabs, links — that name a
-  // GitHub/GitLab feature differently but should never be rewritten in prose.
-  // Kept apart from PHRASES because "Merge" and "Rebase" are ordinary words:
-  // scoping to a control's whole label is what makes them safe. Every entry
-  // round-trips with its counterpart in the other direction.
-  const LABELS = {
-    gitlab: {
-      'Merge pull request': 'Merge',
-      'Squash and merge': 'Squash commits',
-      'Rebase and merge': 'Rebase',
-      'Security and quality': 'Security',
-    },
-    github: {
-      Merge: 'Merge pull request',
-      'Squash commits': 'Squash and merge',
-      Rebase: 'Rebase and merge',
-      Security: 'Security and quality',
-    },
-    // Bitbucket's merge controls. Every source word maps to Bitbucket's own.
-    bitbucket: {
-      'Merge pull request': 'Merge',
-      'Squash and merge': 'Squash',
-      'Squash commits': 'Squash',
-      'Rebase and merge': 'Rebase',
-      'Security and quality': 'Security',
-    },
-  };
-
   // Elements whose whole label the LABELS table may replace.
   const LABEL_SCOPE = [
     'a',
@@ -170,37 +78,6 @@
     '[role="tab"]',
     '[role="menuitem"]',
   ].join(',');
-
-  // Account/menu chrome, where the two products name the same thing differently
-  // but the wording is too generic to translate in prose (a bare "Settings"
-  // means the repo tab, not preferences). Like LABELS, whole control labels
-  // only, and every pair round-trips.
-  const CHROME = {
-    gitlab: {
-      'Your repositories': 'Your projects',
-      'Your gists': 'Your snippets',
-      'Your stars': 'Starred projects',
-      'Your organizations': 'Your groups',
-    },
-    github: {
-      'Your projects': 'Your repositories',
-      'Your snippets': 'Your gists',
-      'Starred projects': 'Your stars',
-      'Your groups': 'Your organizations',
-    },
-    // Bitbucket's account chrome. Its account menu is "Your work"; groups are
-    // Atlassian "Workspaces"; gists live under Snippets.
-    bitbucket: {
-      'Your repositories': 'Your work',
-      'Your projects': 'Your work',
-      'Your gists': 'Snippets',
-      'Your snippets': 'Snippets',
-      'Your stars': 'Your starred',
-      'Starred projects': 'Your starred',
-      'Your organizations': 'Your workspaces',
-      'Your groups': 'Your workspaces',
-    },
-  };
 
   // Regions whose labels the NAV table is allowed to touch. Verified against
   // the live sites: GitHub's repo tabs live in `nav[aria-label="Repository"]`;
@@ -231,254 +108,6 @@
     '.super-topbar',
     '.AppHeader',
   ].join(',');
-
-  // The source-only words in the global top bar, keyed by the skin being
-  // applied. The applied product's own bar carries the same top-level words
-  // both products now use — "Platform", "Solutions", "Resources", "Pricing" —
-  // so only the words it does *not* carry are listed. There is no counterpart
-  // to translate a marketing link to, so these are hidden rather than relabelled
-  // (whole-label match inside TOPBAR_SCOPE, so an "Enterprise" in page prose is
-  // untouched). GitLab's older logged-out bar showed more source-only words;
-  // the shared ones are deliberately not hidden, or the applied product's own
-  // wording would go with them.
-  const TOPBAR_HIDE = {
-    // A GitHub source shown as GitLab: GitHub's "Open Source" and "Enterprise"
-    // links and its "Sign up" CTA have no GitLab counterpart.
-    gitlab: ['Open Source', 'Enterprise', 'Sign up'],
-    // A GitLab source shown as GitHub: GitLab's "Why GitLab" and "Explore"
-    // links and its "Get free trial" CTA have no GitHub counterpart.
-    github: ['Why GitLab', 'Explore', 'Get free trial'],
-  };
-
-  // Desired left-to-right / top-to-bottom order of the app navigation, using
-  // the *displayed* labels after translation. Items that are not present are
-  // skipped; unrecognised items keep their relative order at the end. Only the
-  // items are moved, into the slots they already occupy, so children we do not
-  // understand stay put.
-  //
-  // GitHub's repo tabs are a flat `ul.UnderlineNav-body`, so they can be
-  // reordered. GitLab's project navigation is a nested group tree — each group
-  // is its own `ul` — so there is no single flat list to reorder; the one group
-  // that maps onto GitHub's repo tabs, the repository ("Code") group, is
-  // reordered in place. A rule with `scope` + `contains` resolves its container
-  // at runtime (the group whose children include that exact label).
-  // GitLab's sidebar order: Manage, Plan, Code, Build, Deploy, Monitor, Analyze,
-  // then Settings. Shared by the GitHub tab bar and Gitea's `overflow-menu`, so
-  // the two sources cannot drift. Labels a source does not have simply rank
-  // after the known ones, so one list fits both.
-  const GITLAB_REPO_ORDER = [
-    'Members',
-    'Work items',
-    'Issue boards',
-    'Wiki',
-    'Milestones',
-    'Labels',
-    'Merge requests',
-    'Repository',
-    'Branches',
-    'Commits',
-    'Tags',
-    'CI/CD',
-    'Releases',
-    'Packages',
-    'Environments',
-    'Incidents',
-    'Analytics',
-    'Security',
-    'Settings',
-  ];
-
-  // GitHub's repo tab order, shared by GitLab's sidebar (shown as GitHub) and
-  // Gitea's tab bar (shown as GitHub), so the two cannot drift.
-  const GITHUB_REPO_ORDER = [
-    'Code',
-    'Issues',
-    'Pull requests',
-    'Actions',
-    'Projects',
-    'Wiki',
-    'Security',
-    'Insights',
-  ];
-
-  // Bitbucket's repo tab order, in Bitbucket's displayed labels. Verified
-  // against an archived Bitbucket repository page's own menu model (Source,
-  // Commits, Branches, Pull requests, Pipelines, Deployments, Jira issues,
-  // Security, Downloads) — there is no repo Wiki or Settings tab.
-  const BITBUCKET_REPO_ORDER = [
-    'Source',
-    'Commits',
-    'Branches',
-    'Pull requests',
-    'Pipelines',
-    'Deployments',
-    'Jira issues',
-    'Security',
-    'Downloads',
-  ];
-
-  const NAV_RULES = {
-    gitlab: [
-      {
-        source: 'github',
-        container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
-        item: 'li',
-        order: GITLAB_REPO_ORDER,
-      },
-      {
-        // Gitea/Forgejo (Codeberg, gitea.com) repo tabs: a flat `overflow-menu`
-        // list of `a.item`s, so they take GitLab's order the same way.
-        source: 'gitea',
-        container: 'overflow-menu .overflow-menu-items',
-        item: 'a.item',
-        order: GITLAB_REPO_ORDER,
-      },
-    ],
-    github: [
-      {
-        source: 'gitlab',
-        scope: '.super-sidebar',
-        contains: 'Code',
-        item: 'li',
-        order: GITHUB_REPO_ORDER,
-      },
-      {
-        // Gitea/Forgejo repo tabs, shown with the GitHub UI. Its labels already
-        // read GitHub's ("Code", "Issues", "Pull requests"), so the order does
-        // most of the work; unknown labels rank after the known ones.
-        source: 'gitea',
-        container: 'overflow-menu .overflow-menu-items',
-        item: 'a.item',
-        order: GITHUB_REPO_ORDER,
-      },
-    ],
-    bitbucket: [
-      {
-        // GitLab's project sidebar, shown as Bitbucket. Its repository group is
-        // resolved by the *displayed* label: NAV renames Repository/Code to
-        // Source first, so the container is the group that holds "Source", and
-        // it is reordered to Bitbucket's tabs in place.
-        source: 'gitlab',
-        scope: '.super-sidebar',
-        contains: 'Source',
-        item: 'li',
-        order: BITBUCKET_REPO_ORDER,
-      },
-      {
-        source: 'github',
-        container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
-        item: 'li',
-        order: BITBUCKET_REPO_ORDER,
-      },
-      {
-        source: 'gitea',
-        container: 'overflow-menu .overflow-menu-items',
-        item: 'a.item',
-        order: BITBUCKET_REPO_ORDER,
-      },
-    ],
-  };
-
-  // The GitLab project sidebar groups its items (Plan, Code, Build, …). GitHub's
-  // repo tabs are flat, so on the GitLab skin they are gathered under the same
-  // group headings, using the *displayed* label (after translation). An item not
-  // listed here stands alone, with no heading.
-  //
-  // Keyed by *skin*: only GitLab groups its sidebar. GitHub and Bitbucket are
-  // flat, so a skin that shares GitLab's layout (Bitbucket) does not inherit its
-  // headings. `paintNavGroups` and `repoNav` both look this up by skin.
-  const NAV_GROUPS = {
-    gitlab: {
-      Members: 'Manage',
-      'Work items': 'Plan',
-      'Issue boards': 'Plan',
-      Wiki: 'Plan',
-      Milestones: 'Plan',
-      Labels: 'Plan',
-      'Merge requests': 'Code',
-      Repository: 'Code',
-      Branches: 'Code',
-      Commits: 'Code',
-      Tags: 'Code',
-      'CI/CD': 'Build',
-      Releases: 'Deploy',
-      Packages: 'Deploy',
-      Environments: 'Deploy',
-      Incidents: 'Monitor',
-      Analytics: 'Analyze',
-      Security: 'Secure',
-    },
-  };
-
-  // Menu items the *applied* product has no page for, by their displayed label
-  // (after translation). They are hidden rather than marked, so the navigation
-  // is the applied product's menu and not a mix of both.
-  //
-  // Superseded by NAV_KEEP: where a skin has a keep-list, `paintNavHide` uses it
-  // *instead of* this hide-list, so a hide-list entry for a kept skin would do
-  // nothing. Add to the keep-list, not here, for a skin that has one.
-  const NAV_HIDE = {
-    // GitLab's sidebar items with no GitHub counterpart.
-    github: [
-      'Feature catalog',
-      'Activity',
-      'Epics',
-      'Iterations',
-      'Requirements',
-      'Test cases',
-      'Artifacts',
-      'Terraform modules',
-      'Model registry',
-      'Model experiments',
-      'Service Desk',
-      'Incidents',
-      'Error tracking',
-      'On-call schedules',
-      'Alert management',
-      'Value stream analytics',
-      'Pipeline schedules',
-      'Locked files',
-      'Repository graph',
-      'Compare revisions',
-    ],
-    // GitHub's items with no GitLab counterpart.
-    gitlab: ['Discussions', 'Sponsors', 'Marketplace'],
-  };
-
-  // On some skins the menu is a *whitelist*: only the applied product's own
-  // project-page options are shown, so the navigation is that product's menu
-  // exactly rather than the source product's menu with a few items hidden.
-  // These are GitHub's repo tabs, after translation.
-  //
-  // A keep-list supersedes NAV_HIDE for its skin: `paintNavHide` reads one or
-  // the other, never both, so a skin with a keep-list must list everything it
-  // wants shown here (anything unlisted is hidden, NAV_HIDE notwithstanding).
-  const NAV_KEEP = {
-    github: [
-      'Code',
-      'Issues',
-      'Pull requests',
-      'Actions',
-      'Projects',
-      'Wiki',
-      'Security',
-      'Insights',
-      'Settings',
-    ],
-    // Bitbucket's own repo tabs; anything else the source shows (Projects,
-    // Insights, Wiki, Releases, Activity, …) is hidden rather than relabelled.
-    bitbucket: [
-      'Source',
-      'Commits',
-      'Branches',
-      'Pull requests',
-      'Pipelines',
-      'Deployments',
-      'Jira issues',
-      'Security',
-      'Downloads',
-    ],
-  };
 
   /* ---------------------------------------------------------- selectors -- */
 
@@ -581,92 +210,6 @@
       keys: ['themeMarker', 'pullLink'],
     },
   ];
-
-  /* ---------------------------------------------------------- shortcuts -- */
-
-  // Two-key `g` combos. Keyed by the theme being applied; each entry maps the
-  // combo a user *sees* (the product on screen) to the combo the underlying
-  // site actually implements. Only unambiguous pairs are listed — anything
-  // else is left to the site.
-  //
-  //   on a GitHub site shown as GitLab:  g m (merge requests) -> GitHub g p
-  //   on a GitLab site shown as GitHub:  g p (pull requests)  -> GitLab g m
-  const SHORTCUTS = {
-    gitlab: { gm: 'gp', gp: 'gb', gt: 'gn' },
-    github: { gp: 'gm', gb: 'gp', gn: 'gt' },
-  };
-
-  // Some sites ignore synthetic key events (`event.isTrusted` is false), so the
-  // combo cannot be replayed into them. Where the destination has a real
-  // navigation link, deliver the shortcut as a click on that link instead —
-  // a trusted navigation the site always honours. Keyed by theme + combo, with
-  // the *displayed* label (after translation) to look for.
-  const SHORTCUT_TARGETS = {
-    gitlab: {},
-    github: { gp: 'Pull requests', gb: 'Projects' },
-  };
-
-  /* ------------------------------------------------------- no counterpart -- */
-
-  // Features that exist in one product but have no counterpart in the other.
-  // Keyed by the theme being applied, with the product that *lacks* the feature
-  // as the value, so the UI can say so instead of pretending it exists. These
-  // are deliberately absent from PHRASES/NAV/LABELS — there is nothing to
-  // translate them to.
-  const UNMAPPED = {
-    gitlab: {
-      Discussions: 'GitLab',
-      Sponsors: 'GitLab',
-      Marketplace: 'GitLab',
-    },
-    github: {
-      'Feature catalog': 'GitHub',
-      Activity: 'GitHub',
-      Epics: 'GitHub',
-      Iterations: 'GitHub',
-      Requirements: 'GitHub',
-      'Service Desk': 'GitHub',
-      'Merge trains': 'GitHub',
-      'Feature flags': 'GitHub',
-      'Terraform modules': 'GitHub',
-      'Model registry': 'GitHub',
-      'Model experiments': 'GitHub',
-      'Test cases': 'GitHub',
-      Incidents: 'GitHub',
-      'Error tracking': 'GitHub',
-      'On-call schedules': 'GitHub',
-      'Alert management': 'GitHub',
-      'Value stream analytics': 'GitHub',
-    },
-    // Features Bitbucket has no page for, from either source. Bitbucket's own
-    // vocabulary ("Source", "Pipelines") is mapped in NAV/PHRASES, so only the
-    // genuinely absent ones are marked.
-    bitbucket: {
-      // GitHub-only
-      Discussions: 'Bitbucket',
-      Sponsors: 'Bitbucket',
-      Codespaces: 'Bitbucket',
-      Marketplace: 'Bitbucket',
-      // GitLab-only
-      Epics: 'Bitbucket',
-      Iterations: 'Bitbucket',
-      Requirements: 'Bitbucket',
-      'Service Desk': 'Bitbucket',
-      'Merge trains': 'Bitbucket',
-      'Feature flags': 'Bitbucket',
-      'Terraform modules': 'Bitbucket',
-      'Model registry': 'Bitbucket',
-      'Model experiments': 'Bitbucket',
-      'Test cases': 'Bitbucket',
-      Incidents: 'Bitbucket',
-      'Error tracking': 'Bitbucket',
-      'On-call schedules': 'Bitbucket',
-      'Alert management': 'Bitbucket',
-      'Value stream analytics': 'Bitbucket',
-      'Issue boards': 'Bitbucket',
-      Analytics: 'Bitbucket',
-    },
-  };
 
   /* ------------------------------------------------------ pure helpers -- */
 
@@ -869,78 +412,11 @@
     'Languages',
   ];
 
-  // GitHub's repo tabs for a GitLab project, in GitHub's order. `hrefs` carries
-  // the links GitLab actually renders (found by label); a tab GitLab omits is
-  // synthesised from `base`. Pure, so the tab set is testable without a page.
-  // The repo tabs an applied product shows on a project page, emitted as
-  // [label, href] in that product's order. `hrefs` carries the links the source
-  // actually renders (found by label); a tab the source omits is synthesised
-  // from `base`. GitLab's routes are the target because this rebuilds a *GitLab*
-  // project page, whichever skin is applied.
-  const PROJECT_TABS = {
-    github: (base, hrefs) => [
-      ['Code', hrefs.code || base],
-      ['Issues', hrefs.issues || `${base}/-/work_items`],
-      ['Pull requests', hrefs.pullRequests || `${base}/-/merge_requests`],
-      ['Actions', hrefs.actions || `${base}/-/pipelines`],
-      ['Projects', hrefs.projects || `${base}/-/boards`],
-      ['Wiki', `${base}/-/wikis/home`],
-      ['Security and quality', `${base}/-/security/dashboard`],
-      ['Insights', hrefs.insights || `${base}/-/analytics`],
-    ],
-    bitbucket: (base, hrefs) => [
-      ['Source', hrefs.code || base],
-      ['Commits', `${base}/-/commits`],
-      ['Branches', `${base}/-/branches`],
-      ['Pull requests', hrefs.pullRequests || `${base}/-/merge_requests`],
-      ['Pipelines', hrefs.actions || `${base}/-/pipelines`],
-      ['Deployments', `${base}/-/environments`],
-      ['Jira issues', hrefs.issues || `${base}/-/issues`],
-      ['Security', `${base}/-/security/dashboard`],
-      ['Downloads', `${base}/-/tags`],
-    ],
-  };
-
   /** The repo tabs `target` shows on a GitLab project page. */
   function projectTabs(base, hrefs = {}, target = 'github') {
     const build = PROJECT_TABS[target] || PROJECT_TABS.github;
     return build(base, hrefs);
   }
-
-  // GitHub's profile tabs (source: GitLab) and GitLab's profile destinations
-  // (source: GitHub), each in the applied product's order. The third element
-  // names the item already on the page to reuse — `@first` is its first anchor,
-  // a label is matched by `labelMatches`, null synthesises one. Pure, so both
-  // menus are pinned by tests instead of only by a live profile.
-  const PROFILE_MENU = {
-    github: (u) => [
-      ['Overview', `/${u}`, '@first'],
-      ['Repositories', `/users/${u}/projects`, 'Personal projects'],
-      ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
-      ['Packages', `/users/${u}/packages`, null],
-      ['Stars', `/users/${u}/starred`, 'Starred projects'],
-    ],
-    // Bitbucket has no public user profile of its own, so its menu is built from
-    // the destinations it does have (repositories, projects, snippets) rather
-    // than from either forge's tab set.
-    bitbucket: (u) => [
-      ['Overview', `/${u}`, '@first'],
-      ['Repositories', `/users/${u}/projects`, 'Personal projects'],
-      ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
-      ['Snippets', `/${u}?tab=snippets`, 'Snippets'],
-    ],
-    gitlab: (u, name) => [
-      [name, `/${u}`, 'Overview'],
-      ['Activity', `/${u}?tab=overview`, null],
-      ['Groups', `/${u}?tab=organizations`, null],
-      ['Contributed projects', `/${u}?tab=overview`, 'Projects'],
-      ['Personal projects', `/${u}?tab=repositories`, 'Repositories'],
-      ['Starred projects', `/${u}?tab=stars`, 'Stars'],
-      ['Snippets', `https://gist.github.com/${u}`, null],
-      ['Followers', `/${u}?tab=followers`, null],
-      ['Following', `/${u}?tab=following`, null],
-    ],
-  };
 
   // Gitea/Forgejo's repo navigation, arranged as the applied skin's menu: the
   // items the page renders, relabelled to the applied product, ordered by the

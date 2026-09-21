@@ -39,9 +39,12 @@ const TARGETS = {
   }),
   firefox: (manifest) => ({
     ...manifest,
-    // Firefox runs these in one shared scope, so lib/sites.js just has to come
-    // first. Chromium reaches the same file via importScripts() (see background.js).
-    background: { scripts: ['lib/sites.js', 'lib/ux.js', 'background.js'] },
+    // Firefox runs these in one shared scope, so the lib files just have to
+    // come before background.js. Chromium reaches them via importScripts()
+    // (see background.js).
+    background: {
+      scripts: ['lib/sites.js', 'lib/skins.js', 'lib/ux.js', 'background.js'],
+    },
     browser_specific_settings: {
       gecko: {
         // AMO binds the id permanently on first submission, so it must be a

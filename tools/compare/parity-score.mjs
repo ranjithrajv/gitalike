@@ -32,6 +32,7 @@ import { pathToFileURL } from 'node:url';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 import '../../src/lib/sites.js';
+import '../../src/lib/skins.js';
 import '../../src/lib/ux.js';
 
 const SITES = globalThis.GITALIKE;

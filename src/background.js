@@ -13,7 +13,7 @@
 // in one shared scope, so there it is already defined and importScripts does
 // not exist.
 if (typeof importScripts === 'function')
-  importScripts('lib/sites.js', 'lib/ux.js');
+  importScripts('lib/sites.js', 'lib/skins.js', 'lib/ux.js');
 
 const api = globalThis.browser ?? globalThis.chrome;
 const SITES = globalThis.GITALIKE;
@@ -81,6 +81,7 @@ const SCRIPT_ID = 'gitalike-ux';
 const CSS_ID = 'gitalike-theme';
 const CONTENT_JS = [
   'lib/sites.js',
+  'lib/skins.js',
   'lib/ux.js',
   'content/theme.js',
   // The UX scripts load in this order: the core builds the runtime, each pass
