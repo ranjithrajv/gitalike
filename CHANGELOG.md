@@ -58,9 +58,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - The comparison framework reads its skins and sources from the plugin registry:
   `tools/compare/parity-score.mjs`, `tools/compare/style-parity.mjs` and
-  `tests/compare/target-chrome.test.mjs` no longer hand-list them, and
-  `style-parity` fails loudly when a source has no capture (Gerrit is the one
-  documented exception — no bundled host, client-rendered). The parity model now
+  `tests/compare/target-chrome.test.mjs` no longer hand-list them. The
+  capture-based reads (`parity-visual`, `parity-style`, `style-parity`) take
+  their source set from `captures.mjs`, which now throws when a registry source
+  has neither a capture recipe nor a documented reason (Gerrit is the one
+  exception — no bundled host, client-rendered, so there is no page to drive). The parity model now
   scores three independent capabilities (palette, navigation, page-wide passes)
   instead of one markup flag, so Bitbucket's navigation pass and the
   Bitbucket/Gerrit palettes are credited and Gerrit's unreachable shadow DOM is

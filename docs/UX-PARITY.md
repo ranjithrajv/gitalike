@@ -42,25 +42,25 @@ Bitbucket's are in `src/plugins/skins/bitbucket.js` and are covered by
 
 | Surface | G→L | L→G | Lives in |
 | --- | :--: | :--: | --- |
-| Colour tokens | ✅ | ✅ | `themes/*.css` |
-| Structural CSS | ✅ 22 rules | ✅ 14 rules | `themes/*.css` |
+| Colour tokens | ✅ | ✅ | `plugins/skins/` |
+| Structural CSS | ✅ 22 rules | ✅ 14 rules | `plugins/skins/` + `themes/` |
 | Own mark in the other palette | ✅ | ✅ | `--gs-mark` |
-| Copy — `PHRASES` | ✅ 9 | ✅ 9 | `lib/ux.js` |
-| Control labels — `LABELS` | ✅ 4 | ✅ 4 | `lib/ux.js` |
-| Account/menu chrome — `CHROME` | ✅ 4 | ✅ 4 | `lib/ux.js` |
-| No-counterpart markers — `UNMAPPED` | ✅ 3 | ✅ 15 | `lib/ux.js` |
-| Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
-| Top-bar source words | ✅ hidden | ✅ hidden | `lib/ux.js` + `content/ux-nav.js` |
-| Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
+| Copy — `PHRASES` | ✅ 9 | ✅ 9 | `plugins/skins/` |
+| Control labels — `LABELS` | ✅ 4 | ✅ 4 | `plugins/skins/` |
+| Account/menu chrome — `CHROME` | ✅ 4 | ✅ 4 | `plugins/skins/` |
+| No-counterpart markers — `UNMAPPED` | ✅ 3 | ✅ 15 | `plugins/skins/` |
+| Nav labels — `NAV` | ✅ 5 | ✅ 5 | `plugins/skins/` |
+| Top-bar source words | ✅ hidden | ✅ hidden | `plugins/skins/` + `content/ux-nav.js` |
+| Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `plugins/skins/` |
 | Nav orientation | ✅ | ✅ | `themes/ux-nav.css` |
 | Project tab strip | ✅ gathered into groups | ✅ rebuilt as GitHub's tabs | `content/ux-*.js` + `themes/ux-nav.css` |
-| Project metadata placement | ✅ | ✅ | `themes/*.css` |
+| Project metadata placement | ✅ | ✅ | `plugins/skins/` |
 | Metadata heading | ✅ Project information | ✅ About | `content/ux-*.js` |
 | Activity graph palette | ✅ GitLab indigo | ✅ GitHub green | `themes/ux-nav.css` |
 | Profile metadata rail | ✅ About/Info/Contact | — | `content/ux-*.js` |
 | One skin at a time | ✅ | ✅ | `popup/popup.js` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
-| Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
+| Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `plugins/skins/` |
 | "Open on the other host" | ✅ | ✅ | `lib/ux.js` + popup |
 
 Legend: ✅ done · ❌ not built
@@ -122,6 +122,14 @@ at a time from the popup).
 | **GitHub** | 6.7 | 10.0 | 9.9 |
 | **GitLab** | 6.7 | 9.5 | 10.0 |
 
+These two tables are the rubric, over **every source**. The capture-based reads —
+`parity-visual.mjs`, `parity-style.mjs` and `style-parity.mjs` — measure the
+committed screenshots, so they cover only the sources that have a live capture.
+Gerrit is the one source without one: it has no bundled host and renders inside
+shadow DOM, so there is no page to drive; `captures.mjs` fails loudly if any
+other source is missing a recipe. `parity-score.mjs` and the selector canary
+cover all five.
+
 ### Where the points are lost
 
 - **GitHub → GitLab, project (9.7)** — the reference direction. It loses only on
@@ -159,32 +167,30 @@ at a time from the popup).
   `SELECTORS.gitlab.profile*`), so a Gitea/Forgejo profile gets the shared
   palette, copy, account-chrome and reference-marker work but none of the menu,
   rail or card rebuilding. This is the largest scoring gap, and the docs make no
-  profile claim for Gitea/Forgejo; the captures agree — there is no
-  `codeberg-profile-*.png` in `docs/`.
-- **Bitbucket as a source (3.6 / 3.0 project, 3.4 profile)** — still a low row,
-  because only the palette and the source-agnostic passes reach it: copy,
-  control labels and reference markers (its `/pull-requests/N` routes are
-  matched). Bitbucket Cloud exposes Atlassian's `--ds-*` design tokens on
-  <html>, so the GitHub and GitLab skins re-point them at their own palette
-  (`themes/gs-tokens.css`), including the top bar; that is the `palette`
-  dimension. There is still no
-  `SELECTORS` entry or `NAV_RULES` rule for Bitbucket markup, so orientation,
-  navigation, metadata and shortcuts stay near zero. That is a statement about
-  missing *structural* coverage, not a bug: Bitbucket Cloud is a client-rendered
-  SPA and serves no capturable public repository page, so its hooks cannot be
-  verified the way GitHub's, GitLab's and Gitea's are. The diagonal is 10.0
-  because a source on its own UI needs no transformation.
-- **Gerrit as a source (2.2 / 1.6 project, 2.1 profile)** — the lowest row: it
-  has neither structural hooks nor a token layer the skins map, so palette joins
-  orientation, navigation, metadata and shortcuts in staying near zero, and even
-  the reference markers do not carry over — Gerrit identifies a change by its
-  change number (`/c/<project>/+/<N>`) and a Change-Id, not a `#`/`!`
-  pull-request number — so the `refs` dimension is partial too. Copy and control
-  labels are the only passes that reach it.
+  profile claim for Gitea/Forgejo; the `codeberg-profile-*.png` captures show
+  exactly that — the shared palette and copy, not a rebuilt Gitea profile.
+- **Bitbucket as a source (6.5 / 5.9 project, 4.8 profile)** — it gains two
+  passes. Its palette: Bitbucket Cloud exposes Atlassian's `--ds-*` design
+  tokens on <html>, so the skins re-point them at their own palette, header
+  included (`themes/gs-tokens.css`). Its navigation: `paintBitbucketNav`
+  reorients and relabels the repository bar, found inside the declared `#root`
+  hook. It still loses the dimensions that need a rule or a captured shape:
+  there is no `NAV_RULES` entry, so the nav is not reordered or filtered, no
+  metadata shape, and no shortcut table. The diagonal is 10.0 because a source
+  on its own UI needs no transformation.
+- **Gerrit as a source (1.5 project, 1.9 profile)** — the lowest row: only its
+  palette reaches it, and even that is partial. PolyGerrit reads its colours
+  from root custom properties that inherit across its shadow boundary, so the
+  skins re-point text, links, borders and feedback (`themes/gs-tokens.css`) but
+  not its surfaces or header. The copy, navigation and profile passes cannot
+  reach inside the shadow roots, and Gerrit numbers a change
+  (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so `refs` is
+  partial too.
 
 The scores are computed by `tools/compare/parity-score.mjs` (`npm run parity`, or
 `npm run parity -- --detail` for the per-dimension breakdown) and
-`tests/parity-score.test.mjs` fails if this section and the module disagree.
+`tests/compare/parity-score.test.mjs` fails if this section and the module
+disagree.
 
 ### Independent judge (jev)
 

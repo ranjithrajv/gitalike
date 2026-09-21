@@ -22,6 +22,8 @@
  * and Bitbucket, and Codeberg (GitHub-flavoured markup) lists all three.
  */
 
+import '../plugins.mjs';
+
 /**
  * The skin a capture entry wears. `setting` is the single source of truth: the
  * html class the content script adds and the theme name parity-visual.mjs groups
@@ -172,6 +174,30 @@ export const SOURCES = [
     },
   },
 ];
+
+/**
+ * Sources with no live capture, and why. The registry is the list of sources
+ * that exist; this table is the subset a browser can drive. Gerrit is added one
+ * origin at a time and its PolyGerrit UI renders inside shadow DOM, so there is
+ * no capturable public page. Every other registry source must have a recipe
+ * here: the check below throws otherwise, so a new source fails loudly in
+ * `parity-visual`, `parity-style` and `style-parity` rather than silently going
+ * unmeasured.
+ */
+export const NO_CAPTURE = new Set(['gerrit']);
+
+{
+  const captured = new Set(SOURCES.map((source) => source.key));
+  const missing = Object.keys(globalThis.GITALIKE_PLUGINS.sources).filter(
+    (key) => !captured.has(key) && !NO_CAPTURE.has(key),
+  );
+  if (missing.length) {
+    throw new Error(
+      `captures: no capture recipe for ${missing.join(', ')} — add one to ` +
+        'SOURCES, or a NO_CAPTURE reason',
+    );
+  }
+}
 
 /** Project-page jobs, one per source, in the table's order. */
 export const PROJECT_JOBS = SOURCES.map((source) => source.project);
