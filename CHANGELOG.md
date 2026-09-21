@@ -31,6 +31,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   tab row under GitHub. It is scoped by URL so the bar and the account nav are
   handled separately, and every change reverts with the skin
   (`src/lib/ux.js`, `src/content/ux-project.js`, `src/themes/ux-nav.css`).
+- The logged-out top bar's **source-only marketing words are hidden** under the
+  opposite skin: GitHub's "Open Source"/"Enterprise" links and its "Sign up" CTA
+  under the GitLab UI, GitLab's "Why GitLab"/"Explore" and its "Get free trial"
+  under the GitHub UI. The words both products share ("Platform", "Solutions",
+  "Resources", "Pricing") are left alone, and every change reverts with the skin
+  (`TOPBAR_HIDE`, `src/content/ux-nav.js`).
+- An **independent semantic-judge check** of the two headline skin directions,
+  over TypeSafe's Jev model (`tools/compare/parity-judge.mjs`,
+  `npm run parity:judge`). The recorded run is in
+  `tests/fixtures/parity-judge.json`, quoted in `docs/UX-PARITY.md`, and pinned
+  offline by `tests/compare/parity-judge.test.mjs`.
 
 ### Fixed
 

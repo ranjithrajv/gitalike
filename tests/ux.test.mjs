@@ -22,6 +22,8 @@ const {
   NAV_HIDE,
   NAV_KEEP,
   NAV_SCOPE,
+  TOPBAR_SCOPE,
+  TOPBAR_HIDE,
   LABELS,
   CHROME,
   UNMAPPED,
@@ -85,10 +87,12 @@ describe('module shape', () => {
       SHORTCUTS,
       SELECTORS,
       PROFILE_MENU,
+      TOPBAR_HIDE,
     ]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
+    assert.equal(typeof TOPBAR_SCOPE, 'string');
     assert.ok(Array.isArray(METADATA_HIDE));
     assert.ok(Array.isArray(CANARY_PAGES));
   });
@@ -322,6 +326,31 @@ describe('table symmetry', () => {
           assert.notEqual(from, to, `${theme}: ${from} -> ${to}`);
         }
       }
+    }
+  });
+});
+
+describe('TOPBAR_HIDE', () => {
+  // The top-level words both products' logged-out bars carry. Hiding one of
+  // these would take the applied product's own wording with it.
+  const SHARED = ['Platform', 'Solutions', 'Resources', 'Pricing', 'Sign in'];
+
+  test('hides source-only words, never a shared one', () => {
+    for (const theme of ['gitlab', 'github']) {
+      const list = TOPBAR_HIDE[theme];
+      assert.ok(Array.isArray(list) && list.length > 0, `${theme} has a list`);
+      for (const label of list) {
+        assert.equal(label, label.trim(), `${theme}: "${label}" is trimmed`);
+        assert.ok(label.length > 0);
+        assert.ok(!SHARED.includes(label), `${theme} hides shared "${label}"`);
+      }
+    }
+  });
+
+  test('the top bar is a scope of its own, apart from the repo nav', () => {
+    assert.notEqual(TOPBAR_SCOPE, NAV_SCOPE);
+    for (const selector of ['header[role="banner"]', 'header.navigation']) {
+      assert.ok(TOPBAR_SCOPE.includes(selector), `top bar covers ${selector}`);
     }
   });
 });

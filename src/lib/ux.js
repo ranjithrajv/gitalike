@@ -216,6 +216,40 @@
     'overflow-menu',
   ].join(',');
 
+  // The global top bar, both products' logged-out marketing header and the
+  // signed-in app bars. A separate scope from NAV_SCOPE because the top bar's
+  // words are handled differently (see TOPBAR_HIDE).
+  const TOPBAR_SCOPE = [
+    'header[role="banner"]',
+    '.js-header-wrapper',
+    'header.navigation',
+    'header.super-topbar',
+    'header.GlobalNav',
+    'header[aria-label="Global navigation menu"]',
+    '.navbar-gitlab',
+    '.header-content',
+    '.super-topbar',
+    '.AppHeader',
+  ].join(',');
+
+  // The source-only words in the global top bar, keyed by the skin being
+  // applied. The applied product's own bar carries the same top-level words
+  // both products now use — "Platform", "Solutions", "Resources", "Pricing" —
+  // so only the words it does *not* carry are listed. There is no counterpart
+  // to translate a marketing link to, so these are hidden rather than relabelled
+  // (whole-label match inside TOPBAR_SCOPE, so an "Enterprise" in page prose is
+  // untouched). GitLab's older logged-out bar showed more source-only words;
+  // the shared ones are deliberately not hidden, or the applied product's own
+  // wording would go with them.
+  const TOPBAR_HIDE = {
+    // A GitHub source shown as GitLab: GitHub's "Open Source" and "Enterprise"
+    // links and its "Sign up" CTA have no GitLab counterpart.
+    gitlab: ['Open Source', 'Enterprise', 'Sign up'],
+    // A GitLab source shown as GitHub: GitLab's "Why GitLab" and "Explore"
+    // links and its "Get free trial" CTA have no GitHub counterpart.
+    github: ['Why GitLab', 'Explore', 'Get free trial'],
+  };
+
   // Desired left-to-right / top-to-bottom order of the app navigation, using
   // the *displayed* labels after translation. Items that are not present are
   // skipped; unrecognised items keep their relative order at the end. Only the
@@ -1211,6 +1245,8 @@
     CHROME,
     UNMAPPED,
     NAV_SCOPE,
+    TOPBAR_SCOPE,
+    TOPBAR_HIDE,
     LABEL_SCOPE,
     NAV_RULES,
     SELECTORS,

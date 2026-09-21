@@ -68,6 +68,25 @@
     }
   }
 
+  // The global top bar keeps the source product's marketing words. The applied
+  // product's own bar shares the top-level words it uses ("Platform",
+  // "Solutions", "Resources", "Pricing"), so only the words it does not carry
+  // are hidden — there is no counterpart to translate a marketing link to, and
+  // hiding is what keeps the bar reading as the applied product rather than a
+  // mix. Whole-label match inside the top bar, so an "Enterprise" in page prose
+  // is untouched.
+  function paintTopBarHide(node, t) {
+    const labels = UX.TOPBAR_HIDE[t];
+    if (!labels) return;
+    for (const region of scope(node, UX.TOPBAR_SCOPE)) {
+      for (const el of scope(region, 'a,button,summary')) {
+        const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!labels.includes(label)) continue;
+        hide(el.closest('li') || el);
+      }
+    }
+  }
+
   function paintUnmapped(node, t) {
     const mark = (el) => {
       // Already marked: leave it, so the badge's own text never feeds back into
@@ -234,7 +253,7 @@
   }
 
   rt.once('nav', () => {
-    rt.nodePasses.push(paintNav, paintNavHide, paintUnmapped);
+    rt.nodePasses.push(paintNav, paintNavHide, paintTopBarHide, paintUnmapped);
     rt.globalPasses.push(paintOrder, paintNavGroups);
   });
 })();

@@ -1,0 +1,46 @@
+{
+  "note": "The independent semantic-judge run quoted in docs/UX-PARITY.md. The state is curated, not measured — the judge reads text, not pixels — so each direction carries a hand-written description of its capture's chrome, reviewed alongside the PNG, plus the offline design-language fingerprint. tools/compare/parity-judge.mjs re-runs this fixture against the TypeSafe Jev model (needs TYPESAFE_API_KEY); tests/compare/parity-judge.test.mjs pins the docs to it. `recorded.fidelity` is the judge's rubric score on a 0–10 scale, derived from the mean legend index (recorded.fidelityIndex) by interpolating the even-numbered levels.",
+  "asOf": "2026-09-21",
+  "model": "jev-1.13.0",
+  "targets": "TARGET PRODUCT UIs (independent reference):\n- GitHub UI: dark top bar #25292e; white canvas; blue link #0969da; primary action green. Repository navigation is a HORIZONTAL tab row under the repository name. Metadata lives in a RIGHT-HAND \"About\" sidebar. Repo nav words: Code, Pull requests, Actions, Insights, Projects. File list columns: Name / Last commit / Last update. Logged-out top-bar words: \"Platform, Solutions, Resources, Open Source, Enterprise, Pricing\", \"Sign in\", \"Sign up\".\n- GitLab UI: light top bar #fbfafd; white canvas; blue link #1068bf; accent #1f75cb with an orange brand mark. Repository navigation is a VERTICAL GROUPED left sidebar. Metadata is a FULL-WIDTH \"Project information\" block above the content. Repo nav words: Repository, Merge requests, CI/CD, Analytics, Issue boards. Merge requests are marked !N. Logged-out top-bar words: \"Why GitLab, Pricing, Explore\", \"Register\", \"Sign in\", a \"Search or go to...\" field.\n- Bitbucket UI: blue top bar #0049b0; flat vertical sidebar; repo nav words Source, Pull requests, Pipelines.",
+  "directions": [
+    {
+      "id": "A_GitLab_skin_on_GitHub",
+      "source": "GitHub",
+      "skin": "gitlab",
+      "target": "GitLab UI",
+      "page": "https://github.com/microsoft/vscode",
+      "capture": "docs/github-gitlab.png",
+      "observed": "- Top bar: LIGHT near-white band; orange tanuki brand mark; words \"Platform, Solutions, Resources, Open Source, Enterprise, Pricing\"; a search icon; \"Sign in\" and \"Sign up\".\n- Repository navigation: VERTICAL left sidebar, grouped into Plan, Code, Build, Analyze, Secure; items Work items, Issue boards, Wiki, Merge requests, Repository (active), CI/CD, Analytics, Security.\n- Metadata: FULL-WIDTH \"Project information\" block above the content (description, website link, topic tags, Readme, MIT license, Code of conduct, Contributing, Security policy, Activity, Custom properties, star/watch/fork counts, Report repository).\n- File area: branch \"main\"; Branches / Tags counters; \"Find file\"; a BLUE \"Code\" button; commit rows with merge-request markers \"!335358\".\n- Palette: white canvas, blue links.",
+      "recorded": {
+        "reads_as": "gitlab",
+        "reads_as_confidence": 0.95,
+        "fidelityIndex": 3.64,
+        "fidelity": 7.3,
+        "recognisable": 0.77,
+        "top_bar_words": "source",
+        "tells": 0.93,
+        "weakest": "top_bar_words"
+      }
+    },
+    {
+      "id": "B_GitHub_skin_on_GitLab",
+      "source": "GitLab",
+      "skin": "github",
+      "target": "GitHub UI",
+      "page": "https://gitlab.com/gitlab-org/gitlab",
+      "capture": "docs/gitlab-github.png",
+      "observed": "- Top bar: DARK band; a GitHub mark; words \"Why GitLab, Pricing, Explore\"; a search field; a GREEN \"Get free trial\" button; \"Sign in\".\n- Repository navigation: HORIZONTAL tab row: Code (active, orange underline), Issues, Pull requests, Actions, Projects, Wiki, Security and quality, Insights.\n- Metadata: RIGHT-HAND \"About\" sidebar (description, topics, Commits, Branches, Tags, Environments).\n- File area: branch selector \"master\"; \"Go to file\"; a GREEN \"Code\" button; a commit card; a Code owners note; file list columns Name / Last commit / Last update.\n- Palette: white canvas, blue links.",
+      "recorded": {
+        "reads_as": "github",
+        "reads_as_confidence": 0.94,
+        "fidelityIndex": 3.18,
+        "fidelity": 6.4,
+        "recognisable": 0.72,
+        "top_bar_words": "source",
+        "tells": 0.97,
+        "weakest": "top_bar_words"
+      }
+    }
+  ]
+}

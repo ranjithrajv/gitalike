@@ -49,6 +49,7 @@ Bitbucket's are in `src/lib/ux.js` under `bitbucket` and are covered by
 | Account/menu chrome — `CHROME` | ✅ 4 | ✅ 4 | `lib/ux.js` |
 | No-counterpart markers — `UNMAPPED` | ✅ 3 | ✅ 15 | `lib/ux.js` |
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
+| Top-bar source words | ✅ hidden | ✅ hidden | `lib/ux.js` + `content/ux-nav.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
 | Nav orientation | ✅ | ✅ | `themes/ux-nav.css` |
 | Project tab strip | ✅ gathered into groups | ✅ rebuilt as GitHub's tabs | `content/ux-*.js` + `themes/ux-nav.css` |
@@ -183,6 +184,31 @@ at a time from the popup).
 The scores are computed by `tools/compare/parity-score.mjs` (`npm run parity`, or
 `npm run parity -- --detail` for the per-dimension breakdown) and
 `tests/parity-score.test.mjs` fails if this section and the module disagree.
+
+### Independent judge (jev)
+
+The scorecard above is derived from the tables. It is cross-checked against an
+independent semantic judge — TypeSafe's Jev model — which is given each capture's
+measured design language and a description of its chrome, plus the target
+products' own chrome, and asked to identify and score the page. The judge reads
+text, not pixels, so the state is curated and lives in
+`tests/fixtures/parity-judge.json`; `npm run parity:judge` re-runs it against the
+API (needs `TYPESAFE_API_KEY`, so it is on-demand, not a commit gate). The two
+headline directions:
+
+| Direction | Reads as | Fidelity /10 | Recognisable | Weakest surface |
+| --- | :--: | :--: | :--: | --- |
+| GitLab skin on GitHub (`docs/github-gitlab.png`) | GitLab (0.95) | 7.3 | 0.77 | top-bar words |
+| GitHub skin on GitLab (`docs/gitlab-github.png`) | GitHub (0.94) | 6.4 | 0.72 | top-bar words |
+
+The judge agrees with the rubric on the shape of the result: the two directions
+are level pegging, and each reads as its target (both ~0.95). It scores lower in
+absolute terms because it also weighs the **global top bar**, which the rubric
+does not — the logged-out bar keeps the source's marketing words. The words the
+two products share ("Platform", "Solutions", "Resources", "Pricing") are kept;
+the source-only ones are hidden rather than translated, since a marketing link
+has no counterpart to translate to (`TOPBAR_HIDE`, `src/content/ux-nav.js`). The
+recorded run is pinned by `tests/compare/parity-judge.test.mjs`.
 
 ## Copy
 
