@@ -324,7 +324,7 @@
         border-radius: 12px;
         overflow: hidden;
         background: var(--surface);
-        box-shadow: var(--shadow);
+        box-shadow: var(--shadow), inset 0 0 0 1px var(--border);
         touch-action: pan-y;
         user-select: none;
       }
@@ -359,6 +359,9 @@
       .multi-handle[data-skin="gitlab"] { color: var(--gitlab); }
       .multi-handle[data-skin="github"] { color: var(--github); }
       .multi-handle[data-skin="bitbucket"] { color: var(--bitbucket); }
+      /* While dragging, the active divider rises above its neighbours. */
+      .multi-handle.is-dragging { z-index: 3; cursor: grabbing; }
+      .multi-handle.is-dragging::after { transform: scale(1.15); }
       /* The stage clips overflow, so the ring is drawn as a shadow rather than
          an outline that would be cut off at the edges. */
       .multi-handle:focus-visible { outline: none; }
@@ -375,7 +378,7 @@
       }
       .multi-hint {
         position: absolute;
-        top: 10px;
+        bottom: 12px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 2;
@@ -389,6 +392,22 @@
         transition: opacity 0.4s ease;
       }
       .multi-hint.is-gone { opacity: 0; }
+      /* The skin name rides with each divider. */
+      .multi-tag {
+        position: absolute;
+        top: 10px;
+        z-index: 2;
+        transform: translateX(10px);
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        color: #fff;
+        background: rgb(0 0 0 / 0.62);
+        pointer-events: none;
+      }
+      .multi-tag.is-flipped { transform: translateX(calc(-100% - 10px)); }
       .multi-label { display: none; }
       .multi-legend {
         display: flex;
@@ -409,6 +428,26 @@
       .multi-legend .key[data-skin="gitlab"]::before { background: var(--gitlab); }
       .multi-legend .key[data-skin="github"]::before { background: var(--github); }
       .multi-legend .key[data-skin="bitbucket"]::before { background: var(--bitbucket); }
+      .multi-actions {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .multi-reset,
+      .multi-open {
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .multi-reset:hover,
+      .multi-open:hover { text-decoration: underline; }
       @media (max-width: 640px) {
         /* Stack the captures on a phone: side-by-side at 1280px is unreadable,
            and several handles on a narrow image are fiddly. */
@@ -421,8 +460,12 @@
           color: var(--muted);
           padding: 8px 2px;
         }
-        .multi-legend,
-        .multi-hint { display: none; }
+        /* On a phone the legend's keys are redundant next to the stacked
+           labels, but Reset and Open full size stay useful. */
+        .multi-legend .key,
+        .multi-hint,
+        .multi-tag { display: none; }
+        .multi-actions { margin-left: 0; }
       }
 
       /* ------------------------------------------------------------ sections -- */
@@ -821,7 +864,7 @@
                 <b class="bitbucket">Source / Pull requests / Pipelines</b> sidebar in
                 Atlassian blue.
               </p>
-              <figure class="multi">
+              <figure class="multi" aria-label="GitHub project page — compared across its skins">
                 <div class="multi-stage">
                   <picture><source srcset="github-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-default.png" alt="GitHub project page, default" /></picture>
                   <span class="multi-label">Default · GitHub</span>
@@ -836,6 +879,14 @@
                   <span class="key">Default · GitHub</span>
                   <span class="key" data-skin="gitlab">GitLab UI</span>
                   <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                  <span class="multi-actions">
+
+                    <button type="button" class="multi-reset">Reset</button>
+
+                    <a class="multi-open" href="github-default.png" target="_blank" rel="noopener">Open full size</a>
+
+                  </span>
+
                 </figcaption>
               </figure>
             </div>
@@ -848,7 +899,7 @@
                 Bitbucket's <b class="bitbucket">Source / Pull requests / Pipelines</b>
                 sidebar.
               </p>
-              <figure class="multi">
+              <figure class="multi" aria-label="GitLab project page — compared across its skins">
                 <div class="multi-stage">
                   <picture><source srcset="gitlab-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-default.png" alt="GitLab project page, default" /></picture>
                   <span class="multi-label">Default · GitLab</span>
@@ -863,6 +914,14 @@
                   <span class="key">Default · GitLab</span>
                   <span class="key" data-skin="github">GitHub UI</span>
                   <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                  <span class="multi-actions">
+
+                    <button type="button" class="multi-reset">Reset</button>
+
+                    <a class="multi-open" href="gitlab-default.png" target="_blank" rel="noopener">Open full size</a>
+
+                  </span>
+
                 </figcaption>
               </figure>
             </div>
@@ -875,7 +934,7 @@
                 underlined <b class="github">tab row</b>, or Bitbucket's
                 <b class="bitbucket">Source / Pull requests / Pipelines</b> sidebar.
               </p>
-              <figure class="multi">
+              <figure class="multi" aria-label="Codeberg (Gitea) project page — compared across its skins">
                 <div class="multi-stage">
                   <picture><source srcset="codeberg-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
                   <span class="multi-label">Default · Gitea</span>
@@ -894,6 +953,14 @@
                   <span class="key" data-skin="gitlab">GitLab UI</span>
                   <span class="key" data-skin="github">GitHub UI</span>
                   <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                  <span class="multi-actions">
+
+                    <button type="button" class="multi-reset">Reset</button>
+
+                    <a class="multi-open" href="codeberg-default.png" target="_blank" rel="noopener">Open full size</a>
+
+                  </span>
+
                 </figcaption>
               </figure>
             </div>
@@ -907,7 +974,7 @@
                 <b class="bitbucket">sidebar</b>, with the identity moved into the
                 content.
               </p>
-              <figure class="multi">
+              <figure class="multi" aria-label="GitHub profile page — compared across its skins">
                 <div class="multi-stage">
                   <picture><source srcset="github-profile-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-default.png" alt="GitHub profile page, default" /></picture>
                   <span class="multi-label">Default · GitHub</span>
@@ -922,6 +989,14 @@
                   <span class="key">Default · GitHub</span>
                   <span class="key" data-skin="gitlab">GitLab UI</span>
                   <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                  <span class="multi-actions">
+
+                    <button type="button" class="multi-reset">Reset</button>
+
+                    <a class="multi-open" href="github-profile-default.png" target="_blank" rel="noopener">Open full size</a>
+
+                  </span>
+
                 </figcaption>
               </figure>
             </div>
@@ -934,7 +1009,7 @@
                 <b class="bitbucket">sidebar</b>, with the counts brought down into
                 the profile card.
               </p>
-              <figure class="multi">
+              <figure class="multi" aria-label="GitLab profile page — compared across its skins">
                 <div class="multi-stage">
                   <picture><source srcset="gitlab-profile-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-default.png" alt="GitLab profile page, default" /></picture>
                   <span class="multi-label">Default · GitLab</span>
@@ -949,6 +1024,14 @@
                   <span class="key">Default · GitLab</span>
                   <span class="key" data-skin="github">GitHub UI</span>
                   <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                  <span class="multi-actions">
+
+                    <button type="button" class="multi-reset">Reset</button>
+
+                    <a class="multi-open" href="gitlab-profile-default.png" target="_blank" rel="noopener">Open full size</a>
+
+                  </span>
+
                 </figcaption>
               </figure>
             </div>
@@ -1352,14 +1435,26 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
       // Multi-skin comparison: the base capture plus one clipped layer per skin,
       // with a draggable (and keyboard-operable) divider for each skin. Layer i
       // shows between divider i-1 and divider i; the last skin runs to the edge.
+      let multiSeen = 0;
       for (const multi of document.querySelectorAll('.multi')) {
         const stage = multi.querySelector('.multi-stage');
         const layers = [...multi.querySelectorAll('.multi-layer')];
         const handles = [...multi.querySelectorAll('.multi-handle')];
         if (!handles.length) continue;
+        const isFirst = multiSeen === 0;
+        multiSeen += 1;
         const n = handles.length;
         const pos = handles.map((_, i) => ((i + 1) * 100) / (n + 1));
         const MIN_GAP = 5;
+
+        // A name pill per divider, riding its position.
+        const tags = handles.map((handle) => {
+          const tag = document.createElement('span');
+          tag.className = 'multi-tag';
+          tag.textContent = handle.dataset.name || '';
+          stage.appendChild(tag);
+          return tag;
+        });
 
         const apply = () => {
           layers.forEach((img, i) => {
@@ -1378,6 +1473,10 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
             if (handle.dataset.name) {
               handle.setAttribute('aria-valuetext', `${handle.dataset.name}, ${value}%`);
             }
+            if (tags[i]) {
+              tags[i].style.left = `${pos[i]}%`;
+              tags[i].classList.toggle('is-flipped', pos[i] > 68);
+            }
           });
         };
         const setPos = (i, value) => {
@@ -1389,12 +1488,14 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
         handles.forEach((handle, i) => {
           handle.addEventListener('pointerdown', (event) => {
             event.preventDefault();
+            handle.classList.add('is-dragging');
             const rect = stage.getBoundingClientRect();
             const move = (e) => {
               setPos(i, ((e.clientX - rect.left) / rect.width) * 100);
               apply();
             };
             const up = () => {
+              handle.classList.remove('is-dragging');
               window.removeEventListener('pointermove', move);
               window.removeEventListener('pointerup', up);
             };
@@ -1419,6 +1520,17 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
             apply();
           });
         });
+
+        // Back to even spacing: the button, or a double-click on a divider.
+        const reset = () => {
+          handles.forEach((_, i) => {
+            pos[i] = ((i + 1) * 100) / (n + 1);
+          });
+          apply();
+        };
+        const resetButton = multi.querySelector('.multi-reset');
+        if (resetButton) resetButton.addEventListener('click', reset);
+        for (const handle of handles) handle.addEventListener('dblclick', reset);
         apply();
 
         // Signal that the dividers move: a one-time nudge plus a hint pill, on
@@ -1434,7 +1546,8 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
             if (hinted || !entries[0].isIntersecting) return;
             hinted = true;
             hintObserver.disconnect();
-            if (!reduceMotion) {
+            // Teach the interaction once, on the first widget only.
+            if (!reduceMotion && isFirst) {
               handles.forEach((h) => h.classList.add('is-nudging'));
               setTimeout(
                 () => handles.forEach((h) => h.classList.remove('is-nudging')),
