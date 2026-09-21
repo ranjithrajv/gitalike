@@ -4,7 +4,7 @@ All notable changes to gitalike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.3] - 2026-09-21
 
 ### Added
 
@@ -118,6 +118,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `.github/workflows/e2e.yml`, beside the selector canary. It drives the live
   sites, so it is not a commit gate, but it is the only test of the CSS and DOM
   layer and should not wait to be run by hand.
+- Publishing to the Microsoft Edge Add-ons store is scripted:
+  `npm run publish:edge` (`tools/publish-edge.mjs`), alongside the Chrome Web
+  Store and addons.mozilla.org scripts.
 
 ### Changed
 
@@ -147,6 +150,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   replaced by a coverage property across all three targets
   (`src/lib/ux.js`, `src/content/ux-nav.js`, `src/content/ux-project.js`,
   `src/themes/ux-nav.css`, `tests/ux.test.mjs`).
+- Each skin moves the repository metadata to the imitated product's place and
+  heading. Under the GitLab skin GitHub's About sidebar becomes a full-width
+  "Project information" block (heading renamed), the GitHub-only sections
+  (Releases, Packages, Used by, Contributors, Languages) are hidden, and the
+  contribution graph is repainted GitLab indigo; under the GitHub skin GitLab's
+  block becomes the right-hand About column (heading renamed "About"), GitLab's
+  coverage bar, badges and "Created on" are dropped, and the graph is repainted
+  GitHub green (`src/content/ux-project.js`, `src/content/ux-profile.js`,
+  `src/themes/ux-nav.css`).
+- Under the GitHub skin a GitLab project's scattered sidebar is rebuilt as
+  GitHub's flat tab row — Code, Issues, Pull requests, Actions, Projects, Wiki,
+  Security and quality, Insights — and hosted under the repository header, where
+  GitHub puts it; Gitea's row gains the Wiki and Insights tabs Gitea has routes
+  for (`src/content/ux-project.js`, `src/lib/ux.js`).
+- Profile pages are shaped like the target product: on a GitHub profile shown as
+  GitLab the organization, location and contact links move into an
+  About/Info/Contact rail and Pinned becomes Personal projects; a profile wearing
+  the Bitbucket skin drops the rail and the contribution graph, which Bitbucket
+  does not have (`src/content/ux-profile.js`, `src/themes/as-bitbucket.css`).
 
 ### Fixed
 
@@ -164,6 +186,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `stateFrom` collapses a state whose kinds disagree to a single skin, so a
   profile upgraded from the two-switch model cannot leave two skins active or
   lose one silently when the popup first opens (`src/lib/sites.js`).
+- The GitHub-skin project strip no longer shows a stray list bullet before its
+  first tab, or GitLab's "Project" sidebar label for which GitHub's repo header
+  has no counterpart (`src/content/ux-project.js`, `src/themes/ux-nav.css`).
 
 ## [0.1.2] - 2026-09-21
 
