@@ -798,6 +798,17 @@ html.gs-theme-github
   .super-sidebar
   [data-gs-project-tabs] {
   margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+/* GitLab heads the sidebar with a "Project" label; GitHub's repo header has no
+   such heading, so it is hidden on the GitHub skin. */
+html.gs-theme-github
+  body[data-page^="projects:"]
+  .super-sidebar
+  .super-sidebar-context-header {
+  display: none !important;
 }
 
 /* GitHub's bar lists its tabs directly; GitLab's sidebar hides them inside
