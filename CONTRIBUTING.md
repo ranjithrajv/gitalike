@@ -229,7 +229,7 @@ Each theme file has three parts:
 
    If the fix is structural rather than colour, add the selector itself to
    `SELECTORS` in `src/lib/ux.js` — keyed by the *source* product (the site's
-   markup), not the skin applied to it — and read it from `src/content/ux.js`.
+   markup), not the skin applied to it — and read it from `src/content/ux-*.js`.
    A literal there cannot be checked by `npm run canary`; a `SELECTORS` entry
    can, and the canary probes every entry a `CANARY_PAGES` page names.
 
@@ -335,7 +335,7 @@ skin's palette, and `src/lib/ux.js` adds its repo tab list to
 `NAV_SCOPE`/`NAV_RULES` (for both themes) and its markup hooks to
 `SELECTORS.gitea` so its tabs are relabelled and reordered and the canary can
 watch them. The GitLab skin also rebuilds those tabs as a grouped sidebar:
-`content/ux.js` `paintGiteaNav` and the `UX.repoNav` model, keyed off Gitea's
+`content/ux-project.js` `paintGiteaNav` and the `UX.repoNav` model, keyed off Gitea's
 `[data-theme]` marker, apply to any Gitea-family instance. Record the host in
 `SOURCES` in `src/lib/sites.js` too, so the picker knows
 the site is *not* the product it is classified as (making the other UI a real
@@ -415,7 +415,7 @@ exit code is non-zero.
 plain `fetch` of the pages the skins are verified against, asserting the anchors
 they key on are still in the served HTML. The hooks are not written in the tool:
 it reads `SELECTORS` and `CANARY_PAGES` from `src/lib/ux.js`, the same table
-`src/content/ux.js` reads, so a rename is one edit there that both the skin and
+`src/content/ux-*.js` reads, so a rename is one edit there that both the skin and
 the canary pick up. It runs daily on a schedule, not on a pull request, so an
 upstream rename is caught without making every PR depend on the forges' markup;
 when it fails it also opens (or refreshes) an issue, so the drift is owned rather

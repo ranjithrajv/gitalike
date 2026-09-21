@@ -92,7 +92,7 @@ is not a tab. The skin therefore reshapes the navigation rather than only
 renaming it — under the GitHub UI GitLab's scattered project destinations are
 rebuilt as GitHub's flat tab row, in GitHub's order; under the GitLab UI
 GitHub's flat tabs are gathered under GitLab's group headings. The *labels*
-follow `NAV`/`NAV_RULES`; the *shape* is `content/ux.js` plus
+follow `NAV`/`NAV_RULES`; the *shape* is `content/ux-*.js` plus
 `themes/ux-nav.css`.
 
 ### 3. Metadata in a rail versus in the flow
@@ -336,15 +336,15 @@ Most of the profile's vocabulary has no exact counterpart, so the copy tables
 | Surface | GitHub | GitLab | Lives in |
 | --- | --- | --- | --- |
 | Account chrome (dropdown) | Your repositories, Your stars, Your gists, Your organizations | Your projects, Starred projects, Your snippets, Your groups | `CHROME` |
-| Profile navigation | Overview, Repositories, Projects, Packages, Stars | the name, Activity, Groups, Contributed/Personal/Starred projects, Snippets, Followers, Following | `content/ux.js` — rebuilt as the applied product's menu |
+| Profile navigation | Overview, Repositories, Projects, Packages, Stars | the name, Activity, Groups, Contributed/Personal/Starred projects, Snippets, Followers, Following | `content/ux-*.js` — rebuilt as the applied product's menu |
 | No counterpart | Sponsors, Marketplace | (GitLab lacks them) | `UNMAPPED` |
 | Reference marker | `#42` | `!42` | `refMarker` |
 | Shortcuts | GitHub's `g`-combos replay | GitLab's, delivered as clicks | `SHORTCUTS`, `SHORTCUT_TARGETS` |
 | Orientation | horizontal tab row | vertical sidebar group | `themes/ux-nav.css` |
-| Metadata rail (G→L) | card flows down the content column | organization, location and links move to an About/Info/Contact rail | `content/ux.js` — `paintProfileRail` |
+| Metadata rail (G→L) | card flows down the content column | organization, location and links move to an About/Info/Contact rail | `content/ux-profile.js` — `paintProfileRail` |
 | Pinned section | Pinned | Personal projects | `paintHeadings` |
 | Activity palette | green | indigo | `themes/ux-nav.css` |
-| Follower/following counts | under the photo | in the navigation | `content/ux.js` — GitLab's are copied into the card |
+| Follower/following counts | under the photo | in the navigation | `content/ux-*.js` — GitLab's are copied into the card |
 
 Two scoping facts make the profile behave differently from the project page:
 
@@ -361,7 +361,7 @@ Two scoping facts make the profile behave differently from the project page:
   place for, are hidden. The identity also moves from a top header with a small
   avatar into a left card under a large avatar, with the README/activity beside
   it, which is GitHub's profile shape.
-- **Profile navigation is rebuilt in `content/ux.js`, not `NAV`.** `NAV` carries
+- **Profile navigation is rebuilt in `content/ux-profile.js`, not `NAV`.** `NAV` carries
   the repository labels only, and a profile's destinations are a different set
   with a different count. The content script therefore replaces the profile menu
   with the applied product's — same labels, same order, same options — reusing a

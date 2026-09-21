@@ -7,7 +7,7 @@
  */
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 import '../src/lib/ux.js';
 
@@ -1030,14 +1030,16 @@ describe('SELECTORS / CANARY_PAGES', () => {
 
   test('every SELECTORS key the content script reads exists', () => {
     // A missing key would be read as `undefined` and silently yield an empty
-    // NodeList, so the pass would just do nothing. Scan the content script for
-    // the keys it names and require each one.
-    const source = readFileSync(
-      new URL('../src/content/ux.js', import.meta.url),
-      'utf8',
-    );
+    // NodeList, so the pass would just do nothing. Scan every UX content script
+    // (the passes are split across ux-*.js) for the keys they name and require
+    // each one.
+    const dir = new URL('../src/content/', import.meta.url);
+    const sources = readdirSync(dir)
+      .filter((name) => /^ux.*\.js$/.test(name))
+      .map((name) => readFileSync(new URL(name, dir), 'utf8'))
+      .join('\n');
     let checked = 0;
-    for (const m of source.matchAll(/SELECTORS\.([a-z]+)\.([A-Za-z0-9_]+)/g)) {
+    for (const m of sources.matchAll(/SELECTORS\.([a-z]+)\.([A-Za-z0-9_]+)/g)) {
       checked += 1;
       assert.equal(
         typeof SELECTORS[m[1]]?.[m[2]],

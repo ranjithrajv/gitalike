@@ -40,11 +40,11 @@ directional tables below still describe the two-way pair; Bitbucket's are in
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
 | Nav orientation | ✅ | ✅ | `themes/ux-nav.css` |
-| Project tab strip | ✅ gathered into groups | ✅ rebuilt as GitHub's tabs | `content/ux.js` + `themes/ux-nav.css` |
+| Project tab strip | ✅ gathered into groups | ✅ rebuilt as GitHub's tabs | `content/ux-*.js` + `themes/ux-nav.css` |
 | Project metadata placement | ✅ | ✅ | `themes/*.css` |
-| Metadata heading | ✅ Project information | ✅ About | `content/ux.js` |
+| Metadata heading | ✅ Project information | ✅ About | `content/ux-*.js` |
 | Activity graph palette | ✅ GitLab indigo | ✅ GitHub green | `themes/ux-nav.css` |
-| Profile metadata rail | ✅ About/Info/Contact | — | `content/ux.js` |
+| Profile metadata rail | ✅ About/Info/Contact | — | `content/ux-*.js` |
 | One skin at a time | ✅ | ✅ | `popup/popup.js` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
 | Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
@@ -102,7 +102,7 @@ whole control labels only, so a bare "Settings" (the repo tab) is never touched.
 ## No counterpart
 
 Some features have no equivalent in the other product. Rather than leave them
-looking native, `UNMAPPED` marks them: `content/ux.js` appends a small
+looking native, `UNMAPPED` marks them: `content/ux-*.js` appends a small
 `≠ GitLab` / `≠ GitHub` badge (and a `data-gs-no-equiv` attribute) to a nav item
 or control whose whole label names such a feature. Examples: GitLab's Epics,
 Iterations, Requirements, Service Desk, Merge trains, Feature flags, Terraform
@@ -269,7 +269,7 @@ their navigation:
   the active row tinted, and counts as trailing figures. The `overflow-menu` web
   component collapses its own tabs into a "more" popup once they stop fitting, so
   it is kept off-screen at a width where its tabs stay in the DOM for the rebuild
-  (`content/ux.js` `paintGiteaNav`, `UX.repoNav`), and the stylesheet hides it.
+  (`content/ux-project.js` `paintGiteaNav`, `UX.repoNav`), and the stylesheet hides it.
 - **Gitea → GitHub** — the tab row is restyled in place as GitHub's underlined
   UnderlineNav: muted inactive tabs, an orange active underline, GitHub's rounded
   counter pills, and a single hairline under the row. It is not rebuilt.
@@ -293,7 +293,7 @@ and `CHROME` entry round-trips and that `PHRASES` stays the same size in both
 directions.
 
 A selector a pass keys on goes in `SELECTORS`, under the *source* product whose
-markup it matches — `src/content/ux.js` reads it from there rather than carrying
+markup it matches — `src/content/ux-*.js` reads it from there rather than carrying
 a literal. Name the hook in a `CANARY_PAGES` entry too, and
 `npm run canary` will assert the live forge still serves it.
 

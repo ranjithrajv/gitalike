@@ -83,6 +83,15 @@ const CONTENT_JS = [
   'lib/sites.js',
   'lib/ux.js',
   'content/theme.js',
+  // The UX scripts load in this order: the core builds the runtime, each pass
+  // group registers into it (and the order they are listed is the order they
+  // run, so a pass that reads what an earlier one wrote comes after it), and
+  // the entry boots it.
+  'content/ux-core.js',
+  'content/ux-copy.js',
+  'content/ux-nav.js',
+  'content/ux-project.js',
+  'content/ux-profile.js',
   'content/ux.js',
 ];
 const CONTENT_CSS = [
