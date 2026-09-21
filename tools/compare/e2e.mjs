@@ -20,6 +20,12 @@
 
 import { launch, retry, waitForTheme } from './harness.mjs';
 
+// The skin's own tables, so the live checks name the same labels the pass hides
+// rather than a second copy that can drift.
+import '../../src/lib/ux.js';
+
+const { TOPBAR_HIDE, TOPBAR_SCOPE } = globalThis.GITALIKE_UX;
+
 const results = [];
 const check = (name, ok, detail) =>
   results.push({ name, ok: Boolean(ok), detail });
@@ -56,37 +62,60 @@ try {
   await gotoLive(gh, 'https://github.com/git/git');
   await waitForTheme(gh, 'gitlab');
   await gh.waitForTimeout(2500);
-  const g = await gh.evaluate(async () => {
-    const ul = document.querySelector(
-      'nav[aria-label="Repository"] ul.UnderlineNav-body',
-    );
-    const ref = document.createElement('a');
-    ref.setAttribute('href', '/git/git/pull/42');
-    ref.id = 'gs-ref';
-    ref.textContent = '#42';
-    document.body.appendChild(ref);
-    const disc = document.createElement('a');
-    disc.setAttribute('href', '/git/git/discussions');
-    disc.textContent = 'Discussions';
-    ul?.appendChild(disc);
-    await new Promise((r) => setTimeout(r, 2000));
-    return {
-      direction: ul ? getComputedStyle(ul).flexDirection : null,
-      nav: [...document.querySelectorAll('nav[aria-label="Repository"] a')]
-        .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
-        .filter(Boolean),
-      ref: document.getElementById('gs-ref')?.textContent ?? null,
-      badge: document.querySelector('.gs-no-equiv')?.textContent ?? null,
-      header: (() => {
-        const h = document.querySelector(
-          'header[role="banner"], header.GlobalNav, .AppHeader, .js-header-wrapper',
-        );
-        if (!h) return null;
-        const cs = getComputedStyle(h);
-        return { display: cs.display, bg: cs.backgroundColor };
-      })(),
-    };
-  });
+  const g = await gh.evaluate(
+    async ({ hide, scope }) => {
+      const ul = document.querySelector(
+        'nav[aria-label="Repository"] ul.UnderlineNav-body',
+      );
+      const ref = document.createElement('a');
+      ref.setAttribute('href', '/git/git/pull/42');
+      ref.id = 'gs-ref';
+      ref.textContent = '#42';
+      document.body.appendChild(ref);
+      const disc = document.createElement('a');
+      disc.setAttribute('href', '/git/git/discussions');
+      disc.textContent = 'Discussions';
+      ul?.appendChild(disc);
+      await new Promise((r) => setTimeout(r, 2000));
+      return {
+        direction: ul ? getComputedStyle(ul).flexDirection : null,
+        nav: [...document.querySelectorAll('nav[aria-label="Repository"] a')]
+          .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
+          .filter(Boolean),
+        ref: document.getElementById('gs-ref')?.textContent ?? null,
+        badge: document.querySelector('.gs-no-equiv')?.textContent ?? null,
+        header: (() => {
+          const h = document.querySelector(
+            'header[role="banner"], header.GlobalNav, .AppHeader, .js-header-wrapper',
+          );
+          if (!h) return null;
+          const cs = getComputedStyle(h);
+          return { display: cs.display, bg: cs.backgroundColor };
+        })(),
+        // The source-only top-bar words the skin hides: none may be visible.
+        topBar: (() => {
+          const hidden = [];
+          const visible = [];
+          for (const region of document.querySelectorAll(scope)) {
+            for (const el of region.querySelectorAll('a,button,summary')) {
+              const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+              if (!hide.includes(label)) continue;
+              const item = el.closest('li') || el;
+              (getComputedStyle(item).display === 'none'
+                ? hidden
+                : visible
+              ).push(label);
+            }
+          }
+          return {
+            hidden: [...new Set(hidden)],
+            visible: [...new Set(visible)],
+          };
+        })(),
+      };
+    },
+    { hide: TOPBAR_HIDE.gitlab, scope: TOPBAR_SCOPE },
+  );
   check('G→L repo nav is vertical', g.direction === 'column', g.direction);
   check(
     'G→L nav relabelled',
@@ -104,6 +133,12 @@ try {
     'G→L keeps GitHub’s top bar, restyled light',
     Boolean(g.header) && g.header.display !== 'none' && isLight(g.header.bg),
     JSON.stringify(g.header),
+  );
+  check(
+    'G→L hides GitHub’s source-only top-bar words',
+    g.topBar.hidden.length === TOPBAR_HIDE.gitlab.length &&
+      g.topBar.visible.length === 0,
+    JSON.stringify(g.topBar),
   );
 
   /* GitHub profile, skinned as GitLab: the tab strip becomes a left rail. */
@@ -208,18 +243,41 @@ try {
     )
     .catch(() => {});
   await gl.waitForTimeout(500);
-  const l = await gl.evaluate(() => {
-    const sb = document.querySelector('.super-sidebar');
-    const main = document.querySelector('main');
-    return {
-      position: sb ? getComputedStyle(sb).position : null,
-      mainWidth: main ? Math.round(main.getBoundingClientRect().width) : null,
-      nav: [...document.querySelectorAll('.super-sidebar a')].map((a) =>
-        (a.textContent || '').replace(/\s+/g, ' ').trim(),
-      ),
-      badges: document.querySelectorAll('.gs-no-equiv').length,
-    };
-  });
+  const l = await gl.evaluate(
+    async ({ hide, scope }) => {
+      const sb = document.querySelector('.super-sidebar');
+      const main = document.querySelector('main');
+      return {
+        position: sb ? getComputedStyle(sb).position : null,
+        mainWidth: main ? Math.round(main.getBoundingClientRect().width) : null,
+        nav: [...document.querySelectorAll('.super-sidebar a')].map((a) =>
+          (a.textContent || '').replace(/\s+/g, ' ').trim(),
+        ),
+        badges: document.querySelectorAll('.gs-no-equiv').length,
+        // The source-only top-bar words the skin hides: none may be visible.
+        topBar: (() => {
+          const hidden = [];
+          const visible = [];
+          for (const region of document.querySelectorAll(scope)) {
+            for (const el of region.querySelectorAll('a,button,summary')) {
+              const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+              if (!hide.includes(label)) continue;
+              const item = el.closest('li') || el;
+              (getComputedStyle(item).display === 'none'
+                ? hidden
+                : visible
+              ).push(label);
+            }
+          }
+          return {
+            hidden: [...new Set(hidden)],
+            visible: [...new Set(visible)],
+          };
+        })(),
+      };
+    },
+    { hide: TOPBAR_HIDE.github, scope: TOPBAR_SCOPE },
+  );
   check(
     'L→G sidebar is horizontal (static)',
     l.position === 'static',
@@ -232,6 +290,12 @@ try {
     l.nav.slice(0, 2).join(', '),
   );
   check('L→G no-counterpart badges', l.badges > 0, `${l.badges} badges`);
+  check(
+    'L→G hides GitLab’s source-only top-bar words',
+    l.topBar.hidden.length === TOPBAR_HIDE.github.length &&
+      l.topBar.visible.length === 0,
+    JSON.stringify(l.topBar),
+  );
 
   /* GitLab profile, skinned as GitHub: counts move under the photo. */
   const glp = await context.newPage();
