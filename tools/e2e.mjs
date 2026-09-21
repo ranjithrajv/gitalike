@@ -18,58 +18,17 @@
  * says which. Exit code is non-zero if anything failed.
  */
 
-import { chromium } from 'playwright-core';
-import { existsSync } from 'node:fs';
-import { mkdtemp } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const EXT = process.env.GS_EXT ?? join(root, 'dist', 'chromium');
-
-const CHROME =
-  process.env.GS_CHROME ??
-  [
-    '/usr/bin/chromium',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/google-chrome-stable',
-    '/usr/bin/google-chrome',
-  ].find((p) => existsSync(p));
-
-if (!CHROME) {
-  console.error('no Chromium found — set GS_CHROME=/path/to/chrome');
-  process.exit(1);
-}
-if (!existsSync(join(EXT, 'manifest.json'))) {
-  console.error(`no manifest.json in ${EXT} — run "npm run build:chromium" first`);
-  process.exit(1);
-}
+import { launch } from './harness.mjs';
 
 const results = [];
 const check = (name, ok, detail) => results.push({ name, ok: Boolean(ok), detail });
 
-const profile = await mkdtemp(join(tmpdir(), 'gs-e2e-'));
-const context = await chromium.launchPersistentContext(profile, {
-  executablePath: CHROME,
-  headless: true,
+const { context, extensionId, setSettings, setHostSettings, close } = await launch({
   viewport: { width: 1280, height: 900 },
-  args: [
-    `--disable-extensions-except=${EXT}`,
-    `--load-extension=${EXT}`,
-    '--disable-features=DisableLoadExtensionCommandLineSwitch',
-    '--no-first-run',
-    '--no-default-browser-check',
-  ],
+  headless: true,
+  profilePrefix: 'gs-e2e-',
 });
-
-const setSettings = (page, settings) =>
-  page.evaluate((s) => chrome.storage.sync.set({ gitSameSettings: s }), settings);
-const setHostSettings = (page, hostSettings) =>
-  page.evaluate(
-    (s) => chrome.storage.sync.set({ gitSameHostSettings: s }),
-    hostSettings,
-  );
+check('extension loads', Boolean(extensionId));
 
 // Live-forge navigations fail intermittently (ERR_NETWORK_CHANGED, a slow TLS
 // handshake, a rate-limit page). Retry a couple of times so the run reports what
@@ -93,17 +52,10 @@ async function gotoLive(page, url, options = {}) {
 }
 
 try {
-  let worker = context.serviceWorkers()[0];
-  if (!worker) worker = await context.waitForEvent('serviceworker', { timeout: 25000 });
-  const extId = new URL(worker.url()).host;
-  const popup = await context.newPage();
-  await popup.goto(`chrome-extension://${extId}/popup/popup.html`);
-  check('extension loads', Boolean(worker));
-
   // One skin is active at a time, so the two directions are pinned per host
   // rather than by setting both kinds — which `stateFrom` would collapse.
-  await setSettings(popup, { github: 'off', gitlab: 'off' });
-  await setHostSettings(popup, { 'github.com': 'gitlab', 'gitlab.com': 'github' });
+  await setSettings({ github: 'off', gitlab: 'off' });
+  await setHostSettings({ 'github.com': 'gitlab', 'gitlab.com': 'github' });
 
   /* ------------------------------ GitHub -> GitLab ------------------------------ */
   const gh = await context.newPage();
@@ -314,7 +266,7 @@ try {
   check('L→G shortcut g p opens merge requests', /\/merge_requests$/.test(gl.url()), gl.url());
 
   /* ------------------------------ Codeberg (Gitea) ------------------------------ */
-  await setHostSettings(popup, {
+  await setHostSettings({
     'github.com': 'gitlab',
     'gitlab.com': 'github',
     'codeberg.org': 'gitlab',
@@ -380,7 +332,7 @@ try {
   );
 
   // The same site, told to wear the GitHub UI instead.
-  await setHostSettings(popup, { 'codeberg.org': 'github' });
+  await setHostSettings({ 'codeberg.org': 'github' });
   await cb
     .waitForFunction(
       () =>
@@ -416,14 +368,14 @@ try {
   );
   await cb.close();
   // Clear the per-site choice so it does not leak into the revert check.
-  await setHostSettings(popup, {});
+  await setHostSettings({});
 
   /* ------------------------------ Bitbucket skin ------------------------------ */
   // Bitbucket is a target only — no host is classified as it — so it is chosen
   // per site (or globally). Its repository navigation is a left sidebar, like
   // GitLab's, so a GitHub source is re-oriented into one and repainted in
   // Atlassian's palette with Bitbucket's words.
-  await setHostSettings(popup, { 'github.com': 'bitbucket' });
+  await setHostSettings({ 'github.com': 'bitbucket' });
   await gh
     .waitForFunction(
       () =>
@@ -466,10 +418,10 @@ try {
     bb.nav.some((t) => t.startsWith('Source')) && bb.nav.some((t) => t.startsWith('Pipelines')),
     bb.nav.slice(0, 4).join(', '),
   );
-  await setHostSettings(popup, {});
+  await setHostSettings({});
 
   /* ---------------------------------- revert ----------------------------------- */
-  await setSettings(popup, { github: 'off', gitlab: 'off' });
+  await setSettings({ github: 'off', gitlab: 'off' });
   await gh.waitForTimeout(1500);
   const r = await gh.evaluate(() => ({
     cls: document.documentElement.className,
@@ -485,7 +437,7 @@ try {
 } catch (error) {
   check('run completed', false, error.message);
 } finally {
-  await context.close();
+  await close();
 }
 
 let failed = 0;

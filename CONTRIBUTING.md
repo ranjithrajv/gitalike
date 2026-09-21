@@ -57,8 +57,8 @@ node tools/e2e.mjs   # Playwright end-to-end test against the live sites
 npm run lint         # web-ext lint over the Firefox build
 npm run package      # store-ready zips -> dist/artifacts/
 npm run screenshots  # regenerate store/screenshots/
+npm run screenshots:projects  # refresh the docs/ project-page captures
 npm run screenshots:profiles  # refresh the docs/ profile-page captures
-node tools/project-screenshots.mjs  # refresh the docs/ project-page captures
 npm run clean        # remove dist/
 ```
 
@@ -557,6 +557,15 @@ read.
 - The version lives in `package.json` and nowhere else — `build.mjs` stamps it
   onto both generated manifests, so do not edit the manifests by hand.
 - If the change is visible, refresh the screenshots with `npm run screenshots`.
+- The `docs/*.png` captures are generated artifacts, not source: refresh them
+  with `npm run screenshots:projects` / `npm run screenshots:profiles`
+  deliberately, when the skin actually changed, not casually. Each recapture
+  rewrites ~1.9 MB of binaries — most of the repository's weight — and a
+  byte-level diff that only moves a star count is still permanent history.
+  Regenerate rather than hand-edit, and prefer leaving a correct-but-stale shot
+  over churning the whole set. (Where they live is worth deciding before the next
+  skin doubles the churn: in `docs/` on `main` keeps the Pages site simple, a
+  `gh-pages` branch or a generated Pages artifact keeps the churn off `main`.)
 
 ## Releasing
 

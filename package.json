@@ -21,8 +21,9 @@
     "publish:chromium": "node tools/publish-chromium.mjs",
     "publish:edge": "node tools/publish-edge.mjs",
     "sign:firefox": "npm run build:firefox && web-ext sign --source-dir dist/firefox --artifacts-dir dist/artifacts/firefox-signed --channel unlisted",
-    "screenshots": "node tools/store-screenshots.mjs",
-    "screenshots:profiles": "node tools/profile-screenshots.mjs",
+    "screenshots": "node tools/screenshots.mjs store",
+    "screenshots:projects": "node tools/screenshots.mjs project",
+    "screenshots:profiles": "node tools/screenshots.mjs profile",
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "devDependencies": {
