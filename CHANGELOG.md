@@ -4,6 +4,22 @@ All notable changes to GitAlike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A **skin and source contract** (`tests/contracts.test.mjs`) that derives the
+  skin list from `THEMES` and the source list from `SELECTORS` and names every
+  part a new skin or source must supply, so a contributor gets a checklist
+  rather than unrelated failures. `tests/ux.test.mjs` now derives the same lists
+  and scans every theme file for the `// css` selectors.
+
+### Fixed
+
+- The `≠` no-counterpart marker is styled under every skin, not only GitLab and
+  GitHub — Bitbucket's badge had been left unstyled. It now targets any active
+  `gs-theme-*` class, so a new skin inherits it (`src/themes/ux-markers.css`).
+
 ## [0.1.3] - 2026-09-21
 
 ### Added
