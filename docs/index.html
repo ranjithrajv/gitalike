@@ -6,7 +6,7 @@
     <title>gitalike — use any forge, keep your muscle memory</title>
     <meta
       name="description"
-      content="Use any forge, keep your muscle memory. gitalike re-skins GitHub, GitLab, Gitea, Bitbucket and Gerrit with the GitHub, GitLab or Bitbucket UI — colour, words, navigation and shortcuts, local and reversible."
+      content="Use any forge, keep your muscle memory. gitalike re-skins GitHub, GitLab, Gitea, Bitbucket and Gerrit with the UI you know best — locally, reversibly."
     />
     <link rel="canonical" href="https://ranjithrajv.github.io/gitalike/" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
@@ -16,15 +16,17 @@
     <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="gitalike" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:url" content="https://ranjithrajv.github.io/gitalike/" />
     <meta property="og:title" content="gitalike — use any forge, keep your muscle memory" />
     <meta
       property="og:description"
-      content="Any forge, any skin. Nothing else makes GitHub read like GitLab — and back. Repaint GitHub, GitLab, Codeberg/Gitea, Bitbucket, Gerrit or any instance you add as the UI you know best, with no network access."
+      content="Any forge, any skin. Nothing else makes GitHub read like GitLab — and back. Repaint GitHub, GitLab, Bitbucket or Gerrit as the UI you know best, with no network access."
     />
     <meta property="og:image" content="https://ranjithrajv.github.io/gitalike/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
     <meta
       property="og:image:alt"
       content="gitalike — GitHub, GitLab and Bitbucket interfaces for any forge"
@@ -33,7 +35,7 @@
     <meta name="twitter:title" content="gitalike — use any forge, keep your muscle memory" />
     <meta
       name="twitter:description"
-      content="Any forge, any skin. Nothing else makes GitHub read like GitLab — and back. Repaint GitHub, GitLab, Codeberg/Gitea, Bitbucket, Gerrit or any instance you add as the UI you know best, with no network access."
+      content="Any forge, any skin. Nothing else makes GitHub read like GitLab — and back. Repaint GitHub, GitLab, Bitbucket or Gerrit as the UI you know best, with no network access."
     />
     <meta name="twitter:image" content="https://ranjithrajv.github.io/gitalike/og.png" />
     <script type="application/ld+json">
@@ -51,8 +53,78 @@
         "isAccessibleForFree": true,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "codeRepository": "https://github.com/ranjithrajv/gitalike",
+        "sameAs": ["https://github.com/ranjithrajv/gitalike"],
+        "author": {
+          "@type": "Person",
+          "name": "Ranjith Raj",
+          "url": "https://github.com/ranjithrajv"
+        },
         "downloadUrl": "https://github.com/ranjithrajv/gitalike/releases/latest",
         "screenshot": "https://ranjithrajv.github.io/gitalike/github-gitlab.png"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Does it send my data anywhere?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. gitalike makes no network requests at all — no CDN, no remote configuration, no telemetry. The stylesheets ship in the bundle and the mark is an inline data URI. It stores only your on/off choices and the instances you add, in the browser's own synced storage."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which sites can it access?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The five bundled hosts — github.com, gitlab.com, codeberg.org, gitea.com and bitbucket.org — are granted at install. Everything else is asked for one origin at a time, when you add it, so a self-hosted GitHub Enterprise, GitLab, Bitbucket Data Center or Gerrit instance triggers a single prompt for its host, and nothing is granted before that."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on my self-hosted instance?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Add the host by visiting it or typing its address — no rebuild. Adding it asks the browser to grant that one origin. GitHub Enterprise Server, self-hosted GitLab, Bitbucket Data Center and Gerrit all work, and Codeberg (Forgejo) and gitea.com are already covered."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does it know which forge a link is?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "When a host is not set up yet, the popup reads the address and highlights the product it looks like, so a pasted deep link needs only a confirmation: /-/merge_requests/42 is GitLab, /pull/42 GitHub, /pulls/42 Gitea/Forgejo, /pull-requests/42 Bitbucket and /c/project/+/42 Gerrit — even on a host it has never seen. It reads the URL only, never the page, and makes no network request; a bare host it cannot place is left for you to choose."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it change what the site does?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. It changes how the page looks and reads, not what it does: no requests are intercepted and no data is touched. It never rewrites text inside code, inputs or editable regions, and every change is reverted when you switch the skin off."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Which browsers does it run in?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The two extension platforms, so it covers their forks too. The Chromium build runs in Chrome, Edge, Brave, Opera, Vivaldi and the rest; the Firefox build needs Firefox 142 or newer and runs in the forks that track it, such as LibreWolf, Floorp and Zen."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes — GPL-3.0-or-later, no account and no paid tier. The source is on GitHub, and you can build it yourself with npm run build."
+            }
+          }
+        ]
       }
     </script>
     <style>
@@ -811,7 +883,7 @@
       <section class="hero" id="top">
         <div class="wrap">
           <div>
-            <p class="eyebrow">GitHub ⇄ GitLab · any forge · any skin</p>
+            <p class="eyebrow">Browser extension · GitHub ⇄ GitLab · any forge · any skin</p>
             <h1>Use any forge, keep your muscle memory.</h1>
             <p class="lede">
               gitalike makes every major forge speak one UI. Point it at GitHub,
