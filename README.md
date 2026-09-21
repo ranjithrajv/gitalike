@@ -72,6 +72,7 @@ and watch each site wear every skin it can.
 
 ## Contents
 
+- [Make GitHub look like GitLab, and back](#make-github-look-like-gitlab-and-back)
 - [Install](#install)
   - [From source](#from-source)
 - [Use](#use)
@@ -82,6 +83,24 @@ and watch each site wear every skin it can.
 - [Contributing](#contributing)
 - [Trademarks](#trademarks)
 - [License](#license)
+
+## Make GitHub look like GitLab, and back
+
+A theme repaints the palette and stops there. gitalike also changes the *words*
+the page uses, the *navigation* it shows, the reference markers and the keyboard
+shortcuts — reciprocally, and it undoes every change the moment you switch it
+off.
+
+| Capability | A userstyle or theme | gitalike |
+| --- | --- | --- |
+| Repaints the palette | yes | yes |
+| Renames the product's words ("Pull request" ⇄ "Merge request", "Actions" ⇄ "CI/CD") | no | yes |
+| Rebuilds navigation (GitHub's tab row ⇄ GitLab's grouped sidebar) | no | yes |
+| Switches reference markers (`#42` ⇄ `!42`) | no | yes |
+| Delivers the other product's `g`-shortcuts | no | yes |
+| Works in both directions (GitHub shown as GitLab, and the reverse) | rarely | yes |
+| Reverts exactly when turned off | — | yes |
+| No account, no network requests, no telemetry | often | yes |
 
 ## Install
 
