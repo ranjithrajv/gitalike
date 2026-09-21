@@ -68,6 +68,16 @@ const NO_MARKUP = new Set(['bitbucket', 'gerrit']);
 const hasMarkup = (source) => !NO_MARKUP.has(source);
 
 /**
+ * Sources whose design tokens the skins re-point. Palette coverage is broader
+ * than structural coverage: Bitbucket Cloud exposes Atlassian's `--ds-*` tokens
+ * on <html>, so the GitHub and GitLab skins repaint it from the token layer
+ * (see gs-tokens.css) even though no Bitbucket selector or nav rule exists.
+ * Gerrit exposes no such token layer, so its palette stays near zero.
+ */
+const NO_PALETTE = new Set(['gerrit']);
+const hasPalette = (source) => !NO_PALETTE.has(source);
+
+/**
  * How much of a `g`-combo remap works for a source under a skin. GitHub honours
  * synthetic key events, so a destination with no link still replays; GitLab
  * rejects them (`event.isTrusted`), so only combos with a click target land;
@@ -96,7 +106,7 @@ const PROJECT = [
   {
     key: 'palette',
     weight: 12,
-    share: ({ source, native }) => (native ? 1 : hasMarkup(source) ? 1 : 0.2),
+    share: ({ source, native }) => (native ? 1 : hasPalette(source) ? 1 : 0.2),
   },
   {
     key: 'orientation',
@@ -206,7 +216,7 @@ const PROFILE = [
   {
     key: 'palette',
     weight: 12,
-    share: ({ source, native }) => (native ? 1 : hasMarkup(source) ? 1 : 0.2),
+    share: ({ source, native }) => (native ? 1 : hasPalette(source) ? 1 : 0.2),
   },
   {
     key: 'orientation',

@@ -27,10 +27,12 @@ Bitbucket's are in `src/lib/ux.js` under `bitbucket` and are covered by
   (`html.gs-theme-github`, `themes/as-github.css`)
 - **→B** — any source shown with the Bitbucket UI
   (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`, layout `gitlab`)
-- **B→G / B→L** — a Bitbucket source shown with the GitHub or GitLab UI.
-  Bitbucket has no structural CSS or selectors yet (its page is a client-rendered
-  SPA with no capturable public repository page), so this is the
-  source-agnostic passes only: copy, control labels and reference markers.
+- **B→G / B→L** — a Bitbucket source shown with the GitHub or GitLab UI. There
+  are no Bitbucket selectors or nav rules yet (its page is a client-rendered SPA
+  with no capturable public repository page), so the structure stays Bitbucket's;
+  the palette is mapped from its Atlassian `--ds-*` tokens, and the
+  source-agnostic passes — copy, control labels and reference markers — run on
+  top.
 - **Ger→G / Ger→L** — a Gerrit source shown with the GitHub or GitLab UI. Same
   vocabulary-only treatment as Bitbucket, and without even the reference-marker
   support: Gerrit identifies a change by number/Change-Id, not a `#`/`!` marker.
@@ -105,7 +107,7 @@ at a time from the popup).
 | **GitHub** | 10.0 | 9.7 | 8.4 |
 | **GitLab** | 9.7 | 10.0 | 8.4 |
 | **Gitea / Forgejo** | 8.1 | 7.9 | 8.0 |
-| **Bitbucket** | 2.6 | 2.0 | 10.0 |
+| **Bitbucket** | 3.6 | 3.0 | 10.0 |
 | **Gerrit** | 2.2 | 1.6 | 2.2 |
 
 ### Profile pages, sources × skins
@@ -115,7 +117,7 @@ at a time from the popup).
 | **GitHub** | 10.0 | 9.9 | 6.7 |
 | **GitLab** | 9.5 | 10.0 | 6.7 |
 | **Gitea / Forgejo** | 5.0 | 5.0 | 4.3 |
-| **Bitbucket** | 2.5 | 2.5 | 10.0 |
+| **Bitbucket** | 3.4 | 3.4 | 10.0 |
 | **Gerrit** | 2.1 | 2.1 | 2.1 |
 
 ### Where the points are lost
@@ -157,24 +159,26 @@ at a time from the popup).
   rail or card rebuilding. This is the largest scoring gap, and the docs make no
   profile claim for Gitea/Forgejo; the captures agree — there is no
   `codeberg-profile-*.png` in `docs/`.
-- **Bitbucket as a source (2.6 / 2.0 project, 2.5 profile)** — the lowest row,
-  and deliberately so: a Bitbucket host can wear the GitHub or GitLab UI, but
-  only the source-agnostic passes run — copy, control labels, account chrome and
-  reference markers (its `/pull-requests/N` routes are matched). There is no
-  token block, `SELECTORS` entry or `NAV_RULES` rule for Bitbucket markup, so
-  palette, orientation, navigation, metadata and shortcuts are near zero. That
-  is a statement about missing markup coverage, not a bug: Bitbucket Cloud is a
-  client-rendered SPA and serves no capturable public repository page, so its
-  structural hooks cannot be verified the way GitHub's, GitLab's and Gitea's
-  are. The diagonal is 10.0 because a source on its own UI needs no
-  transformation.
-- **Gerrit as a source (2.2 / 1.6 project, 2.1 profile)** — the same story as
-  Bitbucket, one notch lower: Gerrit's PolyGerrit UI is client-rendered, there is
-  no bundled host (instances are added one origin at a time), and even the
-  reference markers do not carry over — Gerrit identifies a change by its change
-  number (`/c/<project>/+/<N>`) and a Change-Id, not a `#`/`!` pull-request
-  number — so the `refs` dimension is partial too. Copy and control labels are
-  the only passes that reach it.
+- **Bitbucket as a source (3.6 / 3.0 project, 3.4 profile)** — still a low row,
+  because only the palette and the source-agnostic passes reach it: copy,
+  control labels and reference markers (its `/pull-requests/N` routes are
+  matched). Bitbucket Cloud exposes Atlassian's `--ds-*` design tokens on
+  <html>, so the GitHub and GitLab skins re-point them at their own palette
+  (`themes/gs-tokens.css`), including the top bar; that is the `palette`
+  dimension. There is still no
+  `SELECTORS` entry or `NAV_RULES` rule for Bitbucket markup, so orientation,
+  navigation, metadata and shortcuts stay near zero. That is a statement about
+  missing *structural* coverage, not a bug: Bitbucket Cloud is a client-rendered
+  SPA and serves no capturable public repository page, so its hooks cannot be
+  verified the way GitHub's, GitLab's and Gitea's are. The diagonal is 10.0
+  because a source on its own UI needs no transformation.
+- **Gerrit as a source (2.2 / 1.6 project, 2.1 profile)** — the lowest row: it
+  has neither structural hooks nor a token layer the skins map, so palette joins
+  orientation, navigation, metadata and shortcuts in staying near zero, and even
+  the reference markers do not carry over — Gerrit identifies a change by its
+  change number (`/c/<project>/+/<N>`) and a Change-Id, not a `#`/`!`
+  pull-request number — so the `refs` dimension is partial too. Copy and control
+  labels are the only passes that reach it.
 
 The scores are computed by `tools/compare/parity-score.mjs` (`npm run parity`, or
 `npm run parity -- --detail` for the per-dimension breakdown) and

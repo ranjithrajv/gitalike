@@ -75,6 +75,100 @@ html:is(.gs-theme-github, .gs-theme-bitbucket) {
   --gl-border-radius-lg: var(--gs-radius-lg) !important;
 }
 
+/* ---------------------- Bitbucket tokens -> gitalike (GitHub, GitLab) -- */
+/* Bitbucket Cloud is built on Atlassian's design system, whose semantic
+   `--ds-*` tokens it exposes on <html>. Mapping them at the applied skin's
+   palette repaints a Bitbucket page without any Bitbucket-specific markup
+   selectors: the token names, not the structure, are the hook. Scoped by
+   `data-gs-source` (set by content/theme.js) rather than `[data-theme]`,
+   because Bitbucket also sets `data-theme` — the Gitea block above must not
+   read a Bitbucket page, and vice versa. A Bitbucket source shown with its
+   own UI is a no-op and never carries a `gs-theme-*` class. */
+
+html[data-gs-source="bitbucket"]:is(.gs-theme-github, .gs-theme-gitlab) {
+  /* surfaces */
+  --ds-surface: var(--gs-canvas) !important;
+  --ds-surface-raised: var(--gs-canvas) !important;
+  --ds-surface-overlay: var(--gs-canvas-overlay) !important;
+  --ds-elevation-surface-current: var(--gs-canvas) !important;
+  --ds-surface-sunken: var(--gs-canvas-subtle) !important;
+  --ds-background-code-default: var(--gs-canvas-subtle) !important;
+
+  /* text */
+  --ds-text: var(--gs-fg) !important;
+  --ds-text-subtle: var(--gs-fg-muted) !important;
+  --ds-text-subtlest: var(--gs-fg-subtle) !important;
+  --ds-text-disabled: var(--gs-fg-subtle) !important;
+  --ds-text-inverse: var(--gs-canvas) !important;
+  --ds-text-selected: var(--gs-accent) !important;
+  --ds-text-brand: var(--gs-accent) !important;
+
+  /* links */
+  --ds-link: var(--gs-link) !important;
+  --ds-link-pressed: var(--gs-accent-hover) !important;
+  --ds-link-visited: var(--gs-accent-hover) !important;
+
+  /* borders */
+  --ds-border: var(--gs-border) !important;
+  --ds-border-input: var(--gs-border) !important;
+  --ds-border-bold: var(--gs-border) !important;
+  --ds-border-disabled: var(--gs-border-muted) !important;
+  --ds-border-inverse: var(--gs-canvas) !important;
+  --ds-border-focused: var(--gs-accent) !important;
+  --ds-border-selected: var(--gs-accent) !important;
+  --ds-border-brand: var(--gs-accent) !important;
+
+  /* icons */
+  --ds-icon: var(--gs-fg) !important;
+  --ds-icon-subtle: var(--gs-fg-muted) !important;
+  --ds-icon-disabled: var(--gs-fg-subtle) !important;
+  --ds-icon-inverse: var(--gs-canvas) !important;
+  --ds-icon-selected: var(--gs-accent) !important;
+  --ds-icon-brand: var(--gs-accent) !important;
+
+  /* backgrounds */
+  --ds-background-neutral: var(--gs-canvas-subtle) !important;
+  --ds-background-neutral-hovered: var(--gs-canvas-inset) !important;
+  --ds-background-neutral-pressed: var(--gs-canvas-inset) !important;
+  --ds-background-neutral-bold: var(--gs-fg) !important;
+  --ds-background-input: var(--gs-canvas) !important;
+  --ds-background-disabled: var(--gs-canvas-subtle) !important;
+  --ds-background-selected: var(--gs-accent-subtle) !important;
+  --ds-background-selected-bold: var(--gs-accent) !important;
+  --ds-background-brand-bold: var(--gs-accent) !important;
+  --ds-background-brand-bold-hovered: var(--gs-accent-hover) !important;
+  --ds-background-brand-subtlest: var(--gs-accent-subtle) !important;
+
+  /* status surfaces */
+  --ds-background-success: var(--gs-success-subtle) !important;
+  --ds-background-danger: var(--gs-danger-subtle) !important;
+  --ds-background-warning: var(--gs-attention-subtle) !important;
+  --ds-background-information: var(--gs-accent-subtle) !important;
+
+  /* shape */
+  --ds-radius-small: var(--gs-radius-sm) !important;
+  --ds-radius-medium: var(--gs-radius-md) !important;
+  --ds-radius-large: var(--gs-radius-lg) !important;
+  --ds-radius-xlarge: var(--gs-radius-lg) !important;
+}
+
+/* Bitbucket's top bar is a plain surface, so the token map above leaves it
+   white — the one part of a page a viewer reads as "skinned" stays put. Give
+   the header the applied layout's bar, the way the Gitea `#navbar` block does,
+   and re-point the header-local tokens so the wordmark, icons and search stay
+   legible on it. `data-layout-slot` marks Atlassian's page-layout header. */
+html[data-gs-source="bitbucket"]:is(.gs-theme-github, .gs-theme-gitlab)
+  header[data-layout-slot="true"] {
+  background-color: var(--gs-header-bg) !important;
+  --ds-surface: var(--gs-header-bg);
+  --ds-text: var(--gs-header-fg);
+  --ds-text-subtle: var(--gs-header-fg);
+  --ds-text-subtlest: var(--gs-header-fg);
+  --ds-icon: var(--gs-header-fg);
+  --ds-icon-subtle: var(--gs-header-fg);
+  --ds-border: var(--gs-header-bg);
+}
+
 /* -------------------- Gitea tokens -> gitalike (every skin) -- */
 /* Codeberg (Forgejo) and gitea.com expose Gitea's own `--color-*` names, on
    <html data-theme>, whichever skin is applied. The mapping is the same for
