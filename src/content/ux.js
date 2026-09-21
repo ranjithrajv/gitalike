@@ -321,7 +321,7 @@
     [/^projects:merge_requests/, 'Pull requests'],
     [/^projects:(pipelines|jobs|builds|ci)\b/, 'Actions'],
     [/^projects:boards/, 'Projects'],
-    [/^projects:(security|vulnerabilities)/, 'Security'],
+    [/^projects:(security|vulnerabilities)/, 'Security and quality'],
     [/^projects:wikis/, 'Wiki'],
     [/^projects:(insights|analytics)/, 'Insights'],
   ];
@@ -392,6 +392,66 @@
       }
     }
     editable.appendChild(rail);
+  }
+
+  // GitLab's project sidebar scatters the same destinations across a pinned
+  // block and collapsible groups (so items duplicate, and Wiki/Security are not
+  // even rendered when the project has them disabled), and its group tree gives
+  // no single list to reorder. The GitHub skin therefore rebuilds the strip as
+  // GitHub's repo tabs, in GitHub's order, reusing each link GitLab does render
+  // and synthesising the tabs GitLab omits.
+  function paintProjectTabs(t) {
+    if (t !== 'github') return;
+    const page = (document.body && document.body.dataset.page) || '';
+    if (!page.startsWith('projects:')) return;
+    const sidebar = document.querySelector('.super-sidebar');
+    const nav = sidebar && sidebar.querySelector('[data-testid="nav-container"]');
+    if (!nav) return;
+    const anchors = [...sidebar.querySelectorAll('a:not([data-gs-project-tab])')];
+    const findHref = (labels) => {
+      for (const a of anchors) {
+        const text = (a.textContent || '').replace(/\s+/g, ' ').trim();
+        if (labels.some((label) => UX.labelMatches(text, label))) {
+          return a.getAttribute('href');
+        }
+      }
+      return null;
+    };
+    const codeHref = findHref(['Code', 'Repository']);
+    const base = [codeHref, findHref(['Issues', 'Work items']), findHref(['Actions', 'Pipelines'])]
+      .filter(Boolean)
+      .map((href) => href.split('/-/')[0])
+      .find(Boolean);
+    if (!base) return;
+    const signature = `${base}:${location.pathname}`;
+    let list = nav.querySelector('[data-gs-project-tabs]');
+    if (list && list.getAttribute('data-gs-signature') === signature) return;
+    if (list) list.remove();
+    const tabs = [
+      ['Code', codeHref || base],
+      ['Issues', findHref(['Issues', 'Work items']) || `${base}/-/work_items`],
+      ['Pull requests', findHref(['Pull requests', 'Merge requests']) || `${base}/-/merge_requests`],
+      ['Actions', findHref(['Actions', 'Pipelines', 'CI/CD']) || `${base}/-/pipelines`],
+      ['Projects', findHref(['Projects', 'Issue boards']) || `${base}/-/boards`],
+      ['Wiki', `${base}/-/wikis/home`],
+      ['Security and quality', `${base}/-/security/dashboard`],
+      ['Insights', findHref(['Insights', 'Analytics']) || `${base}/-/analytics`],
+    ];
+    list = document.createElement('ul');
+    list.setAttribute('data-gs-project-tabs', '');
+    list.setAttribute('data-gs-ux-skip', '');
+    list.setAttribute('data-gs-signature', signature);
+    for (const [label, href] of tabs) {
+      const item = document.createElement('li');
+      const anchor = document.createElement('a');
+      anchor.className = 'super-sidebar-nav-item';
+      anchor.setAttribute('data-gs-project-tab', '');
+      anchor.setAttribute('href', href);
+      anchor.textContent = label;
+      item.appendChild(anchor);
+      list.appendChild(item);
+    }
+    nav.insertBefore(list, nav.firstChild);
   }
 
   function paintUnmapped(node, t) {
@@ -833,6 +893,7 @@
     paintMetadata(t);
     paintHeadings(t);
     paintActiveTab(t);
+    paintProjectTabs(t);
     paintProfileRail(t);
     paintProfileStats(t);
     paintProfileMenu(t);
@@ -868,6 +929,7 @@
     for (const el of document.querySelectorAll('[data-gs-profile-stats]')) el.remove();
     for (const el of document.querySelectorAll('[data-gs-profile-menu]')) el.remove();
     for (const el of document.querySelectorAll('[data-gs-profile-rail]')) el.remove();
+    for (const el of document.querySelectorAll('[data-gs-project-tabs]')) el.remove();
     for (const [el, display] of profileRailHidden) {
       if (!el.isConnected) continue;
       if (display) el.style.display = display;
@@ -1011,6 +1073,7 @@
       paintMetadata(current);
       paintHeadings(current);
       paintActiveTab(current);
+      paintProjectTabs(current);
       paintProfileRail(current);
       paintProfileStats(current);
       paintProfileMenu(current);

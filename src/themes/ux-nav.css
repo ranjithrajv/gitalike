@@ -778,6 +778,28 @@ html.gs-theme-github
   border-bottom-color: #fd8c73 !important;
 }
 
+/* GitLab scatters the same project destinations across a pinned block and a
+   set of collapsible groups, duplicating items and not rendering some
+   (Wiki/Security) at all. For a GitHub-style strip content/ux.js rebuilds the
+   tabs as GitHub's own, so GitLab's sections are hidden. */
+html.gs-theme-github
+  body[data-page^="projects:"]
+  .super-sidebar
+  :is(
+    [data-testid="static-items-section"],
+    [data-testid="non-static-items-section"],
+    [data-testid="pinned-nav-items"]
+  ) {
+  display: none !important;
+}
+
+html.gs-theme-github
+  body[data-page^="projects:"]
+  .super-sidebar
+  [data-gs-project-tabs] {
+  margin: 0 !important;
+}
+
 /* GitHub's bar lists its tabs directly; GitLab's sidebar hides them inside
    collapsible groups. Show the group contents and drop the group toggles so the
    items are on the bar, where NAV_KEEP then keeps only GitHub's own options. */
