@@ -844,6 +844,15 @@
       ['Packages', `/users/${u}/packages`, null],
       ['Stars', `/users/${u}/starred`, 'Starred projects'],
     ],
+    // Bitbucket has no public user profile of its own, so its menu is built from
+    // the destinations it does have (repositories, projects, snippets) rather
+    // than from either forge's tab set.
+    bitbucket: (u) => [
+      ['Overview', `/${u}`, '@first'],
+      ['Repositories', `/users/${u}/projects`, 'Personal projects'],
+      ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
+      ['Snippets', `/${u}?tab=snippets`, 'Snippets'],
+    ],
     gitlab: (u, name) => [
       [name, `/${u}`, 'Overview'],
       ['Activity', `/${u}?tab=overview`, null],

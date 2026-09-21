@@ -312,7 +312,8 @@
     // to restore, so they are not in the ledger.
     for (const el of document.querySelectorAll(
       '.gs-nav-group,[data-gs-profile-stats],[data-gs-profile-menu],' +
-        '[data-gs-profile-rail],[data-gs-project-tabs],[data-gs-gitea-nav]',
+        '[data-gs-profile-rail],[data-gs-project-tabs],[data-gs-gitea-nav],' +
+        '[data-gs-gitea-added]',
     )) {
       el.remove();
     }

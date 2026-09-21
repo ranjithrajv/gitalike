@@ -192,7 +192,14 @@
     const build = UX.PROFILE_MENU[t];
     if (!build || !document.body) return;
 
-    const sourceIsGitlab = t === 'github';
+    // The source, not the target, decides where the menu lives: a Bitbucket
+    // target can be worn by either forge, and its menu must still find the
+    // source's container. `gs-source` is set by content/theme.js from the shared
+    // tables; fall back to the two-way assumption when it is absent.
+    const source =
+      document.documentElement.dataset.gsSource ||
+      (t === 'github' ? 'gitlab' : 'github');
+    const sourceIsGitlab = source === 'gitlab';
     // GitLab's profile menu lives in the super sidebar — which every project
     // page has too — so only rebuild it on an actual profile page. Without this
     // the project sidebar's static, pinned and group sections each got GitHub's

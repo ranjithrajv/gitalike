@@ -875,6 +875,16 @@ describe('PROFILE_MENU', () => {
       ],
     );
   });
+
+  test('bitbucket is its own destinations, not either forge’s tabs', () => {
+    const menu = PROFILE_MENU.bitbucket('octocat');
+    assert.deepEqual(
+      menu.map(([label]) => label),
+      ['Overview', 'Repositories', 'Projects', 'Snippets'],
+    );
+    // The first item reuses the page's own landing anchor.
+    assert.equal(menu[0][2], '@first');
+  });
 });
 
 describe('repoNav', () => {

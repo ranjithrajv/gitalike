@@ -28,10 +28,12 @@
     }
   }
 
-  // GitLab's About column ends with a "Created on" block, for which GitHub's
-  // About has no counterpart, so it is hidden on the GitHub skin.
+  // GitLab's About column ends with a "Created on" block, for which neither
+  // GitHub's About nor Bitbucket's page has a counterpart, so it is hidden on
+  // every non-GitLab skin. (Keyed on the theme, not the layout: Bitbucket shares
+  // GitLab's sidebar layout but not its metadata.)
   function paintAboutExtras(t) {
-    if (layoutOf(t) !== 'github') return;
+    if (t === 'gitlab') return;
     for (const block of document.querySelectorAll(
       SELECTORS.gitlab.projectSidebarBlock,
     )) {
@@ -44,9 +46,6 @@
   // "About" sidebar, GitLab's "Project information" block. CSS moves the block;
   // the heading is renamed here so its label matches the product being imitated.
   function paintHeadings(t) {
-    // Only the two big forges have the About / Project information heading this
-    // renames; Bitbucket's metadata block is headed differently, so it is left.
-    if (t !== 'github' && t !== 'gitlab') return;
     const rename = (heading, from, to) => {
       for (const text of textNodes(heading)) {
         if (text.nodeValue.trim() !== from) continue;
@@ -88,6 +87,8 @@
       }
       return;
     }
+    // Every non-GitLab target (GitHub, Bitbucket) reads GitLab's "Project
+    // information" heading as "About" rather than leaving GitLab's word on it.
     const sidebar =
       document.querySelector(SELECTORS.gitlab.projectSidebarBlock) ||
       document.querySelector(SELECTORS.gitlab.projectLayoutSidebar);
@@ -196,6 +197,40 @@
     }
   }
 
+  // The repo-relative base (`/owner/repo`) a Gitea page is on, or null.
+  function giteaBase() {
+    const segments = location.pathname.split('/').filter(Boolean);
+    return segments.length >= 2 ? `/${segments[0]}/${segments[1]}` : null;
+  }
+
+  // GitHub always shows a Wiki tab and an Insights tab. Gitea renders neither,
+  // but it does have a wiki route and an activity page, so under the GitHub skin
+  // the two are added to the restyled row. (Security has no Gitea page and is not
+  // invented.) Marked so a re-render does not add a second copy.
+  function addGiteaGithubTabs(menu) {
+    const base = giteaBase();
+    if (!base) return;
+    const row = menu.querySelector('.overflow-menu-items') || menu;
+    const have = new Set(
+      [...row.querySelectorAll('a.item')].map((a) => navItemLabel(a)),
+    );
+    const wanted = [
+      ['Wiki', `${base}/wiki`],
+      ['Insights', `${base}/activity`],
+    ];
+    for (const [label, href] of wanted) {
+      if (have.has(label)) continue;
+      if (row.querySelector(`[data-gs-gitea-added="${label}"]`)) continue;
+      const anchor = document.createElement('a');
+      anchor.className = 'item';
+      anchor.setAttribute('data-gs-gitea-added', label);
+      anchor.setAttribute('data-gs-ux-skip', '');
+      anchor.setAttribute('href', href);
+      anchor.textContent = label;
+      row.appendChild(anchor);
+    }
+  }
+
   /** The label of a repo-nav item: its text without the counter pill. */
   function navItemLabel(anchor) {
     return textNodes(anchor)
@@ -217,9 +252,16 @@
   // applied product's labels, order and group headings come from `UX.repoNav`;
   // the original menu is hidden by the stylesheet.
   function paintGiteaNav(t) {
-    if (layoutOf(t) !== 'gitlab') return;
+    const layout = layoutOf(t);
     const menu = document.querySelector(SELECTORS.gitea.repoMenu);
     if (!menu) return;
+    // The GitHub skin restyles Gitea's own row in place (its shape is already
+    // GitHub's), so only the tabs Gitea omits are added here.
+    if (layout === 'github') {
+      addGiteaGithubTabs(menu);
+      return;
+    }
+    if (layout !== 'gitlab') return;
     const anchors = [...menu.querySelectorAll('a.item')].filter((a) =>
       a.getAttribute('href'),
     );
