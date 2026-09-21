@@ -29,6 +29,7 @@
  */
 
 import { pathToFileURL } from 'node:url';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 import '../../src/lib/sites.js';
 import '../../src/lib/ux.js';
@@ -374,9 +375,55 @@ export function cell(value) {
   return value === null ? '—' : value.toFixed(1);
 }
 
+/** The scorecard table for a page type, as it appears in docs/UX-PARITY.md. */
+export function markdownTable(pageType = 'project') {
+  const header = `| Source ↓ / Skin → | ${SKINS.map((s) => s.label).join(' | ')} |`;
+  const rule = `| --- | ${SKINS.map(() => ':--:').join(' | ')} |`;
+  const rows = table(pageType).map(
+    (row) => `| **${row.label}** | ${row.scores.map(cell).join(' | ')} |`,
+  );
+  return [header, rule, ...rows];
+}
+
+// Replace the table under a `### …` heading with the generated one, so both
+// page types' matrices are produced from this one definition.
+function replaceTable(doc, heading, pageType) {
+  const start = doc.indexOf(heading);
+  if (start === -1) throw new Error(`docs heading not found: ${heading}`);
+  const rest = doc.slice(start + heading.length);
+  const end = rest.search(/\n#{2,4} /);
+  const block = end === -1 ? rest : rest.slice(0, end);
+  const tail = end === -1 ? '' : rest.slice(end);
+  const lines = block.split('\n');
+  const first = lines.findIndex((line) => line.startsWith('|'));
+  if (first === -1) throw new Error(`no table under: ${heading}`);
+  let last = first;
+  while (last < lines.length && lines[last].startsWith('|')) last += 1;
+  const rebuilt = [
+    ...lines.slice(0, first),
+    ...markdownTable(pageType),
+    ...lines.slice(last),
+  ].join('\n');
+  return doc.slice(0, start + heading.length) + rebuilt + tail;
+}
+
+/** Regenerate the two scorecard tables in docs/UX-PARITY.md. */
+export function writeDocs() {
+  const url = new URL('../../docs/UX-PARITY.md', import.meta.url);
+  let doc = readFileSync(url, 'utf8');
+  doc = replaceTable(doc, '### Project pages, sources × skins', 'project');
+  doc = replaceTable(doc, '### Profile pages, sources × skins', 'profile');
+  writeFileSync(url, doc);
+  return url.pathname;
+}
+
 /* ------------------------------------------------------------------- cli -- */
 
 function main(args) {
+  if (args.has('--write')) {
+    console.log(`updated ${writeDocs()}`);
+    return;
+  }
   if (args.has('--json')) {
     console.log(
       JSON.stringify(
