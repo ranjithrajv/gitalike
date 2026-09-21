@@ -40,6 +40,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { launch, retry, waitForTheme } from './harness.mjs';
+import { SOURCES as CAPTURE_SOURCES } from './captures.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -76,12 +77,12 @@ const REPO_WORDS = [
   'Security',
 ];
 
-// The project source pages, and where their chrome lives. Selector lists
-// resolve in order — a rebuilt element wins over a leftover one.
-const PROJECT_SOURCES = [
-  {
-    key: 'github',
-    host: 'github.com',
+// Where each source's project page keeps its chrome. The *source list* comes
+// from captures.mjs, so every tool and both page types cover the same sources;
+// only the selectors live here. Selector lists resolve in order — a rebuilt
+// element wins over a leftover one.
+const PROJECT_SELECTORS = {
+  github: {
     url: 'https://github.com/git/git',
     ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
     header: ['header[role="banner"]', '.AppHeader'],
@@ -91,9 +92,7 @@ const PROJECT_SOURCES = [
     ],
     link: ['#readme a[href]', '.markdown-body a[href]', 'main a[href]'],
   },
-  {
-    key: 'gitlab',
-    host: 'gitlab.com',
+  gitlab: {
     url: 'https://gitlab.com/gitlab-org/gitlab',
     ready: '.super-sidebar, [data-testid="project-header"]',
     header: ['header', '.header-content'],
@@ -104,9 +103,7 @@ const PROJECT_SOURCES = [
     ],
     link: ['#readme a[href]', '.md a[href]', 'main a[href]'],
   },
-  {
-    key: 'gitea',
-    host: 'codeberg.org',
+  gitea: {
     url: 'https://codeberg.org/forgejo/forgejo',
     ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
     header: ['#navbar'],
@@ -114,13 +111,10 @@ const PROJECT_SOURCES = [
     link: ['#readme a[href]', '.markdown a[href]', 'main a[href]'],
   },
   // Bitbucket is a source too, repainted through its Atlassian `--ds-*` tokens
-  // (`themes/gs-tokens.css`) rather than markup selectors. It has no navigation
-  // or vocabulary pass yet, so it scores on palette only — the honest gap.
+  // (`themes/gs-tokens.css`) and relabelled/reoriented by `paintBitbucketNav`.
   // Gerrit is not driven here: it has no bundled host, so the extension has no
   // permission to inject on it.
-  {
-    key: 'bitbucket',
-    host: 'bitbucket.org',
+  bitbucket: {
     url: 'https://bitbucket.org/atlassian/atlassian-connect-express/src/master/',
     ready: '[data-testid="ref-selector-trigger"]',
     header: ['header[data-layout-slot="true"]', 'header'],
@@ -132,15 +126,20 @@ const PROJECT_SOURCES = [
     ],
     link: ['main a[href]', 'a[href]'],
   },
-];
+};
 
-// The profile source pages. A profile's navigation is a different set of
-// destinations, and its markup differs from the project page's, so the
-// selectors and the words that identify the nav are their own.
-const PROFILE_SOURCES = [
-  {
-    key: 'github',
-    host: 'github.com',
+const PROJECT_SOURCES = CAPTURE_SOURCES.map((source) => ({
+  key: source.key,
+  host: source.host,
+  ...PROJECT_SELECTORS[source.key],
+}));
+
+// A profile page's selectors differ from the project page's, so each source
+// overrides url / ready / header / nav / link here. The profile sources are then
+// derived from PROJECT_SOURCES, so both page types always cover the same sources
+// — which is how Codeberg stays in the profile comparison.
+const PROFILE_SELECTORS = {
+  github: {
     url: 'https://github.com/torvalds',
     ready: 'nav[aria-label="User profile"]',
     header: ['header[role="banner"]', '.AppHeader'],
@@ -155,9 +154,7 @@ const PROFILE_SOURCES = [
       'main article a[href]',
     ],
   },
-  {
-    key: 'gitlab',
-    host: 'gitlab.com',
+  gitlab: {
     url: 'https://gitlab.com/dzaporozhets',
     ready: '.super-sidebar, .user-profile-header',
     header: ['header', '.header-content'],
@@ -168,9 +165,19 @@ const PROFILE_SOURCES = [
       'main article a[href]',
     ],
   },
-  {
-    key: 'bitbucket',
-    host: 'bitbucket.org',
+  gitea: {
+    url: 'https://codeberg.org/forgejo',
+    ready: '.user.profile, .profile-header, .ui.container',
+    header: ['#navbar'],
+    nav: [
+      '.ui.tabular.menu',
+      '.ui.secondary.pointing.menu',
+      'nav',
+      '.ui.container',
+    ],
+    link: ['#readme a[href]', '.markdown a[href]', 'main a[href]'],
+  },
+  bitbucket: {
     url: 'https://bitbucket.org/tutorials/workspace/repositories/',
     ready: '[data-testid="profile-repository-row"]',
     header: ['header[data-layout-slot="true"]', 'header'],
@@ -182,7 +189,12 @@ const PROFILE_SOURCES = [
     ],
     link: ['main a[href]'],
   },
-];
+};
+
+const PROFILE_SOURCES = PROJECT_SOURCES.map((source) => ({
+  ...source,
+  ...PROFILE_SELECTORS[source.key],
+}));
 
 // Words that mark a container as the profile navigation, so the right `<ul>` is
 // found whichever product the source or target is.

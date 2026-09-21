@@ -30,7 +30,12 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { PROJECT_JOBS, PROFILE_JOBS, themeOf } from './captures.mjs';
+import {
+  PROJECT_JOBS,
+  PROFILE_JOBS,
+  SOURCES as CAPTURE_SOURCES,
+  themeOf,
+} from './captures.mjs';
 import { SKINS, SOURCES } from './parity-score.mjs';
 import { decodePng } from './png.mjs';
 
@@ -38,12 +43,11 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const DIR = process.env.GS_CAPTURES ?? join(root, 'docs');
 
 const sourceByKey = new Map(SOURCES.map((source) => [source.key, source]));
-const SOURCE_BY_PREFIX = {
-  github: sourceByKey.get('github'),
-  gitlab: sourceByKey.get('gitlab'),
-  codeberg: sourceByKey.get('gitea'),
-  bitbucket: sourceByKey.get('bitbucket'),
-};
+// Derived from the one source table, so a new source appears in every report
+// without an edit here.
+const SOURCE_BY_PREFIX = Object.fromEntries(
+  CAPTURE_SOURCES.map((source) => [source.prefix, sourceByKey.get(source.key)]),
+);
 
 // The target products' design-language classes. These are the anchor: a page is
 // "GitHub UI" when its chrome reads as GitHub, whatever page it is.

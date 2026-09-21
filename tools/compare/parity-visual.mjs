@@ -27,7 +27,12 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { PROJECT_JOBS, PROFILE_JOBS, themeOf } from './captures.mjs';
+import {
+  PROJECT_JOBS,
+  PROFILE_JOBS,
+  SOURCES as CAPTURE_SOURCES,
+  themeOf,
+} from './captures.mjs';
 // The parity rubrics publish the source and skin tables; reuse them so this
 // report's columns and row labels cannot drift from the rubric table's.
 import { SKINS, SOURCES } from './parity-score.mjs';
@@ -38,12 +43,11 @@ const DIR = process.env.GS_CAPTURES ?? join(root, 'docs');
 
 const sourceByKey = new Map(SOURCES.map((source) => [source.key, source]));
 
-/** The rubric row labels, so a capture job maps onto one. */
-const SOURCE_BY_PREFIX = {
-  github: sourceByKey.get('github'),
-  gitlab: sourceByKey.get('gitlab'),
-  codeberg: sourceByKey.get('gitea'),
-};
+/** The rubric row labels, so a capture job maps onto one. Derived from the one
+ * source table, so a new source appears in every report without edits here. */
+const SOURCE_BY_PREFIX = Object.fromEntries(
+  CAPTURE_SOURCES.map((source) => [source.prefix, sourceByKey.get(source.key)]),
+);
 
 /* ------------------------------------------------------------------ table -- */
 
