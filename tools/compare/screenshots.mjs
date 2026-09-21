@@ -37,13 +37,22 @@ import { launch, retry, waitForNoTheme, waitForTheme } from './harness.mjs';
 import {
   PROFILE_JOBS,
   PROJECT_JOBS,
+  SOURCES,
   STORE_SHOTS,
   themeOf,
 } from './captures.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
-const OFF = { github: 'off', gitlab: 'off' };
+// A source that is not a bundled host (Gerrit) is granted and registered as its
+// kind for this run only, so the shipped extension's permissions are unchanged.
+const instanceSources = SOURCES.filter((source) => source.instance);
+const grantedHosts = instanceSources.map((source) => source.instance.host);
+const instances = Object.fromEntries(
+  instanceSources.map((source) => [source.instance.host, source.instance.kind]),
+);
+
+const OFF = { github: 'off', gitlab: 'off', bitbucket: 'off', gerrit: 'off' };
 const PAGE = { width: 1280, height: 900 };
 const STORE = { width: 1280, height: 800 };
 
@@ -185,13 +194,15 @@ await mkdir(out, { recursive: true });
 const only = process.env.GS_ONLY;
 const jobs = config.jobs?.filter((job) => !only || job.name.includes(only));
 
-const { context, popup, setSettings, close } = await launch({
+const { context, popup, setSettings, setInstances, close } = await launch({
   viewport: config.viewport,
   headless: config.headless ?? true,
   profilePrefix: `gs-${mode}-shots-`,
+  hosts: grantedHosts,
 });
 
 try {
+  if (Object.keys(instances).length) await setInstances(instances);
   if (jobs) await captureJobs(context, setSettings, out, jobs);
   if (config.shots) await captureShots(context, setSettings, out, config.shots);
   if (config.popup) await capturePopup(context, popup, out, config.viewport);

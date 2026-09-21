@@ -19,7 +19,7 @@
 
 import { chromium } from 'playwright-core';
 import { mkdtemp } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,6 +53,29 @@ function requireBuild() {
 }
 
 /**
+ * Add hosts the extension does not bundle (Gerrit) to the built manifest for
+ * this run, so Chromium grants them when it loads the unpacked extension. The
+ * shipped extension's permissions are unchanged; a rebuild resets the build
+ * directory. `hosts` are bare hostnames.
+ */
+function grantHosts(hosts) {
+  const path = join(EXT, 'manifest.json');
+  const manifest = JSON.parse(readFileSync(path, 'utf8'));
+  const permissions = new Set(manifest.host_permissions ?? []);
+  let changed = false;
+  for (const host of hosts) {
+    const pattern = `*://${host}/*`;
+    if (!permissions.has(pattern)) {
+      permissions.add(pattern);
+      changed = true;
+    }
+  }
+  if (!changed) return;
+  manifest.host_permissions = [...permissions];
+  writeFileSync(path, `${JSON.stringify(manifest, null, 2)}\n`);
+}
+
+/**
  * Launch the built extension in a fresh persistent context.
  *
  * @returns {Promise<{
@@ -68,9 +91,11 @@ export async function launch({
   viewport,
   headless = true,
   profilePrefix = 'gs-',
+  hosts = [],
 } = {}) {
   const chrome = resolveChrome();
   requireBuild();
+  if (hosts.length) grantHosts(hosts);
 
   const profile = await mkdtemp(join(tmpdir(), profilePrefix));
   const context = await chromium.launchPersistentContext(profile, {
@@ -107,6 +132,12 @@ export async function launch({
         chrome.storage.sync.set({ [globalThis.GITALIKE.HOST_SETTINGS_KEY]: s }),
       hostSettings,
     );
+  const setInstances = (instances) =>
+    popup.evaluate(
+      (i) =>
+        chrome.storage.sync.set({ [globalThis.GITALIKE.INSTANCES_KEY]: i }),
+      instances,
+    );
 
   return {
     context,
@@ -114,6 +145,7 @@ export async function launch({
     popup,
     setSettings,
     setHostSettings,
+    setInstances,
     close: () => context.close(),
   };
 }

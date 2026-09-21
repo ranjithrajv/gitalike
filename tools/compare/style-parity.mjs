@@ -51,6 +51,14 @@ const PLUGINS = globalThis.GITALIKE_PLUGINS;
 // `parity-visual`/`parity-style` all refuse to run an uncaptured source.)
 const SKINS = Object.keys(PLUGINS.skins);
 
+// A source that is not a bundled host (Gerrit) is granted and registered as its
+// kind for this run only, so the shipped extension's permissions are unchanged.
+const instanceSources = CAPTURE_SOURCES.filter((source) => source.instance);
+const grantedHosts = instanceSources.map((source) => source.instance.host);
+const instances = Object.fromEntries(
+  instanceSources.map((source) => [source.instance.host, source.instance.kind]),
+);
+
 // The reviewed, skin-independent reference: the target products' real chrome
 // colours. Scoring against these — not the applied skin's own `--gs-*`
 // variables — is what makes the score a fidelity measure rather than a
@@ -119,8 +127,6 @@ const PROJECT_SELECTORS = {
   },
   // Bitbucket is a source too, repainted through its Atlassian `--ds-*` tokens
   // (`themes/gs-tokens.css`) and relabelled/reoriented by `paintBitbucketNav`.
-  // Gerrit is not driven here: it has no bundled host, so the extension has no
-  // permission to inject on it.
   bitbucket: {
     url: 'https://bitbucket.org/atlassian/atlassian-connect-express/src/master/',
     ready: '[data-testid="ref-selector-trigger"]',
@@ -131,6 +137,17 @@ const PROJECT_SELECTORS = {
       '[data-testid="sidebar"]',
       'nav',
     ],
+    link: ['main a[href]', 'a[href]'],
+  },
+  // Gerrit is not a bundled host; this run grants it and registers it as the
+  // `gerrit` kind (see the `instance` handling below). Its chrome lives inside
+  // `gr-app`'s open shadow root, so `readChrome` below descends into shadow
+  // roots to find it.
+  gerrit: {
+    url: 'https://gerrit-review.googlesource.com/q/status:open',
+    ready: 'gr-app#pg-app',
+    header: ['gr-main-header'],
+    nav: ['gr-main-header nav', 'nav'],
     link: ['main a[href]', 'a[href]'],
   },
 };
@@ -195,6 +212,15 @@ const PROFILE_SELECTORS = {
       'nav',
     ],
     link: ['main a[href]'],
+  },
+  // Gerrit has no public profile; its closest list page is a change list scoped
+  // to one project.
+  gerrit: {
+    url: 'https://gerrit-review.googlesource.com/q/project:gerrit+status:open',
+    ready: 'gr-app#pg-app',
+    header: ['gr-main-header'],
+    nav: ['gr-main-header nav', 'nav'],
+    link: ['main a[href]', 'a[href]'],
   },
 };
 
@@ -321,9 +347,22 @@ const colorFraction = (got, want, scale = 96) => {
 // lists are passed in, so this stays serialisable.
 const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
   const visible = (el) => el && getComputedStyle(el).display !== 'none';
+  // PolyGerrit renders inside open shadow roots, so a query must descend into
+  // them; a plain document.querySelectorAll stops at the host.
+  const deepAll = (sel) => {
+    const out = [];
+    const walk = (root) => {
+      for (const el of root.querySelectorAll(sel)) out.push(el);
+      for (const el of root.querySelectorAll('*')) {
+        if (el.shadowRoot) walk(el.shadowRoot);
+      }
+    };
+    walk(document);
+    return out;
+  };
   const first = (sels, predicate = visible) => {
     for (const sel of sels) {
-      for (const el of document.querySelectorAll(sel)) {
+      for (const el of deepAll(sel)) {
         if (predicate(el)) return el;
       }
     }
@@ -351,7 +390,7 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
   for (const sel of navSels) {
     let candidate = null;
     let best = 0;
-    for (const el of document.querySelectorAll(sel)) {
+    for (const el of deepAll(sel)) {
       const known = knownIn(el);
       if (known > best) {
         best = known;
@@ -368,7 +407,7 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
   // are hashed. Take the ancestor that holds the most known repo words.
   if (!nav) {
     const counts = new Map();
-    for (const el of document.querySelectorAll(ITEMS)) {
+    for (const el of deepAll(ITEMS)) {
       const text = label(el);
       if (!text || !repoWords.some((word) => text.startsWith(word))) continue;
       if (el.querySelector(ITEMS)) continue;
@@ -394,7 +433,7 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
   // whichever happens to render first.
   const links = [];
   for (const sel of linkSels) {
-    for (const el of document.querySelectorAll(sel)) {
+    for (const el of deepAll(sel)) {
       if (!visible(el) || label(el).length < 2) continue;
       links.push(el);
     }
@@ -421,11 +460,13 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
   };
 };
 
-const { context, setSettings, setHostSettings, close } = await launch({
-  viewport: { width: 1280, height: 900 },
-  headless: true,
-  profilePrefix: 'gs-style-',
-});
+const { context, setSettings, setHostSettings, setInstances, close } =
+  await launch({
+    viewport: { width: 1280, height: 900 },
+    headless: true,
+    profilePrefix: 'gs-style-',
+    hosts: grantedHosts,
+  });
 
 const gotoLive = (page, url) =>
   retry(() =>
@@ -435,6 +476,7 @@ const gotoLive = (page, url) =>
 const rows = [];
 
 try {
+  if (Object.keys(instances).length) await setInstances(instances);
   await setSettings({ github: 'off', gitlab: 'off' });
 
   for (const page of PAGES) {

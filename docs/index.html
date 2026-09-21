@@ -1032,6 +1032,7 @@
               <button type="button" class="see-tab" data-forge="gitlab" aria-pressed="false">GitLab</button>
               <button type="button" class="see-tab" data-forge="codeberg" aria-pressed="false">Codeberg</button>
               <button type="button" class="see-tab" data-forge="bitbucket" aria-pressed="false">Bitbucket</button>
+              <button type="button" class="see-tab" data-forge="gerrit" aria-pressed="false">Gerrit</button>
             </div>
           </div>
 
@@ -1203,6 +1204,80 @@
               </figure>
             </div>
 
+            <div class="card" id="gerrit-project" data-kind="project" data-forge="gerrit" hidden>
+              <h3>Gerrit change list</h3>
+              <p class="sub">
+                PolyGerrit is a client-rendered app. Its palette is re-pointed through the root custom properties it reads (<code>--primary-text-color</code>, <code>--link-color</code>, …), which inherit across its shadow boundary, so the skins recolour it without reaching inside.
+              </p>
+              <figure class="multi" aria-label="Gerrit change list — compared across its skins">
+                <div class="multi-stage">
+                  <picture><source srcset="gerrit-default-640.webp 640w, gerrit-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-default.png" alt="Gerrit change list, default" /></picture>
+                  <picture><source srcset="gerrit-github-640.webp 640w, gerrit-github.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-github.png" alt="Gerrit change list skinned as GitHub" /></picture>
+                  <picture><source srcset="gerrit-gitlab-640.webp 640w, gerrit-gitlab.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-gitlab.png" alt="Gerrit change list skinned as GitLab" /></picture>
+                  <picture><source srcset="gerrit-bitbucket-640.webp 640w, gerrit-bitbucket.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="3" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-bitbucket.png" alt="Gerrit change list skinned as Bitbucket" /></picture>
+                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="2" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="3" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <div class="multi-tabs" role="radiogroup" aria-label="Capture shown">
+                  <input type="radio" class="multi-radio" name="mt-5" id="mt-5-0" data-i="0" checked /><label class="multi-tab" for="mt-5-0" data-i="0">Default · Gerrit</label>
+                  <input type="radio" class="multi-radio" name="mt-5" id="mt-5-1" data-i="1" /><label class="multi-tab" for="mt-5-1" data-i="1" data-skin="github">GitHub UI</label>
+                  <input type="radio" class="multi-radio" name="mt-5" id="mt-5-2" data-i="2" /><label class="multi-tab" for="mt-5-2" data-i="2" data-skin="gitlab">GitLab UI</label>
+                  <input type="radio" class="multi-radio" name="mt-5" id="mt-5-3" data-i="3" /><label class="multi-tab" for="mt-5-3" data-i="3" data-skin="bitbucket">Bitbucket UI</label>
+                </div>
+                <figcaption class="multi-legend">
+                  <span class="key">Default · Gerrit</span>
+                  <span class="key" data-skin="github">GitHub UI</span>
+                  <span class="key" data-skin="gitlab">GitLab UI</span>
+                  <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                  <span class="multi-actions">
+
+                    <button type="button" class="multi-reset">Reset</button>
+
+                    <a class="multi-open" href="gerrit-default.png" target="_blank" rel="noopener">Open full size</a>
+
+                  </span>
+
+                </figcaption>
+              </figure>
+            </div>
+            <div class="card" id="gerrit-profile" data-kind="profile" data-forge="gerrit" hidden>
+              <h3>Gerrit project changes</h3>
+              <p class="sub">
+                Gerrit has no public profile; its closest list page is a change list, here scoped to one project. As on its project pages, the skins recolour it through the root properties PolyGerrit reads.
+              </p>
+              <figure class="multi" aria-label="Gerrit project changes — compared across its skins">
+                <div class="multi-stage">
+                  <picture><source srcset="gerrit-profile-default-640.webp 640w, gerrit-profile-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-profile-default.png" alt="Gerrit project changes, default" /></picture>
+                  <picture><source srcset="gerrit-profile-github-640.webp 640w, gerrit-profile-github.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-profile-github.png" alt="Gerrit project changes skinned as GitHub" /></picture>
+                  <picture><source srcset="gerrit-profile-gitlab-640.webp 640w, gerrit-profile-gitlab.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-profile-gitlab.png" alt="Gerrit project changes skinned as GitLab" /></picture>
+                  <picture><source srcset="gerrit-profile-bitbucket-640.webp 640w, gerrit-profile-bitbucket.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="3" width="1280" height="900" loading="lazy" decoding="async" src="gerrit-profile-bitbucket.png" alt="Gerrit project changes skinned as Bitbucket" /></picture>
+                  <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="gitlab" data-i="2" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                  <span class="multi-handle" data-skin="bitbucket" data-i="3" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <div class="multi-tabs" role="radiogroup" aria-label="Capture shown">
+                  <input type="radio" class="multi-radio" name="mt-6" id="mt-6-0" data-i="0" checked /><label class="multi-tab" for="mt-6-0" data-i="0">Default · Gerrit</label>
+                  <input type="radio" class="multi-radio" name="mt-6" id="mt-6-1" data-i="1" /><label class="multi-tab" for="mt-6-1" data-i="1" data-skin="github">GitHub UI</label>
+                  <input type="radio" class="multi-radio" name="mt-6" id="mt-6-2" data-i="2" /><label class="multi-tab" for="mt-6-2" data-i="2" data-skin="gitlab">GitLab UI</label>
+                  <input type="radio" class="multi-radio" name="mt-6" id="mt-6-3" data-i="3" /><label class="multi-tab" for="mt-6-3" data-i="3" data-skin="bitbucket">Bitbucket UI</label>
+                </div>
+                <figcaption class="multi-legend">
+                  <span class="key">Default · Gerrit</span>
+                  <span class="key" data-skin="github">GitHub UI</span>
+                  <span class="key" data-skin="gitlab">GitLab UI</span>
+                  <span class="key" data-skin="bitbucket">Bitbucket UI</span>
+                  <span class="multi-actions">
+
+                    <button type="button" class="multi-reset">Reset</button>
+
+                    <a class="multi-open" href="gerrit-profile-default.png" target="_blank" rel="noopener">Open full size</a>
+
+                  </span>
+
+                </figcaption>
+              </figure>
+            </div>
             <div class="card" id="github-profile" data-kind="profile" data-forge="github" hidden>
               <h3>GitHub profile page</h3>
               <p class="sub">

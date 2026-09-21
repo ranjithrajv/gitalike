@@ -19,7 +19,8 @@
  *
  * A source's `skins` lists the UIs it can wear: it is never painted as itself,
  * so the GitHub pages list GitLab and Bitbucket, the GitLab pages list GitHub
- * and Bitbucket, and Codeberg (GitHub-flavoured markup) lists all three.
+ * and Bitbucket, and Codeberg (GitHub-flavoured markup) and Gerrit (which has no
+ * skin of its own) list all three.
  */
 
 import '../plugins.mjs';
@@ -173,18 +174,54 @@ export const SOURCES = [
       ],
     },
   },
+  // Gerrit. It is not a bundled host, so the capture run grants
+  // `gerrit-review.googlesource.com` and registers it as the `gerrit` kind for
+  // that run only (`instance` below). PolyGerrit renders inside shadow DOM and
+  // the Gerrit support is palette-only, so a skinned frame differs from the base
+  // mainly in colour.
+  {
+    key: 'gerrit',
+    prefix: 'gerrit',
+    host: 'gerrit-review.googlesource.com',
+    instance: { host: 'gerrit-review.googlesource.com', kind: 'gerrit' },
+    project: {
+      name: 'Gerrit change list',
+      url: 'https://gerrit-review.googlesource.com/q/status:open',
+      ready: 'gr-app#pg-app',
+      base: 'gerrit-default.png',
+      skins: [
+        { setting: { gerrit: 'github' }, over: 'gerrit-github.png' },
+        { setting: { gerrit: 'gitlab' }, over: 'gerrit-gitlab.png' },
+        { setting: { gerrit: 'bitbucket' }, over: 'gerrit-bitbucket.png' },
+      ],
+    },
+    // Gerrit has no public profile. Like Bitbucket's workspace page, its closest
+    // list page is a change list, here scoped to one project.
+    profile: {
+      name: 'Gerrit project changes',
+      url: 'https://gerrit-review.googlesource.com/q/project:gerrit+status:open',
+      ready: 'gr-app#pg-app',
+      base: 'gerrit-profile-default.png',
+      skins: [
+        { setting: { gerrit: 'github' }, over: 'gerrit-profile-github.png' },
+        { setting: { gerrit: 'gitlab' }, over: 'gerrit-profile-gitlab.png' },
+        {
+          setting: { gerrit: 'bitbucket' },
+          over: 'gerrit-profile-bitbucket.png',
+        },
+      ],
+    },
+  },
 ];
 
 /**
  * Sources with no live capture, and why. The registry is the list of sources
- * that exist; this table is the subset a browser can drive. Gerrit is added one
- * origin at a time and its PolyGerrit UI renders inside shadow DOM, so there is
- * no capturable public page. Every other registry source must have a recipe
- * here: the check below throws otherwise, so a new source fails loudly in
- * `parity-visual`, `parity-style` and `style-parity` rather than silently going
- * unmeasured.
+ * that exist; this table is the subset a browser can drive. Every source the
+ * registry ships has a recipe below today, so the set is empty; a new source
+ * without one fails loudly in `parity-visual`, `parity-style` and `style-parity`
+ * rather than silently going unmeasured.
  */
-export const NO_CAPTURE = new Set(['gerrit']);
+export const NO_CAPTURE = new Set();
 
 {
   const captured = new Set(SOURCES.map((source) => source.key));

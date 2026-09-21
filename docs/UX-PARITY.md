@@ -124,11 +124,11 @@ at a time from the popup).
 
 These two tables are the rubric, over **every source**. The capture-based reads —
 `parity-visual.mjs`, `parity-style.mjs` and `style-parity.mjs` — measure the
-committed screenshots, so they cover only the sources that have a live capture.
-Gerrit is the one source without one: it has no bundled host and renders inside
-shadow DOM, so there is no page to drive; `captures.mjs` fails loudly if any
-other source is missing a recipe. `parity-score.mjs` and the selector canary
-cover all five.
+committed screenshots and cover every source too: Gerrit's frames are captured
+against `gerrit-review.googlesource.com`, which the capture run grants and
+registers as the `gerrit` kind for that run only (it is not a bundled host).
+`captures.mjs` fails loudly if a future source is neither captured nor explicitly
+excused.
 
 ### Where the points are lost
 

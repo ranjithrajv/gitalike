@@ -34,6 +34,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   skin, its stylesheet and `CONTENT_CSS` entry — wires the entry into every load
   list and relists it on the site; `--dry-run` reports the same plan without
   writing.
+- **Gerrit is captured and measured like the other sources.** The capture harness
+  grants `gerrit-review.googlesource.com` and registers it as the `gerrit` kind
+  for the run only, so the shipped extension still ships no Gerrit host. Project
+  and change-list frames exist (`docs/gerrit-*.png`), the docs page shows them,
+  and `parity-visual`, `parity-style` and `style-parity` (which pierces
+  PolyGerrit's open shadow roots) all include Gerrit's row.
 - **Bitbucket and Gerrit are full source plugins now**, with hooks and canary
   pages like the other sources. Bitbucket Cloud is watched on its `#root` app
   shell and, being light DOM, `paintBitbucketNav` reaches its repository bar;
