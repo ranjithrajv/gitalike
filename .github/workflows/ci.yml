@@ -34,6 +34,11 @@ jobs:
       - name: Lint and format check
         run: npm run lint:js && npm run fmt:check
 
+      # plugins.json and the site's plugin list are generated from the registry;
+      # this fails if either was hand-edited or a plugin was not relisted.
+      - name: Registry in sync
+        run: npm run registry:check
+
       # Builds the Firefox target and validates it with web-ext.
       - name: Lint the extension
         run: npm run lint

@@ -27,9 +27,12 @@ import '../src/lib/skins.js';
 import '../src/lib/sites.js';
 import '../src/lib/sources.js';
 import '../src/lib/ux.js';
+import { registryObject, registryProblems } from '../tools/registry.mjs';
 
 const SITES = globalThis.GITALIKE;
 const UX = globalThis.GITALIKE_UX;
+const SKINS = globalThis.GITALIKE_SKINS;
+const SOURCE_LIB = globalThis.GITALIKE_SOURCES;
 
 const file = (rel) =>
   readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
@@ -60,18 +63,16 @@ describe('skin contract', () => {
     test(`skin '${skin}' supplies every required part`, () => {
       const missing = [];
 
-      const meta = SITES.skins[skin];
-      if (!meta) {
-        missing.push('a `skins` entry in src/lib/sites.js');
-      } else {
-        if (!meta.product)
-          missing.push('skins[skin].product — the product name');
-        if (!meta.badge) missing.push('skins[skin].badge — the toolbar badge');
-        if (!/^#[0-9a-f]{6}$/i.test(meta.color ?? ''))
-          missing.push('skins[skin].color — a #rrggbb value');
-        if (!['github', 'gitlab'].includes(meta.layout))
-          missing.push("skins[skin].layout — 'github' or 'gitlab'");
-      }
+      // `SITES.skins` is projected from the `defineSkin` object in skins.js, so
+      // the four meta fields live there; these checks name the field, not the
+      // file, because the object is the one place a skin is declared.
+      const meta = SITES.skins[skin] ?? {};
+      if (!meta.product) missing.push('product — the product name');
+      if (!meta.badge) missing.push('badge — the toolbar badge');
+      if (!/^#[0-9a-f]{6}$/i.test(meta.color ?? ''))
+        missing.push('color — a #rrggbb value');
+      if (!['github', 'gitlab'].includes(meta.layout))
+        missing.push("layout — 'github' or 'gitlab'");
 
       for (const table of REQUIRED_SKIN_TABLES) {
         if (!UX[table] || !Object.hasOwn(UX[table], skin)) {
@@ -152,29 +153,102 @@ describe('source contract', () => {
       }
     }
   });
+
+  test('the Gitea source watches both bundled hosts', () => {
+    // Gitea and Forgejo are one markup family today, but two hosts. Both are
+    // canaried, so if the hard fork's UI diverges the daily job says so.
+    const urls = UX.CANARY_PAGES.filter((page) => page.source === 'gitea').map(
+      (page) => page.url,
+    );
+    for (const host of ['codeberg.org', 'gitea.com']) {
+      assert.ok(
+        urls.some((url) => url.includes(host)),
+        `no canary page watches ${host}`,
+      );
+    }
+  });
+});
+
+describe('the plugin constructors', () => {
+  test('a complete skin has no problems', () => {
+    for (const skin of Object.values(SKINS.SKINS)) {
+      assert.deepEqual(SKINS.skinProblems(skin), []);
+    }
+  });
+
+  test('a half-added skin is named part by part', () => {
+    // The whole list comes back at once, so an author is not chasing one field
+    // per run. `product` is present; everything else is the complaint.
+    const problems = SKINS.skinProblems({ product: 'Sourcehut' });
+    assert.ok(problems.some((p) => p.startsWith('badge')));
+    assert.ok(problems.some((p) => p.startsWith('color')));
+    assert.ok(problems.some((p) => p.startsWith('phrases')));
+    assert.ok(problems.some((p) => p.startsWith('profileMenu')));
+    assert.ok(!problems.some((p) => p.startsWith('product')));
+  });
+
+  test('a malformed skin field is caught, not just a missing one', () => {
+    const { gitlab } = SKINS.SKINS;
+    const problems = SKINS.skinProblems({ ...gitlab, color: 'purple' });
+    assert.deepEqual(problems, ['color — a #rrggbb string']);
+  });
+
+  test('defineSkin fills the optional capabilities and freezes', () => {
+    // Only the required tables, so the defaults are what is under test.
+    const skin = SKINS.defineSkin({
+      product: 'Sourcehut',
+      badge: 'SH',
+      color: '#000000',
+      layout: 'github',
+      phrases: {},
+      nav: {},
+      labels: {},
+      chrome: {},
+      unmapped: {},
+      navRules: [],
+      profileMenu: () => [],
+    });
+    assert.deepEqual(skin.shortcuts, {});
+    assert.deepEqual(skin.hide, []);
+    assert.equal(skin.projectTabs, null);
+    assert.equal(Object.isFrozen(skin), true);
+  });
+
+  test('a complete source has no problems', () => {
+    for (const source of Object.values(SOURCE_LIB.SOURCES)) {
+      assert.deepEqual(SOURCE_LIB.sourceProblems(source), []);
+    }
+  });
+
+  test('a source with no hooks or canary is named', () => {
+    assert.deepEqual(SOURCE_LIB.sourceProblems({}), [
+      'selectors — an object with at least one DOM hook',
+      'canary — an array of pages, each with a name, a url and keys',
+    ]);
+  });
 });
 
 describe('the published registry', () => {
-  test('docs/index.html lists every skin and source', () => {
-    // The Plugins section is the public face of the registry; pin it so a new
-    // plugin cannot ship without appearing there. Each entry carries a
-    // `data-plugin` marker the page and this test agree on.
-    const page = file('docs/index.html');
-    const missing = [];
-    for (const skin of THEMES) {
-      if (!page.includes(`data-plugin="skin:${skin}"`)) {
-        missing.push(`skin:${skin}`);
-      }
-    }
-    for (const source of SOURCES) {
-      if (!page.includes(`data-plugin="source:${source}"`)) {
-        missing.push(`source:${source}`);
-      }
-    }
+  test('plugins.json and docs/index.html match the registry', () => {
+    // One gate for both public faces: a new plugin that is not relisted, or a
+    // hand-edit to a generated block, fails here with the fix named.
+    const problems = registryProblems(
+      file('docs/index.html'),
+      file('plugins.json'),
+    );
+    assert.deepEqual(problems, [], problems.join('; '));
+  });
+
+  test('the registry names every skin and source, and its API version', () => {
+    const registry = registryObject();
+    assert.equal(registry.apiVersion, SKINS.API_VERSION);
     assert.deepEqual(
-      missing,
-      [],
-      `docs/index.html does not list: ${missing.join(', ')}`,
+      registry.skins.map((skin) => skin.name),
+      THEMES,
+    );
+    assert.deepEqual(
+      registry.sources.map((source) => source.name),
+      SOURCES,
     );
   });
 });

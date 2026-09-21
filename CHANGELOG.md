@@ -17,6 +17,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   publish the registry — the three skins and the three sources — and invite new
   ones. The page is pinned to the registries by `tests/contracts.test.mjs`, so a
   new plugin cannot ship without appearing there.
+- The selector canary now watches **gitea.com** as well as Codeberg, so both
+  hosts of the shared Gitea/Forgejo markup family are covered and a divergence
+  between the two projects' UIs would fail the daily job (`src/lib/sources.js`).
+- `defineSkin`/`defineSource` constructors wrap every registry entry. They fill
+  the optional capabilities, validate the required ones, and fail at load with
+  the whole list of what a plugin is missing, so a half-added skin or source is
+  one clear error rather than a silent no-op on a page. The API version travels
+  in the published registry (`src/lib/skins.js`, `src/lib/sources.js`).
+- A generated **plugin registry**: `npm run registry` emits `plugins.json` from
+  the source registries and rewrites the site's Plugins chips, and
+  `tools/registry.mjs` is the one place both come from. `npm run registry:check`
+  fails CI when either is out of date, so a plugin cannot ship unlisted.
+- `node tools/new-plugin.mjs skin <name>` (or `source <name>`) scaffolds a plugin
+  to the anchor in the registry, its stylesheet and `CONTENT_CSS` entry, and
+  relists it on the site — the "one object plus one stylesheet" made literal.
 
 ### Changed
 
@@ -35,6 +50,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The `≠` no-counterpart marker is styled under every skin, not only GitLab and
   GitHub — Bitbucket's badge had been left unstyled. It now targets any active
   `gs-theme-*` class, so a new skin inherits it (`src/themes/ux-markers.css`).
+- The contributor guide no longer lists a `skins` entry in `src/lib/sites.js` as
+  a step, and the contract test no longer asks for one: `sites.js` derives its
+  skin list from the `skins.js` registry, so that edit was a no-op. `sites.test`
+  likewise stopped pinning the three skin names, which made a new skin a second
+  edit. `navGroupFor`'s parameter is named `theme` rather than `layout`, which is
+  what every caller actually passes (`src/lib/ux.js`).
 
 ## [0.1.3] - 2026-09-21
 

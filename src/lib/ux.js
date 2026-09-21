@@ -220,9 +220,9 @@
     return withoutCounter(text) === label;
   }
 
-  /** The group heading a nav item belongs under for a layout, or null. */
-  function navGroupFor(label, layout) {
-    const map = NAV_GROUPS[layout];
+  /** The group heading a nav item belongs under for a skin, or null. */
+  function navGroupFor(label, theme) {
+    const map = NAV_GROUPS[theme];
     if (!map) return null;
     for (const [key, group] of Object.entries(map)) {
       if (labelMatches(label, key)) return group;

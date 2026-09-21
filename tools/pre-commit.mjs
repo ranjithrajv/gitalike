@@ -268,6 +268,7 @@ for (const [label, args] of [
   ['npm run lint', ['run', 'lint']],
   ['npm run lint:js', ['run', 'lint:js']],
   ['npm run fmt:check', ['run', 'fmt:check']],
+  ['npm run registry:check', ['run', 'registry:check']],
 ]) {
   const res = run(NPM, args);
   if (res.status === 0) continue;

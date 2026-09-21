@@ -103,6 +103,7 @@ const CONTENT_CSS = [
   'themes/as-gitlab.css',
   'themes/as-github.css',
   'themes/as-bitbucket.css',
+  // plugins:anchor — `node tools/new-plugin.mjs skin <name>` inserts above.
   'themes/ux-markers.css',
   'themes/ux-nav.css',
 ];

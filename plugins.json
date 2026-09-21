@@ -1,0 +1,89 @@
+{
+  "apiVersion": 1,
+  "skins": [
+    {
+      "name": "gitlab",
+      "product": "GitLab",
+      "badge": "GL",
+      "color": "#7759c2",
+      "layout": "gitlab"
+    },
+    {
+      "name": "github",
+      "product": "GitHub",
+      "badge": "GH",
+      "color": "#24292f",
+      "layout": "github"
+    },
+    {
+      "name": "bitbucket",
+      "product": "Bitbucket",
+      "badge": "BB",
+      "color": "#0052cc",
+      "layout": "gitlab"
+    }
+  ],
+  "sources": [
+    {
+      "name": "github",
+      "label": "GitHub — Primer",
+      "selectors": [
+        "repoNavList",
+        "appHeader",
+        "metadataSidebar",
+        "metadataPane",
+        "profileNav",
+        "profileMenu",
+        "profileFrame",
+        "profileEditable",
+        "profileDetail",
+        "profileOrg",
+        "profileLocation",
+        "profileName"
+      ],
+      "canary": [
+        "https://github.com/git/git",
+        "https://github.com/torvalds"
+      ]
+    },
+    {
+      "name": "gitlab",
+      "label": "GitLab — Pajamas",
+      "selectors": [
+        "superSidebar",
+        "navContainer",
+        "projectFiles",
+        "projectSidebarBlock",
+        "projectLayoutSidebar",
+        "profileHeader",
+        "profileIdentity",
+        "profileSidebar",
+        "profileName",
+        "profileMenu",
+        "followersLink",
+        "followingLink"
+      ],
+      "canary": [
+        "https://gitlab.com/gitlab-org/gitlab",
+        "https://gitlab.com/dzaporozhets"
+      ]
+    },
+    {
+      "name": "gitea",
+      "label": "Gitea / Forgejo",
+      "selectors": [
+        "repoNavList",
+        "repoMenu",
+        "themeMarker",
+        "topBar",
+        "repoHeader",
+        "pullLink"
+      ],
+      "canary": [
+        "https://codeberg.org/forgejo/forgejo",
+        "https://codeberg.org/forgejo/forgejo/pulls",
+        "https://gitea.com/gitea/act"
+      ]
+    }
+  ]
+}

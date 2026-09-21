@@ -26,8 +26,83 @@
 (() => {
   'use strict';
 
+  /**
+   * The plugin API version. Bumped when a skin or source object changes shape in
+   * a way an out-of-tree plugin (or the published registry) could notice;
+   * `tools/registry.mjs` carries it into `plugins.json` so a consumer can pin it.
+   */
+  const API_VERSION = 1;
+
+  const isString = (value) => typeof value === 'string' && value.length > 0;
+  const isObject = (value) =>
+    Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+  const isHex = (value) => /^#[0-9a-f]{6}$/i.test(value ?? '');
+
+  /**
+   * Every table a skin must carry, with the shape it must take. A missing or
+   * malformed one means the skin is half-added; the whole list is checked once
+   * so a contributor sees everything that is missing rather than the first
+   * symptom. `tests/contracts.test.mjs` is the same checklist from the outside.
+   * @type {[string, string, (value: unknown) => boolean][]}
+   */
+  const SKIN_REQUIRED = [
+    ['product', 'the product name, a string', isString],
+    ['badge', 'the toolbar badge, a string', isString],
+    ['color', 'a #rrggbb string', isHex],
+    ['layout', "'github' or 'gitlab'", (v) => ['github', 'gitlab'].includes(v)],
+    ['phrases', 'an object of phrase -> phrase', isObject],
+    ['nav', 'an object of label -> label', isObject],
+    ['labels', 'an object of label -> label', isObject],
+    ['chrome', 'an object of label -> label', isObject],
+    ['unmapped', 'an object of label -> product', isObject],
+    ['navRules', 'an array of source rules', Array.isArray],
+    [
+      'profileMenu',
+      'a function building the menu',
+      (v) => typeof v === 'function',
+    ],
+  ];
+
+  /**
+   * The capabilities a skin opts into, with the value each takes when it does
+   * not. Filling them keeps a skin's shape total, but `bySkin` still publishes
+   * only the ones a skin *declared*: an empty `keep` must not reach `navKeep`,
+   * where it would read as a whitelist of nothing rather than no whitelist at
+   * all. A `projectTabs` of null is the absent capability, so the runtime's
+   * `PROJECT_TABS[target] || PROJECT_TABS.github` fallback keeps working.
+   */
+  const skinDefaults = () => ({
+    repoOrder: [],
+    hide: [],
+    keep: [],
+    groups: {},
+    shortcuts: {},
+    shortcutTargets: {},
+    topbarHide: [],
+    projectTabs: null,
+  });
+
+  /**
+   * Wrap a skin declared in the literal below. Fills the optional capabilities
+   * and records which ones were declared; validity is checked once every name is
+   * known, in `checkSkins`.
+   */
+  function defineSkin(partial) {
+    const skin = { ...skinDefaults(), ...partial };
+    // Non-enumerable so it never leaks into iteration or JSON.
+    Object.defineProperty(skin, 'declared', {
+      value: new Set(Object.keys(partial)),
+      enumerable: false,
+    });
+    return Object.freeze(skin);
+  }
+
+  // The tables a skin declares are published; the optional ones it leaves out
+  // are absent from the derived table, exactly as when each was hand-written.
+  const declared = (skin, part) => skin.declared.has(part);
+
   const SKINS = {
-    gitlab: {
+    gitlab: defineSkin({
       product: 'GitLab',
       badge: 'GL',
       color: '#7759c2',
@@ -196,9 +271,9 @@
       // applied product: hidden rather than relabelled. The words both products
       // share ("Platform", "Solutions", "Resources", "Pricing") are left alone.
       topbarHide: ['Open Source', 'Enterprise', 'Sign up'],
-    },
+    }),
 
-    github: {
+    github: defineSkin({
       product: 'GitHub',
       badge: 'GH',
       color: '#24292f',
@@ -363,9 +438,9 @@
       shortcutTargets: { gp: 'Pull requests', gb: 'Projects' },
 
       topbarHide: ['Why GitLab', 'Explore', 'Get free trial'],
-    },
+    }),
 
-    bitbucket: {
+    bitbucket: defineSkin({
       product: 'Bitbucket',
       badge: 'BB',
       color: '#0052cc',
@@ -526,27 +601,58 @@
         ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
         ['Snippets', `/${u}?tab=snippets`, 'Snippets'],
       ],
-    },
+    }),
+
+    // plugins:anchor — `node tools/new-plugin.mjs skin <name>` inserts above.
   };
 
   // Every nav rule ranks by its skin's `repoOrder`, filled in here so the rule
   // and the order cannot drift apart.
   for (const skin of Object.values(SKINS)) {
-    for (const rule of skin.navRules ?? []) rule.order = skin.repoOrder;
+    for (const rule of skin.navRules) rule.order = skin.repoOrder;
+  }
+
+  /**
+   * The required parts a skin is missing or has malformed, named. Empty when the
+   * skin is complete; exported so the contract test and `tools/new-plugin.mjs`
+   * share the one definition.
+   */
+  function skinProblems(skin) {
+    return SKIN_REQUIRED.filter(([key, , ok]) => !ok(skin[key])).map(
+      ([key, want]) => `${key} — ${want}`,
+    );
+  }
+
+  // Validate every skin now that its name is known, so a malformed plugin fails
+  // once with the whole list of missing parts rather than as a silent no-op on a
+  // page. The registry ships only valid skins, so this throws for a contributor
+  // mid-edit, never for a user.
+  for (const [name, skin] of Object.entries(SKINS)) {
+    const problems = skinProblems(skin);
+    if (problems.length) {
+      throw new Error(
+        `GitAlike: skin '${name}' is incomplete:\n  - ${problems.join('\n  - ')}`,
+      );
+    }
   }
 
   // The flat tables the rest of the code and the tests read, derived from the
-  // registry. Only the skins that declare a part appear in its table, so a skin
+  // registry. Only the skins that *declare* a part appear in its table, so a skin
   // with no `groups` is simply absent from `NAV_GROUPS`, exactly as when each
-  // table was written by hand.
+  // table was written by hand. The defaults `defineSkin` fills in are not
+  // published, or an absent capability would read as an empty one.
   const bySkin = (part) =>
     Object.fromEntries(
       Object.entries(SKINS)
-        .filter(([, skin]) => skin[part] !== undefined)
+        .filter(([, skin]) => declared(skin, part))
         .map(([name, skin]) => [name, skin[part]]),
     );
 
   globalThis.GITALIKE_SKINS = {
+    API_VERSION,
+    SKIN_REQUIRED,
+    defineSkin,
+    skinProblems,
     SKINS,
     PHRASES: bySkin('phrases'),
     NAV: bySkin('nav'),

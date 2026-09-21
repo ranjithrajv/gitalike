@@ -318,7 +318,9 @@ are wanted.** Sourcehut is a genuinely different product that needs its own skin
 a new *source* forge (one people host) also needs classifying. There are two
 levels, and the easy one is real work, not a consolation prize. Either way,
 `tests/contracts.test.mjs` is the checklist — it fails with the source or skin
-pieces still missing.
+pieces still missing. `node tools/new-plugin.mjs source <name>` writes the markup
+object (its hooks and its canary page) to the anchor; classifying a host and
+adding the new vocabulary are the parts that still need judgement.
 
 ### A forge that already speaks one of the two dialects
 
@@ -364,14 +366,16 @@ vocabulary. **Bitbucket is the worked example**: it began as a *target only* —
 no host was classified as it, so it could be worn by any source — and is now a
 source in its own right as well. Adding a target means:
 
+`node tools/new-plugin.mjs skin <name>` writes steps 1–3 for you; the rest is
+the part that needs judgement.
+
 | # | File | What goes there |
 | - | ---- | --------------- |
-| 1 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab') — which joins `THEMES` automatically |
+| 1 | `src/lib/skins.js` | one `defineSkin({ … })` object: `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab'), every required table (`phrases`, `nav`, `labels`, `chrome`, `unmapped`, `navRules`, `profileMenu`), and whichever optional capabilities (`repoOrder`, `shortcuts`, `topbarHide`, `groups`, `keep`/`hide`, `projectTabs`) it needs. The name is the key, so it joins `THEMES`, the popup and the badge with no other edit |
 | 2 | `src/themes/as-<target>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
 | 3 | `src/background.js` | add the stylesheet to `CONTENT_CSS` |
-| 4 | `src/lib/skins.js` | one object for the skin: its `phrases`, `nav`, `labels`, `chrome`, `unmapped`, `repoOrder`, `navRules` and `profileMenu`, plus whichever of `shortcuts`, `topbarHide`, `groups`, `keep`/`hide` and `projectTabs` it needs |
-| 5 | `tests/` | cases for the tables, `projectTabs`, `activeTabFor` and the vocabulary — the pinned Bitbucket suite is the template |
-| 6 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and the regenerated screenshots |
+| 4 | `tests/` | cases for the tables, `projectTabs`, `activeTabFor` and the vocabulary — the pinned Bitbucket suite is the template |
+| 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and `npm run registry` to relist it on the site |
 
 The completeness gate is **`tests/contracts.test.mjs`**: it derives the skin and
 source lists and fails with the parts a new one is still missing, by name. Run
@@ -437,13 +441,23 @@ exit code is non-zero.
 `npm run canary` (`tools/compare/selector-canary.mjs`) is the live selector canary: a
 plain `fetch` of the pages the skins are verified against, asserting the anchors
 they key on are still in the served HTML. The hooks are not written in the tool:
-it reads `SELECTORS` and `CANARY_PAGES` from `src/lib/ux.js`, the same table
+it reads `SELECTORS` and `CANARY_PAGES` from `src/lib/sources.js`, the same table
 `src/content/ux-*.js` reads, so a rename is one edit there that both the skin and
 the canary pick up. It runs daily on a schedule, not on a pull request, so an
 upstream rename is caught without making every PR depend on the forges' markup;
 when it fails it also opens (or refreshes) an issue, so the drift is owned rather
 than just red. The stylesheets still spell their selectors out — CSS cannot read
-the table — so update a theme rule and its `SELECTORS` entry together.
+the table — so update a theme rule and its `SELECTORS` entry together. The
+Gitea source canaries both of its hosts (gitea.com and codeberg.org), so the two
+halves of that shared markup family are watched separately.
+
+The **plugin registry** is generated, not hand-maintained: `npm run registry`
+rewrites `plugins.json` and the site's Plugins chips from the two registries, and
+`npm run registry:check` (run by CI and the pre-commit hook, beside `npm test`)
+fails when either is out of date. `tools/new-plugin.mjs` runs it for you after
+scaffolding. `defineSkin`/`defineSource` validate a plugin's shape at load, so a
+half-added one fails once with the whole missing list; `tests/contracts.test.mjs`
+is the same checklist from the outside.
 
 The single most useful habit: after a change, load the extension and check the
 site with the skin **off** as well as on. A skin that leaks when disabled is the

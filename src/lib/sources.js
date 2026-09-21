@@ -24,8 +24,47 @@
 (() => {
   'use strict';
 
+  const isString = (value) => typeof value === 'string' && value.length > 0;
+  const isObject = (value) =>
+    Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+  /**
+   * What a source must carry: the DOM hooks a skin reads, and the live page the
+   * canary watches so a rename upstream fails a scheduled check instead of a
+   * user. A source with neither is not a plugin yet; the checks run once at load
+   * so a contributor sees everything missing at once.
+   * @type {[string, string, (value: unknown) => boolean][]}
+   */
+  const SOURCE_REQUIRED = [
+    [
+      'selectors',
+      'an object with at least one DOM hook',
+      (v) => isObject(v) && Object.keys(v).length > 0,
+    ],
+    [
+      'canary',
+      'an array of pages, each with a name, a url and keys',
+      (v) =>
+        Array.isArray(v) &&
+        v.length > 0 &&
+        v.every(
+          (page) =>
+            isString(page?.name) &&
+            isString(page?.url) &&
+            Array.isArray(page?.keys) &&
+            page.keys.length > 0,
+        ),
+    ],
+  ];
+
+  // A source is data, so wrapping it is only the place the shape is documented;
+  // validation happens once every name is known, in the loop below.
+  const defineSource = (partial) => Object.freeze({ ...partial });
+
   const SOURCES = {
-    github: {
+    github: defineSource({
+      // A display name for the registry, the site's chip and the docs.
+      label: 'GitHub — Primer',
       // GitHub's markup (Primer).
       selectors: {
         repoNavList: 'nav[aria-label="Repository"] ul.UnderlineNav-body', // css
@@ -53,9 +92,10 @@
           keys: ['profileNav', 'profileFrame'],
         },
       ],
-    },
+    }),
 
-    gitlab: {
+    gitlab: defineSource({
+      label: 'GitLab — Pajamas',
       // GitLab's markup (Pajamas, plus its older CSS).
       selectors: {
         superSidebar: '.super-sidebar', // css
@@ -83,9 +123,10 @@
           keys: ['superSidebar', 'profileHeader', 'profileSidebar'],
         },
       ],
-    },
+    }),
 
-    gitea: {
+    gitea: defineSource({
+      label: 'Gitea / Forgejo',
       // Gitea and Forgejo share one markup family, so one source covers both
       // hosts: gitea.com (Gitea) and codeberg.org (Forgejo). Each host has its
       // own canary page below, so if the 2024 hard fork's UI ever diverges the
@@ -132,8 +173,31 @@
           ],
         },
       ],
-    },
+    }),
+
+    // plugins:anchor — `node tools/new-plugin.mjs source <name>` inserts above.
   };
+
+  /**
+   * The required parts a source is missing or has malformed, named. Empty when
+   * the source is complete; shared with the contract test.
+   */
+  function sourceProblems(source) {
+    return SOURCE_REQUIRED.filter(([key, , ok]) => !ok(source[key])).map(
+      ([key, want]) => `${key} — ${want}`,
+    );
+  }
+
+  // Validate every source once its name is known, so a half-added one fails with
+  // its whole missing list rather than as a canary that silently watches nothing.
+  for (const [name, source] of Object.entries(SOURCES)) {
+    const problems = sourceProblems(source);
+    if (problems.length) {
+      throw new Error(
+        `GitAlike: source '${name}' is incomplete:\n  - ${problems.join('\n  - ')}`,
+      );
+    }
+  }
 
   // The shapes the rest of the code reads: `SELECTORS` keyed by source, and a
   // flat `CANARY_PAGES` list with the source named on each page.
@@ -141,8 +205,15 @@
     Object.entries(SOURCES).map(([name, source]) => [name, source.selectors]),
   );
   const CANARY_PAGES = Object.entries(SOURCES).flatMap(([name, source]) =>
-    (source.canary ?? []).map((page) => ({ ...page, source: name })),
+    source.canary.map((page) => ({ ...page, source: name })),
   );
 
-  globalThis.GITALIKE_SOURCES = { SOURCES, SELECTORS, CANARY_PAGES };
+  globalThis.GITALIKE_SOURCES = {
+    SOURCE_REQUIRED,
+    defineSource,
+    sourceProblems,
+    SOURCES,
+    SELECTORS,
+    CANARY_PAGES,
+  };
 })();

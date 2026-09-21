@@ -74,8 +74,11 @@ describe('module shape', () => {
     assert.equal(SETTINGS_KEY, 'gitSameSettings');
     assert.equal(INSTANCES_KEY, 'gitSameInstances');
     assert.equal(HOST_SETTINGS_KEY, 'gitSameHostSettings');
-    // Derived from `skins`, so a new skin is listed exactly once.
-    assert.deepEqual(THEMES, ['gitlab', 'github', 'bitbucket']);
+    // `THEMES` is `Object.keys(skins)`, which is itself derived from the
+    // `defineSkin` registry — so the two cannot drift, and a new skin is not a
+    // second edit here. (This used to pin the three names, which made it one.)
+    assert.deepEqual(THEMES, Object.keys(skins));
+    assert.ok(THEMES.length > 0);
   });
 
   test('a kind is always skinned with the *other* product by default', () => {
