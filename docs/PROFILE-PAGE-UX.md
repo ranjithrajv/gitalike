@@ -93,6 +93,14 @@ Snippets. Achievements are shown to a GitLab account's owner rather than on its
 public profile, so GitHub's public Achievements block is hidden under the GitLab
 UI.
 
+### 7. The activity graph wears each product's palette
+
+The contribution calendar is the same idea on both products but a different
+colour: GitHub's greens run `#aceebb` → `#116329`, GitLab's indigos `#d2dcff` →
+`#303470`. The skin repaints the graph to the imitated product's palette in both
+directions, so a skinned profile reads like the product it is pretending to be
+rather than a recoloured GitHub (`themes/ux-nav.css`).
+
 ## Where they agree
 
 - A **Follow** action in the header, with avatar, display name and handle.
@@ -116,6 +124,9 @@ Most of the profile's vocabulary has no exact counterpart, so the copy tables
 | Reference marker | `#42` | `!42` | `refMarker` |
 | Shortcuts | GitHub's `g`-combos replay | GitLab's, delivered as clicks | `SHORTCUTS`, `SHORTCUT_TARGETS` |
 | Orientation | horizontal tab row | vertical sidebar group | `themes/ux-nav.css` |
+| Metadata rail (G→L) | card flows down the content column | organization, location and links move to an About/Info/Contact rail | `content/ux.js` — `paintProfileRail` |
+| Pinned section | Pinned | Personal projects | `paintHeadings` |
+| Activity palette | green | indigo | `themes/ux-nav.css` |
 | Follower/following counts | under the photo | in the navigation | `content/ux.js` — GitLab's are copied into the card |
 
 Two scoping facts make the profile behave differently from the project page:
@@ -149,10 +160,12 @@ hosts issue different usernames, so there is no path to map between them.
 
 ## What the skin cannot change
 
-- **Pinned cards cannot appear on GitLab.** GitHub curates a fixed set of
-  repositories; GitLab has no pinning on the profile. The skin repaints the
-  cards, it cannot invent the feature — so a GitHub profile skinned as GitLab
-  keeps its Pinned section, and a GitLab profile skinned as GitHub has none.
+- **Pinned cards are relabelled, not invented.** GitHub curates a fixed set of
+  repositories; GitLab has no pinning on the profile. A GitHub profile skinned
+  as GitLab keeps the cards, under GitLab's **Personal projects** heading, so
+  the section GitLab shows is present — but the set is the pinned selection, not
+  the full list — and a GitLab profile skinned as GitHub has no Pinned section
+  to show.
 - **A named-first nav item cannot become "Overview".** GitLab's first profile
   item is the account's name; GitHub's is the word Overview. Relabelling would
   have to rewrite the name itself.
@@ -160,11 +173,13 @@ hosts issue different usernames, so there is no path to map between them.
   labels; GitLab uses a pill on one item. The skin moves the count to the end of
   the row as a trailing pill, but it cannot remove the counts GitHub renders
   into the labels — the shape of the navigation is the site's.
-- **GitHub's profile is not re-rendered as GitLab's three-column page.** The
-  navigation becomes a full-height super-sidebar and the identity card moves
-  into the content as GitLab's header, but GitHub's card keeps its
-  followers/achievements/block content flowing down the content column; GitLab's
-  separate Info/Contact rail and the name-first landing item are not recreated.
+- **GitHub's profile is re-shaped, not re-rendered.** The navigation becomes a
+  full-height super-sidebar and the identity card moves into the content as
+  GitLab's header; the organization, location and contact links are cloned into
+  a right-hand **About / Info / Contact** rail, and the pinned section becomes
+  **Personal projects**. What cannot be recreated is GitLab's name-first landing
+  item and the Info rows GitHub publishes no data for (local time, member
+  since).
 - **GitLab publishes no organisation on a profile.** Its "Info" block carries
   location, local time and member-since — but no company — so a GitHub-skinned
   GitLab profile cannot show the organisation line GitHub's card has.

@@ -168,8 +168,8 @@ product's *vocabulary and habits*:
 | Surface    | What changes                                                                                                     |
 | ---------- | ---------------------------------------------------------------------------------------------------------------- |
 | Copy       | "Pull request(s)" ⇄ "Merge request(s)", "Insights" ⇄ "Analytics", "Actions" ⇄ "CI/CD", "Go to file" ⇄ "Find file", "Gists" ⇄ "Snippets", "Codespaces" ⇄ "Workspaces" |
-| Navigation | repo tabs are relabelled ("Code" ⇄ "Repository") and reordered into the other product's order — GitLab's repository group included |
-| Orientation | GitHub's top bar is hidden (GitLab has none) and its repo/profile tabs become a GitLab-style left sidebar/rail with GitLab group headings; GitLab's sidebar becomes a horizontal top strip |
+| Navigation | repo tabs are relabelled ("Code" ⇄ "Repository") and given the other product's tab set and order — GitLab's are rebuilt as GitHub's tabs, GitHub's are gathered under GitLab's group headings |
+| Orientation | GitHub's top bar is hidden (GitLab has none) and its repo/profile tabs become a GitLab-style left sidebar/rail with GitLab group headings; GitLab's scattered sidebar is rebuilt as GitHub's flat tab row, under the repository header |
 | Metadata | GitHub's right-hand "About" becomes a full-width block on top (GitLab style); GitLab's "Project information" becomes a right sidebar (GitHub style) |
 | References | a pull/merge-request link shows the other product's marker — `#42` ⇄ `!42`                                        |
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
@@ -205,10 +205,12 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   (Epics, Iterations, Requirements, Service Desk, …) get a `≠ GitHub` badge on a
   GitHub-skinned site, and GitHub-only ones (Discussions, Sponsors) get `≠ GitLab`
   on a GitLab-skinned site.
-- **GitLab's sidebar keeps its groups.** Its project navigation is a nested group
-  tree, so only the repository ("Code") group is reordered to match GitHub's tab
-  order, and the horizontal top strip wraps across a few rows rather than
-  flattening into GitHub's single-row bar.
+- **The GitHub-skin strip is rebuilt, not just reordered.** GitLab scatters the
+  same project destinations across a pinned block and collapsible groups, some of
+  which (Wiki, Security) it may not render at all, so the tab row is rebuilt from
+  GitHub's own tabs, in GitHub's order, and hosted under the repository header
+  where GitHub puts it. Under the GitLab skin, GitHub's flat tabs are gathered
+  under GitLab's group headings instead.
 - **"Open on the other host" covers the two public forges only.** A self-hosted
   instance has no pair to guess, so the action is absent there.
 - **Access to all sites.** The install prompt is the honest one; if that is not a

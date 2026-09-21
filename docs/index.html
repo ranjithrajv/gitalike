@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Git Same — navigation orientation swipe</title>
+    <title>gitalike — project &amp; profile orientation swipes</title>
     <style>
       :root {
         color-scheme: light dark;
@@ -136,7 +136,7 @@
   </head>
   <body>
     <header>
-      <h1>Git Same — navigation orientation</h1>
+      <h1>gitalike — navigation orientation</h1>
       <p class="lede">
         Live captures of the real project and profile pages at 1280×900. Drag
         the handle (or use the arrow keys) to swipe between the plain site and
@@ -153,14 +153,15 @@
         <h2>GitLab project page</h2>
         <p class="sub">
           Left: GitLab as it ships — a vertical <b class="gitlab">sidebar</b>.
-          Right: the same page skinned as GitHub — a horizontal
-          <b class="github">top bar</b>.
+          Right: the same page skinned as GitHub — GitHub's flat
+          <b class="github">tab row</b>, rebuilt from GitLab's scattered sidebar
+          and hosted under the repository header.
         </p>
         <div class="swipe">
           <img class="base" src="gitlab-default.png" alt="GitLab project page, default" />
           <img class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" />
           <span class="tag left">GitLab default · sidebar</span>
-          <span class="tag right">GitHub skin · top bar</span>
+          <span class="tag right">GitHub skin · tab row</span>
           <span class="divider"></span>
           <span class="knob">↔</span>
           <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab project page" />
@@ -215,7 +216,10 @@
           GitLab — a full-height <b class="gitlab">super-sidebar</b> headed
           "Profile" and rebuilt as GitLab's menu (Activity, Groups, Personal
           projects, Starred projects, Snippets, Followers, Following), with the
-          profile header moved into the content.
+          profile header moved into the content, an About/Info/Contact
+          <b class="gitlab">rail</b> on the right, "Personal projects" in place
+          of Pinned, and the activity graph in <b class="gitlab">GitLab's
+          indigo</b>.
         </p>
         <div class="swipe">
           <img class="base" src="github-profile-default.png" alt="GitHub profile page, default" />

@@ -45,9 +45,13 @@ GitHub's repo navigation is one flat row: **Code, Issues, Pull requests,
 Actions, Projects, Wiki, Security and quality, Insights**. GitLab's is a nested
 tree, where **CI/CD** is a *group* holding Pipelines, Editor, Jobs, Schedules and
 Artifacts, while GitHub's **Actions** is a single tab. This is the largest
-structural mismatch on the page, and it cannot be closed by relabelling: a group
-is not a tab. The skin can rename and reorder, but it cannot make one shape into
-the other without changing the information architecture.
+structural mismatch on the page, and relabelling alone cannot close it: a group
+is not a tab. The skin therefore reshapes the navigation rather than only
+renaming it — under the GitHub UI GitLab's scattered project destinations are
+rebuilt as GitHub's flat tab row, in GitHub's order; under the GitLab UI
+GitHub's flat tabs are gathered under GitLab's group headings. The *labels*
+follow `NAV`/`NAV_RULES`; the *shape* is `content/ux.js` plus
+`themes/ux-nav.css`.
 
 ### 3. Metadata in a rail versus in the flow
 
@@ -57,6 +61,13 @@ GitLab serialises: the equivalent — description, topics, badges, commit/branch
 tag/environment counts, and the README/License/CHANGELOG/Contributing/Pages
 links — runs down the main column under the README. Both surface the same
 document set; they lay it out on opposite axes.
+
+The skin moves the block onto the imitated product's axis: GitHub's About rail
+becomes GitLab's full-width **Project information** block (heading renamed by
+`paintHeadings`), and GitLab's block becomes GitHub's right-hand **About**
+column. GitLab-only rows — the coverage bar, project badges and "Created on" —
+are dropped rather than faked, and GitHub-only sections (Releases, Packages, Used
+by, Contributors, Languages) are hidden under the GitLab UI.
 
 ### 4. "Code" means two things
 
@@ -110,7 +121,10 @@ status matrix is [UX-PARITY.md](UX-PARITY.md); the project-page rows are:
 | --- | --- | --- | --- |
 | Nav labels | Code, Actions, Pull requests, Insights, Projects | Repository, CI/CD, Merge requests, Analytics, Issue boards | `NAV` |
 | Nav order | `ul.UnderlineNav-body` | the repository group of `.super-sidebar` | `NAV_RULES` |
+| Tab strip (L→G) | GitHub's flat tabs | GitLab's sidebar, rebuilt into GitHub's tabs | `paintProjectTabs` |
+| Tab groups (G→L) | GitHub's flat tabs, gathered under GitLab's headings | GitLab's grouped sidebar | `paintNavGroups` |
 | Orientation | horizontal tab row | vertical sidebar | `themes/ux-nav.css` |
+| Metadata heading | About | Project information | `paintHeadings` |
 | Control labels | Merge pull request, Security and quality | Merge, Security | `LABELS` |
 | Reference marker | `#42` | `!42` | `refMarker` |
 | Shortcuts | GitHub's `g`-combos replay | GitLab's, delivered as clicks | `SHORTCUTS`, `SHORTCUT_TARGETS` |
@@ -123,8 +137,8 @@ order" is approximate at group level:
 // G→L: GitHub's flat tabs, into GitLab's project order
 ['Repository', 'Issues', 'Merge requests', 'CI/CD', 'Wiki', 'Analytics', 'Security']
 
-// L→G: GitLab's repository group, into GitHub's tab order
-['Code', 'Issues', 'Pull requests', 'Actions', 'Projects', 'Wiki', 'Security', 'Insights']
+// L→G: GitLab's scattered sidebar, rebuilt as GitHub's flat tab order
+['Code', 'Issues', 'Pull requests', 'Actions', 'Projects', 'Wiki', 'Security and quality', 'Insights']
 ```
 
 ## What the skin cannot change
@@ -133,14 +147,17 @@ order" is approximate at group level:
   as GitHub still lands on README + project information, not a file table; a
   GitHub repo skinned as GitLab still lands on its file table, not README-only.
   The skin re-skins, it does not re-render content.
-- **The metadata rail does not move.** GitHub's right rail stays a rail under
-  the GitLab UI; GitLab's inline project information stays inline under the
-  GitHub UI. The vocabulary is portable; the geometry is not.
-- **GitLab's groups are not flattened.** Its sidebar becomes a horizontal strip,
-  but the groups keep GitLab's structure, so the strip wraps across several rows
-  and ends up taller than GitHub's single-row bar. Flattening them would change
-  GitLab's information architecture rather than match GitHub's — the compromise
-  is deliberate, see [UX-PARITY.md](UX-PARITY.md#navigation-orientation).
+- **The metadata block moves, but only the block.** The description and metadata
+  follow the imitated product's axis (see §3), but GitLab-only rows and
+  GitHub-only sections are dropped rather than invented, so the two columns
+  never carry identical content.
+- **The GitHub-skin strip is rebuilt, not just reordered.** GitLab scatters the
+  same destinations across a pinned block and collapsible groups, some of which
+  (Wiki, Security) it does not render at all, so the tab row is rebuilt from
+  GitHub's own tabs in GitHub's order and hosted under the repository header,
+  where GitHub puts it. On the other side GitHub's flat tabs are gathered under
+  GitLab's group headings, keeping GitLab's structure, see
+  [UX-PARITY.md](UX-PARITY.md#navigation-orientation).
 - **Group-scoped features are marked, not faked.** A sidebar item with no
   counterpart gets a `≠ GitHub` badge from `UNMAPPED` instead of pretending the
   feature exists.

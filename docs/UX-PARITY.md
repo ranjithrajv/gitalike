@@ -25,7 +25,12 @@ is the map and the scorecard.
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `lib/ux.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `lib/ux.js` |
 | Nav orientation | ✅ | ✅ | `themes/ux-nav.css` |
+| Project tab strip | ✅ gathered into groups | ✅ rebuilt as GitHub's tabs | `content/ux.js` + `themes/ux-nav.css` |
 | Project metadata placement | ✅ | ✅ | `themes/*.css` |
+| Metadata heading | ✅ Project information | ✅ About | `content/ux.js` |
+| Activity graph palette | ✅ GitLab indigo | ✅ GitHub green | `themes/ux-nav.css` |
+| Profile metadata rail | ✅ About/Info/Contact | — | `content/ux.js` |
+| One skin at a time | ✅ | ✅ | `popup/popup.js` |
 | References — `refMarker` | ✅ | ✅ | `lib/ux.js` |
 | Shortcuts — `SHORTCUTS` | ✅ 3 | ⚠️ 2 of 3 | `lib/ux.js` |
 | "Open on the other host" | ✅ | ✅ | `lib/ux.js` + popup |
@@ -120,15 +125,17 @@ product it imitates does.
   gathered under GitLab's group headings (Code, Build, Secure, Analyze), which
   GitHub's flat tab bar has no notion of. GitHub's own top bar is hidden — GitLab
   has no equivalent, its navigation is the sidebar alone.
-- **L→G** — GitLab's sidebar becomes a horizontal strip. GitLab's page is a grid
-  (`.layout-page.page-with-super-sidebar` is `232px 1032px …`, with the sidebar
-  in column one), so the grid is collapsed to a single column first — without
-  that the content keeps the narrow column and shrinks to ~277px. The sidebar's
-  collapse control is hidden, since it only makes sense on a vertical sidebar.
-
-GitLab's strip is taller than GitHub's single-row top bar because its navigation
-is grouped; the groups keep GitLab's structure and simply wrap horizontally
-rather than being flattened.
+- **L→G** — GitLab's sidebar is replaced by GitHub's tab row. GitLab's page is a
+  grid (`.layout-page.page-with-super-sidebar` is `232px 1032px …`, with the
+  sidebar in column one), so the grid is collapsed to a single column. GitLab
+  scatters the same destinations across a pinned block and collapsible groups —
+  duplicating some and not rendering others (Wiki, Security) at all — and its
+  group tree gives no single list to reorder, so the row is *rebuilt* rather
+  than reordered: `paintProjectTabs` reuses the link GitLab renders for each
+  destination and synthesises the two it omits, in GitHub's order. The row is
+  hosted under the repository header, where GitHub puts it, and GitLab's own
+  sidebar shell is hidden on the repository root; a project page without that
+  header keeps the strip at the top.
 
 ## Description & metadata
 
@@ -138,17 +145,23 @@ block above the content. Each skin moves it to match the product being imitated:
 
 - **G→L** — GitHub's About sidebar becomes a full-width block above the content
   (GitHub's `PageLayout` is flex, so its content is made a column and the
-  sidebar pane ordered first), with its sections flowed into columns to stay
-  compact.
+  sidebar pane ordered first) and its heading is renamed "Project information".
+  GitHub-only sections — Releases, Packages, Used by, Contributors, Languages —
+  are hidden, since GitLab's block lists a fixed, smaller set.
 - **L→G** — GitLab's "Project information" block becomes a right column beside
-  the file list, the way GitHub's About reads.
+  the file list and its heading is renamed "About", the way GitHub's reads.
+  GitLab-only rows — the coverage bar, project badges and "Created on" — are
+  dropped, since GitHub's About has no counterpart.
 
 Profile pages get the same treatment, shaped like the target product's profile
 rather than just re-oriented. G→L targets GitHub's profile navigation
 (`nav[aria-label="User profile"]`) separately: the sticky horizontal tab strip
 becomes a full-height super-sidebar in the left rail, headed "Profile", and the
 profile card moves into the content as GitLab's header — a 96px avatar beside
-the name. GitHub splits the profile across two `container-xl` wrappers, so both
+the name. The organization, location and contact links are cloned into a
+right-hand About/Info/Contact rail (`paintProfileRail`), and GitHub's pinned
+section is relabelled GitLab's "Personal projects". GitHub splits the profile
+across two `container-xl` wrappers, so both
 are dissolved to a page grid (the profile equivalent of the repository
 header/tab wrapper trick above). L→G turns GitLab's `.super-sidebar` into a
 horizontal strip as usual, and because a profile's sidebar is a single flat
@@ -169,7 +182,20 @@ exactly GitLab's destinations (the account name, `Activity`, `Groups`,
 on GitLab's Activity, Groups and Snippets. GitHub's public Achievements block is
 hidden under the GitLab UI, since GitLab shows achievements to the owner rather
 than on a public profile. (GitLab publishes no organisation on a profile, so
-that line cannot be shown.)
+that line cannot be shown.) The contribution graph is repainted to the imitated
+product's palette in both directions — GitHub's greens for the GitHub skin,
+GitLab's indigos for the GitLab skin (`themes/ux-nav.css`).
+
+## Skin selection
+
+The popup chooses **one skin for the whole extension**: a single **Show the web
+with** radio group — **GitLab UI**, **GitHub UI** or **Off** — so the two skins
+can never both be active. The choice is mapped onto the per-kind settings the
+background, badge and content scripts already read (only one kind is ever on),
+and a state stored with both skins on is reduced to one when the popup opens. A
+per-site picker can still override a single host with **Off**, **GitHub UI** or
+**GitLab UI**, stored in the `gitSameHostSettings` map; choosing a site's own UI
+is treated as off (`popup/`, `lib/sites.js`).
 
 ## References
 
