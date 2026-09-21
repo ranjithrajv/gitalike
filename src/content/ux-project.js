@@ -10,7 +10,8 @@
 
   const rt = globalThis.GITALIKE_UX_RUNTIME;
   if (!rt) return;
-  const { UX, SELECTORS, layoutOf, hide, textNodes, rememberText } = rt;
+  const { UX, SELECTORS, layoutOf, hide, textNodes, rememberText, cloneClean } =
+    rt;
 
   // GitLab's "Project information" lists a fixed set of items; GitHub's "About"
   // sidebar lists a different set (Releases, Packages, Used by, Contributors,
@@ -302,7 +303,7 @@
       }
       const source = byRaw.get(entry.raw);
       if (!source) continue;
-      const anchor = source.cloneNode(true);
+      const anchor = cloneClean(source);
       anchor.removeAttribute('id');
       anchor.classList.toggle('active', entry.active);
       // Relabel the item, leaving its icon and counter in place.

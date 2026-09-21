@@ -18,35 +18,8 @@
     setOrder,
     textNodes,
     rememberText,
+    cloneClean,
   } = rt;
-
-  // cloneNode(true) copies a page subtree, including inline `on*` handlers and
-  // any <script> — and a cloned <script> runs when it is inserted. The source is
-  // the page itself, so this is not an escalation, but the copy is rebuilt clean
-  // rather than trusted: script-bearing elements are dropped and event/handler
-  // attributes stripped.
-  function cloneClean(node) {
-    const clone = node.cloneNode(true);
-    for (const el of clone.querySelectorAll(
-      'script,style,link,base,meta,iframe,object,embed',
-    )) {
-      el.remove();
-    }
-    for (const el of [clone, ...clone.querySelectorAll('*')]) {
-      for (const attr of [...el.attributes]) {
-        const name = attr.name.toLowerCase();
-        if (name.startsWith('on') || name === 'srcdoc') {
-          el.removeAttribute(attr.name);
-        } else if (
-          (name === 'href' || name === 'xlink:href' || name === 'src') &&
-          /^\s*(javascript|data):/i.test(attr.value)
-        ) {
-          el.removeAttribute(attr.name);
-        }
-      }
-    }
-    return clone;
-  }
 
   // GitLab keeps the organization, location and contact links in a right-hand
   // "About / Info / Contact" rail beside the identity; GitHub stacks them under
@@ -91,7 +64,7 @@
       heading.textContent = name;
       rail.appendChild(heading);
       for (const d of list) {
-        rail.appendChild(d.cloneNode(true));
+        rail.appendChild(cloneClean(d));
         hide(d, true);
         rt.rail.details.add(d);
       }

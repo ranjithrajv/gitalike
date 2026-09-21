@@ -32,8 +32,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { launch, retry } from './harness.mjs';
-import { PROFILE_JOBS, PROJECT_JOBS, STORE_SHOTS } from './captures.mjs';
+import { launch, retry, waitForNoTheme, waitForTheme } from './harness.mjs';
+import {
+  PROFILE_JOBS,
+  PROJECT_JOBS,
+  STORE_SHOTS,
+  themeOf,
+} from './captures.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -81,16 +86,7 @@ async function captureJobs(context, setSettings, out, jobs) {
       await retry(() =>
         page.goto(job.url, { waitUntil: 'domcontentloaded', timeout: 60000 }),
       );
-      await page
-        .waitForFunction(
-          () =>
-            ![...document.documentElement.classList].some((c) =>
-              c.startsWith('gs-theme-'),
-            ),
-          null,
-          { timeout: 15000 },
-        )
-        .catch(() => {});
+      await waitForNoTheme(page, 15000).catch(() => {});
       await settle(page, job.ready);
       await page.screenshot({ path: join(out, job.base) });
       console.log(`    -> ${job.base}`);
@@ -102,11 +98,7 @@ async function captureJobs(context, setSettings, out, jobs) {
         await retry(() =>
           page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }),
         );
-        await page.waitForFunction(
-          (c) => document.documentElement.classList.contains(c),
-          skin.cls,
-          { timeout: 45000 },
-        );
+        await waitForTheme(page, themeOf(skin));
         await settle(page, job.ready);
         await page.screenshot({ path: join(out, skin.over) });
         console.log(`    -> ${skin.over}`);
@@ -129,11 +121,7 @@ async function captureShots(context, setSettings, out, shots) {
       await retry(() =>
         page.goto(shot.url, { waitUntil: 'domcontentloaded', timeout: 60000 }),
       );
-      await page.waitForFunction(
-        (c) => document.documentElement.classList.contains(c),
-        shot.cls,
-        { timeout: 45000 },
-      );
+      await waitForTheme(page, themeOf(shot));
       await settle(page, shot.ready);
       await page.screenshot({ path: join(out, shot.file) });
       console.log(`    -> ${shot.file}`);

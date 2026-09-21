@@ -18,7 +18,7 @@
  * says which. Exit code is non-zero if anything failed.
  */
 
-import { launch, retry } from './harness.mjs';
+import { launch, retry, waitForTheme } from './harness.mjs';
 
 const results = [];
 const check = (name, ok, detail) =>
@@ -54,11 +54,7 @@ try {
   /* ------------------------------ GitHub -> GitLab ------------------------------ */
   const gh = await context.newPage();
   await gotoLive(gh, 'https://github.com/git/git');
-  await gh.waitForFunction(
-    () => document.documentElement.classList.contains('gs-theme-gitlab'),
-    null,
-    { timeout: 45000 },
-  );
+  await waitForTheme(gh, 'gitlab');
   await gh.waitForTimeout(2500);
   const g = await gh.evaluate(async () => {
     const ul = document.querySelector(
@@ -113,11 +109,7 @@ try {
   /* GitHub profile, skinned as GitLab: the tab strip becomes a left rail. */
   const ghp = await context.newPage();
   await gotoLive(ghp, 'https://github.com/torvalds');
-  await ghp.waitForFunction(
-    () => document.documentElement.classList.contains('gs-theme-gitlab'),
-    null,
-    { timeout: 45000 },
-  );
+  await waitForTheme(ghp, 'gitlab');
   await ghp.waitForTimeout(2500);
   const gp = await ghp.evaluate(() => {
     const nav = document.querySelector(
@@ -198,11 +190,7 @@ try {
   /* ------------------------------ GitLab -> GitHub ------------------------------ */
   const gl = await context.newPage();
   await gotoLive(gl, 'https://gitlab.com/gitlab-org/gitlab');
-  await gl.waitForFunction(
-    () => document.documentElement.classList.contains('gs-theme-github'),
-    null,
-    { timeout: 45000 },
-  );
+  await waitForTheme(gl, 'github');
   // The theme class lands at document_start, before GitLab's SPA has rendered
   // its sidebar; wait for the relabel itself rather than guessing at a delay, so
   // a slow load does not fail a step that is really about the rewrite.
@@ -248,11 +236,7 @@ try {
   /* GitLab profile, skinned as GitHub: counts move under the photo. */
   const glp = await context.newPage();
   await gotoLive(glp, 'https://gitlab.com/dzaporozhets');
-  await glp.waitForFunction(
-    () => document.documentElement.classList.contains('gs-theme-github'),
-    null,
-    { timeout: 45000 },
-  );
+  await waitForTheme(glp, 'github');
   // Wait for the profile rewrite itself (content/ux.js clones the follower
   // counts into `[data-gs-profile-stats]`), not a guessed delay.
   await glp
@@ -331,11 +315,7 @@ try {
   });
   const cb = await context.newPage();
   await gotoLive(cb, 'https://codeberg.org/forgejo/forgejo');
-  await cb.waitForFunction(
-    () => document.documentElement.classList.contains('gs-theme-gitlab'),
-    null,
-    { timeout: 45000 },
-  );
+  await waitForTheme(cb, 'gitlab');
   // Wait for the rebuilt sidebar itself rather than a guessed delay.
   await cb
     .waitForFunction(

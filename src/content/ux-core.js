@@ -274,6 +274,35 @@
     return entry.original;
   }
 
+  // cloneNode(true) copies a page subtree, including inline `on*` handlers and
+  // any <script> — and a cloned <script> runs when it is inserted. The source is
+  // the page itself, so this is not an escalation, but the copy is rebuilt clean
+  // rather than trusted: script-bearing elements are dropped and event/handler
+  // attributes stripped. Shared so every pass that clones page DOM applies the
+  // same rule.
+  function cloneClean(node) {
+    const clone = node.cloneNode(true);
+    for (const el of clone.querySelectorAll(
+      'script,style,link,base,meta,iframe,object,embed',
+    )) {
+      el.remove();
+    }
+    for (const el of [clone, ...clone.querySelectorAll('*')]) {
+      for (const attr of [...el.attributes]) {
+        const name = attr.name.toLowerCase();
+        if (name.startsWith('on') || name === 'srcdoc') {
+          el.removeAttribute(attr.name);
+        } else if (
+          (name === 'href' || name === 'xlink:href' || name === 'src') &&
+          /^\s*(javascript|data):/i.test(attr.value)
+        ) {
+          el.removeAttribute(attr.name);
+        }
+      }
+    }
+    return clone;
+  }
+
   /* ----------------------------------------------------- pass registry -- */
 
   // Passes register themselves here. The node passes run per added subtree, the
@@ -562,6 +591,7 @@
     walkText,
     textNodes,
     rememberText,
+    cloneClean,
     watchBody,
     unwatchBody,
     watching,

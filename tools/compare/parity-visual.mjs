@@ -28,7 +28,7 @@ import { inflateSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { PROJECT_JOBS, PROFILE_JOBS } from './captures.mjs';
+import { PROJECT_JOBS, PROFILE_JOBS, themeOf } from './captures.mjs';
 // The parity rubrics publish the source and skin tables; reuse them so this
 // report's columns and row labels cannot drift from the rubric table's.
 import { SKINS, SOURCES } from './parity-score.mjs';
@@ -202,7 +202,7 @@ function scoreJobs(jobs) {
       cells[source.key] = 10;
     }
     for (const skin of job.skins) {
-      const key = skin.cls.replace('gs-theme-', '');
+      const key = themeOf(skin);
       cells[key] =
         Math.round(ssim(base, readGrid(skin.over, cache)) * 100) / 10;
     }
@@ -260,9 +260,7 @@ function fidelityJobs(jobs, references, chrome = false) {
   for (const job of jobs) {
     const source = SOURCE_BY_PREFIX[job.base.split('-')[0]];
     if (!source) continue;
-    const overs = new Map(
-      job.skins.map((skin) => [skin.cls.replace('gs-theme-', ''), skin.over]),
-    );
+    const overs = new Map(job.skins.map((skin) => [themeOf(skin), skin.over]));
     const cells = {};
     for (const skin of SKINS) {
       const reference = references[skin.key];
@@ -360,9 +358,7 @@ function paletteJobs(jobs, references) {
   for (const job of jobs) {
     const source = SOURCE_BY_PREFIX[job.base.split('-')[0]];
     if (!source) continue;
-    const overs = new Map(
-      job.skins.map((skin) => [skin.cls.replace('gs-theme-', ''), skin.over]),
-    );
+    const overs = new Map(job.skins.map((skin) => [themeOf(skin), skin.over]));
     const cells = {};
     for (const skin of SKINS) {
       const reference = references[skin.key];

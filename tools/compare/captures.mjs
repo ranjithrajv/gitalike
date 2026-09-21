@@ -18,6 +18,13 @@
  * lists all three.
  */
 
+/**
+ * The skin a capture entry wears. `setting` is the single source of truth: the
+ * html class the content script adds and the theme name parity-visual.mjs groups
+ * by are both derived from it, so a skin is described once.
+ */
+export const themeOf = (entry) => Object.values(entry.setting)[0];
+
 // Project-page jobs. Both pages are public and carry the real chrome (header,
 // token colours, logo) the skins repaint. `ready` waits for the page's own
 // marker, so the shot is not on a skeleton.
@@ -30,12 +37,10 @@ export const PROJECT_JOBS = [
     skins: [
       {
         setting: { github: 'gitlab' },
-        cls: 'gs-theme-gitlab',
         over: 'github-gitlab.png',
       },
       {
         setting: { github: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
         over: 'github-bitbucket.png',
       },
     ],
@@ -49,12 +54,10 @@ export const PROJECT_JOBS = [
     skins: [
       {
         setting: { gitlab: 'github' },
-        cls: 'gs-theme-github',
         over: 'gitlab-github.png',
       },
       {
         setting: { gitlab: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
         over: 'gitlab-bitbucket.png',
       },
     ],
@@ -71,17 +74,14 @@ export const PROJECT_JOBS = [
     skins: [
       {
         setting: { github: 'gitlab' },
-        cls: 'gs-theme-gitlab',
         over: 'codeberg-gitlab.png',
       },
       {
         setting: { github: 'github' },
-        cls: 'gs-theme-github',
         over: 'codeberg-github.png',
       },
       {
         setting: { github: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
         over: 'codeberg-bitbucket.png',
       },
     ],
@@ -98,12 +98,10 @@ export const PROJECT_JOBS = [
     skins: [
       {
         setting: { bitbucket: 'github' },
-        cls: 'gs-theme-github',
         over: 'bitbucket-github.png',
       },
       {
         setting: { bitbucket: 'gitlab' },
-        cls: 'gs-theme-gitlab',
         over: 'bitbucket-gitlab.png',
       },
     ],
@@ -121,12 +119,10 @@ export const PROFILE_JOBS = [
     skins: [
       {
         setting: { github: 'gitlab' },
-        cls: 'gs-theme-gitlab',
         over: 'github-profile-gitlab.png',
       },
       {
         setting: { github: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
         over: 'github-profile-bitbucket.png',
       },
     ],
@@ -142,12 +138,10 @@ export const PROFILE_JOBS = [
     skins: [
       {
         setting: { gitlab: 'github' },
-        cls: 'gs-theme-github',
         over: 'gitlab-profile-github.png',
       },
       {
         setting: { gitlab: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
         over: 'gitlab-profile-bitbucket.png',
       },
     ],
@@ -162,12 +156,10 @@ export const PROFILE_JOBS = [
     skins: [
       {
         setting: { bitbucket: 'github' },
-        cls: 'gs-theme-github',
         over: 'bitbucket-profile-github.png',
       },
       {
         setting: { bitbucket: 'gitlab' },
-        cls: 'gs-theme-gitlab',
         over: 'bitbucket-profile-gitlab.png',
       },
     ],
@@ -181,7 +173,6 @@ export const STORE_SHOTS = [
     name: 'GitHub project as GitLab',
     url: 'https://github.com/microsoft/vscode',
     setting: { github: 'gitlab' },
-    cls: 'gs-theme-gitlab',
     ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
     file: '01-as-gitlab.png',
   },
@@ -189,7 +180,6 @@ export const STORE_SHOTS = [
     name: 'GitLab project as GitHub',
     url: 'https://gitlab.com/gitlab-org/gitlab',
     setting: { gitlab: 'github' },
-    cls: 'gs-theme-github',
     ready:
       '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
     file: '02-as-github.png',

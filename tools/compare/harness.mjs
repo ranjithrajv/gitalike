@@ -129,3 +129,28 @@ export async function retry(action, attempts = 4, delay = 1500) {
     }
   }
 }
+
+/**
+ * Wait until the named skin's class is on <html>. `theme` is the skin name
+ * ('gitlab', 'github', 'bitbucket') rather than the class, so a caller never
+ * spells the class prefix out.
+ */
+export function waitForTheme(page, theme, timeout = 45000) {
+  return page.waitForFunction(
+    (name) => document.documentElement.classList.contains(name),
+    `gs-theme-${theme}`,
+    { timeout },
+  );
+}
+
+/** Wait until no skin is applied — the unskinned base frame. */
+export function waitForNoTheme(page, timeout = 45000) {
+  return page.waitForFunction(
+    () =>
+      ![...document.documentElement.classList].some((c) =>
+        c.startsWith('gs-theme-'),
+      ),
+    null,
+    { timeout },
+  );
+}
