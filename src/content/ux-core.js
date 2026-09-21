@@ -543,7 +543,6 @@
   globalThis.GITALIKE_UX_RUNTIME = {
     UX,
     SELECTORS,
-    THEMES,
     layoutOf,
     ledger,
     release,
@@ -551,7 +550,6 @@
     hide,
     setOrder,
     scope,
-    isSkipped,
     walkText,
     textNodes,
     rememberText,

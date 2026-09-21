@@ -29,6 +29,16 @@
   // re-renders its list cannot make the two of us thrash.
   const orderStamp = new WeakMap();
 
+  // The nav controls inside the nav regions: the anchors, buttons and summaries
+  // the relabel, hide and marker passes all walk. One traversal, one selector.
+  function navControls(node) {
+    const out = [];
+    for (const region of scope(node, UX.NAV_SCOPE)) {
+      for (const el of scope(region, 'a,button,summary')) out.push(el);
+    }
+    return out;
+  }
+
   // Hide the items the applied product has no page for, so the menu is the
   // applied product's menu rather than a mix of both. Runs before paintUnmapped
   // so it sees the clean label, not one with a badge on it.
@@ -37,24 +47,22 @@
     const hideList = UX.NAV_HIDE[t];
     if (!keep && !hideList) return;
     const seenHref = new Set();
-    for (const region of scope(node, UX.NAV_SCOPE)) {
-      for (const el of scope(region, 'a,button,summary')) {
-        const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
-        // A whitelist means "show only the applied product's own options";
-        // otherwise hide the ones it has no page for.
-        let drop = keep ? !UX.navKeep(label, t) : UX.navHidden(label, t);
-        // GitLab lists some destinations twice (pinned and in a group); GitHub's
-        // bar lists each once.
-        const href = el.getAttribute('href');
-        if (!drop && href) {
-          if (seenHref.has(href)) drop = true;
-          else seenHref.add(href);
-        }
-        if (!drop) continue;
-        // A group toggle is a button whose `li` holds the group's items; hiding
-        // the `li` would take the items with it, so only the button goes.
-        hide(el.tagName === 'BUTTON' ? el : el.closest('li') || el);
+    for (const el of navControls(node)) {
+      const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      // A whitelist means "show only the applied product's own options";
+      // otherwise hide the ones it has no page for.
+      let drop = keep ? !UX.navKeep(label, t) : UX.navHidden(label, t);
+      // GitLab lists some destinations twice (pinned and in a group); GitHub's
+      // bar lists each once.
+      const href = el.getAttribute('href');
+      if (!drop && href) {
+        if (seenHref.has(href)) drop = true;
+        else seenHref.add(href);
       }
+      if (!drop) continue;
+      // A group toggle is a button whose `li` holds the group's items; hiding
+      // the `li` would take the items with it, so only the button goes.
+      hide(el.tagName === 'BUTTON' ? el : el.closest('li') || el);
     }
   }
 
@@ -81,26 +89,22 @@
       el.appendChild(badge);
       el.setAttribute('data-gs-no-equiv', missing);
     };
-    for (const region of scope(node, UX.NAV_SCOPE)) {
-      for (const el of scope(region, 'a,button,summary')) mark(el);
-    }
+    for (const el of navControls(node)) mark(el);
     for (const el of scope(node, UX.LABEL_SCOPE)) mark(el);
   }
 
   function paintNav(node, t) {
     const map = UX.NAV[t] || {};
-    // NAV_SCOPE selects the navigation *regions*; the labels live on the
-    // anchors and buttons inside them. Matching per text node (not the whole
-    // control) is what lets a label with a counter — "Work items -", where the
-    // dash is a separate node — still be relabelled.
-    for (const region of scope(node, UX.NAV_SCOPE)) {
-      for (const el of scope(region, 'a,button,summary')) {
-        for (const text of textNodes(el)) {
-          const label = text.nodeValue.trim();
-          if (!Object.prototype.hasOwnProperty.call(map, label)) continue;
-          rememberText(text);
-          if (text.nodeValue !== map[label]) text.nodeValue = map[label];
-        }
+    // The labels live on the anchors and buttons inside the nav regions.
+    // Matching per text node (not the whole control) is what lets a label with
+    // a counter — "Work items -", where the dash is a separate node — still be
+    // relabelled.
+    for (const el of navControls(node)) {
+      for (const text of textNodes(el)) {
+        const label = text.nodeValue.trim();
+        if (!Object.prototype.hasOwnProperty.call(map, label)) continue;
+        rememberText(text);
+        if (text.nodeValue !== map[label]) text.nodeValue = map[label];
       }
     }
   }
