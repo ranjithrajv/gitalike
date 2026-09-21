@@ -135,7 +135,47 @@ jobs:
           if [ -f dist/release/gitalike-firefox-signed.xpi ]; then
             assets+=(dist/release/gitalike-firefox-signed.xpi)
           fi
-          gh release create "$GITHUB_REF_NAME" \
-            --title "$GITHUB_REF_NAME" \
-            --notes-file release-notes.md \
-            "${assets[@]}"
+          # A tag can already have a release when this job runs — created by
+          # hand, or by an earlier run that died after creating it. `gh release
+          # create` aborts in that case ("a release with the same tag name
+          # already exists") and takes the assets down with it, which is how
+          # v0.1.2 shipped with none and every /releases/latest/download link
+          # 404'd. So create when absent and otherwise re-upload onto the
+          # existing release, re-running the notes step either way.
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME exists; uploading assets to it."
+            gh release upload "$GITHUB_REF_NAME" "${assets[@]}" --clobber
+            gh release edit "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes-file release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes-file release-notes.md \
+              "${assets[@]}"
+          fi
+
+      - name: Verify the release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The site links to /releases/latest/download/<name> with a fixed
+          # per-target name, so a release that is missing (or renames) either
+          # asset silently breaks every download button. Check the tag-scoped
+          # URLs, retrying while the CDN catches up, and fail the run rather
+          # than leave a release the site cannot serve.
+          for name in gitalike-chromium.zip gitalike-firefox.zip; do
+            url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${name}"
+            code=""
+            for attempt in 1 2 3 4 5; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' -L "$url")
+              [ "$code" = "200" ] && break
+              echo "attempt ${attempt}: ${url} -> ${code}; retrying"
+              sleep 3
+            done
+            if [ "$code" != "200" ]; then
+              echo "::error::${url} returned ${code}"
+              exit 1
+            fi
+            echo "${name} -> ${code}"
+          done
