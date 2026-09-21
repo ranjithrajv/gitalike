@@ -11,8 +11,8 @@ import { readFileSync, readdirSync } from 'node:fs';
 
 // `guessForge` reads the bundled host -> markup table from sites.js, so the two
 // modules are loaded together here exactly as every runtime context loads them.
-import '../src/lib/sites.js';
 import '../src/lib/skins.js';
+import '../src/lib/sites.js';
 import '../src/lib/sources.js';
 import '../src/lib/ux.js';
 

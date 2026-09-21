@@ -44,8 +44,8 @@ const TARGETS = {
     // (see background.js).
     background: {
       scripts: [
-        'lib/sites.js',
         'lib/skins.js',
+        'lib/sites.js',
         'lib/sources.js',
         'lib/ux.js',
         'background.js',

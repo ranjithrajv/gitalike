@@ -35,6 +35,11 @@
 
   /**
    * Every skin the extension can paint, keyed by the product whose UI it is.
+   * Declared in `skins.js` (one object per target UI); this projects just the
+   * part the host/picker logic needs — name, badge, colour and layout — so a
+   * skin is named exactly once. `skins.js` is loaded before this file
+   * everywhere (see `background.js` CONTENT_JS and `build.mjs`).
+   *
    * A kind names the skin it wears by default; the popup lists these so a site
    * can be shown with any of them. A site wearing its own UI is left alone (see
    * `themeFor`), so only the other product's skin actually repaints it.
@@ -44,29 +49,20 @@
    * skin is applied to — Bitbucket reuses GitLab's sidebar on any source — so
    * the structural passes key on this rather than on the theme name.
    */
-  const skins = {
-    gitlab: {
-      product: 'GitLab',
-      badge: 'GL',
-      color: '#7759c2',
-      layout: 'gitlab',
-    },
-    github: {
-      product: 'GitHub',
-      badge: 'GH',
-      color: '#24292f',
-      layout: 'github',
-    },
-    bitbucket: {
-      product: 'Bitbucket',
-      badge: 'BB',
-      color: '#0052cc',
-      // Bitbucket's repo navigation is a left sidebar (its own state marks the
-      // navigation "open" and sends no horizontal items), so it reuses GitLab's
-      // layout rather than GitHub's.
-      layout: 'gitlab',
-    },
-  };
+  if (!globalThis.GITALIKE_SKINS) {
+    throw new Error('GitAlike: skins.js must be loaded before sites.js');
+  }
+  const skins = Object.fromEntries(
+    Object.entries(globalThis.GITALIKE_SKINS.SKINS).map(([name, skin]) => [
+      name,
+      {
+        product: skin.product,
+        badge: skin.badge,
+        color: skin.color,
+        layout: skin.layout,
+      },
+    ]),
+  );
 
   /**
    * A "kind" is which product a site is. Its `theme` is the skin applied by

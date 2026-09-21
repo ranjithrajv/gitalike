@@ -14,6 +14,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   rather than unrelated failures. `tests/ux.test.mjs` now derives the same lists
   and scans every theme file for the `// css` selectors.
 
+### Changed
+
+- The skin and source data now live in dedicated registries: `src/lib/skins.js`
+  declares each target UI in one object (its name, badge, layout, vocabulary,
+  navigation order, nav rules, profile menu and shortcuts), and
+  `src/lib/sources.js` declares each forge markup family in one object (its DOM
+  hooks and canary pages). `src/lib/ux.js` composes them and keeps the pure
+  helpers and the shared scopes; `src/lib/sites.js` derives its skin list from
+  the registry too. The tables and their consumers are unchanged, so adding a
+  skin or source is now one object plus its stylesheet or host entry, and
+  `tests/contracts.test.mjs` names anything missing.
+
 ### Fixed
 
 - The `≠` no-counterpart marker is styled under every skin, not only GitLab and
