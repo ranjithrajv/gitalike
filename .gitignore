@@ -5,3 +5,7 @@ node_modules/
 .playwright-mcp/
 test-results/
 playwright-report/
+
+# The WebP variants of the docs/ captures are generated at deploy time by
+# .github/workflows/pages.yml, not committed; only the PNGs are tracked.
+docs/*.webp

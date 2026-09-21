@@ -559,13 +559,13 @@ read.
 - If the change is visible, refresh the screenshots with `npm run screenshots`.
 - The `docs/*.png` captures are generated artifacts, not source: refresh them
   with `npm run screenshots:projects` / `npm run screenshots:profiles`
-  deliberately, when the skin actually changed, not casually. Each recapture
-  rewrites ~1.9 MB of binaries — most of the repository's weight — and a
-  byte-level diff that only moves a star count is still permanent history.
-  Regenerate rather than hand-edit, and prefer leaving a correct-but-stale shot
-  over churning the whole set. (Where they live is worth deciding before the next
-  skin doubles the churn: in `docs/` on `main` keeps the Pages site simple, a
-  `gh-pages` branch or a generated Pages artifact keeps the churn off `main`.)
+  deliberately, when the skin actually changed, not casually — each recapture
+  rewrites ~2 MB of binaries, and a byte-level diff that only moves a star count
+  is still permanent history. Regenerate rather than hand-edit. The WebP variants
+  `docs/index.html` prefers are generated at deploy time by
+  `.github/workflows/pages.yml` from the committed PNGs, so the two formats
+  cannot drift and only the PNGs are tracked. `tests/captures.test.mjs` keeps the
+  capture table, the files on disk and the page in step.
 
 ## Releasing
 

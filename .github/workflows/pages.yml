@@ -1,0 +1,63 @@
+name: Pages
+
+# The site in docs/ is served here. Only the PNGs are committed: the WebP
+# variants that docs/index.html prefers are generated at deploy time from those
+# PNGs, so the format every visitor actually loads cannot drift from the one the
+# guarded capture tool produces, and the repository carries one copy of each
+# image rather than two.
+#
+# This replaces "deploy from a branch" for the docs/ folder; configure-pages
+# switches the Pages build type to Actions on the first run.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One Pages deployment at a time; a newer push supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Pinned to a full commit SHA; see release.yml for why.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # cwebp is in Ubuntu's `webp` package. The conversion runs here, not in the
+      # capture tool, so no local dependency is added.
+      - name: Generate WebP from the committed PNGs
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq webp
+          cd docs
+          shopt -s nullglob
+          for png in *.png; do
+            cwebp -quiet -q 82 "$png" -o "${png%.png}.webp"
+          done
+
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+        with:
+          # Enable Pages (and the Actions build type) if it is not on yet, so the
+          # first merge switches the site without a manual settings change.
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

@@ -7,15 +7,17 @@
  *   node tools/screenshots.mjs profile   # docs/ orientation pairs (profiles)
  *   node tools/screenshots.mjs store     # store/screenshots, 1280x720
  *
+ * What it captures lives in `tools/captures.mjs`, which the tests and the page
+ * are checked against; this file is only the capture loop.
+ *
  * A *job* is one URL: the base frame with every skin off, then one frame per skin
  * with that skin on. Capturing the base once per URL — rather than once per skin
  * — keeps the pair the same moment, so [`docs/index.html`](../docs/index.html)
- * can lay them over each other as a before/after swipe. A *store shot* is a
- * single frame with the named skin on.
+ * can lay them over each other as a before/after swipe.
  *
- * Any failure exits non-zero: the output is committed, and a silent failure
- * would leave a stale image that looks fine until someone compares it with the
- * live site.
+ * Any failure exits non-zero: the output is committed (the PNGs; the WebP
+ * variants are generated at deploy), and a silent failure would leave a stale
+ * image that looks fine until someone compares it with the live site.
  *
  * Only `playwright-core` is needed — the browser is the system Chromium, so
  * nothing is downloaded. Point at a different browser with `GS_CHROME=...`, and
@@ -30,6 +32,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launch, retry } from './harness.mjs';
+import { PROFILE_JOBS, PROJECT_JOBS, STORE_SHOTS } from './captures.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -37,136 +40,20 @@ const OFF = { github: 'off', gitlab: 'off' };
 const PAGE = { width: 1280, height: 900 };
 const STORE = { width: 1280, height: 720 };
 
-// How long to let the skin settle (fonts, token repaint) before the shot, and
-// how long to wait for the page's own marker. One place, so the captures cannot
-// drift into different timing.
+// How long to let the skin settle (fonts, token repaint) before the shot. One
+// place, so the captures cannot drift into different timing.
 const SETTLE_MS = 2500;
-
-// Project-page jobs. Both pages are public and carry the real chrome (header,
-// token colours, logo) the skins repaint. `ready` waits for the page's own
-// marker, so the shot is not on a skeleton.
-const PROJECT_JOBS = [
-  {
-    name: 'GitLab project',
-    url: 'https://gitlab.com/gitlab-org/gitlab',
-    ready: '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
-    base: 'gitlab-default.png',
-    skins: [
-      {
-        setting: { gitlab: 'github' },
-        cls: 'gs-theme-github',
-        over: 'gitlab-github.png',
-      },
-      {
-        setting: { gitlab: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
-        over: 'gitlab-bitbucket.png',
-      },
-    ],
-  },
-  {
-    name: 'GitHub project',
-    url: 'https://github.com/microsoft/vscode',
-    ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
-    base: 'github-default.png',
-    skins: [
-      {
-        setting: { github: 'gitlab' },
-        cls: 'gs-theme-gitlab',
-        over: 'github-gitlab.png',
-      },
-      {
-        setting: { github: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
-        over: 'github-bitbucket.png',
-      },
-    ],
-  },
-  // Codeberg is GitHub-flavoured, so any of the three skins can be captured from
-  // the same base. The Gitea project nav is an `overflow-menu`; the GitLab and
-  // Bitbucket skins rebuild it as `[data-gs-gitea-nav]`, so `ready` accepts
-  // either.
-  {
-    name: 'Codeberg (Gitea) project',
-    url: 'https://codeberg.org/forgejo/forgejo',
-    ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
-    base: 'codeberg-default.png',
-    skins: [
-      { setting: { github: 'gitlab' }, cls: 'gs-theme-gitlab', over: 'codeberg-gitlab.png' },
-      { setting: { github: 'github' }, cls: 'gs-theme-github', over: 'codeberg-github.png' },
-      { setting: { github: 'bitbucket' }, cls: 'gs-theme-bitbucket', over: 'codeberg-bitbucket.png' },
-    ],
-  },
-];
-
-// Profile-page jobs. The profiles are public and rich enough to show both the
-// navigation and the metadata the skin repaints.
-const PROFILE_JOBS = [
-  {
-    name: 'GitLab profile',
-    // A profile with bio, location and contact links set, so the card has more
-    // than the name to show — sytses (the example in the docs) has neither.
-    url: 'https://gitlab.com/dzaporozhets',
-    ready: '.super-sidebar:not(.super-sidebar-loading) .user-profile-header, .user-profile-header',
-    base: 'gitlab-profile-default.png',
-    skins: [
-      {
-        setting: { gitlab: 'github' },
-        cls: 'gs-theme-github',
-        over: 'gitlab-profile-github.png',
-      },
-      {
-        setting: { gitlab: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
-        over: 'gitlab-profile-bitbucket.png',
-      },
-    ],
-  },
-  {
-    name: 'GitHub profile',
-    url: 'https://github.com/torvalds',
-    ready: 'nav[aria-label="User profile"]',
-    base: 'github-profile-default.png',
-    skins: [
-      {
-        setting: { github: 'gitlab' },
-        cls: 'gs-theme-gitlab',
-        over: 'github-profile-gitlab.png',
-      },
-      {
-        setting: { github: 'bitbucket' },
-        cls: 'gs-theme-bitbucket',
-        over: 'github-profile-bitbucket.png',
-      },
-    ],
-  },
-];
-
-// Store-listing shots: one frame each, with the named skin on. The base shot is
-// per source, so the setting is per shot too — one skin is active at a time.
-const STORE_SHOTS = [
-  {
-    name: 'GitHub project as GitLab',
-    url: 'https://github.com/microsoft/vscode',
-    setting: { github: 'gitlab' },
-    cls: 'gs-theme-gitlab',
-    ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
-    file: '01-as-gitlab.png',
-  },
-  {
-    name: 'GitLab project as GitHub',
-    url: 'https://gitlab.com/gitlab-org/gitlab',
-    setting: { gitlab: 'github' },
-    cls: 'gs-theme-github',
-    ready: '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
-    file: '02-as-github.png',
-  },
-];
 
 const MODES = {
   project: { out: 'docs', viewport: PAGE, jobs: PROJECT_JOBS },
   profile: { out: 'docs', viewport: PAGE, jobs: PROFILE_JOBS },
-  store: { out: 'store/screenshots', viewport: STORE, headless: false, shots: STORE_SHOTS, popup: true },
+  store: {
+    out: 'store/screenshots',
+    viewport: STORE,
+    headless: false,
+    shots: STORE_SHOTS,
+    popup: true,
+  },
 };
 
 // Any capture that failed. The output is committed, so a silent failure would
