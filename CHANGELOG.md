@@ -40,6 +40,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   read from the page; the reporter pastes the element and property themselves
   (`src/popup/`).
 
+### Changed
+
+- The popup's two product checkboxes are one **Show the web with** radio group —
+  **GitLab UI**, **GitHub UI** or **Off** — so only one skin is ever active.
+  Picking a skin turns the other off, and a state stored with both on is reduced
+  to one when the popup opens. The per-kind settings the background and the badge
+  read are unchanged (`src/popup/`).
+
 ### Fixed
 
 - Elements hidden with the `hidden` attribute are actually hidden now. An

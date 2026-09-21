@@ -24,8 +24,7 @@
   // that links to it, rather than in the shared tables.
   const ISSUES_URL = 'https://github.com/ranjithrajv/gitalike/issues/new';
 
-  const rows = [...document.querySelectorAll('.row[data-setting]')];
-  const switches = [...document.querySelectorAll('.row[data-setting] .switch')];
+  const skinOptions = document.getElementById('skin-options');
   const siteWrap = document.getElementById('site');
   const siteHost = document.getElementById('site-host');
   const siteOptions = document.getElementById('site-options');
@@ -88,23 +87,81 @@
 
   function render() {
     const currentKind = SITES.kindFor(host, instances);
-
-    for (const row of rows) {
-      const kind = row.dataset.setting;
-      const on = SITES.kindOn(kind, settings);
-
-      row.querySelector('.switch').checked = on;
-      row.classList.toggle('row--on', on);
-      // A product can cover several hosts once instances are added.
-      row.querySelector('[data-role="hosts"]').textContent = SITES.hostsFor(
-        kind,
-        instances,
-      ).join(', ');
-      row.classList.toggle('row--current', kind === currentKind);
-    }
-
+    renderSkin();
     renderAdd(currentKind);
     renderSite(currentKind);
+  }
+
+  // One skin is active for the whole extension. The stored settings are still
+  // per kind, so the single choice is mapped onto them; only one kind is on.
+  function globalSkin(state) {
+    for (const kind of Object.keys(SITES.kinds)) {
+      if (SITES.kindOn(kind, state)) return SITES.kinds[kind].theme;
+    }
+    return 'off';
+  }
+
+  function settingsForSkin(theme) {
+    const next = {};
+    for (const kind of Object.keys(SITES.kinds)) {
+      next[kind] = SITES.kinds[kind].theme === theme ? theme : 'off';
+    }
+    return next;
+  }
+
+  function hostsForSkin(theme) {
+    for (const kind of Object.keys(SITES.kinds)) {
+      if (SITES.kinds[kind].theme === theme) {
+        return SITES.hostsFor(kind, instances);
+      }
+    }
+    return [];
+  }
+
+  // One radio per skin, plus off, built from the shared `skins` table.
+  function buildSkinOptions() {
+    const options = [
+      ...SITES.THEMES.map((theme) => ({
+        value: theme,
+        label: `${SITES.skins[theme].product} UI`,
+      })),
+      { value: 'off', label: 'Off' },
+    ];
+    for (const { value, label } of options) {
+      const option = document.createElement('label');
+      option.className = 'skin__option';
+      option.dataset.skin = value;
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'gs-skin';
+      input.value = value;
+      const text = document.createElement('span');
+      text.className = 'skin__text';
+      const name = document.createElement('span');
+      name.className = 'skin__label';
+      name.textContent = label;
+      const hosts = document.createElement('span');
+      hosts.className = 'skin__hosts';
+      text.append(name, hosts);
+      option.append(input, text);
+      skinOptions.append(option);
+    }
+  }
+
+  function renderSkin() {
+    const current = globalSkin(settings);
+    for (const option of skinOptions.querySelectorAll('.skin__option')) {
+      const value = option.dataset.skin;
+      option.querySelector('input').checked = value === current;
+      const hosts = value === 'off' ? [] : hostsForSkin(value);
+      option.querySelector('.skin__hosts').textContent = hosts.length
+        ? hosts.join(', ')
+        : 'Nothing is repainted';
+      option.classList.toggle(
+        'skin__option--current',
+        Boolean(host) && hosts.includes(host),
+      );
+    }
   }
 
   // The per-site skin picker, shown only for a host the extension knows. The
@@ -189,10 +246,11 @@
   /* -------------------------------------------------------------- actions -- */
 
   async function addHost(hostname, kind) {
+    // Asking to show a site implies showing it — don't make it a second click.
+    // With one skin active at a time, that also turns the other skin off.
     await api.storage.sync.set({
       [SITES.INSTANCES_KEY]: { ...instances, [hostname]: kind },
-      // Asking to show a site implies showing it — don't make it a second click.
-      [SITES.SETTINGS_KEY]: { ...settings, [kind]: SITES.kinds[kind].theme },
+      [SITES.SETTINGS_KEY]: settingsForSkin(SITES.kinds[kind].theme),
     });
   }
 
@@ -257,17 +315,12 @@
     addInput.value = '';
   });
 
-  for (const input of switches) {
-    input.addEventListener('change', () => {
-      const kind = input.dataset.setting;
-      api.storage.sync.set({
-        [SITES.SETTINGS_KEY]: {
-          ...settings,
-          [kind]: input.checked ? SITES.kinds[kind].theme : 'off',
-        },
-      });
-    });
-  }
+  // Picking a skin turns the other off, so only one is ever active.
+  skinOptions.addEventListener('change', (event) => {
+    const value = event.target?.value;
+    if (!value) return;
+    api.storage.sync.set({ [SITES.SETTINGS_KEY]: settingsForSkin(value) });
+  });
 
   // Pick this host's skin, independent of its product switch.
   siteOptions.addEventListener('change', (event) => {
@@ -361,6 +414,16 @@
   (async () => {
     host = await currentHost();
     await load();
+    // A state stored before the one-skin rule could have both skins on; keep
+    // only one of them.
+    if (
+      Object.keys(SITES.kinds).filter((kind) => SITES.kindOn(kind, settings))
+        .length > 1
+    ) {
+      settings = settingsForSkin(globalSkin(settings));
+      await api.storage.sync.set({ [SITES.SETTINGS_KEY]: settings });
+    }
+    buildSkinOptions();
     buildSiteOptions();
     render();
     await showShortcut();
