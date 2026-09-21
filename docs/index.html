@@ -3,7 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>gitalike — project &amp; profile orientation swipes</title>
+    <title>gitalike — use any forge, keep your muscle memory</title>
+    <meta
+      name="description"
+      content="gitalike re-skins the forge you use — GitHub, GitLab, Codeberg/Gitea or any instance you add — with the UI of GitHub, GitLab or Bitbucket. Colour, words, navigation, reference markers and keyboard shortcuts, all local and reversible."
+    />
+    <meta name="theme-color" content="#0969da" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="gitalike — use any forge, keep your muscle memory" />
+    <meta
+      property="og:description"
+      content="Any forge, any skin. GitHub, GitLab and Bitbucket interfaces for the forge you use — locally, with no network access."
+    />
+    <meta property="og:image" content="https://ranjithrajv.github.io/gitalike/github-gitlab.png" />
     <style>
       :root {
         color-scheme: light dark;
@@ -12,8 +25,13 @@
         --muted: #59636e;
         --border: #d1d9e0;
         --surface: #f6f8fa;
+        --surface-2: #ffffff;
         --accent: #0969da;
+        --accent-fg: #ffffff;
         --gitlab: #7759c2;
+        --github: #0969da;
+        --bitbucket: #0052cc;
+        --shadow: 0 1px 3px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.06);
       }
       @media (prefers-color-scheme: dark) {
         :root {
@@ -22,36 +40,148 @@
           --muted: #9198a1;
           --border: #3d444d;
           --surface: #151b23;
+          --surface-2: #161b22;
           --accent: #2f81f7;
+          --accent-fg: #0d1117;
           --gitlab: #9c8ad8;
+          --github: #2f81f7;
+          --bitbucket: #579dff;
+          --shadow: 0 1px 3px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.35);
         }
       }
       * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
       body {
         margin: 0;
-        padding: 32px 20px 64px;
-        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Noto Sans", Helvetica, Arial, sans-serif;
         color: var(--fg);
         background: var(--bg);
+        -webkit-font-smoothing: antialiased;
       }
-      header, main { max-width: 1024px; margin: 0 auto; }
-      h1 { font-size: 20px; margin: 0 0 4px; }
-      p.lede { margin: 0 0 4px; color: var(--muted); }
-      p.lede code {
-        font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        padding: 1px 5px;
+      a { color: var(--accent); }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+      .skip {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        background: var(--accent);
+        color: var(--accent-fg);
+        padding: 8px 14px;
+        border-radius: 0 0 8px 0;
+        z-index: 20;
       }
-      .card { margin-top: 32px; }
-      .card h2 { font-size: 15px; margin: 0 0 2px; }
-      .card .sub { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
-      .card .sub b.gitlab { color: var(--gitlab); }
-      .card .sub b.github { color: var(--accent); }
+      .skip:focus { left: 0; }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
-      /* --- the swipe --- */
+      /* ---------------------------------------------------------------- nav -- */
+      .site {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--bg);
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: saturate(1.4) blur(8px);
+        border-bottom: 1px solid var(--border);
+      }
+      .site .wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 60px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        color: var(--fg);
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+      .brand svg { width: 28px; height: 28px; border-radius: 7px; }
+      .site nav { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+      .site nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .site nav a:hover { color: var(--fg); }
+      .site nav .btn { color: var(--accent-fg); }
+      @media (max-width: 620px) {
+        .site nav a:not(.btn) { display: none; }
+      }
+
+      /* --------------------------------------------------------------- buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+        background: var(--accent);
+        color: var(--accent-fg);
+        transition: transform 0.06s ease, filter 0.15s ease;
+      }
+      .btn:hover { filter: brightness(1.08); }
+      .btn:active { transform: translateY(1px); }
+      .btn.secondary {
+        background: var(--surface-2);
+        color: var(--fg);
+        border-color: var(--border);
+      }
+      .btn.secondary:hover { filter: none; border-color: var(--muted); }
+      .btn.ghost { background: transparent; color: var(--fg); border-color: var(--border); }
+      .btn.small { padding: 7px 12px; font-size: 13px; }
+
+      /* ---------------------------------------------------------------- hero -- */
+      .hero { padding: 56px 0 8px; }
+      .hero .wrap {
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        gap: 40px;
+        align-items: center;
+      }
+      @media (max-width: 860px) {
+        .hero .wrap { grid-template-columns: 1fr; gap: 28px; }
+      }
+      .eyebrow {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--gitlab);
+        margin: 0 0 12px;
+      }
+      h1 {
+        font-size: clamp(28px, 4.4vw, 44px);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin: 0 0 14px;
+      }
+      .lede { font-size: 18px; color: var(--muted); margin: 0 0 22px; max-width: 46ch; }
+      .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+      .trust {
+        margin: 18px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+      }
+      .trust span { display: inline-flex; align-items: center; gap: 6px; }
+      .trust span::before { content: "✓"; color: var(--accent); font-weight: 700; }
+
+      /* -------------------------------------------------------------- swipes -- */
       .swipe {
         --x: 50%;
         position: relative;
@@ -59,6 +189,7 @@
         border-radius: 12px;
         overflow: hidden;
         background: var(--surface);
+        box-shadow: var(--shadow);
         touch-action: pan-y;
         user-select: none;
       }
@@ -68,11 +199,7 @@
         height: auto;
         pointer-events: none;
       }
-      .swipe .over {
-        position: absolute;
-        inset: 0;
-        clip-path: inset(0 0 0 var(--x));
-      }
+      .swipe .over { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--x)); }
       .swipe .divider {
         position: absolute;
         top: 0;
@@ -92,7 +219,7 @@
         margin: -17px 0 0 -17px;
         border-radius: 50%;
         background: var(--accent);
-        color: #fff;
+        color: var(--accent-fg);
         font-size: 15px;
         line-height: 34px;
         text-align: center;
@@ -111,194 +238,542 @@
       .swipe .tag {
         position: absolute;
         bottom: 10px;
-        padding: 4px 8px;
+        padding: 4px 9px;
         border-radius: 999px;
         font-size: 11px;
         font-weight: 600;
         white-space: nowrap;
         color: #fff;
-        background: rgb(0 0 0 / 0.6);
+        background: rgb(0 0 0 / 0.62);
         pointer-events: none;
       }
       .swipe .tag.left { left: 10px; }
       .swipe .tag.right { right: 10px; }
 
-      footer {
-        max-width: 1024px;
-        margin: 40px auto 0;
-        padding-top: 16px;
-        border-top: 1px solid var(--border);
-        color: var(--muted);
-        font-size: 13px;
+      /* ------------------------------------------------------------ sections -- */
+      section { padding: 48px 0; }
+      .section-head { max-width: 60ch; margin: 0 0 24px; }
+      h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.015em; margin: 0 0 8px; }
+      .section-head p { color: var(--muted); margin: 0; font-size: 16px; }
+
+      .demos { display: grid; gap: 28px; }
+      .card h3 { font-size: 16px; margin: 0 0 4px; }
+      .card .sub { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+      .card .sub b.gitlab { color: var(--gitlab); }
+      .card .sub b.github { color: var(--github); }
+      .card .sub b.bitbucket { color: var(--bitbucket); }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
       }
-      footer a { color: var(--accent); }
+      @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+      .feature {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+      }
+      .feature h3 { margin: 0 0 6px; font-size: 15px; }
+      .feature p { margin: 0; color: var(--muted); font-size: 14px; }
+      .feature .ico { font-size: 20px; display: block; margin-bottom: 8px; }
+
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .chip.skin {
+        border-color: var(--gitlab);
+        border-color: color-mix(in srgb, var(--gitlab) 45%, var(--border));
+      }
+      .chips-note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+
+      .split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+      @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+      .panel {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px;
+      }
+      .panel h3 { margin: 0 0 10px; font-size: 17px; }
+      .panel ol, .panel ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+      .panel li { margin: 4px 0; }
+      .panel li b { color: var(--fg); }
+      .panel pre {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        overflow-x: auto;
+        font: 12.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        margin: 10px 0 0;
+      }
+      .note { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+
+      /* -------------------------------------------------------------- footer -- */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 0 56px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer .wrap { display: grid; gap: 12px; }
+      footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+      footer a { color: var(--accent); text-decoration: none; }
+      footer a:hover { text-decoration: underline; }
+      footer .fine { font-size: 12.5px; max-width: 80ch; }
     </style>
   </head>
   <body>
-    <header>
-      <h1>gitalike — navigation orientation</h1>
-      <p class="lede">
-        Live captures of the real project and profile pages at 1280×900. Drag
-        the handle (or use the arrow keys) to swipe between the plain site and
-        the skinned one.
-      </p>
-      <p class="lede">
-        <code>gs-theme-gitlab</code> on a GitHub site · <code>gs-theme-github</code>
-        on a GitLab site.
-      </p>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site">
+      <div class="wrap">
+        <a class="brand" href="#top">
+          <svg viewBox="0 0 128 128" aria-hidden="true">
+            <rect width="128" height="128" rx="30" fill="#1f1e24" />
+            <g fill="none" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M28 46h64M74 28l18 18-18 18" stroke="#fca326" />
+              <path d="M100 82H36M54 64 36 82l18 18" stroke="#e6edf3" />
+            </g>
+          </svg>
+          gitalike
+        </a>
+        <nav aria-label="Primary">
+          <a href="#see">See it</a>
+          <a href="#features">Features</a>
+          <a href="#privacy">Privacy</a>
+          <a href="#install">Install</a>
+          <a
+            class="btn small"
+            href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"
+            >Download</a
+          >
+        </nav>
+      </div>
     </header>
 
-    <main>
-      <section class="card">
-        <h2>GitLab project page</h2>
-        <p class="sub">
-          Left: GitLab as it ships — a vertical <b class="gitlab">sidebar</b>.
-          Right: the same page skinned as GitHub — GitHub's flat
-          <b class="github">tab row</b>, rebuilt from GitLab's scattered sidebar
-          and hosted under the repository header.
-        </p>
-        <div class="swipe">
-          <img class="base" src="gitlab-default.png" alt="GitLab project page, default" />
-          <img class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" />
-          <span class="tag left">GitLab default · sidebar</span>
-          <span class="tag right">GitHub skin · tab row</span>
-          <span class="divider"></span>
-          <span class="knob">↔</span>
-          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab project page" />
+    <main id="main">
+      <!-- ------------------------------------------------------------- hero -->
+      <section class="hero" id="top">
+        <div class="wrap">
+          <div>
+            <p class="eyebrow">Any forge · any skin</p>
+            <h1>Use any forge, keep your muscle memory.</h1>
+            <p class="lede">
+              gitalike paints the UI of GitHub, GitLab or Bitbucket onto the
+              forge you are on — colour, words, navigation, reference markers
+              and keyboard shortcuts. Any site you set up can wear any skin; it
+              changes nothing about what the site does, and reverts the moment
+              you switch it off.
+            </p>
+            <div class="cta">
+              <a
+                class="btn"
+                href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"
+                >Download for Chromium</a
+              >
+              <a
+                class="btn secondary"
+                href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"
+                >Download for Firefox</a
+              >
+              <a class="btn ghost" href="https://github.com/ranjithrajv/gitalike">Source</a>
+            </div>
+            <p class="trust">
+              <span>No network requests</span>
+              <span>No data collected</span>
+              <span>GPL-3.0</span>
+              <span>Chromium &amp; Firefox</span>
+            </p>
+          </div>
+
+          <div class="swipe">
+            <img class="base" src="github-default.png" alt="GitHub project page, default" />
+            <img class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
+            <span class="tag left">GitHub default</span>
+            <span class="tag right">GitLab skin</span>
+            <span class="divider"></span>
+            <span class="knob">↔</span>
+            <input type="range" min="0" max="100" value="45" aria-label="Swipe: GitHub project page skinned as GitLab" />
+          </div>
         </div>
       </section>
 
-      <section class="card">
-        <h2>GitHub project page</h2>
-        <p class="sub">
-          Left: GitHub as it ships — a horizontal <b class="github">tab bar</b>.
-          Right: the same page skinned as GitLab — a vertical
-          <b class="gitlab">sidebar-style column</b>.
-        </p>
-        <div class="swipe">
-          <img class="base" src="github-default.png" alt="GitHub project page, default" />
-          <img class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
-          <span class="tag left">GitHub default · tab bar</span>
-          <span class="tag right">GitLab skin · sidebar column</span>
-          <span class="divider"></span>
-          <span class="knob">↔</span>
-          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub project page" />
+      <!-- ------------------------------------------------------------ demos -->
+      <section id="see">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>See it</h2>
+            <p>
+              Live captures of the real sites at 1280×900. Drag the handle, or
+              use the arrow keys, to swipe between the plain site and the
+              skinned one.
+            </p>
+          </div>
+
+          <div class="demos">
+            <div class="card">
+              <h3>GitLab project page</h3>
+              <p class="sub">
+                Left: GitLab as it ships — a vertical
+                <b class="gitlab">sidebar</b>. Right: the same page skinned as
+                GitHub — GitHub's flat <b class="github">tab row</b>, rebuilt
+                from GitLab's scattered sidebar and hosted under the repository
+                header.
+              </p>
+              <div class="swipe">
+                <img class="base" src="gitlab-default.png" alt="GitLab project page, default" />
+                <img class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" />
+                <span class="tag left">GitLab default · sidebar</span>
+                <span class="tag right">GitHub skin · tab row</span>
+                <span class="divider"></span>
+                <span class="knob">↔</span>
+                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab project page" />
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>GitHub project page</h3>
+              <p class="sub">
+                Left: GitHub as it ships — a horizontal
+                <b class="github">tab bar</b>. Right: the same page skinned as
+                GitLab — a vertical <b class="gitlab">sidebar-style column</b>.
+              </p>
+              <div class="swipe">
+                <img class="base" src="github-default.png" alt="GitHub project page, default" />
+                <img class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
+                <span class="tag left">GitHub default · tab bar</span>
+                <span class="tag right">GitLab skin · sidebar column</span>
+                <span class="divider"></span>
+                <span class="knob">↔</span>
+                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub project page" />
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Codeberg (Gitea) → GitLab</h3>
+              <p class="sub">
+                Left: Codeberg as it ships — a flat
+                <b class="github">tab row</b>. Right: the same page skinned as
+                GitLab — <b class="gitlab">Plan / Code / Build / Deploy</b>
+                group headings in a left sidebar.
+              </p>
+              <div class="swipe">
+                <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
+                <img class="over" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" />
+                <span class="tag left">Gitea default · tab row</span>
+                <span class="tag right">GitLab skin · sidebar</span>
+                <span class="divider"></span>
+                <span class="knob">↔</span>
+                <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as GitLab" />
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Codeberg (Gitea) → GitHub</h3>
+              <p class="sub">
+                Left: Codeberg as it ships. Right: the same page skinned as
+                GitHub — a dark bar and GitHub's flat
+                <b class="github">tab row</b> with the warm active underline.
+              </p>
+              <div class="swipe">
+                <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
+                <img class="over" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" />
+                <span class="tag left">Gitea default · tab row</span>
+                <span class="tag right">GitHub skin · tab row</span>
+                <span class="divider"></span>
+                <span class="knob">↔</span>
+                <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as GitHub" />
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Codeberg (Gitea) → Bitbucket</h3>
+              <p class="sub">
+                Left: Codeberg as it ships. Right: the same page skinned as
+                Bitbucket — a <b class="gitlab">left sidebar</b> and Atlassian's
+                palette, with Bitbucket's words:
+                <b class="bitbucket">Source, Commits, Branches, Pull requests,
+                Pipelines, Deployments, Jira issues, Security, Downloads</b>.
+              </p>
+              <div class="swipe">
+                <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
+                <img class="over" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" />
+                <span class="tag left">Gitea default · tab row</span>
+                <span class="tag right">Bitbucket skin · sidebar</span>
+                <span class="divider"></span>
+                <span class="knob">↔</span>
+                <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as Bitbucket" />
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>GitLab profile page</h3>
+              <p class="sub">
+                Left: GitLab as it ships — a vertical
+                <b class="gitlab">super-sidebar</b> starting at the person's
+                name. Right: the same page skinned as GitHub — a flat
+                <b class="github">row of tabs</b> rebuilt as GitHub's
+                (Overview, Repositories, Projects, Packages, Stars), with the
+                identity in a left <b class="github">card</b> under a large
+                avatar.
+              </p>
+              <div class="swipe">
+                <img class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" />
+                <img class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" />
+                <span class="tag left">GitLab default · sidebar</span>
+                <span class="tag right">GitHub skin · top strip</span>
+                <span class="divider"></span>
+                <span class="knob">↔</span>
+                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab profile page" />
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>GitHub profile page</h3>
+              <p class="sub">
+                Left: GitHub as it ships — a horizontal
+                <b class="github">profile tab row</b>. Right: the same page
+                skinned as GitLab — a full-height
+                <b class="gitlab">super-sidebar</b> headed "Profile" and
+                rebuilt as GitLab's menu, with the profile header moved into the
+                content and an About/Info/Contact <b class="gitlab">rail</b> on
+                the right.
+              </p>
+              <div class="swipe">
+                <img class="base" src="github-profile-default.png" alt="GitHub profile page, default" />
+                <img class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" />
+                <span class="tag left">GitHub default · tab row</span>
+                <span class="tag right">GitLab skin · left rail</span>
+                <span class="divider"></span>
+                <span class="knob">↔</span>
+                <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub profile page" />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="card">
-        <h2>Codeberg (Gitea) → GitLab</h2>
-        <p class="sub">
-          Left: Codeberg as it ships — a flat <b class="github">tab row</b>.
-          Right: the same page skinned as GitLab —
-          <b class="gitlab">Plan / Code / Build / Deploy</b> group headings in a
-          left sidebar.
-        </p>
-        <div class="swipe">
-          <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-          <img class="over" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" />
-          <span class="tag left">Gitea default · tab row</span>
-          <span class="tag right">GitLab skin · sidebar</span>
-          <span class="divider"></span>
-          <span class="knob">↔</span>
-          <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as GitLab" />
+      <!-- --------------------------------------------------------- features -->
+      <section id="features">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>Not just a theme</h2>
+            <p>
+              A theme changes the colours. gitalike also matches the other
+              product's words and habits, then undoes every change when you
+              switch it off.
+            </p>
+          </div>
+          <div class="grid">
+            <div class="feature">
+              <span class="ico" aria-hidden="true">🎨</span>
+              <h3>Colour</h3>
+              <p>
+                Each site's own design tokens (GitHub's Primer, GitLab's
+                Pajamas) are re-pointed at the other product's palette — light
+                and dark.
+              </p>
+            </div>
+            <div class="feature">
+              <span class="ico" aria-hidden="true">💬</span>
+              <h3>Words</h3>
+              <p>
+                "Pull request" ⇄ "Merge request", "Insights" ⇄ "Analytics",
+                "Actions" ⇄ "CI/CD". Ordinary page copy only — never inside
+                code, inputs or editable regions.
+              </p>
+            </div>
+            <div class="feature">
+              <span class="ico" aria-hidden="true">🧭</span>
+              <h3>Navigation</h3>
+              <p>
+                Repo tabs are relabelled, reordered and re-oriented — GitHub's
+                bar becomes GitLab's grouped sidebar, and GitLab's sidebar
+                becomes GitHub's flat tab row.
+              </p>
+            </div>
+            <div class="feature">
+              <span class="ico" aria-hidden="true">🔗</span>
+              <h3>References</h3>
+              <p>
+                A pull/merge-request link shows the other product's marker:
+                <code>#42</code> ⇄ <code>!42</code>.
+              </p>
+            </div>
+            <div class="feature">
+              <span class="ico" aria-hidden="true">⌨️</span>
+              <h3>Shortcuts</h3>
+              <p>
+                The other product's <code>g</code>-combos work, so the muscle
+                memory you built on one forge carries over to the other.
+              </p>
+            </div>
+            <div class="feature">
+              <span class="ico" aria-hidden="true">↩️</span>
+              <h3>Reversible</h3>
+              <p>
+                Every change is recorded and reverted exactly when the skin is
+                switched off. With it off, the extension is completely inert.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="card">
-        <h2>Codeberg (Gitea) → GitHub</h2>
-        <p class="sub">
-          Left: Codeberg as it ships. Right: the same page skinned as GitHub —
-          a dark bar and GitHub's flat <b class="github">tab row</b> with the
-          warm active underline.
-        </p>
-        <div class="swipe">
-          <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-          <img class="over" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" />
-          <span class="tag left">Gitea default · tab row</span>
-          <span class="tag right">GitHub skin · tab row</span>
-          <span class="divider"></span>
-          <span class="knob">↔</span>
-          <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as GitHub" />
+      <!-- ----------------------------------------------------------- forges -->
+      <section id="forges">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>Works with your forges</h2>
+            <p>
+              Three skins — GitLab, GitHub and Bitbucket — and any site you have
+              set up can wear any of them.
+            </p>
+          </div>
+          <div class="chips">
+            <span class="chip">github.com</span>
+            <span class="chip">gitlab.com</span>
+            <span class="chip">GitHub Enterprise Server</span>
+            <span class="chip">self-hosted GitLab</span>
+            <span class="chip">Codeberg (Forgejo)</span>
+            <span class="chip">gitea.com (Gitea)</span>
+            <span class="chip skin">+ Bitbucket skin</span>
+            <span class="chip skin">+ any instance you add</span>
+          </div>
+          <p class="chips-note">
+            Add any instance by visiting it or typing its address — no rebuild,
+            no permission prompt. Bitbucket is a skin, not a source, so it is a
+            target rather than a site you point the extension at. Sourcehut is
+            the next candidate.
+          </p>
         </div>
       </section>
 
-      <section class="card">
-        <h2>Codeberg (Gitea) → Bitbucket</h2>
-        <p class="sub">
-          Left: Codeberg as it ships. Right: the same page skinned as Bitbucket —
-          a <b class="gitlab">left sidebar</b> and Atlassian's palette, with
-          Bitbucket's words:
-          <b class="bitbucket">Source, Commits, Branches, Pull requests,
-          Pipelines, Deployments, Jira issues, Security, Downloads</b>.
-        </p>
-        <div class="swipe">
-          <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-          <img class="over" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" />
-          <span class="tag left">Gitea default · tab row</span>
-          <span class="tag right">Bitbucket skin · sidebar</span>
-          <span class="divider"></span>
-          <span class="knob">↔</span>
-          <input type="range" min="0" max="100" value="50" aria-label="Swipe Codeberg as Bitbucket" />
+      <!-- ---------------------------------------------------------- privacy -->
+      <section id="privacy">
+        <div class="wrap">
+          <div class="split">
+            <div>
+              <h2>Nothing leaves your browser</h2>
+              <p class="lede" style="font-size: 16px">
+                gitalike collects no data and makes no network requests. Both
+                stylesheets are bundled and the mark is an inline data URI.
+              </p>
+              <p>
+                It stores only your on/off choices and the instances you add, in
+                the browser's own synced extension storage. Nothing read from a
+                page is stored or sent anywhere.
+              </p>
+              <p><a href="privacy.html">Read the full privacy policy →</a></p>
+            </div>
+            <div class="panel">
+              <h3>Why it asks for all-sites access</h3>
+              <p style="color: var(--muted); font-size: 14px; margin: 0">
+                GitHub Enterprise Server and self-hosted GitLab live on
+                hostnames nobody can predict, and a manifest match pattern
+                cannot wildcard a host's middle. So gitalike matches all pages
+                but decides at runtime: its scripts are registered only for the
+                hosts you have set up, and on any other host it does nothing at
+                all.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="card">
-        <h2>GitLab profile page</h2>
-        <p class="sub">
-          Left: GitLab as it ships — a vertical <b class="gitlab">super-sidebar</b>
-          starting at the person's name. Right: the same page skinned as GitHub —
-          a flat <b class="github">row of tabs</b> rebuilt as GitHub's
-          (Overview, Repositories, Projects, Packages, Stars), with the
-          identity in a left <b class="github">card</b> under a large avatar —
-          the follower/following counts and location brought down from the
-          navigation.
-        </p>
-        <div class="swipe">
-          <img class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" />
-          <img class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" />
-          <span class="tag left">GitLab default · sidebar</span>
-          <span class="tag right">GitHub skin · top strip</span>
-          <span class="divider"></span>
-          <span class="knob">↔</span>
-          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitLab profile page" />
-        </div>
-      </section>
+      <!-- ---------------------------------------------------------- install -->
+      <section id="install">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>Install</h2>
+            <p>Two clicks, or build it yourself.</p>
+          </div>
+          <div class="split">
+            <div class="panel">
+              <h3>Chromium</h3>
+              <p class="note" style="margin-top: 0">
+                Chrome, Edge and Brave share the API.
+              </p>
+              <ol>
+                <li>
+                  <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"
+                    >Download the ZIP</a
+                  >
+                  and unzip it.
+                </li>
+                <li>Go to <b>chrome://extensions</b> and turn on <b>Developer mode</b>.</li>
+                <li><b>Load unpacked</b> → choose the unzipped folder.</li>
+              </ol>
+              <p class="note">
+                Load unpacked takes the folder, not the ZIP. A Chrome Web Store
+                listing is in the works.
+              </p>
+            </div>
+            <div class="panel">
+              <h3>Firefox</h3>
+              <p class="note" style="margin-top: 0">
+                The ZIP is unsigned, so Firefox loads it temporarily — it is
+                gone when the browser restarts. A permanent install comes from
+                addons.mozilla.org.
+              </p>
+              <ol>
+                <li>
+                  <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"
+                    >Download the ZIP</a
+                  >.
+                </li>
+                <li>Go to <b>about:debugging#/runtime/this-firefox</b>.</li>
+                <li>
+                  <b>Load Temporary Add-on…</b> → choose the ZIP itself; it does
+                  not need unzipping.
+                </li>
+              </ol>
+            </div>
+          </div>
 
-      <section class="card">
-        <h2>GitHub profile page</h2>
-        <p class="sub">
-          Left: GitHub as it ships — a horizontal
-          <b class="github">profile tab row</b>. Right: the same page skinned as
-          GitLab — a full-height <b class="gitlab">super-sidebar</b> headed
-          "Profile" and rebuilt as GitLab's menu (Activity, Groups, Personal
-          projects, Starred projects, Snippets, Followers, Following), with the
-          profile header moved into the content, an About/Info/Contact
-          <b class="gitlab">rail</b> on the right, "Personal projects" in place
-          of Pinned, and the activity graph in <b class="gitlab">GitLab's
-          indigo</b>.
-        </p>
-        <div class="swipe">
-          <img class="base" src="github-profile-default.png" alt="GitHub profile page, default" />
-          <img class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" />
-          <span class="tag left">GitHub default · tab row</span>
-          <span class="tag right">GitLab skin · left rail</span>
-          <span class="divider"></span>
-          <span class="knob">↔</span>
-          <input type="range" min="0" max="100" value="50" aria-label="Swipe GitHub profile page" />
+          <div class="panel" style="margin-top: 16px">
+            <h3>From source</h3>
+            <p class="note" style="margin-top: 0">
+              No runtime or build dependencies — the build only generates the
+              two per-browser manifests.
+            </p>
+            <pre>npm run build            # -> dist/chromium and dist/firefox
+npm test                 # unit tests, no browser needed
+node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pre>
+          </div>
         </div>
       </section>
     </main>
 
     <footer>
-      <p>
-        Git Same —
-        <a href="https://github.com/ranjithrajv/gitalike">source on GitHub</a> ·
-        <a href="https://github.com/ranjithrajv/gitalike#install">install</a> ·
-        <a href="https://github.com/ranjithrajv/gitalike/blob/main/docs/FORGE-UX.md">forge UX</a> ·
-        <a href="https://github.com/ranjithrajv/gitalike/blob/main/docs/UX-PARITY.md">UX parity status</a> ·
-        <a href="privacy.html">privacy</a>
-      </p>
+      <div class="wrap">
+        <nav aria-label="Footer">
+          <a href="https://github.com/ranjithrajv/gitalike">Source on GitHub</a>
+          <a href="https://github.com/ranjithrajv/gitalike#install">Install</a>
+          <a href="FORGE-UX.md">Forge UX</a>
+          <a href="UX-PARITY.md">UX parity status</a>
+          <a href="privacy.html">Privacy</a>
+          <a href="https://github.com/ranjithrajv/gitalike/blob/main/CHANGELOG.md">Changelog</a>
+          <a href="https://github.com/ranjithrajv/gitalike/blob/main/LICENSE">GPL-3.0</a>
+        </nav>
+        <p class="fine">
+          gitalike is an independent project, not affiliated with, endorsed by or
+          sponsored by GitHub, Inc. or GitLab Inc. It ships none of their
+          artwork; the mark it paints is its own. GitHub is a trademark of
+          GitHub, Inc. GITLAB is a trademark of GitLab Inc. in the United States
+          and other countries and regions.
+        </p>
+      </div>
     </footer>
 
     <script>
