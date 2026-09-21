@@ -404,3 +404,96 @@ html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group {
 html.gs-theme-gitlab nav[aria-label="Repository"] .gs-nav-group:first-child {
   margin-top: 0;
 }
+
+/* --------------------------------------------------- Gitea / Forgejo -- */
+
+/* Codeberg (Forgejo) and gitea.com are GitHub-flavoured forges, so they are the
+   'github' kind and get the GitLab UI. They are not GitHub's markup, though:
+   Gitea exposes its own `--color-*` custom properties, which is what this block
+   re-points at the same palette. `[data-theme]` is Gitea's marker on <html> and
+   GitHub never sets it, so these rules are inert on github.com. This is a
+   token-level skin — the words, reference markers and shortcuts come from the
+   shared tables, the layout does not (Gitea's navigation is not GitHub's). */
+
+html.gs-theme-gitlab[data-theme] {
+  /* surfaces */
+  --color-body: var(--gs-canvas) !important;
+  --color-card: var(--gs-canvas-subtle) !important;
+  --color-box-body: var(--gs-canvas-subtle) !important;
+  --color-box-body-highlight: var(--gs-canvas-inset) !important;
+  --color-box-header: var(--gs-canvas-inset) !important;
+  --color-menu: var(--gs-canvas) !important;
+  --color-secondary-bg: var(--gs-canvas-subtle) !important;
+  --color-input-background: var(--gs-canvas) !important;
+  --color-input-toggle-background: var(--gs-canvas) !important;
+  --color-code-bg: var(--gs-canvas-subtle) !important;
+  --color-markup-code-block: var(--gs-canvas-inset) !important;
+  --color-markup-code-inline: var(--gs-canvas-inset) !important;
+  --color-header-wrapper: var(--gs-header-bg) !important;
+  --color-diff-inactive: var(--gs-canvas-inset) !important;
+
+  /* text */
+  --color-text: var(--gs-fg) !important;
+  --color-text-dark: var(--gs-fg) !important;
+  --color-text-light: var(--gs-fg-muted) !important;
+  --color-text-light-1: var(--gs-fg-muted) !important;
+  --color-text-light-2: var(--gs-fg-muted) !important;
+  --color-text-light-3: var(--gs-fg-subtle) !important;
+  --color-input-text: var(--gs-fg) !important;
+  --color-placeholder-text: var(--gs-fg-subtle) !important;
+  --color-label-text: var(--gs-fg) !important;
+
+  /* borders */
+  --color-input-border: var(--gs-border) !important;
+  --color-input-border-hover: var(--gs-fg-muted) !important;
+  --color-secondary: var(--gs-border) !important;
+  --color-light-border: var(--gs-border) !important;
+  --color-timeline: var(--gs-border-muted) !important;
+  --color-expand-button: var(--gs-border-muted) !important;
+
+  /* accent — GitLab's blue in place of Gitea's orange */
+  --color-primary: var(--gs-accent) !important;
+  --color-primary-dark-1: var(--gs-accent-hover) !important;
+  --color-primary-dark-2: var(--gs-accent-hover) !important;
+  --color-primary-light-1: var(--gs-accent) !important;
+  --color-primary-light-2: var(--gs-accent) !important;
+  --color-primary-light-3: var(--gs-accent) !important;
+  --color-primary-light-4: var(--gs-accent) !important;
+  --color-primary-light-5: var(--gs-accent-subtle) !important;
+  --color-primary-light-6: var(--gs-accent-subtle) !important;
+  --color-primary-light-7: var(--gs-accent-subtle) !important;
+  --color-primary-alpha-10: color-mix(in srgb, var(--gs-accent) 10%, transparent) !important;
+  --color-primary-alpha-20: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
+  --color-primary-alpha-30: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
+  --color-primary-alpha-40: color-mix(in srgb, var(--gs-accent) 40%, transparent) !important;
+  --color-primary-alpha-50: color-mix(in srgb, var(--gs-accent) 50%, transparent) !important;
+  --color-primary-alpha-60: color-mix(in srgb, var(--gs-accent) 60%, transparent) !important;
+  --color-primary-alpha-70: color-mix(in srgb, var(--gs-accent) 70%, transparent) !important;
+  --color-primary-alpha-80: color-mix(in srgb, var(--gs-accent) 80%, transparent) !important;
+  --color-primary-alpha-90: color-mix(in srgb, var(--gs-accent) 90%, transparent) !important;
+  --color-accent: var(--gs-accent) !important;
+  --color-small-accent: var(--gs-accent-subtle) !important;
+  --color-highlight-fg: var(--gs-accent) !important;
+  --color-highlight-bg: var(--gs-accent-subtle) !important;
+  --color-reaction-active-bg: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
+  --color-reaction-hover-bg: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
+}
+
+/* Gitea states its own nav colours on #navbar, so re-pointing :root is not
+   enough — the bar has to be told directly. GitLab's top header is dark in both
+   modes, which is the cue that the site is wearing GitLab's UI. */
+html.gs-theme-gitlab[data-theme] #navbar {
+  --color-nav-bg: #28272d !important;
+  --color-nav-hover-bg: #3d3b44 !important;
+  --color-text: #ececef !important;
+}
+
+html.gs-theme-gitlab[data-theme] a {
+  color: var(--gs-link) !important;
+}
+
+/* ...except on the dark top bar, where the links stay light. */
+html.gs-theme-gitlab[data-theme] #navbar a {
+  color: #ececef !important;
+}
+

@@ -111,7 +111,8 @@ src/
 logos/                   editable logo sources, inlined into the themes
 docs/                    the GitHub Pages preview + UX-PARITY.md — the parity matrix
 tests/                   node:test, covers src/lib/ only
-tools/                   store and docs screenshots, and the Playwright end-to-end test
+tools/                   store and docs screenshots, the Playwright end-to-end
+                         test, and the live selector canary
 store/                   submission copy and screenshots
 ```
 
@@ -278,16 +279,17 @@ in `themes/ux-nav.css`.
 ## Adding another forge — contributions welcome
 
 gitalike knows two products, GitHub and GitLab, and skins each as the other.
-**More forges are wanted.** Forgejo, Gitea, Codeberg, Bitbucket, Sourcehut — none
-are supported today, and this is probably the single most useful thing to help
-with. There are two levels, and the easy one is real work, not a consolation
-prize.
+Codeberg (Forgejo) and gitea.com (Gitea) are bundled as GitHub-flavoured forges,
+shown with the GitLab UI. **More are wanted.** Bitbucket and Sourcehut are
+genuinely different products and need their own skin; that is probably the single
+most useful thing to help with. There are two levels, and the easy one is real
+work, not a consolation prize.
 
 ### A forge that already speaks one of the two dialects
 
 Forgejo, Gitea and Codeberg are GitHub-flavoured: pull requests, a tab bar, the
-same shape of repository page. They do not need a new skin — they need to be
-classified as the `github` kind, so the existing GitLab skin applies:
+same shape of repository page. They do not need a new vocabulary — they need to
+be classified as the `github` kind, so the existing GitLab skin applies:
 
 ```js
 // src/lib/sites.js
@@ -295,12 +297,19 @@ const builtin = {
   'github.com': 'github',
   'gitlab.com': 'gitlab',
   'code.swecha.org': 'gitlab',
-  'codeberg.org': 'github', // <- new
+  'codeberg.org': 'github', // Forgejo
+  'gitea.com': 'github',    // Gitea
 };
 ```
 
-Add the host to `tests/sites.test.mjs`. Only add vocabulary if the forge uses a
-different word — Forgejo says "Pull request", so there is nothing to do.
+Add the host to `tests/sites.test.mjs`. If the forge is Gitea-family it does not
+use GitHub's Primer tokens, so the classification alone only changes the words —
+`themes/github-as-gitlab.css` has a **Gitea / Forgejo** block that re-points its
+`--color-*` custom properties at the palette, and `src/lib/ux.js` adds its repo
+tab list to `NAV_SCOPE`/`NAV_RULES` so its tabs are relabelled and reordered into
+GitLab's order. Copy those shapes for another token system or another tab bar.
+Only add vocabulary if the forge uses a different word — Forgejo says "Pull
+request", so there is nothing to do there.
 
 You can already point gitalike at any instance without touching the source: the
 popup's **Add a site** flow exists for exactly that. A `builtin` entry just means
@@ -315,9 +324,9 @@ skin and their own vocabulary. That means five files:
 | - | ---- | --------------- |
 | 1 | `src/themes/<a>-as-<b>.css` | the skin — a palette block plus a token mapping |
 | 2 | `src/lib/ux.js` | `PHRASES`, `NAV`, `NAV_RULES`, `SHORTCUTS` keyed by the new theme name |
-| 3 | `src/lib/sites.js` | a `kinds` entry — `theme`, `badge`, `color`, `other` (its key is the setting name and its `theme` joins `THEMES` automatically) |
+| 3 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color` (its key is the theme name and joins `THEMES` automatically) — and, if it is a new kind, a `kinds` entry naming its default skin |
 | 4 | `src/popup/popup.html` + `popup.css` | a row for the kind, and its accent colour |
-| 5 | `tests/` | cases for the kind, the host table and the vocabulary |
+| 5 | `tests/` | cases for the skin, the host table and the vocabulary |
 
 Whichever forge you add, its logo stays out of the bundle. The theme carries a
 `--gs-mark` and paints gitalike's own mark in that forge's palette — the two
@@ -325,12 +334,17 @@ existing skins are the pattern. Do not paste a forge's logo, or its vector path
 data, into a theme: recolouring someone else's mark is still shipping their
 mark. This covers Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut alike.
 
-**Open an issue about the mapping first.** `kinds` today hardcodes one target per
-kind: `github` is always shown as GitLab, `gitlab` always as GitHub. With a third
-product the question becomes "shown as *which* other one?", and supporting every
-pair is N×(N−1) skins. For most forges the honest answer is probably "one
-GitHub-like skin and one GitLab-like skin", not all six — but that is worth
-agreeing before anyone writes CSS.
+The popup's per-site picker is generated from `THEMES`, so a new skin appears
+there with no popup change. A `skins` entry is also what the badge and the picker
+label read, so a new skin names itself once.
+
+**Open an issue about the mapping first.** `kinds` names one default skin per
+kind: `github` defaults to GitLab, `gitlab` to GitHub. The per-site picker can
+give any host any skin, but the CSS is written per *source* product, so a skin
+only repaints a site built on that product's markup. Supporting every pair is
+N×(N−1) skins. For most forges the honest answer is probably "one GitHub-like
+skin and one GitLab-like skin", not all six — but that is worth agreeing before
+anyone writes CSS.
 
 Whatever you add has to hold the same line as the existing two: inert when the
 skin is off, no rewriting inside code, inputs or editable regions, and every
@@ -350,9 +364,18 @@ refused `javascript:` string, a host that is unknown rather than merely off.
 `node tools/e2e.mjs` is the Playwright end-to-end test: it loads `dist/chromium`
 unpacked, turns both skins on through the extension's own storage, and asserts
 against the live sites — navigation orientation, relabelling, reference markers,
-no-counterpart badges, a keyboard shortcut, and a clean revert. It needs a build
-first (`npm run build:chromium`) and, because it drives live sites, a network
-hiccup can fail a step; the summary names it and the exit code is non-zero.
+no-counterpart badges, a keyboard shortcut, the Codeberg (Gitea) tab reorder, and
+a clean revert. It needs a build first (`npm run build:chromium`) and, because it
+drives live sites, a network hiccup can fail a step; the summary names it and the
+exit code is non-zero.
+
+`npm run canary` (`tools/selector-canary.mjs`) is the live selector canary: a
+plain `fetch` of the pages the skins are verified against, asserting the anchors
+they key on are still in the served HTML. It runs daily on a schedule, not on a
+pull request, so an upstream rename is caught without making every PR depend on
+the forges' markup; when it fails it also opens (or refreshes) an issue, so the
+drift is owned rather than just red. Update its hooks in step with the selectors
+in `src/lib/ux.js` and `src/themes/*.css`.
 
 The single most useful habit: after a change, load the extension and check the
 site with the skin **off** as well as on. A skin that leaks when disabled is the
@@ -377,8 +400,17 @@ Covered:
   the repo's pull requests, and a clean revert of every one of those changes when
   the skin is switched off
 - both toolbar badges, and the `Alt`+`Shift`+`G` binding
+- **the per-site skin picker**: product off + host told to wear the GitLab UI →
+  skinned; product on + host told Off → spared; no choice → follows the product;
+  a site told to wear its own UI → left alone; and a choice alone never
+  classifies an unknown host
+- **Codeberg (Forgejo)**, light and dark: classified as GitHub-flavoured, shown
+  with the GitLab UI — GitLab ink and surfaces, a dark top bar, repo tabs
+  relabelled ("Code" → "Repository", "Issues" → "Work items") and reordered into
+  GitLab's order, and Gitea's `data-theme` driving `gs-dark`
 - re-skinning an already-open tab with no reload, and a clean revert
-- the popup, including that it lists every configured host
+- the popup, including that it lists every configured host, shows the per-site
+  pin for a known host, and opens the prefilled report link
 - **classifying a host the extension had never seen**: popup offer → storage →
   live skin → badge → removal → revert
 - **adding a host purely by typing it**, without visiting it first, then
@@ -555,7 +587,9 @@ With neither set, the release job just builds and attaches the ZIPs.
 
 ## Reporting an issue
 
-The most useful report includes:
+The popup's **Report a missed spot** link opens a prefilled issue with the host
+and the applied skin already filled in — nothing is read from the page. Fill in
+the rest; the most useful report includes:
 
 - the host, and whether you were **signed in**;
 - the site's theme (light or dark) — they are separate code paths;

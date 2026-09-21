@@ -17,6 +17,7 @@ const {
   NAV_GROUPS,
   NAV_HIDE,
   NAV_KEEP,
+  NAV_SCOPE,
   LABELS,
   CHROME,
   UNMAPPED,
@@ -260,6 +261,18 @@ describe('NAV_RULES', () => {
     const rule = NAV_RULES.gitlab[0];
     assert.match(rule.container, /UnderlineNav-body/);
     assert.ok(Array.isArray(rule.order) && rule.order.length >= 2);
+  });
+
+  test('the Gitea/Forgejo rule targets the overflow-menu list', () => {
+    const rule = NAV_RULES.gitlab[1];
+    assert.match(rule.container, /overflow-menu/);
+    assert.equal(rule.item, 'a.item');
+    // Both sources take GitLab's order, so the list is shared rather than copied.
+    assert.equal(rule.order, NAV_RULES.gitlab[0].order);
+  });
+
+  test('Gitea is a known nav scope, so its labels are rewritten too', () => {
+    assert.ok(NAV_SCOPE.split(',').includes('overflow-menu'));
   });
 
   test('the repo order ranks the *displayed* labels', () => {
@@ -531,6 +544,10 @@ describe('refMarker', () => {
   test('trailing path, query and fragment still match', () => {
     assert.equal(refMarker('/o/r/pull/5/files', 'gitlab'), '!5');
     assert.equal(refMarker('/o/r/merge_requests/9#note', 'github'), '#9');
+  });
+
+  test('a Gitea/Forgejo /pulls/N URL is matched too', () => {
+    assert.equal(refMarker('https://codeberg.org/o/r/pulls/11', 'gitlab'), '!11');
   });
 
   test('issues and unrelated links are left alone', () => {

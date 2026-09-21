@@ -85,7 +85,29 @@
         <span class="switch__track" aria-hidden="true"><span class="switch__knob"></span></span>
       </label>
 
+      <!-- Only for a host the extension knows: pick which skin *this* host wears,
+           independent of the product switch. The options are generated from the
+           shared `skins` table, so a new skin appears here automatically. -->
+      <div class="site" id="site" hidden>
+        <p class="site__title">Show <b id="site-host">this site</b> with</p>
+        <div
+          class="site__options"
+          id="site-options"
+          role="radiogroup"
+          aria-label="Skin for this site"
+        ></div>
+        <button type="button" class="site__reset" id="site-reset" hidden>
+          Follow the product switch
+        </button>
+      </div>
+
       <button type="button" class="open-other" id="open-other" hidden></button>
+
+      <!-- Opens a prefilled issue, so a skin miss is reported with the context
+           CONTRIBUTING.md asks for. Nothing is read from the page: the body is
+           filled with what the popup already knows, and the reporter pastes the
+           element/property themselves. -->
+      <button type="button" class="report" id="report">Report a missed spot</button>
     </main>
 
     <footer class="foot">

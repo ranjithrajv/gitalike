@@ -20,9 +20,16 @@
   if (!UX) return;
 
   const HINT_DEFAULT = 'Which product is it?';
+  // Where a "report a missed spot" issue is filed. Kept here, beside the popup
+  // that links to it, rather than in the shared tables.
+  const ISSUES_URL = 'https://github.com/ranjithrajv/gitalike/issues/new';
 
-  const rows = [...document.querySelectorAll('.row')];
-  const switches = [...document.querySelectorAll('.switch')];
+  const rows = [...document.querySelectorAll('.row[data-setting]')];
+  const switches = [...document.querySelectorAll('.row[data-setting] .switch')];
+  const siteWrap = document.getElementById('site');
+  const siteHost = document.getElementById('site-host');
+  const siteOptions = document.getElementById('site-options');
+  const siteReset = document.getElementById('site-reset');
   const addToggle = document.getElementById('add-toggle');
   const addSummary = document.getElementById('add-summary');
   const addBody = document.getElementById('add-body');
@@ -31,9 +38,11 @@
   const addRemove = document.getElementById('add-remove');
   const kindButtons = [...document.querySelectorAll('.add__button[data-kind]')];
   const openOther = document.getElementById('open-other');
+  const report = document.getElementById('report');
 
   let settings = {};
   let instances = {};
+  let hostSettings = {};
   let host = '';
   let pageUrl = '';
   let pageProtocol = '';
@@ -46,7 +55,7 @@
 
   async function load() {
     const stored = await api.storage.sync.get(SITES.STORAGE_KEYS);
-    ({ settings, instances } = SITES.stateFrom(stored));
+    ({ settings, instances, hostSettings } = SITES.stateFrom(stored));
   }
 
   async function currentHost() {
@@ -95,6 +104,54 @@
     }
 
     renderAdd(currentKind);
+    renderSite(currentKind);
+  }
+
+  // The per-site skin picker, shown only for a host the extension knows. The
+  // product switches above are the broad default; this picks *this* host's skin,
+  // or `off`, or back to following the product.
+  function renderSite(currentKind) {
+    const known = Boolean(currentKind);
+    siteWrap.hidden = !known;
+    if (!known) return;
+
+    const chosen = SITES.hostSkinFor(host, hostSettings);
+    const fallback = SITES.kindOn(currentKind, settings)
+      ? SITES.kinds[currentKind].theme
+      : null;
+    // What the group should show selected: the explicit choice, else the
+    // product's default, else off. (A site's own skin and `off` both leave it
+    // unrepainted, but the choice is still what the user asked for.)
+    const selected = chosen === 'off' ? 'off' : chosen || fallback || 'off';
+
+    siteHost.textContent = host;
+    for (const input of siteOptions.querySelectorAll('input')) {
+      input.checked = input.value === selected;
+    }
+    siteReset.hidden = chosen === null;
+  }
+
+  // Built once from the shared `skins` table: one radio per skin, plus off.
+  function buildSiteOptions() {
+    const options = [
+      { value: 'off', label: 'Off' },
+      ...SITES.THEMES.map((theme) => ({
+        value: theme,
+        label: `${SITES.skins[theme].product} UI`,
+      })),
+    ];
+    for (const { value, label } of options) {
+      const option = document.createElement('label');
+      option.className = 'site__option';
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'gs-site-skin';
+      input.value = value;
+      const text = document.createElement('span');
+      text.textContent = label;
+      option.append(input, text);
+      siteOptions.append(option);
+    }
   }
 
   function renderAdd(currentKind) {
@@ -142,7 +199,13 @@
   async function removeHost(hostname) {
     const next = { ...instances };
     delete next[hostname];
-    await api.storage.sync.set({ [SITES.INSTANCES_KEY]: next });
+    // Drop any per-host pin too, so a removed site leaves nothing behind.
+    const nextHostSettings = { ...hostSettings };
+    delete nextHostSettings[hostname];
+    await api.storage.sync.set({
+      [SITES.INSTANCES_KEY]: next,
+      [SITES.HOST_SETTINGS_KEY]: nextHostSettings,
+    });
   }
 
   async function submit(kind) {
@@ -206,10 +269,32 @@
     });
   }
 
+  // Pick this host's skin, independent of its product switch.
+  siteOptions.addEventListener('change', (event) => {
+    const value = event.target?.value;
+    if (!value) return;
+    api.storage.sync.set({
+      [SITES.HOST_SETTINGS_KEY]: { ...hostSettings, [host]: value },
+    });
+  });
+
+  // Drop the choice so the host follows the product switch again.
+  siteReset.addEventListener('click', () => {
+    const next = { ...hostSettings };
+    delete next[host];
+    api.storage.sync.set({ [SITES.HOST_SETTINGS_KEY]: next });
+  });
+
   // The other surfaces (shortcut, another window) can change this underneath us.
   api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
-    if (!changes[SITES.SETTINGS_KEY] && !changes[SITES.INSTANCES_KEY]) return;
+    if (
+      !changes[SITES.SETTINGS_KEY] &&
+      !changes[SITES.INSTANCES_KEY] &&
+      !changes[SITES.HOST_SETTINGS_KEY]
+    ) {
+      return;
+    }
     load().then(render);
   });
 
@@ -224,6 +309,37 @@
     openOther.textContent = `Open this page on ${target}`;
     openOther.hidden = false;
     openOther.onclick = () => api.tabs.create({ url: other });
+  }
+
+  // A prefilled issue, carrying what the popup already knows and the fields
+  // CONTRIBUTING.md asks a reporter for. It deliberately does not attach the
+  // page: gitalike reads nothing from a page and sends nothing anywhere, and a
+  // report should not be the one exception.
+  function renderReport() {
+    report.onclick = () => {
+      const theme = SITES.themeFor(host, settings, instances, hostSettings);
+      const showing = theme
+        ? `the ${SITES.skins[theme].product} UI`
+        : 'no skin (the site is not set up, or is switched off)';
+      const title = host ? `Skin miss on ${host}` : 'Skin miss';
+      const body = [
+        `**Host:** ${host || '(not a website)'}`,
+        `**Showing:** ${showing}`,
+        '**Signed in:** <!-- yes/no -->',
+        '**Theme:** <!-- light/dark -->',
+        '',
+        '**What I expected versus what I saw:**',
+        '<!-- ... -->',
+        '',
+        '**Element and property (for a skin miss):**',
+        "<!-- e.g. `.Box` has `background: #fff`, GitLab's would be #fbfafd -->",
+        '',
+        `_Reported with gitalike ${api.runtime.getManifest().version}._`,
+      ].join('\n');
+      api.tabs.create({
+        url: `${ISSUES_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`,
+      });
+    };
   }
 
   async function showShortcut() {
@@ -245,8 +361,10 @@
   (async () => {
     host = await currentHost();
     await load();
+    buildSiteOptions();
     render();
     await showShortcut();
     renderOther();
+    renderReport();
   })();
 })();

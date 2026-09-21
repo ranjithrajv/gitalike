@@ -55,8 +55,8 @@
 
   async function reconcile() {
     const stored = await api.storage.sync.get(SITES.STORAGE_KEYS);
-    const { settings, instances } = SITES.stateFrom(stored);
-    const theme = SITES.themeFor(host, settings, instances);
+    const { settings, instances, hostSettings } = SITES.stateFrom(stored);
+    const theme = SITES.themeFor(host, settings, instances, hostSettings);
     remember(theme);
     apply(theme);
   }
@@ -86,6 +86,14 @@
       Boolean(document.body && document.body.classList.contains(name));
     if (has('gl-dark')) return true;
     if (has('gl-light')) return false;
+    // Gitea/Forgejo (Codeberg) state the mode in `data-theme`, e.g. `gitea-dark`
+    // or `codeberg-auto`. `-auto` follows the OS. This is checked before the
+    // computed `color-scheme` for the same reason as GitHub's `auto`: our own
+    // palette sets that property, so reading it back would answer ourselves.
+    const dataTheme = root.getAttribute('data-theme') || '';
+    if (/dark$/.test(dataTheme)) return true;
+    if (/light$/.test(dataTheme)) return false;
+    if (/auto$/.test(dataTheme)) return prefersDark.matches;
     // Last resort, for anything that advertises its mode only this way.
     const scheme = getComputedStyle(root).colorScheme || '';
     if (scheme.includes('dark') && !scheme.includes('light')) return true;
@@ -113,7 +121,13 @@
 
   api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync') return;
-    if (!changes[SITES.SETTINGS_KEY] && !changes[SITES.INSTANCES_KEY]) return;
+    if (
+      !changes[SITES.SETTINGS_KEY] &&
+      !changes[SITES.INSTANCES_KEY] &&
+      !changes[SITES.HOST_SETTINGS_KEY]
+    ) {
+      return;
+    }
     reconcile().catch(() => {});
   });
 
@@ -124,7 +138,7 @@
   // short-circuits when nothing changed, so there is no loop.
   new MutationObserver(syncDark).observe(root, {
     attributes: true,
-    attributeFilter: ['class', 'data-color-mode'],
+    attributeFilter: ['class', 'data-color-mode', 'data-theme'],
   });
 
   prefersDark.addEventListener('change', syncDark);

@@ -4,6 +4,49 @@ All notable changes to gitalike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A per-site skin picker. The popup gains a **Show *this site* with** radio group
+  — **Off**, **GitHub UI** or **GitLab UI** — so one host can wear a different
+  skin (or none) without touching its product switch, and a GitHub Enterprise
+  instance can be skinned without `github.com`. The choice lives in a new
+  `gitSameHostSettings` map; choosing a site's own UI is treated as off, because
+  repainting a site as itself would run the wrong vocabulary and shortcut tables.
+  `Alt` + `Shift` + `G` toggles the current site's skin, and removing a site
+  clears its choice. The shared `skins` table now owns each skin's product name,
+  badge and colour, so the badge and the picker follow the *applied* skin rather
+  than the site's product (`src/lib/sites.js`, `src/background.js`,
+  `src/popup/`).
+- Codeberg (Forgejo) and `gitea.com` (Gitea) are bundled hosts. They are
+  GitHub-flavoured, so they are classified as the `github` kind and shown with
+  the GitLab UI: a token block re-points Gitea's `--color-*` custom properties at
+  the GitLab palette (including a dark top bar), their repo tabs are relabelled
+  ("Code" → "Repository", "Issues" → "Work items") and reordered into GitLab's
+  order, reference markers match Gitea's `/pulls/N` links, and the dark-mode
+  detection reads Gitea's `data-theme` (`src/lib/sites.js`, `src/lib/ux.js`,
+  `src/content/theme.js`, `src/content/ux.js`,
+  `src/themes/github-as-gitlab.css`).
+- A selector canary, `tools/selector-canary.mjs` (`npm run canary`), with a
+  scheduled workflow (`.github/workflows/canary.yml`). It fetches the live pages
+  the skins are verified against — GitHub, GitLab and Codeberg (Forgejo
+  project and pull-request pages) — and fails when an anchor the extension
+  relies on is gone, so an upstream rename is caught by a daily job rather than
+  by a user. A failure also opens or refreshes a tracking issue, so the drift is
+  owned.
+- A **Report a missed spot** link in the popup opens a prefilled issue with the
+  host, the applied skin and the fields `CONTRIBUTING.md` asks for. Nothing is
+  read from the page; the reporter pastes the element and property themselves
+  (`src/popup/`).
+
+### Fixed
+
+- Elements hidden with the `hidden` attribute are actually hidden now. An
+  author `display` rule outranks the UA stylesheet's `[hidden]`, so the popup's
+  "open on the other host" button and the new reset link showed as empty boxes
+  when they had nothing to say (`src/popup/popup.css`).
+
 ## [0.1.2] - 2026-09-21
 
 ### Added

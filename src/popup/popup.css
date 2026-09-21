@@ -28,6 +28,13 @@
   box-sizing: border-box;
 }
 
+/* Author `display` rules (e.g. `.open-other { display: block }`) outrank the
+   UA stylesheet's `[hidden] { display: none }`, so the attribute alone does not
+   hide a styled element. This is the one place that has to win. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   width: 322px;
   margin: 0;
@@ -295,6 +302,95 @@ main {
   transform: translateX(14px);
 }
 
+/* ------------------------------------------------------- per-site skin -- */
+
+/* Which skin this host wears, one host at a time. Set apart from the product
+   rows so it reads as "this site", not a third product switch. */
+.site {
+  margin: 2px 4px 8px;
+  padding: 8px 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.site__title {
+  margin: 0 2px 8px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.site__title b {
+  color: var(--fg);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.site__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.site__option {
+  position: relative;
+}
+
+/* The real control stays in the accessibility tree; the pill is decoration. */
+.site__option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.site__option span {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.site__option input:checked + span {
+  color: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.site__option input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.site__reset {
+  display: block;
+  margin: 8px 0 0 2px;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  color: var(--fg-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.site__reset:hover {
+  color: var(--accent);
+}
+
+.site__reset:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ------------------------------------------------------------ open other -- */
 
 /* Only shown when the current page has a known counterpart (the two public
@@ -320,6 +416,35 @@ main {
 }
 
 .open-other:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* --------------------------------------------------------------- report -- */
+
+/* A quiet, always-present link: the action is only worth a prefilled issue when
+   something is wrong, so it does not compete with the switches. */
+.report {
+  display: block;
+  width: calc(100% - 8px);
+  margin: 0 4px 8px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--fg-muted);
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.report:hover {
+  color: var(--accent);
+  background: var(--surface);
+}
+
+.report:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }

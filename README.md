@@ -21,11 +21,13 @@ self-hosted instance `code.swecha.org`, and on any other instance you point it
 at — **GitHub Enterprise Server** included.
 
 gitalike starts with the two big forges, GitHub and GitLab, and grows from
-there. More are on the way — Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut
-are the obvious next candidates. A forge that already speaks one of the two
-dialects needs only to be classified as that kind of site, so it can be a
-one-line change; until then, any instance works today through the popup's
-**Add a site** flow. If you would like to help add one, see
+there. The GitHub-flavoured **Codeberg** (Forgejo) and **gitea.com** (Gitea) are
+bundled too — they speak GitHub's dialect, so they are shown with the GitLab UI
+(the colours, words and reference markers; Gitea's layout is its own). Bitbucket
+and Sourcehut are the next candidates. A forge that already speaks one of the two
+dialects needs only to be classified as that kind of site; until then, any
+instance works today through the popup's **Add a site** flow. If you would like
+to help add one, see
 [CONTRIBUTING.md](CONTRIBUTING.md#adding-another-forge--contributions-welcome).
 
 gitalike is an independent project. It is not affiliated with, endorsed by or
@@ -98,21 +100,26 @@ Open the toolbar popup. There are two switches, one per product:
 
 | Switch                       | Applies to                                      | Result                     |
 | ---------------------------- | ----------------------------------------------- | -------------------------- |
-| **Show with the GitLab UI**  | `github.com`, your GitHub Enterprise instances   | rendered as GitLab         |
+| **Show with the GitLab UI**  | `github.com`, `codeberg.org`, `gitea.com`, your GitHub Enterprise instances | rendered as GitLab |
 | **Show with the GitHub UI**  | `gitlab.com`, `code.swecha.org`, your GitLab ones | rendered as GitHub        |
 
-Both start off. The switches are **per product, not per host**: turning on the
-GitLab UI covers every GitHub-flavoured site you have set up, at once.
+Both start off. A switch is **per product**: turning on the GitLab UI covers
+every GitHub-flavoured site you have set up, at once.
 
 The popup highlights the row for the site you are currently on, and lists the
-hosts each switch covers.
+hosts each switch covers. Below them, when you are on a site gitalike knows, a
+**Show *this site* with** picker lets you choose any of the skins for that one
+host — **Off**, **GitHub UI** or **GitLab UI** — so one enterprise instance can
+wear a different skin (or none) without changing `github.com`. Choosing the
+site's own UI is the same as **Off**: gitalike does not repaint a site as itself.
+**Follow the product switch** clears the choice.
 
-**Keyboard:** `Alt` + `Shift` + `G` toggles the current site. It can only toggle
-a site that is already set up — telling GitHub from GitLab is a choice, so the
-first time has to go through the popup. `Alt` + `Shift` + `O` opens the current
-page on the other host (the two public forges only). Rebind either at
-`chrome://extensions/shortcuts` (Firefox: `about:addons` → gear → *Manage
-Extension Shortcuts*).
+**Keyboard:** `Alt` + `Shift` + `G` toggles the current site (the same per-site
+choice). It can only toggle a site that is already set up — telling GitHub from
+GitLab is a choice, so the first time has to go through the popup.
+`Alt` + `Shift` + `O` opens the current page on the other host (the two public
+forges only). Rebind either at `chrome://extensions/shortcuts` (Firefox:
+`about:addons` → gear → *Manage Extension Shortcuts*).
 
 While a skin is active the toolbar icon shows a small **GL** or **GH** badge.
 
@@ -145,10 +152,11 @@ is the point when the address is one you would have to look up:
 
 Anything that is not a web address is refused rather than stored, including
 `javascript:` and other non-http schemes. Built-in hosts
-(`github.com`, `gitlab.com`, `code.swecha.org`) are refused too — they are
-already set up and cannot be removed.
+(`github.com`, `gitlab.com`, `code.swecha.org`, `codeberg.org`, `gitea.com`) are
+refused too — they are already set up and cannot be removed.
 
-To undo, open the popup on that host and choose **Remove**.
+To undo, open the popup on that host and choose **Remove**. That also clears any
+per-site skin choice on it.
 
 ## UX parity
 
@@ -219,10 +227,16 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   original theme; it is the only store readable synchronously at
   `document_start`. Being origin storage, the page can read or overwrite it, but
   `storage.sync` is reconciled immediately afterwards and wins.
-- **Switches are per product, not per host.** You cannot skin your enterprise
-  instance without also skinning `github.com`. With two switches and a handful of
-  hosts that seems like the right amount of control; it is the thing to change
-  first if it turns out not to be.
+- **A product switch is all-or-nothing, unless you choose a skin per host.** The
+  two product switches cover every host of that product at once. The popup's
+  **Show *this site* with** picker (and `Alt` + `Shift` + `G`) chooses the skin
+  for a single host, which is how an enterprise instance is skinned without
+  `github.com`; there is no bulk per-host list beyond that.
+- **The Codeberg and gitea.com skin is token-level, with its navigation
+  relabelled and reordered.** They are GitHub-flavoured, so they get the GitLab
+  colours, words, reference markers and repo-tab order, but Gitea's layout is not
+  GitHub's: the navigation is not re-oriented into GitLab's sidebar, and the
+  structural rules that target GitHub's markup do not apply there.
 - **The shortcut cannot set up a new host**, only toggle one already classified,
   because classifying requires choosing which product it is.
 - **The in-page mark is gitalike's own, in the other product's palette.** The
@@ -238,17 +252,19 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
 ## Privacy
 
 gitalike collects no data and makes no network requests. It stores only your
-on/off choices and the list of instances you add, in the browser's own synced
-extension storage, and caches the per-site decision in the page's `localStorage`
-so a repeat visit does not flash the original theme. Nothing read from a page is
-stored or sent anywhere. The full policy is at
+on/off choices — including any per-site skin choices — and the list of instances
+you add, in the browser's own synced extension storage, and caches the per-site
+decision in the page's `localStorage` so a repeat visit does not flash the
+original theme.
+Nothing read from a page is stored or sent anywhere. The full policy is at
 <https://ranjithrajv.github.io/gitalike/privacy.html>.
 
 ## Contributing
 
-Bug reports and pull requests are welcome. The developer guide — build, test,
-the ground rules, and how to add a forge or a translation — is in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+Bug reports and pull requests are welcome. The popup's **Report a missed spot**
+link opens a prefilled issue with the host and skin already filled in. The
+developer guide — build, test, the ground rules, and how to add a forge or a
+translation — is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Trademarks
 

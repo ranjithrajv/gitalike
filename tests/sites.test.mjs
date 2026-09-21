@@ -24,12 +24,15 @@ const {
   isHostname,
   isKind,
   kindOn,
+  hostSkinFor,
   themeFor,
   stateFrom,
   kinds,
+  skins,
   THEMES,
   SETTINGS_KEY,
   INSTANCES_KEY,
+  HOST_SETTINGS_KEY,
   STORAGE_KEYS,
 } = SITES;
 
@@ -44,6 +47,7 @@ describe('module shape', () => {
       isHostname,
       isKind,
       kindOn,
+      hostSkinFor,
       themeFor,
       stateFrom,
     ]) {
@@ -51,17 +55,32 @@ describe('module shape', () => {
     }
   });
 
-  test('the storage schema and theme list are the shared ones', () => {
-    assert.deepEqual(STORAGE_KEYS, [SETTINGS_KEY, INSTANCES_KEY]);
+  test('the storage schema and skin list are the shared ones', () => {
+    assert.deepEqual(STORAGE_KEYS, [
+      SETTINGS_KEY,
+      INSTANCES_KEY,
+      HOST_SETTINGS_KEY,
+    ]);
     assert.equal(SETTINGS_KEY, 'gitSameSettings');
     assert.equal(INSTANCES_KEY, 'gitSameInstances');
-    // Derived from `kinds`, so a third kind contributes its theme exactly once.
+    assert.equal(HOST_SETTINGS_KEY, 'gitSameHostSettings');
+    // Derived from `skins`, so a new skin is listed exactly once.
     assert.deepEqual(THEMES, ['gitlab', 'github']);
   });
 
-  test('a kind is always skinned with the *other* product', () => {
+  test('a kind is always skinned with the *other* product by default', () => {
     assert.equal(kinds.github.theme, 'gitlab');
     assert.equal(kinds.gitlab.theme, 'github');
+  });
+
+  test('every skin names the product whose UI it is', () => {
+    for (const theme of THEMES) {
+      assert.equal(typeof skins[theme].product, 'string');
+      assert.equal(typeof skins[theme].badge, 'string');
+      assert.match(skins[theme].color, /^#[0-9a-f]{6}$/i);
+    }
+    assert.equal(skins.gitlab.product, 'GitLab');
+    assert.equal(skins.github.product, 'GitHub');
   });
 });
 
@@ -127,6 +146,9 @@ describe('kindFor', () => {
     assert.equal(kindFor('github.com'), 'github');
     assert.equal(kindFor('gitlab.com', {}), 'gitlab');
     assert.equal(kindFor('code.swecha.org', {}), 'gitlab');
+    // GitHub-flavoured forges: the github kind, shown with the GitLab UI.
+    assert.equal(kindFor('codeberg.org', {}), 'github');
+    assert.equal(kindFor('gitea.com', {}), 'github');
   });
 
   test('falls back to the user-added map', () => {
@@ -154,7 +176,11 @@ describe('kindFor', () => {
 
 describe('hostsFor', () => {
   test('lists the bundled hosts, user hosts after', () => {
-    assert.deepEqual(hostsFor('github', {}), ['github.com']);
+    assert.deepEqual(hostsFor('github', {}), [
+      'github.com',
+      'codeberg.org',
+      'gitea.com',
+    ]);
     assert.deepEqual(hostsFor('gitlab', {}), ['gitlab.com', 'code.swecha.org']);
     assert.deepEqual(hostsFor('gitlab', { 'gl.acme.com': 'gitlab' }), [
       'gitlab.com',
@@ -166,17 +192,25 @@ describe('hostsFor', () => {
   test('never duplicates a host and never mixes kinds', () => {
     assert.deepEqual(hostsFor('github', { 'github.com': 'github' }), [
       'github.com',
+      'codeberg.org',
+      'gitea.com',
     ]);
     assert.deepEqual(
       hostsFor('github', { 'gl.acme.com': 'gitlab', 'gh.acme.com': 'github' }),
-      ['github.com', 'gh.acme.com'],
+      ['github.com', 'codeberg.org', 'gitea.com', 'gh.acme.com'],
     );
   });
 
   test('tolerates a missing added map and junk values', () => {
-    assert.deepEqual(hostsFor('github', null), ['github.com']);
+    assert.deepEqual(hostsFor('github', null), [
+      'github.com',
+      'codeberg.org',
+      'gitea.com',
+    ]);
     assert.deepEqual(hostsFor('github', { 'x.example': 'nonsense' }), [
       'github.com',
+      'codeberg.org',
+      'gitea.com',
     ]);
   });
 
@@ -191,7 +225,7 @@ describe('hostsFor', () => {
         'evil.com:8080': 'github',
         'ok.example': 'github',
       }),
-      ['github.com', 'ok.example'],
+      ['github.com', 'codeberg.org', 'gitea.com', 'ok.example'],
     );
   });
 });
@@ -243,6 +277,8 @@ describe('isBuiltin / isKind', () => {
     assert.equal(isBuiltin('github.com'), true);
     assert.equal(isBuiltin('gitlab.com'), true);
     assert.equal(isBuiltin('code.swecha.org'), true);
+    assert.equal(isBuiltin('codeberg.org'), true);
+    assert.equal(isBuiltin('gitea.com'), true);
     assert.equal(isBuiltin('github.acme.com'), false);
     // Guard against prototype-key false positives.
     assert.equal(isBuiltin('constructor'), false);
@@ -259,25 +295,36 @@ describe('isBuiltin / isKind', () => {
 
 describe('stateFrom', () => {
   test('applies the defaults for a first run', () => {
-    assert.deepEqual(stateFrom(undefined), { settings: {}, instances: {} });
-    assert.deepEqual(stateFrom({}), { settings: {}, instances: {} });
+    assert.deepEqual(stateFrom(undefined), {
+      settings: {},
+      instances: {},
+      hostSettings: {},
+    });
+    assert.deepEqual(stateFrom({}), {
+      settings: {},
+      instances: {},
+      hostSettings: {},
+    });
   });
 
-  test('reads the two maps under their shared keys', () => {
+  test('reads the three maps under their shared keys', () => {
     const stored = {
       [SETTINGS_KEY]: { github: 'gitlab' },
       [INSTANCES_KEY]: { 'gh.acme.com': 'github' },
+      [HOST_SETTINGS_KEY]: { 'gh.acme.com': 'off' },
     };
     assert.deepEqual(stateFrom(stored), {
       settings: { github: 'gitlab' },
       instances: { 'gh.acme.com': 'github' },
+      hostSettings: { 'gh.acme.com': 'off' },
     });
   });
 
-  test('tolerates one map present and the other absent', () => {
+  test('tolerates one map present and the others absent', () => {
     assert.deepEqual(stateFrom({ [SETTINGS_KEY]: { github: 'gitlab' } }), {
       settings: { github: 'gitlab' },
       instances: {},
+      hostSettings: {},
     });
   });
 
@@ -286,8 +333,12 @@ describe('stateFrom', () => {
     // map, and a primitive must not be written back to.
     for (const junk of ['github', 42, true, ['github'], null]) {
       assert.deepEqual(
-        stateFrom({ [SETTINGS_KEY]: junk, [INSTANCES_KEY]: junk }),
-        { settings: {}, instances: {} },
+        stateFrom({
+          [SETTINGS_KEY]: junk,
+          [INSTANCES_KEY]: junk,
+          [HOST_SETTINGS_KEY]: junk,
+        }),
+        { settings: {}, instances: {}, hostSettings: {} },
         String(junk),
       );
     }
@@ -309,6 +360,33 @@ describe('kindOn', () => {
   test('an unknown kind is off, never a throw', () => {
     assert.equal(kindOn('bitbucket', { bitbucket: 'gitlab' }), false);
     assert.equal(kindOn(null, { github: 'gitlab' }), false);
+  });
+});
+
+describe('hostSkinFor', () => {
+  test('reads a chosen skin or off', () => {
+    assert.equal(hostSkinFor('gh.acme.com', { 'gh.acme.com': 'gitlab' }), 'gitlab');
+    assert.equal(hostSkinFor('gh.acme.com', { 'gh.acme.com': 'github' }), 'github');
+    assert.equal(hostSkinFor('gh.acme.com', { 'gh.acme.com': 'off' }), 'off');
+  });
+
+  test('a host with no entry follows its product', () => {
+    assert.equal(hostSkinFor('gh.acme.com', {}), null);
+    assert.equal(hostSkinFor('gh.acme.com', null), null);
+    assert.equal(hostSkinFor('gh.acme.com', undefined), null);
+  });
+
+  test('junk stored against a host is ignored, not obeyed', () => {
+    // Synced storage is user data; only a known skin or `off` counts.
+    for (const junk of ['on', 'yes', 'true', true, 1, null, {}]) {
+      assert.equal(hostSkinFor('gh.acme.com', { 'gh.acme.com': junk }), null);
+    }
+  });
+
+  test('inherited prototype keys are a miss, not a value', () => {
+    assert.equal(hostSkinFor('toString', {}), null);
+    assert.equal(hostSkinFor('constructor', {}), null);
+    assert.equal(hostSkinFor('__proto__', {}), null);
   });
 });
 
@@ -343,5 +421,79 @@ describe('themeFor', () => {
   test('user-added hosts behave like bundled ones', () => {
     const added = { 'gl.acme.com': 'gitlab' };
     assert.equal(themeFor('gl.acme.com', { gitlab: 'github' }, added), 'github');
+  });
+
+  test('a host can be given a skin without the product switch', () => {
+    // The enterprise instance is skinned even though github.com is off.
+    assert.equal(
+      themeFor(
+        'gh.acme.com',
+        { github: 'off' },
+        { 'gh.acme.com': 'github' },
+        { 'gh.acme.com': 'gitlab' },
+      ),
+      'gitlab',
+    );
+  });
+
+  test('a host can be switched off while the product is on', () => {
+    assert.equal(
+      themeFor(
+        'gh.acme.com',
+        { github: 'gitlab' },
+        { 'gh.acme.com': 'github' },
+        { 'gh.acme.com': 'off' },
+      ),
+      null,
+    );
+    // ...and only that host; github.com still follows the product switch.
+    assert.equal(
+      themeFor('github.com', { github: 'gitlab' }, {}, { 'gh.acme.com': 'off' }),
+      'gitlab',
+    );
+  });
+
+  test("a host wearing its own UI is left alone", () => {
+    // Choosing GitHub's UI for a GitHub site is the same as off: it is already
+    // that UI, and repainting it would run the wrong tables.
+    assert.equal(
+      themeFor(
+        'github.com',
+        { github: 'gitlab' },
+        {},
+        { 'github.com': 'github' },
+      ),
+      null,
+    );
+    assert.equal(
+      themeFor('codeberg.org', {}, { }, { 'codeberg.org': 'github' }),
+      null,
+    );
+  });
+
+  test('a host can wear the other product\'s skin even when its own is offered', () => {
+    // The default is the cross skin; an explicit choice overrides it.
+    assert.equal(
+      themeFor('github.com', { github: 'gitlab' }, {}, { 'github.com': 'gitlab' }),
+      'gitlab',
+    );
+  });
+
+  test('an override on an unknown host still does nothing', () => {
+    assert.equal(
+      themeFor('example.com', { github: 'gitlab' }, {}, { 'example.com': 'gitlab' }),
+      null,
+    );
+  });
+
+  test('junk in the host map falls back to the product switch', () => {
+    assert.equal(
+      themeFor('github.com', { github: 'gitlab' }, {}, { 'github.com': 'yes' }),
+      'gitlab',
+    );
+    assert.equal(
+      themeFor('github.com', { github: 'off' }, {}, { 'github.com': true }),
+      null,
+    );
   });
 });

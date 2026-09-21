@@ -128,7 +128,8 @@
 
   // Regions whose labels the NAV table is allowed to touch. Verified against
   // the live sites: GitHub's repo tabs live in `nav[aria-label="Repository"]`;
-  // GitLab's project navigation is the `.super-sidebar`.
+  // GitLab's project navigation is the `.super-sidebar`; Gitea/Forgejo (Codeberg,
+  // gitea.com) put their repo tabs in an `overflow-menu` custom element.
   const NAV_SCOPE = [
     'nav[aria-label="Repository"]',
     '.js-repo-nav',
@@ -136,6 +137,7 @@
     '[data-testid="super-sidebar"]',
     '.nav-sidebar',
     'nav[aria-label="Project navigation"]',
+    'overflow-menu',
   ].join(',');
 
   // Desired left-to-right / top-to-bottom order of the app navigation, using
@@ -150,34 +152,45 @@
   // that maps onto GitHub's repo tabs, the repository ("Code") group, is
   // reordered in place. A rule with `scope` + `contains` resolves its container
   // at runtime (the group whose children include that exact label).
+  // GitLab's sidebar order: Manage, Plan, Code, Build, Deploy, Monitor, Analyze,
+  // then Settings. Shared by the GitHub tab bar and Gitea's `overflow-menu`, so
+  // the two sources cannot drift. Labels a source does not have simply rank
+  // after the known ones, so one list fits both.
+  const GITLAB_REPO_ORDER = [
+    'Members',
+    'Work items',
+    'Issue boards',
+    'Wiki',
+    'Milestones',
+    'Labels',
+    'Merge requests',
+    'Repository',
+    'Branches',
+    'Commits',
+    'Tags',
+    'CI/CD',
+    'Releases',
+    'Packages',
+    'Environments',
+    'Incidents',
+    'Analytics',
+    'Security',
+    'Settings',
+  ];
+
   const NAV_RULES = {
     gitlab: [
       {
         container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
         item: 'li',
-        // GitLab's sidebar order: Manage, Plan, Code, Build, Deploy, Monitor,
-        // Analyze, then Settings.
-        order: [
-          'Members',
-          'Work items',
-          'Issue boards',
-          'Wiki',
-          'Milestones',
-          'Labels',
-          'Merge requests',
-          'Repository',
-          'Branches',
-          'Commits',
-          'Tags',
-          'CI/CD',
-          'Releases',
-          'Packages',
-          'Environments',
-          'Incidents',
-          'Analytics',
-          'Security',
-          'Settings',
-        ],
+        order: GITLAB_REPO_ORDER,
+      },
+      {
+        // Gitea/Forgejo (Codeberg, gitea.com) repo tabs: a flat `overflow-menu`
+        // list of `a.item`s, so they take GitLab's order the same way.
+        container: 'overflow-menu .overflow-menu-items',
+        item: 'a.item',
+        order: GITLAB_REPO_ORDER,
       },
     ],
     github: [
@@ -403,12 +416,13 @@
   /**
    * The reference marker a link should show for the given theme. A GitHub
    * `/pull/N` or GitLab `/-/merge_requests/N` link becomes `!N` under the
-   * GitLab UI and `#N` under the GitHub UI. Anything else (issues, files)
+   * GitLab UI and `#N` under the GitHub UI. Gitea/Forgejo use `/pulls/N`, so
+   * that form is matched too. Anything else (issues, files)
    * returns null and is left alone.
    */
   function refMarker(href, theme) {
     if (!href) return null;
-    const match = String(href).match(/\/(?:pull|merge_requests)\/(\d+)(?:[/?#]|$)/);
+    const match = String(href).match(/\/(?:pulls?|merge_requests)\/(\d+)(?:[/?#]|$)/);
     if (!match) return null;
     return (theme === 'gitlab' ? '!' : '#') + match[1];
   }

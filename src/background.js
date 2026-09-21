@@ -38,20 +38,25 @@ const shownBadge = new Map();
 async function refreshBadge(tabId, url, state) {
   if (tabId == null) return;
 
-  const { settings, instances } = state ?? (await readState());
+  const { settings, instances, hostSettings } = state ?? (await readState());
   const host = hostOf(url);
   const kind = host ? SITES.kindFor(host, instances) : null;
-  const on = SITES.kindOn(kind, settings);
-  const meta = on ? SITES.kinds[kind] : null;
-  const text = on ? meta.badge : '';
-  const title = on ? `gitalike — showing the ${meta.other} UI` : 'gitalike';
+  // The badge follows the *effective* skin, per-host choice included, so a host
+  // wearing a different skin (or spared) does not claim the wrong one.
+  const theme = host
+    ? SITES.themeFor(host, settings, instances, hostSettings)
+    : null;
+  const on = Boolean(theme && kind);
+  const skin = on ? SITES.skins[theme] : null;
+  const text = on ? skin.badge : '';
+  const title = on ? `gitalike — showing the ${skin.product} UI` : 'gitalike';
 
   const previous = shownBadge.get(tabId);
   if (previous && previous.text === text && previous.title === title) return;
   shownBadge.set(tabId, { text, title });
 
   await api.action.setBadgeText({ tabId, text });
-  if (on) await api.action.setBadgeBackgroundColor({ tabId, color: meta.color });
+  if (on) await api.action.setBadgeBackgroundColor({ tabId, color: skin.color });
   await api.action.setTitle({ tabId, title });
 }
 
@@ -217,16 +222,22 @@ api.commands.onCommand.addListener(async (command) => {
   const host = hostOf(tab?.url);
   if (!host || tab.id == null) return;
 
-  const { settings, instances } = await readState();
+  const { settings, instances, hostSettings } = await readState();
   const kind = SITES.kindFor(host, instances);
   // An unrecognised host needs a choice of UI, which only the popup can offer.
   if (!kind) return;
 
-  const meta = SITES.kinds[kind];
-  settings[kind] = SITES.kindOn(kind, settings) ? 'off' : meta.theme;
-
-  // storage.onChanged fans this out to the content scripts and the badges.
-  await api.storage.sync.set({ [SITES.SETTINGS_KEY]: settings });
+  // Toggle *this host*, not the whole product: the command is described as
+  // "for the current site", and a per-host choice is what makes an enterprise
+  // instance independent of github.com. Off switches the skin off for this host;
+  // on gives it the product's default skin (the popup can pick another one).
+  const on = SITES.themeFor(host, settings, instances, hostSettings) !== null;
+  await api.storage.sync.set({
+    [SITES.HOST_SETTINGS_KEY]: {
+      ...hostSettings,
+      [host]: on ? 'off' : SITES.kinds[kind].theme,
+    },
+  });
 });
 
 /* ---------------------------------------------------------------- badges -- */
@@ -251,7 +262,11 @@ api.storage.onChanged.addListener((changes, area) => {
     // any already-open tab on a host that was just added.
     syncContentScripts({ injectNew: true });
   }
-  if (changes[SITES.SETTINGS_KEY] || changes[SITES.INSTANCES_KEY]) {
+  if (
+    changes[SITES.SETTINGS_KEY] ||
+    changes[SITES.INSTANCES_KEY] ||
+    changes[SITES.HOST_SETTINGS_KEY]
+  ) {
     refreshAllBadges();
   }
 });

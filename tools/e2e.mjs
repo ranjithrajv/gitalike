@@ -3,9 +3,10 @@
  * End-to-end test for gitalike, driven with Playwright.
  *
  * It launches a Chromium with `dist/chromium` loaded unpacked, turns both skins
- * on through the extension's own storage, visits the two live sites and asserts
- * what the skin actually did — orientation, relabelling, reference markers,
- * no-counterpart badges, a keyboard shortcut, and a clean revert.
+ * on through the extension's own storage, visits the live sites — GitHub,
+ * GitLab and Codeberg (Forgejo) — and asserts what the skin actually did:
+ * orientation, relabelling, reference markers, no-counterpart badges, a keyboard
+ * shortcut, the Gitea tab reorder, and a clean revert.
  *
  *   node tools/e2e.mjs
  *
@@ -135,6 +136,13 @@ try {
       pinned: document.querySelector('.js-pinned-items-reorder-container')
         ? getComputedStyle(document.querySelector('.js-pinned-items-reorder-container')).display
         : null,
+      // GitHub's pinned repositories become GitLab's "Personal projects"
+      // section (content/ux.js renames the heading), so the profile has the
+      // section GitLab shows.
+      pinnedHeading:
+        [...document.querySelectorAll('h2')]
+          .map((h) => (h.textContent || '').replace(/\s+/g, ' ').trim())
+          .find((text) => text.startsWith('Personal projects')) ?? null,
     };
   });
   await ghp.close();
@@ -146,7 +154,14 @@ try {
     gp.achievements.length > 0 && gp.achievements.every((d) => d === 'none'),
     gp.achievements.join(', '),
   );
-  check('G→L profile hides GitHub’s Pinned section', gp.pinned === 'none', gp.pinned);
+  // GitHub's pinned repositories are kept and relabelled GitLab's "Personal
+  // projects" rather than hidden (themes/ux-nav.css): GitLab's profile shows a
+  // Personal projects list, and pinned repos are the closest thing to it.
+  check(
+    'G→L profile keeps Pinned as GitLab’s Personal projects',
+    gp.pinned !== null && gp.pinned !== 'none' && Boolean(gp.pinnedHeading),
+    `${gp.pinned} / ${gp.pinnedHeading}`,
+  );
   check(
     'G→L profile nav is GitLab’s',
     ['Personal projects', 'Contributed projects', 'Starred projects', 'Activity', 'Groups', 'Snippets', 'Followers', 'Following'].every(
@@ -163,7 +178,20 @@ try {
     null,
     { timeout: 45000 },
   );
-  await gl.waitForTimeout(3500);
+  // The theme class lands at document_start, before GitLab's SPA has rendered
+  // its sidebar; wait for the relabel itself rather than guessing at a delay, so
+  // a slow load does not fail a step that is really about the rewrite.
+  await gl
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('.super-sidebar a')].some((a) =>
+          /^Pull requests/.test((a.textContent || '').replace(/\s+/g, ' ').trim()),
+        ),
+      null,
+      { timeout: 45000 },
+    )
+    .catch(() => {});
+  await gl.waitForTimeout(500);
   const l = await gl.evaluate(() => {
     const sb = document.querySelector('.super-sidebar');
     const main = document.querySelector('main');
@@ -188,7 +216,14 @@ try {
     null,
     { timeout: 45000 },
   );
-  await glp.waitForTimeout(3000);
+  // Wait for the profile rewrite itself (content/ux.js clones the follower
+  // counts into `[data-gs-profile-stats]`), not a guessed delay.
+  await glp
+    .waitForFunction(() => Boolean(document.querySelector('[data-gs-profile-stats]')), null, {
+      timeout: 45000,
+    })
+    .catch(() => {});
+  await glp.waitForTimeout(500);
   const lp = await glp.evaluate(() => {
     const stats = document.querySelector('[data-gs-profile-stats]');
     const followerLink = document.querySelector(
@@ -226,6 +261,49 @@ try {
   await gl.keyboard.press('p');
   await gl.waitForTimeout(3000);
   check('L→G shortcut g p opens merge requests', /\/merge_requests$/.test(gl.url()), gl.url());
+
+  /* ------------------------------ Codeberg (Gitea) ------------------------------ */
+  const cb = await context.newPage();
+  await cb.goto('https://codeberg.org/forgejo/forgejo', {
+    waitUntil: 'domcontentloaded',
+    timeout: 60000,
+  });
+  await cb.waitForFunction(
+    () => document.documentElement.classList.contains('gs-theme-gitlab'),
+    null,
+    { timeout: 45000 },
+  );
+  // Wait for the rewrite itself rather than a guessed delay.
+  await cb
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].some((a) =>
+          /Merge requests/.test(a.textContent || ''),
+        ),
+      null,
+      { timeout: 45000 },
+    )
+    .catch(() => {});
+  await cb.waitForTimeout(500);
+  const c = await cb.evaluate(() => ({
+    nav: [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].map((a) =>
+      (a.textContent || '').replace(/\s+/g, ' ').trim(),
+    ),
+  }));
+  await cb.close();
+  check(
+    'Codeberg (Gitea) tabs relabelled',
+    c.nav.some((t) => t.startsWith('Repository')) && c.nav.some((t) => t.startsWith('Merge requests')),
+    c.nav.join(', '),
+  );
+  const giteaWorkItems = c.nav.findIndex((t) => t.startsWith('Work items'));
+  const giteaMerge = c.nav.findIndex((t) => t.startsWith('Merge requests'));
+  const giteaRepo = c.nav.findIndex((t) => t.startsWith('Repository'));
+  check(
+    'Codeberg (Gitea) tabs reordered into GitLab’s order',
+    giteaWorkItems > -1 && giteaWorkItems < giteaMerge && giteaMerge < giteaRepo,
+    `${giteaWorkItems}/${giteaMerge}/${giteaRepo}`,
+  );
 
   /* ---------------------------------- revert ----------------------------------- */
   await setSettings(popup, { github: 'off', gitlab: 'off' });

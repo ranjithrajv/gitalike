@@ -43,11 +43,12 @@ match; and a feature the other product lacks is marked rather than guessed at.
 Search, copy/paste and screen readers keep working.
 
 Works on github.com and gitlab.com out of the box, on the bundled self-hosted
-instance code.swecha.org, and on any other instance you point it at — GitHub
-Enterprise Server included. More forges are on the way: Forgejo, Gitea,
-Codeberg, Bitbucket and Sourcehut are the next candidates.
+instance code.swecha.org, on Codeberg (Forgejo) and gitea.com (Gitea), and on any
+other instance you point it at — GitHub Enterprise Server included. Bitbucket and
+Sourcehut are the next candidates.
 
-• Two independent switches, one per product.
+• Two product switches, plus a per-site picker: choose Off, GitHub UI or GitLab UI
+  for the site you are on, without changing the rest.
 • Add any instance by visiting it, or by typing its address. It is remembered.
 • Alt+Shift+G toggles the site you are on; the toolbar badge shows GL or GH.
 • Light and dark, following the site's own mode.
@@ -111,7 +112,9 @@ No account, credentials or special setup are needed.
 2. Switch on "Show with the GitLab UI" (skins GitHub) and/or "Show with the
    GitHub UI" (skins GitLab).
 3. Open https://github.com/git/git or https://gitlab.com/gitlab-org/gitlab —
-   the page is re-skinned immediately, with no reload.
+   the page is re-skinned immediately, with no reload. On a site you have set
+   up, the popup's "Show this site with" picker switches that one host between
+   Off, GitHub UI and GitLab UI.
 4. Alt+Shift+G toggles the site you are on; switching both switches off reverts
    every change.
 

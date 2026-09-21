@@ -53,7 +53,8 @@
     'script,style,noscript,template,code,pre,[contenteditable=""],[contenteditable="true"],[data-gs-ux-skip]';
   const ATTRS = ['title', 'aria-label', 'placeholder', 'alt'];
   const ATTR_SELECTOR = ATTRS.map((a) => `[${a}]`).join(',');
-  const REF_SELECTOR = 'a[href*="/pull/"],a[href*="/merge_requests/"]';
+  const REF_SELECTOR =
+    'a[href*="/pull/"],a[href*="/pulls/"],a[href*="/merge_requests/"]';
 
   // Iterable (not WeakMap) because reverting has to walk them.
   const textOrig = new Map();

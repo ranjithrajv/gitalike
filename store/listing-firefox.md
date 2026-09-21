@@ -34,12 +34,13 @@ match; and a feature the other product lacks is marked rather than guessed at.
 Search, copy/paste and screen readers keep working.
 
 Works on github.com and gitlab.com out of the box, on the bundled self-hosted
-instance code.swecha.org, and on any other instance you point it at — GitHub
-Enterprise Server and self-hosted GitLab included. More forges are on the way:
-Forgejo, Gitea, Codeberg, Bitbucket and Sourcehut are the next candidates.
+instance code.swecha.org, on Codeberg (Forgejo) and gitea.com (Gitea), and on any
+other instance you point it at — GitHub Enterprise Server and self-hosted GitLab
+included. Bitbucket and Sourcehut are the next candidates.
 
 Features
-- Two independent switches, one per product.
+- Two product switches, plus a per-site picker: choose Off, GitHub UI or GitLab UI
+  for the site you are on, without changing the rest.
 - Add any instance by visiting it, or by typing its address. It is remembered.
 - Alt+Shift+G toggles the site you are on; the toolbar badge shows GL or GH.
 - Light and dark, following the site's own mode.
@@ -108,8 +109,9 @@ AMO has no fixed screenshot size. Upload, in order:
 
 - Reviewing needs no account: the skin applies on public pages
   (`github.com/git/git`, `gitlab.com/gitlab-org/gitlab`) while logged out.
-  Toggle the switches in the toolbar popup; Alt+Shift+G toggles the current
-  site.
+  Toggle the switches in the toolbar popup; on a site you have set up, the
+  "Show this site with" picker switches that one host between Off, GitHub UI and
+  GitLab UI; Alt+Shift+G toggles the current site.
 - The extension rewrites the page's own text, labels and CSS tokens locally. It
   is not a content blocker, intercepts no requests and makes no network
   requests; switching both switches off reverts every change.

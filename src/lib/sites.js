@@ -21,50 +21,59 @@
     'github.com': 'github',
     'gitlab.com': 'gitlab',
     'code.swecha.org': 'gitlab',
+    // GitHub-flavoured forges: they speak GitHub's dialect, so they are the
+    // 'github' kind and are shown with the GitLab UI. Codeberg runs Forgejo and
+    // gitea.com runs Gitea; both are Gitea's markup, so themes/github-as-gitlab.css
+    // carries a token block for them (see "Gitea / Forgejo").
+    'codeberg.org': 'github',
+    'gitea.com': 'github',
   };
 
   /**
-   * A "kind" is which product a site is. The skin applied is always the other
-   * one, so the kind decides the theme, the badge and the setting that drives
-   * it — the setting is the kind's own key, so it is not repeated here.
+   * Every skin the extension can paint, keyed by the product whose UI it is.
+   * A kind names the skin it wears by default; the popup lists these so a site
+   * can be shown with any of them. A site wearing its own UI is left alone (see
+   * `themeFor`), so only the other product's skin actually repaints it.
+   */
+  const skins = {
+    gitlab: { product: 'GitLab', badge: 'GL', color: '#7759c2' },
+    github: { product: 'GitHub', badge: 'GH', color: '#24292f' },
+  };
+
+  /**
+   * A "kind" is which product a site is. Its `theme` is the skin applied by
+   * default — the *other* product's. The setting that drives the default is the
+   * kind's own key, so it is not repeated here; a per-host choice can override
+   * the default with any skin in `skins`.
    */
   const kinds = {
-    github: {
-      theme: 'gitlab',
-      badge: 'GL',
-      color: '#7759c2',
-      other: 'GitLab',
-    },
-    gitlab: {
-      theme: 'github',
-      badge: 'GH',
-      color: '#24292f',
-      other: 'GitHub',
-    },
+    github: { theme: 'gitlab' },
+    gitlab: { theme: 'github' },
   };
 
   const isKind = (value) => value === 'github' || value === 'gitlab';
 
   /**
    * The storage keys gitalike owns, kept beside the schema that gives them
-   * meaning (the `settings` map is keyed by kind, the `instances` map by host).
-   * Every context reads the same pair through `stateFrom`.
+   * meaning (the `settings` map is keyed by kind, the `instances` map by host,
+   * the `hostSettings` map by host). Every context reads the same triple through
+   * `stateFrom`.
    */
   const SETTINGS_KEY = 'gitSameSettings';
   const INSTANCES_KEY = 'gitSameInstances';
-  const STORAGE_KEYS = [SETTINGS_KEY, INSTANCES_KEY];
+  const HOST_SETTINGS_KEY = 'gitSameHostSettings';
+  const STORAGE_KEYS = [SETTINGS_KEY, INSTANCES_KEY, HOST_SETTINGS_KEY];
 
   /**
-   * Every theme name, derived from `kinds` so a new kind contributes its theme
-   * once instead of also having to be remembered in each context's `THEMES`.
+   * Every skin name, derived from `skins` so a new skin is listed exactly once.
    * @type {string[]}
    */
-  const THEMES = Object.values(kinds).map((meta) => meta.theme);
+  const THEMES = Object.keys(skins);
 
   /**
-   * The two stored maps with their defaults applied. Takes the raw result of
+   * The three stored maps with their defaults applied. Takes the raw result of
    * `storage.sync.get(STORAGE_KEYS)` so that the defaults live in one place.
-   * @returns {{settings: object, instances: object}}
+   * @returns {{settings: object, instances: object, hostSettings: object}}
    */
   // Only a plain object is a usable map. Synced storage is user data and could
   // hold anything; a string or array would otherwise be iterated key by key (and
@@ -78,6 +87,9 @@
       settings: plainObject(stored?.[SETTINGS_KEY]) ? stored[SETTINGS_KEY] : {},
       instances: plainObject(stored?.[INSTANCES_KEY])
         ? stored[INSTANCES_KEY]
+        : {},
+      hostSettings: plainObject(stored?.[HOST_SETTINGS_KEY])
+        ? stored[HOST_SETTINGS_KEY]
         : {},
     };
   }
@@ -169,17 +181,45 @@
     return Boolean(meta) && Boolean(settings) && settings[kind] === meta.theme;
   }
 
+  /**
+   * The skin a single host has explicitly chosen: a theme name, `'off'`, or null
+   * when the host follows its product switch. This is what lets one enterprise
+   * instance wear a different skin (or none) without touching every host of the
+   * product. The host is a `location.hostname` or a key the popup just wrote, so
+   * only a known theme or the literal `'off'` counts; anything else falls back to
+   * the product switch.
+   * @returns {string|null} a theme name, 'off', or null
+   */
+  function hostSkinFor(host, hostSettings) {
+    if (!hostSettings || !Object.prototype.hasOwnProperty.call(hostSettings, host)) {
+      return null;
+    }
+    const value = hostSettings[host];
+    if (value === 'off') return 'off';
+    return THEMES.includes(value) ? value : null;
+  }
+
   /** The theme to apply for this host — 'gitlab', 'github', or null for none. */
-  function themeFor(host, settings, added) {
+  function themeFor(host, settings, added, hostSettings) {
     const kind = kindFor(host, added);
-    return kind && kindOn(kind, settings) ? kinds[kind].theme : null;
+    if (!kind) return null;
+    const chosen = hostSkinFor(host, hostSettings);
+    if (chosen === 'off') return null;
+    const wanted = chosen || (kindOn(kind, settings) ? kinds[kind].theme : null);
+    if (!wanted) return null;
+    // A site wearing its own UI is already wearing it. Repainting it as itself
+    // would run the wrong vocabulary and shortcut tables, so it is left alone —
+    // which also means "the site's own UI" and "off" are the same thing.
+    return wanted === kind ? null : wanted;
   }
 
   globalThis.GITALIKE = {
     kinds,
+    skins,
     THEMES,
     SETTINGS_KEY,
     INSTANCES_KEY,
+    HOST_SETTINGS_KEY,
     STORAGE_KEYS,
     stateFrom,
     isKind,
@@ -189,6 +229,7 @@
     isHostname,
     parseHost,
     kindOn,
+    hostSkinFor,
     themeFor,
   };
 })();

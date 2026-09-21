@@ -1,0 +1,62 @@
+name: Selector canary
+
+# GitHub, GitLab and Gitea ship new markup constantly; the colour skin rides on
+# design tokens and survives a redesign, but the structural selectors do not.
+# This runs daily (and on demand) against the live pages the skins are verified
+# on, and fails when an anchor the extension relies on is gone — so a rename is
+# caught by a scheduled job instead of by a user.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Enough to open/refresh the tracking issue below.
+  issues: write
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to a full commit SHA; see release.yml for why.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      # Standard library only, so there is nothing to install.
+      - name: Check the upstream selector hooks
+        id: canary
+        run: node tools/selector-canary.mjs
+
+      # A rename should not wait to be discovered from a bug report: file (or
+      # refresh) an issue so the drift is owned, and keep the run red.
+      - name: File or refresh an issue
+        if: steps.canary.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          body=$(mktemp)
+          {
+            echo 'The daily selector canary found an anchor the extension relies'
+            echo 'on missing from a live forge page. Update the selector and the'
+            echo 'canary hooks together (`src/lib/ux.js`, `src/themes/*.css`,'
+            echo '`tools/selector-canary.mjs`).'
+            echo
+            echo '```'
+            node tools/selector-canary.mjs 2>&1 || true
+            echo '```'
+            echo
+            echo "Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > "$body"
+          title='Selector canary: an upstream hook is gone'
+          number=$(gh issue list --state open --search 'Selector canary in:title' \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body-file "$body"
+          else
+            gh issue create --title "$title" --body-file "$body"
+          fi
