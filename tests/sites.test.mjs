@@ -28,6 +28,9 @@ const {
   hostSkinFor,
   sourceFor,
   themeFor,
+  globalSkin,
+  settingsForSkin,
+  hostsForSkin,
   stateFrom,
   kinds,
   skins,
@@ -52,6 +55,9 @@ describe('module shape', () => {
       hostSkinFor,
       sourceFor,
       themeFor,
+      globalSkin,
+      settingsForSkin,
+      hostsForSkin,
       stateFrom,
     ]) {
       assert.equal(typeof fn, 'function');
@@ -592,13 +598,75 @@ describe('themeFor', () => {
   });
 });
 
+describe('globalSkin / settingsForSkin', () => {
+  test('settingsForSkin selects one skin for every kind', () => {
+    assert.deepEqual(settingsForSkin('gitlab'), {
+      github: 'gitlab',
+      gitlab: 'gitlab',
+    });
+    assert.deepEqual(settingsForSkin('bitbucket'), {
+      github: 'bitbucket',
+      gitlab: 'bitbucket',
+    });
+    assert.deepEqual(settingsForSkin('off'), { github: 'off', gitlab: 'off' });
+  });
+
+  test('globalSkin round-trips settingsForSkin', () => {
+    for (const theme of [...THEMES, 'off']) {
+      assert.equal(globalSkin(settingsForSkin(theme)), theme);
+    }
+  });
+
+  test('reads a hand-written or legacy map', () => {
+    assert.equal(globalSkin({ github: 'gitlab', gitlab: 'off' }), 'gitlab');
+    assert.equal(
+      globalSkin({ github: 'off', gitlab: 'bitbucket' }),
+      'bitbucket',
+    );
+    assert.equal(globalSkin({ github: 'nonsense' }), 'off');
+    assert.equal(globalSkin({}), 'off');
+    assert.equal(globalSkin(undefined), 'off');
+  });
+});
+
+describe('hostsForSkin', () => {
+  test('lists the hosts whose own markup is not already that skin', () => {
+    // github.com is GitHub's own markup, so the GitHub UI leaves it alone;
+    // Gitea is not, so the GitHub UI repaints it.
+    assert.deepEqual(hostsForSkin('github', {}).sort(), [
+      'codeberg.org',
+      'gitea.com',
+      'gitlab.com',
+    ]);
+    assert.deepEqual(hostsForSkin('gitlab', {}).sort(), [
+      'codeberg.org',
+      'gitea.com',
+      'github.com',
+    ]);
+  });
+
+  test('bitbucket is no source own UI, so it lists every host', () => {
+    assert.deepEqual(
+      hostsForSkin('bitbucket', {}).sort(),
+      [...hostsFor('github', {}), ...hostsFor('gitlab', {})].sort(),
+    );
+  });
+
+  test('off repaints nothing', () => {
+    assert.deepEqual(hostsForSkin('off', {}), []);
+  });
+});
+
 describe('manifest permissions', () => {
   test('the bundled host_permissions match the builtin hosts', () => {
     // The manifest cannot read sites.js, so its static host list repeats the
     // bundled hosts; this is what stops the two from drifting. Everything else
     // is requested one origin at a time from the popup.
     const manifest = JSON.parse(
-      readFileSync(new URL('../src/manifest.base.json', import.meta.url), 'utf8'),
+      readFileSync(
+        new URL('../src/manifest.base.json', import.meta.url),
+        'utf8',
+      ),
     );
     const expected = [...hostsFor('github', {}), ...hostsFor('gitlab', {})].map(
       (host) => `*://${host}/*`,

@@ -115,73 +115,57 @@
     renderSite(currentKind);
   }
 
-  // One skin is active for the whole extension. The stored settings are still
-  // per kind, and now hold any theme (not only the kind's default), so a target
-  // no kind defaults to — Bitbucket — can be chosen for every host.
-  function globalSkin(state) {
-    for (const kind of Object.keys(SITES.kinds)) {
-      if (SITES.kindOn(kind, state)) return state[kind];
-    }
-    return 'off';
-  }
+  // One radio per skin, plus off, built from the shared `skins` table. Both the
+  // global group and the per-site group use this; only the classes, the radio
+  // name and the off position differ.
+  function buildRadios(
+    container,
+    name,
+    { offFirst = false, withHosts = false } = {},
+  ) {
+    const choices = SITES.THEMES.map((theme) => ({
+      value: theme,
+      label: `${SITES.skins[theme].product} UI`,
+    }));
+    const off = { value: 'off', label: 'Off' };
+    if (offFirst) choices.unshift(off);
+    else choices.push(off);
 
-  function settingsForSkin(theme) {
-    const value = theme === 'off' ? 'off' : theme;
-    const next = {};
-    for (const kind of Object.keys(SITES.kinds)) next[kind] = value;
-    return next;
-  }
-
-  // The hosts a skin actually repaints: every configured host whose markup is
-  // not already that UI. So "GitHub UI" lists the GitLab hosts and Codeberg,
-  // while Bitbucket — which is no site's own UI — lists them all.
-  function hostsForSkin(theme) {
-    if (theme === 'off') return [];
-    const hosts = [];
-    for (const kind of Object.keys(SITES.kinds)) {
-      for (const host of SITES.hostsFor(kind, instances)) {
-        if (SITES.sourceFor(host, instances) !== theme) hosts.push(host);
-      }
-    }
-    return hosts;
-  }
-
-  // One radio per skin, plus off, built from the shared `skins` table.
-  function buildSkinOptions() {
-    const options = [
-      ...SITES.THEMES.map((theme) => ({
-        value: theme,
-        label: `${SITES.skins[theme].product} UI`,
-      })),
-      { value: 'off', label: 'Off' },
-    ];
-    for (const { value, label } of options) {
+    for (const { value, label } of choices) {
       const option = document.createElement('label');
-      option.className = 'skin__option';
-      option.dataset.skin = value;
+      option.className = withHosts ? 'skin__option' : 'site__option';
+      if (withHosts) option.dataset.skin = value;
       const input = document.createElement('input');
       input.type = 'radio';
-      input.name = 'gs-skin';
+      input.name = name;
       input.value = value;
       const text = document.createElement('span');
-      text.className = 'skin__text';
-      const name = document.createElement('span');
-      name.className = 'skin__label';
-      name.textContent = label;
-      const hosts = document.createElement('span');
-      hosts.className = 'skin__hosts';
-      text.append(name, hosts);
+      if (withHosts) {
+        text.className = 'skin__text';
+        const labelEl = document.createElement('span');
+        labelEl.className = 'skin__label';
+        labelEl.textContent = label;
+        const hostsEl = document.createElement('span');
+        hostsEl.className = 'skin__hosts';
+        text.append(labelEl, hostsEl);
+      } else {
+        text.textContent = label;
+      }
       option.append(input, text);
-      skinOptions.append(option);
+      container.append(option);
     }
+  }
+
+  function buildSkinOptions() {
+    buildRadios(skinOptions, 'gs-skin', { withHosts: true });
   }
 
   function renderSkin() {
-    const current = globalSkin(settings);
+    const current = SITES.globalSkin(settings);
     for (const option of skinOptions.querySelectorAll('.skin__option')) {
       const value = option.dataset.skin;
       option.querySelector('input').checked = value === current;
-      const hosts = value === 'off' ? [] : hostsForSkin(value);
+      const hosts = SITES.hostsForSkin(value, instances);
       option.querySelector('.skin__hosts').textContent = hosts.length
         ? hosts.join(', ')
         : 'Nothing is repainted';
@@ -216,27 +200,9 @@
     siteReset.hidden = chosen === null;
   }
 
-  // Built once from the shared `skins` table: one radio per skin, plus off.
+  // Built once from the shared `skins` table: Off, then one radio per skin.
   function buildSiteOptions() {
-    const options = [
-      { value: 'off', label: 'Off' },
-      ...SITES.THEMES.map((theme) => ({
-        value: theme,
-        label: `${SITES.skins[theme].product} UI`,
-      })),
-    ];
-    for (const { value, label } of options) {
-      const option = document.createElement('label');
-      option.className = 'site__option';
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = 'gs-site-skin';
-      input.value = value;
-      const text = document.createElement('span');
-      text.textContent = label;
-      option.append(input, text);
-      siteOptions.append(option);
-    }
+    buildRadios(siteOptions, 'gs-site-skin', { offFirst: true });
   }
 
   function renderAdd(currentKind) {
@@ -285,7 +251,7 @@
     // With one skin active at a time, that also turns the others off.
     await api.storage.sync.set({
       [SITES.INSTANCES_KEY]: { ...instances, [hostname]: kind },
-      [SITES.SETTINGS_KEY]: settingsForSkin(SITES.kinds[kind].theme),
+      [SITES.SETTINGS_KEY]: SITES.settingsForSkin(SITES.kinds[kind].theme),
     });
     return true;
   }
@@ -360,7 +326,9 @@
   skinOptions.addEventListener('change', (event) => {
     const value = event.target?.value;
     if (!value) return;
-    api.storage.sync.set({ [SITES.SETTINGS_KEY]: settingsForSkin(value) });
+    api.storage.sync.set({
+      [SITES.SETTINGS_KEY]: SITES.settingsForSkin(value),
+    });
   });
 
   // Pick this host's skin, independent of the global skin.

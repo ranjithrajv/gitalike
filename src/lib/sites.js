@@ -261,6 +261,44 @@
     return wanted === sourceFor(host, added) ? null : wanted;
   }
 
+  /**
+   * The one skin the extension is painting — a theme name, or `'off'`. The
+   * settings hold the same value under every kind (see `settingsForSkin`), so
+   * this is that value; kept beside `kindOn` so a caller does not re-derive the
+   * rule from the raw map.
+   */
+  function globalSkin(settings) {
+    if (!settings) return 'off';
+    for (const kind of Object.keys(kinds)) {
+      if (THEMES.includes(settings[kind])) return settings[kind];
+    }
+    return 'off';
+  }
+
+  /** The settings that select one skin for every kind. */
+  function settingsForSkin(theme) {
+    const value = theme === 'off' ? 'off' : theme;
+    const next = {};
+    for (const kind of Object.keys(kinds)) next[kind] = value;
+    return next;
+  }
+
+  /**
+   * Every configured host a theme actually repaints: the host's own markup is
+   * not already that UI. So the GitHub UI lists the GitLab hosts and Gitea,
+   * while Bitbucket — which is no source's own markup — lists them all.
+   */
+  function hostsForSkin(theme, added) {
+    if (theme === 'off') return [];
+    const hosts = [];
+    for (const kind of Object.keys(kinds)) {
+      for (const host of hostsFor(kind, added)) {
+        if (sourceFor(host, added) !== theme) hosts.push(host);
+      }
+    }
+    return hosts;
+  }
+
   globalThis.GITALIKE = {
     kinds,
     skins,
@@ -280,5 +318,8 @@
     hostSkinFor,
     sourceFor,
     themeFor,
+    globalSkin,
+    settingsForSkin,
+    hostsForSkin,
   };
 })();
