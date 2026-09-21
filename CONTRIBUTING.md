@@ -563,6 +563,10 @@ read.
 ## Pull requests
 
 - One concern per pull request.
+- **One branch or `git worktree` per session, and stage only your own paths.**
+  This tree has been worked by more than one agent at once, and a bare
+  `git add -A` / `git commit -a` swept one session's work into another's commit.
+  See [MAINTENANCE.md](MAINTENANCE.md#working-in-a-shared-checkout).
 - `npm test && npm run lint && npm run lint:js && npm run fmt:check` must pass,
   and `node tools/e2e.mjs` if you touched what it covers. The pre-commit gate
   enforces these; do not treat
