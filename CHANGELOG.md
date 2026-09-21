@@ -4,51 +4,6 @@ All notable changes to gitalike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
-
-- The computed-style parity gate scores against a **reviewed, skin-independent
-  reference** now (`tests/fixtures/target-chrome.json`): the target products'
-  real header / canvas / link colours, not the applied skin's own `--gs-*`
-  variables, so the score measures fidelity to the product rather than
-  self-consistency. The gate also fails when a skin's header or canvas is the
-  wrong colour, and `tests/compare/target-chrome.test.mjs` pins the light
-  palettes to the same fixture offline (`tools/compare/style-parity.mjs`).
-- A **Bitbucket-source page now repaints** under the GitHub and GitLab UIs.
-  Bitbucket Cloud exposes Atlassian's `--ds-*` design tokens on `<html>`, so the
-  shared token layer re-points the semantic ones — surfaces, text, links,
-  borders, icons, selected/brand backgrounds and radii — at the applied skin's
-  palette, and gives the top bar that skin's header treatment. The markup is
-  still Bitbucket's (no `SELECTORS` entry or `NAV_RULES` rule), so metadata stays
-  partial (`src/themes/gs-tokens.css`, `tools/compare/parity-score.mjs`,
-  `docs/UX-PARITY.md`).
-- A Bitbucket source's **navigation is now relabelled and reoriented**.
-  `paintBitbucketNav` finds the repository bar and the workspace side nav by
-  content (Bitbucket's classes are hashed), relabels their items to the applied
-  product's words — `NAV` for the repository bar, a small profile map for the
-  account nav — and reorients them: a sidebar under the GitLab/Bitbucket UI, a
-  tab row under GitHub. It is scoped by URL so the bar and the account nav are
-  handled separately, and every change reverts with the skin
-  (`src/lib/ux.js`, `src/content/ux-project.js`, `src/themes/ux-nav.css`).
-- The logged-out top bar's **source-only marketing words are hidden** under the
-  opposite skin: GitHub's "Open Source"/"Enterprise" links and its "Sign up" CTA
-  under the GitLab UI, GitLab's "Why GitLab"/"Explore" and its "Get free trial"
-  under the GitHub UI. The words both products share ("Platform", "Solutions",
-  "Resources", "Pricing") are left alone, and every change reverts with the skin
-  (`TOPBAR_HIDE`, `src/content/ux-nav.js`).
-- An **independent semantic-judge check** of the two headline skin directions,
-  over TypeSafe's Jev model (`tools/compare/parity-judge.mjs`,
-  `npm run parity:judge`). The recorded run is in
-  `tests/fixtures/parity-judge.json`, quoted in `docs/UX-PARITY.md`, and pinned
-  offline by `tests/compare/parity-judge.test.mjs`.
-
-### Fixed
-
-- The GitLab skin hides GitHub's **signed-in app header** (`.AppHeader`,
-  `header.GlobalNav`) — GitLab has no top menubar. The logged-out marketing
-  header is still restyled to GitLab's light bar (`src/themes/as-gitlab.css`).
-
 ## [0.1.3] - 2026-09-21
 
 ### Added
@@ -166,6 +121,40 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Publishing to the Microsoft Edge Add-ons store is scripted:
   `npm run publish:edge` (`tools/publish-edge.mjs`), alongside the Chrome Web
   Store and addons.mozilla.org scripts.
+- The computed-style parity gate scores against a **reviewed, skin-independent
+  reference** now (`tests/fixtures/target-chrome.json`): the target products'
+  real header / canvas / link colours, not the applied skin's own `--gs-*`
+  variables, so the score measures fidelity to the product rather than
+  self-consistency. The gate also fails when a skin's header or canvas is the
+  wrong colour, and `tests/compare/target-chrome.test.mjs` pins the light
+  palettes to the same fixture offline (`tools/compare/style-parity.mjs`).
+- A **Bitbucket-source page now repaints** under the GitHub and GitLab UIs.
+  Bitbucket Cloud exposes Atlassian's `--ds-*` design tokens on `<html>`, so the
+  shared token layer re-points the semantic ones — surfaces, text, links,
+  borders, icons, selected/brand backgrounds and radii — at the applied skin's
+  palette, and gives the top bar that skin's header treatment. The markup is
+  still Bitbucket's (no `SELECTORS` entry or `NAV_RULES` rule), so metadata stays
+  partial (`src/themes/gs-tokens.css`, `tools/compare/parity-score.mjs`,
+  `docs/UX-PARITY.md`).
+- A Bitbucket source's **navigation is now relabelled and reoriented**.
+  `paintBitbucketNav` finds the repository bar and the workspace side nav by
+  content (Bitbucket's classes are hashed), relabels their items to the applied
+  product's words — `NAV` for the repository bar, a small profile map for the
+  account nav — and reorients them: a sidebar under the GitLab/Bitbucket UI, a
+  tab row under GitHub. It is scoped by URL so the bar and the account nav are
+  handled separately, and every change reverts with the skin
+  (`src/lib/ux.js`, `src/content/ux-project.js`, `src/themes/ux-nav.css`).
+- The logged-out top bar's **source-only marketing words are hidden** under the
+  opposite skin: GitHub's "Open Source"/"Enterprise" links and its "Sign up" CTA
+  under the GitLab UI, GitLab's "Why GitLab"/"Explore" and its "Get free trial"
+  under the GitHub UI. The words both products share ("Platform", "Solutions",
+  "Resources", "Pricing") are left alone, and every change reverts with the skin
+  (`TOPBAR_HIDE`, `src/content/ux-nav.js`).
+- An **independent semantic-judge check** of the two headline skin directions,
+  over TypeSafe's Jev model (`tools/compare/parity-judge.mjs`,
+  `npm run parity:judge`). The recorded run is in
+  `tests/fixtures/parity-judge.json`, quoted in `docs/UX-PARITY.md`, and pinned
+  offline by `tests/compare/parity-judge.test.mjs`.
 
 ### Changed
 
@@ -234,6 +223,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The GitHub-skin project strip no longer shows a stray list bullet before its
   first tab, or GitLab's "Project" sidebar label for which GitHub's repo header
   has no counterpart (`src/content/ux-project.js`, `src/themes/ux-nav.css`).
+- The GitLab skin hides GitHub's **signed-in app header** (`.AppHeader`,
+  `header.GlobalNav`) — GitLab has no top menubar. The logged-out marketing
+  header is still restyled to GitLab's light bar (`src/themes/as-gitlab.css`).
 
 ## [0.1.2] - 2026-09-21
 
