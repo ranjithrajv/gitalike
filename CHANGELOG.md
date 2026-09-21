@@ -20,9 +20,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   shared token layer re-points the semantic ones — surfaces, text, links,
   borders, icons, selected/brand backgrounds and radii — at the applied skin's
   palette, and gives the top bar that skin's header treatment. The markup is
-  still Bitbucket's (no `SELECTORS` entry or `NAV_RULES` rule), so orientation,
-  navigation and metadata stay partial (`src/themes/gs-tokens.css`,
-  `tools/compare/parity-score.mjs`, `docs/UX-PARITY.md`).
+  still Bitbucket's (no `SELECTORS` entry or `NAV_RULES` rule), so metadata stays
+  partial (`src/themes/gs-tokens.css`, `tools/compare/parity-score.mjs`,
+  `docs/UX-PARITY.md`).
+- A Bitbucket source's **navigation is now relabelled and reoriented**.
+  `paintBitbucketNav` finds the repository bar and the workspace side nav by
+  content (Bitbucket's classes are hashed), relabels their items to the applied
+  product's words — `NAV` for the repository bar, a small profile map for the
+  account nav — and reorients them: a sidebar under the GitLab/Bitbucket UI, a
+  tab row under GitHub. It is scoped by URL so the bar and the account nav are
+  handled separately, and every change reverts with the skin
+  (`src/lib/ux.js`, `src/content/ux-project.js`, `src/themes/ux-nav.css`).
 
 ### Fixed
 
