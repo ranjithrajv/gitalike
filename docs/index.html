@@ -8,15 +8,34 @@
       name="description"
       content="gitalike re-skins the forge you use — GitHub, GitLab, Codeberg/Gitea or any instance you add — with the UI of GitHub, GitLab or Bitbucket. Colour, words, navigation, reference markers and keyboard shortcuts, all local and reversible."
     />
+    <link rel="canonical" href="https://ranjithrajv.github.io/gitalike/" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="icon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="icon-128.png" />
     <meta name="theme-color" content="#0969da" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="gitalike" />
+    <meta property="og:url" content="https://ranjithrajv.github.io/gitalike/" />
     <meta property="og:title" content="gitalike — use any forge, keep your muscle memory" />
     <meta
       property="og:description"
       content="Any forge, any skin. GitHub, GitLab and Bitbucket interfaces for the forge you use — locally, with no network access."
     />
-    <meta property="og:image" content="https://ranjithrajv.github.io/gitalike/github-gitlab.png" />
+    <meta property="og:image" content="https://ranjithrajv.github.io/gitalike/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="gitalike — GitHub, GitLab and Bitbucket interfaces for any forge"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="gitalike — use any forge, keep your muscle memory" />
+    <meta
+      name="twitter:description"
+      content="Any forge, any skin. GitHub, GitLab and Bitbucket interfaces for the forge you use — locally, with no network access."
+    />
+    <meta name="twitter:image" content="https://ranjithrajv.github.io/gitalike/og.png" />
     <style>
       :root {
         color-scheme: light dark;
@@ -113,7 +132,22 @@
       .site nav a:hover { color: var(--fg); }
       .site nav .btn { color: var(--accent-fg); }
       @media (max-width: 620px) {
-        .site nav a:not(.btn) { display: none; }
+        /* Keep every link reachable on a phone: brand on one row, the nav wraps
+           to a second row instead of hiding. */
+        .site .wrap {
+          height: auto;
+          flex-wrap: wrap;
+          row-gap: 4px;
+          padding-top: 10px;
+          padding-bottom: 10px;
+        }
+        .site nav {
+          flex-basis: 100%;
+          margin-left: 0;
+          gap: 14px;
+          flex-wrap: wrap;
+        }
+        .site nav a { font-size: 13px; }
       }
 
       /* --------------------------------------------------------------- buttons */
@@ -396,9 +430,9 @@
             </p>
           </div>
 
-          <div class="swipe">
-            <img class="base" src="github-default.png" alt="GitHub project page, default" />
-            <img class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
+          <div class="swipe swipe--hero">
+            <img class="base" src="github-default.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page, default" />
+            <img class="over" src="github-gitlab.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page skinned as GitLab" />
             <span class="tag left">GitHub default</span>
             <span class="tag right">GitLab skin</span>
             <span class="divider"></span>
@@ -431,8 +465,8 @@
                 header.
               </p>
               <div class="swipe">
-                <img class="base" src="gitlab-default.png" alt="GitLab project page, default" />
-                <img class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-default.png" alt="GitLab project page, default" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" />
                 <span class="tag left">GitLab default · sidebar</span>
                 <span class="tag right">GitHub skin · tab row</span>
                 <span class="divider"></span>
@@ -449,8 +483,8 @@
                 GitLab — a vertical <b class="gitlab">sidebar-style column</b>.
               </p>
               <div class="swipe">
-                <img class="base" src="github-default.png" alt="GitHub project page, default" />
-                <img class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-default.png" alt="GitHub project page, default" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" />
                 <span class="tag left">GitHub default · tab bar</span>
                 <span class="tag right">GitLab skin · sidebar column</span>
                 <span class="divider"></span>
@@ -468,8 +502,8 @@
                 group headings in a left sidebar.
               </p>
               <div class="swipe">
-                <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-                <img class="over" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" />
                 <span class="tag left">Gitea default · tab row</span>
                 <span class="tag right">GitLab skin · sidebar</span>
                 <span class="divider"></span>
@@ -486,8 +520,8 @@
                 <b class="github">tab row</b> with the warm active underline.
               </p>
               <div class="swipe">
-                <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-                <img class="over" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" />
                 <span class="tag left">Gitea default · tab row</span>
                 <span class="tag right">GitHub skin · tab row</span>
                 <span class="divider"></span>
@@ -506,8 +540,8 @@
                 Pipelines, Deployments, Jira issues, Security, Downloads</b>.
               </p>
               <div class="swipe">
-                <img class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
-                <img class="over" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" />
                 <span class="tag left">Gitea default · tab row</span>
                 <span class="tag right">Bitbucket skin · sidebar</span>
                 <span class="divider"></span>
@@ -528,8 +562,8 @@
                 avatar.
               </p>
               <div class="swipe">
-                <img class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" />
-                <img class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="gitlab-profile-default.png" alt="GitLab profile page, default" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" />
                 <span class="tag left">GitLab default · sidebar</span>
                 <span class="tag right">GitHub skin · top strip</span>
                 <span class="divider"></span>
@@ -550,8 +584,8 @@
                 the right.
               </p>
               <div class="swipe">
-                <img class="base" src="github-profile-default.png" alt="GitHub profile page, default" />
-                <img class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="base" src="github-profile-default.png" alt="GitHub profile page, default" />
+                <img width="1280" height="900" loading="lazy" decoding="async" class="over" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" />
                 <span class="tag left">GitHub default · tab row</span>
                 <span class="tag right">GitLab skin · left rail</span>
                 <span class="divider"></span>
