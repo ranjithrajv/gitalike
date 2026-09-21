@@ -266,9 +266,9 @@ product it imitates does.
   once they stop fitting the bar, so the real rows are forced back on. The
   sidebar sticks while the (very long) content scrolls, and its items are
   gathered under GitLab's group headings (Code, Build, Secure, Analyze), which
-  GitHub's flat tab bar has no notion of. GitHub's own top bar is restyled to
-  GitLab's light bar with a hairline bottom border; GitLab has a light top bar
-  too, above its sidebar.
+  GitHub's flat tab bar has no notion of. The logged-out GitHub top bar is
+  restyled to GitLab's light bar with a hairline bottom border; the signed-in
+  app header is hidden instead, since GitLab has no top menubar.
 - **L→G** — GitLab's sidebar is replaced by GitHub's tab row. GitLab's page is a
   grid (`.layout-page.page-with-super-sidebar` is `232px 1032px …`, with the
   sidebar in column one), so the grid is collapsed to a single column. GitLab
