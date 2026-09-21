@@ -76,6 +76,37 @@ const PAIRS = [
     base: 'github-default.png',
     over: 'github-gitlab.png',
   },
+  // Codeberg is GitHub-flavoured, so any of the three skins can be captured from
+  // the same base shot. The Gitea project nav is an `overflow-menu`; the GitLab
+  // and Bitbucket skins rebuild it as `[data-gs-gitea-nav]`, so `ready` accepts
+  // either.
+  {
+    name: 'Codeberg (Gitea) project, GitLab UI',
+    url: 'https://codeberg.org/forgejo/forgejo',
+    setting: { github: 'gitlab', gitlab: 'off' },
+    cls: 'gs-theme-gitlab',
+    ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
+    base: 'codeberg-default.png',
+    over: 'codeberg-gitlab.png',
+  },
+  {
+    name: 'Codeberg (Gitea) project, GitHub UI',
+    url: 'https://codeberg.org/forgejo/forgejo',
+    setting: { github: 'github', gitlab: 'off' },
+    cls: 'gs-theme-github',
+    ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
+    base: 'codeberg-default.png',
+    over: 'codeberg-github.png',
+  },
+  {
+    name: 'Codeberg (Gitea) project, Bitbucket UI',
+    url: 'https://codeberg.org/forgejo/forgejo',
+    setting: { github: 'bitbucket', gitlab: 'off' },
+    cls: 'gs-theme-bitbucket',
+    ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
+    base: 'codeberg-default.png',
+    over: 'codeberg-bitbucket.png',
+  },
 ];
 
 const profile = await mkdtemp(join(tmpdir(), 'gs-project-shots-'));
