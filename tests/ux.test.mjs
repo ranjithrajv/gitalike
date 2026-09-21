@@ -49,6 +49,7 @@ const {
   otherHostUrl,
   hostProduct,
   guessForge,
+  BITBUCKET_NAV_WORDS,
 } = UX;
 
 describe('module shape', () => {
@@ -149,6 +150,21 @@ describe('NAV tables', () => {
         assert.notEqual(from, to, `${theme}: ${from} -> ${to}`);
       }
     }
+  });
+
+  test('relabel a Bitbucket source’s repository bar', () => {
+    // The bar is found by content, so these words double as its locator.
+    assert.ok(BITBUCKET_NAV_WORDS.includes('Source'));
+    assert.ok(BITBUCKET_NAV_WORDS.includes('Pipelines'));
+    assert.ok(BITBUCKET_NAV_WORDS.includes('Jira issues'));
+    assert.equal(NAV.gitlab.Source, 'Repository');
+    assert.equal(NAV.gitlab.Pipelines, 'CI/CD');
+    assert.equal(NAV.gitlab['Jira issues'], 'Work items');
+    assert.equal(NAV.github.Source, 'Code');
+    assert.equal(NAV.github['Jira issues'], 'Issues');
+    // "Pull requests" is already mapped for both directions.
+    assert.equal(NAV.gitlab['Pull requests'], 'Merge requests');
+    assert.equal(NAV.github.Pipelines, 'Actions');
   });
 });
 

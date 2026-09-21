@@ -10,8 +10,16 @@
 
   const rt = globalThis.GITALIKE_UX_RUNTIME;
   if (!rt) return;
-  const { UX, SELECTORS, layoutOf, hide, textNodes, rememberText, cloneClean } =
-    rt;
+  const {
+    UX,
+    SELECTORS,
+    layoutOf,
+    ledger,
+    hide,
+    textNodes,
+    rememberText,
+    cloneClean,
+  } = rt;
 
   // GitLab's "Project information" lists a fixed set of items; GitHub's "About"
   // sidebar lists a different set (Releases, Packages, Used by, Contributors,
@@ -325,9 +333,111 @@
     shell.insertBefore(list, menu);
   }
 
+  // Bitbucket Cloud's repository bar is a row of buttons/spans whose classes are
+  // hashed, so it is found by content — the ancestor holding the most of its
+  // known labels — marked `data-gs-bb-nav` for the stylesheet to reorient, and
+  // relabelled from the same NAV table the other sources use.
+  // A Bitbucket account page's navigation is the workspace side nav, not the
+  // repository bar; its words and its target labels are a different set.
+  const BITBUCKET_PROFILE_WORDS = [
+    'Overview',
+    'Repositories',
+    'Projects',
+    'Packages',
+    'Stars',
+    'Activity',
+    'Groups',
+    'Snippets',
+    'Followers',
+    'Following',
+    'For you',
+    'Recent',
+    'Pull requests',
+  ];
+  const BITBUCKET_PROFILE_MAP = {
+    gitlab: {
+      Repositories: 'Personal projects',
+      Projects: 'Contributed projects',
+      'Pull requests': 'Merge requests',
+    },
+    github: {},
+    bitbucket: {},
+  };
+
+  function paintBitbucketNav(t) {
+    if (document.documentElement.dataset.gsSource !== 'bitbucket') return;
+    const path = location.pathname;
+    const repoPage =
+      /\/(src|commits|branches|pull-requests|pipelines|downloads|security|jira|deployments)(\/|$)/.test(
+        path,
+      );
+    const accountPage =
+      /\/(workspace|repositories|projects|snippets|stars|overview|activity)(\/|$)/.test(
+        path,
+      );
+    if (!repoPage && !accountPage) return;
+    const words = repoPage
+      ? UX.BITBUCKET_NAV_WORDS || []
+      : BITBUCKET_PROFILE_WORDS;
+    const itemText = (el) => (el.textContent || '').replace(/\s+/g, ' ').trim();
+    // The bar's items are a mix — a link, a button, a bare span — so the
+    // selector is broad and `labelMatches` (whole-label only) keeps it precise.
+    const items = [
+      ...document.querySelectorAll(
+        'a, button, [role="menuitem"], [role="tab"], [role="link"], span',
+      ),
+    ].filter((el) => words.some((word) => UX.labelMatches(itemText(el), word)));
+    if (items.length < 2) return;
+
+    // The bar is the ancestor that holds the most of these items.
+    const counts = new Map();
+    for (const el of items) {
+      for (
+        let parent = el.parentElement;
+        parent && parent !== document.body;
+        parent = parent.parentElement
+      ) {
+        counts.set(parent, (counts.get(parent) || 0) + 1);
+      }
+    }
+    let nav = null;
+    let best = 1;
+    for (const [el, count] of counts) {
+      if (count > best) {
+        best = count;
+        nav = el;
+      }
+    }
+    if (!nav) return;
+
+    // Mark it for the stylesheet, which sets the row/column for the layout.
+    ledger(nav, 'bitbucket-nav', () => ({
+      restore: () => nav.removeAttribute('data-gs-bb-nav'),
+    }));
+    nav.setAttribute('data-gs-bb-nav', '');
+
+    // Relabel the items inside the bar, whole-label only, as the NAV pass does.
+    const map = repoPage ? UX.NAV[t] || {} : BITBUCKET_PROFILE_MAP[t] || {};
+    for (const el of items) {
+      if (!nav.contains(el)) continue;
+      for (const text of textNodes(el)) {
+        const label = text.nodeValue.trim();
+        const to = Object.keys(map).find((from) =>
+          UX.labelMatches(label, from),
+        );
+        if (!to) continue;
+        rememberText(text);
+        const next = text.nodeValue.replace(label, map[to]);
+        if (text.nodeValue !== next) text.nodeValue = next;
+        break;
+      }
+    }
+  }
+
   rt.once('project', () => {
     rt.globalPasses.push(
       paintGiteaNav,
+      paintBitbucketNav,
       paintMetadata,
       paintAboutExtras,
       paintHeadings,

@@ -1103,6 +1103,25 @@ html.gs-theme-bitbucket
   display: contents !important;
 }
 
+/* --------------------- Bitbucket source · repo bar -- */
+
+/* Bitbucket Cloud's repository bar is a horizontal row of buttons whose classes
+   are hashed, so `paintBitbucketNav` finds it by content and marks it
+   `data-gs-bb-nav`. Under the GitLab layout it becomes a sidebar, as GitLab's
+   own project nav is; under the GitHub layout it stays the row GitHub shows. */
+html.gs-layout-gitlab [data-gs-bb-nav] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+html.gs-layout-github [data-gs-bb-nav] {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+}
+
 /* ------------------------------------------------------------ heatmaps -- */
 
 /* GitHub's contribution graph is green; GitLab's activity graph is indigo.

@@ -77,6 +77,10 @@
       'Pull requests': 'Merge requests',
       Insights: 'Analytics',
       Projects: 'Issue boards',
+      // A Bitbucket source's repository bar.
+      Source: 'Repository',
+      Pipelines: 'CI/CD',
+      'Jira issues': 'Work items',
     },
     github: {
       Repository: 'Code',
@@ -86,6 +90,9 @@
       'Merge requests': 'Pull requests',
       Analytics: 'Insights',
       'Issue boards': 'Projects',
+      // A Bitbucket source's repository bar.
+      Source: 'Code',
+      'Jira issues': 'Issues',
     },
     // Bitbucket's repo tabs. GitHub/Gitea say "Code"/"Actions"; GitLab says
     // "Repository"/"CI/CD"; all become "Source"/"Pipelines". Issues live in Jira
@@ -100,6 +107,30 @@
       'Work items': 'Jira issues',
     },
   };
+
+  // Bitbucket Cloud's repository bar, by its displayed labels. Its classes are
+  // hashed, so a pass finds the bar by content — the ancestor holding the most
+  // of these — rather than by a selector that would rot. Both the source's own
+  // words and the applied product's are listed: the copy pass relabels some of
+  // them before this runs.
+  const BITBUCKET_NAV_WORDS = [
+    'Source',
+    'Repository',
+    'Code',
+    'Commits',
+    'Branches',
+    'Pull requests',
+    'Merge requests',
+    'Pipelines',
+    'CI/CD',
+    'Actions',
+    'Deployments',
+    'Jira issues',
+    'Issues',
+    'Work items',
+    'Security',
+    'Downloads',
+  ];
 
   // Exact labels on *controls* — buttons, menu items, tabs, links — that name a
   // GitHub/GitLab feature differently but should never be rewritten in prose.
@@ -1175,6 +1206,7 @@
     NAV_GROUPS,
     NAV_HIDE,
     NAV_KEEP,
+    BITBUCKET_NAV_WORDS,
     LABELS,
     CHROME,
     UNMAPPED,
