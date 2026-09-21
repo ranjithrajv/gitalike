@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- The computed-style parity gate scores against a **reviewed, skin-independent
+  reference** now (`tests/fixtures/target-chrome.json`): the target products'
+  real header / canvas / link colours, not the applied skin's own `--gs-*`
+  variables, so the score measures fidelity to the product rather than
+  self-consistency. The gate also fails when a skin's header or canvas is the
+  wrong colour, and `tests/compare/target-chrome.test.mjs` pins the light
+  palettes to the same fixture offline (`tools/compare/style-parity.mjs`).
 - A **Bitbucket-source page now repaints** under the GitHub and GitLab UIs.
   Bitbucket Cloud exposes Atlassian's `--ds-*` design tokens on `<html>`, so the
   shared token layer re-points the semantic ones — surfaces, text, links,

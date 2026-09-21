@@ -1,0 +1,27 @@
+{
+  "note": "The target products' real chrome colours, reviewed by hand — the independent reference `tools/compare/style-parity.mjs` scores a skinned page against, instead of the applied skin's own `--gs-*` variables. `tests/compare/target-chrome.test.mjs` pins each skin's light palette to this table, so a token edit without a fixture update fails in CI. Update this file (and its asOf date) when a product's design system moves, and say where the value came from in `provenance`.",
+  "asOf": "2026-09-21",
+  "products": {
+    "github": {
+      "header": "#25292e",
+      "canvas": "#ffffff",
+      "link": "#0969da",
+      "accent": "#0969da",
+      "provenance": "Primer — header dark surface, canvas-default, and the accent blue (fgColor-accent)"
+    },
+    "gitlab": {
+      "header": "#fbfafd",
+      "canvas": "#ffffff",
+      "link": "#1068bf",
+      "accent": "#1f75cb",
+      "provenance": "Pajamas — header surface, canvas-default, and GitLab's link / accent blue"
+    },
+    "bitbucket": {
+      "header": "#0049b0",
+      "canvas": "#ffffff",
+      "link": "#0052cc",
+      "accent": "#0052cc",
+      "provenance": "Atlassian — the archived bitbucket.org theme-color bar with the accent blue; live pages now serve a cookie banner ahead of the app bar (see README known limitations)"
+    }
+  }
+}
