@@ -23,12 +23,23 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import './plugins.mjs';
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SKINS_DIR = join(root, 'src/plugins/skins');
 const SOURCES_DIR = join(root, 'src/plugins/sources');
 const BACKGROUND_FILE = join(root, 'src/background.js');
 const POPUP_FILE = join(root, 'src/popup/popup.html');
 const LOADER_FILE = join(root, 'tools/plugins.mjs');
+const CAPTURES_FILE = join(root, 'tools/compare/captures.mjs');
+const RECIPES_FILE = join(root, 'tools/compare/style-recipes.mjs');
+
+const PLUGINS = globalThis.GITALIKE_PLUGINS;
+const SITES = globalThis.GITALIKE;
+
+/** The skins a source can wear: every skin except the one it already is. */
+const skinsFor = (name) =>
+  Object.keys(PLUGINS.skins).filter((skin) => skin !== name);
 
 // Distinct markers, because `background.js` has two lists to insert into.
 const ANCHORS = {
@@ -36,7 +47,65 @@ const ANCHORS = {
   css: '// plugins:css-anchor',
   html: '<!-- plugins:anchor',
   loader: '// plugins:anchor',
+  capture: '// plugins:capture-anchor',
+  project: '// plugins:project-anchor',
+  profile: '// plugins:profile-anchor',
+  projectVocab: '// plugins:project-vocab-anchor',
+  profileVocab: '// plugins:profile-vocab-anchor',
 };
+
+// The comparison recipes a plugin must have (tools/compare): a capture to
+// screenshot, style-parity selectors, and — for a skin — the target vocabulary.
+// They are stubs to fill in, but they satisfy the contract (`npm test`), so a
+// new plugin is never silently absent from a parity table.
+function captureStub(name, label, host) {
+  const overlay = (skin, suffix) =>
+    `        { setting: { ${name}: '${skin}' }, over: '${name}${suffix}-${skin}.png' },`;
+  const projectSkins = skinsFor(name)
+    .map((skin) => overlay(skin, ''))
+    .join('\n');
+  const profileSkins = skinsFor(name)
+    .map((skin) => overlay(skin, '-profile'))
+    .join('\n');
+  const instance = SITES.isBuiltin(host)
+    ? ''
+    : `\n    instance: { host: '${host}', kind: '${name}' },`;
+  return `  {
+    key: '${name}',
+    prefix: '${name}',
+    host: '${host}',${instance}
+    project: {
+      name: '${label} project page',
+      url: 'https://${host}/TODO',
+      ready: 'TODO',
+      base: '${name}-default.png',
+      skins: [
+${projectSkins}
+      ],
+    },
+    profile: {
+      name: '${label} profile page',
+      url: 'https://${host}/TODO',
+      ready: 'TODO',
+      base: '${name}-profile-default.png',
+      skins: [
+${profileSkins}
+      ],
+    },
+  },`;
+}
+
+function selectorStub(name, host) {
+  return `  ${name}: {
+    url: 'https://${host}/TODO',
+    ready: 'TODO',
+    header: [],
+    nav: [],
+    link: ['a[href]'],
+  },`;
+}
+
+const vocabStub = (name) => `  ${name}: ['TODO'],`;
 
 // The name is the storage/theme key and the folder name, so it has to be a plain
 // lowercase token. Reserving the same shape for a source keeps the two
@@ -156,6 +225,17 @@ function sourceContent(name, label) {
         keys: ['repoNavList'],
       },
     ],
+
+    // TODO: how much of each parity dimension this source can be credited
+    // (a fraction in [0, 1]); see tools/compare/parity-score.mjs.
+    compare: {
+      palette: 0,
+      nav: 0,
+      page: 0,
+      metadata: 0,
+      profile: 0,
+      refs: 0,
+    },
   });
 })();
 `;
@@ -290,19 +370,26 @@ async function scaffoldSkin(name, flags) {
     `import '../src/plugins/skins/${name}/index.js';`,
   );
 
+  // The target vocabulary style-parity scores against, one per page type.
+  await insertBeforeAnchor(RECIPES_FILE, ANCHORS.projectVocab, vocabStub(name));
+  await insertBeforeAnchor(RECIPES_FILE, ANCHORS.profileVocab, vocabStub(name));
+
   return {
     what: `the ${product} skin (${dir}/)`,
     notes: [
       `palette: fill in ${dir}/as-${name}.css (light and .gs-dark) and its --gs-mark`,
       'vocabulary: the UX tests name the labels this skin does not translate yet',
       `tests: ${dir}/${name}.test.mjs runs with \`npm test\``,
-      'parity: add a reviewed tests/fixtures/target-chrome.json entry and list the skin in tools/compare',
+      `parity vocab: replace the TODO in PROJECT_VOCAB/PROFILE_VOCAB (${name}) in tools/compare/style-recipes.mjs`,
+      "compare: add the new skin to every source's capture `skins` in tools/compare/captures.mjs and run `npm run screenshots`; `npm test` names each",
+      'parity colours: add a reviewed tests/fixtures/target-chrome.json entry and list the skin in tools/compare',
     ],
   };
 }
 
 async function scaffoldSource(name, flags) {
   const label = flags.label ?? titleCase(name);
+  const host = flags.host ?? `${name}.example.com`;
   const dir = `src/plugins/sources/${name}`;
   await write(join(root, dir, 'index.js'), sourceContent(name, label));
   await write(join(root, dir, `${name}.test.mjs`), sourceTest(name, label));
@@ -312,14 +399,33 @@ async function scaffoldSource(name, flags) {
     `import '../src/plugins/sources/${name}/index.js';`,
   );
 
+  // The comparison recipes: a capture to screenshot and style-parity selectors.
+  await insertBeforeAnchor(
+    CAPTURES_FILE,
+    ANCHORS.capture,
+    captureStub(name, label, host),
+  );
+  await insertBeforeAnchor(
+    RECIPES_FILE,
+    ANCHORS.project,
+    selectorStub(name, host),
+  );
+  await insertBeforeAnchor(
+    RECIPES_FILE,
+    ANCHORS.profile,
+    selectorStub(name, host),
+  );
+
   return {
     what: `the ${label} source (${dir}/)`,
     notes: [
       `hooks: replace the TODO selectors in ${dir}/index.js`,
       `canary: point the ${label} canary page at a real instance`,
+      `compare: fill in the TODO url/ready in tools/compare/style-recipes.mjs and tools/compare/captures.mjs (${name})`,
+      `capabilities: set the ${name} \`compare\` values in ${dir}/index.js`,
       `tests: ${dir}/${name}.test.mjs runs with \`npm test\``,
       'nav: add a navRules entry to each skin that should reorder this source',
-      'host: for a forge people host, add a builtin/SOURCES entry in src/lib/sites.js',
+      'host: for a forge people host, add a builtin entry in src/lib/sites.js',
     ],
   };
 }
@@ -328,7 +434,7 @@ const [kind, name, ...rest] = process.argv.slice(2);
 
 if (!['skin', 'source'].includes(kind) || !name) {
   console.error(
-    'usage: node tools/new-plugin.mjs <skin|source> <name> [--product P] [--badge BG] [--color #rrggbb] [--label L]',
+    'usage: node tools/new-plugin.mjs <skin|source> <name> [--product P] [--badge BG] [--color #rrggbb] [--label L] [--host H]',
   );
   process.exitCode = 1;
 } else if (!NAME_RE.test(name)) {

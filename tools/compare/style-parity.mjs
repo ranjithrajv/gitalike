@@ -41,6 +41,12 @@ import { fileURLToPath } from 'node:url';
 
 import { launch, retry, waitForTheme } from './harness.mjs';
 import { SOURCES as CAPTURE_SOURCES } from './captures.mjs';
+import {
+  PROJECT_SELECTORS,
+  PROFILE_SELECTORS,
+  PROJECT_VOCAB,
+  PROFILE_VOCAB,
+} from './style-recipes.mjs';
 import '../plugins.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -93,137 +99,11 @@ const REPO_WORDS = [
   'Security',
 ];
 
-// Where each source's project page keeps its chrome. The *source list* comes
-// from captures.mjs, so every tool and both page types cover the same sources;
-// only the selectors live here. Selector lists resolve in order — a rebuilt
-// element wins over a leftover one.
-const PROJECT_SELECTORS = {
-  github: {
-    url: 'https://github.com/git/git',
-    ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
-    header: ['header[role="banner"]', '.AppHeader'],
-    nav: [
-      'nav[aria-label="Repository"] ul.UnderlineNav-body',
-      'nav[aria-label="Repository"] ul',
-    ],
-    link: ['#readme a[href]', '.markdown-body a[href]', 'main a[href]'],
-  },
-  gitlab: {
-    url: 'https://gitlab.com/gitlab-org/gitlab',
-    ready: '.super-sidebar, [data-testid="project-header"]',
-    header: ['header', '.header-content'],
-    nav: [
-      '[data-gs-project-tabs]',
-      '.super-sidebar [data-testid="nav-container"] ul',
-      '.super-sidebar ul',
-    ],
-    link: ['#readme a[href]', '.md a[href]', 'main a[href]'],
-  },
-  gitea: {
-    url: 'https://codeberg.org/forgejo/forgejo',
-    ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
-    header: ['#navbar'],
-    nav: ['[data-gs-gitea-nav]', 'overflow-menu .overflow-menu-items'],
-    link: ['#readme a[href]', '.markdown a[href]', 'main a[href]'],
-  },
-  // Bitbucket is a source too, repainted through its Atlassian `--ds-*` tokens
-  // (`themes/gs-tokens.css`) and relabelled/reoriented by `paintBitbucketNav`.
-  bitbucket: {
-    url: 'https://bitbucket.org/atlassian/atlassian-connect-express/src/master/',
-    ready: '[data-testid="ref-selector-trigger"]',
-    header: ['header[data-layout-slot="true"]', 'header'],
-    nav: [
-      '[data-gs-bb-nav]',
-      '[data-testid="bb-sidebar"]',
-      '[data-testid="sidebar"]',
-      'nav',
-    ],
-    link: ['main a[href]', 'a[href]'],
-  },
-  // Gerrit is not a bundled host; this run grants it and registers it as the
-  // `gerrit` kind (see the `instance` handling below). Its chrome lives inside
-  // `gr-app`'s open shadow root, so `readChrome` below descends into shadow
-  // roots to find it.
-  gerrit: {
-    url: 'https://gerrit-review.googlesource.com/q/status:open',
-    ready: 'gr-app#pg-app',
-    header: ['gr-main-header'],
-    nav: ['gr-main-header nav', 'nav'],
-    link: ['main a[href]', 'a[href]'],
-  },
-};
-
 const PROJECT_SOURCES = CAPTURE_SOURCES.map((source) => ({
   key: source.key,
   host: source.host,
   ...PROJECT_SELECTORS[source.key],
 }));
-
-// A profile page's selectors differ from the project page's, so each source
-// overrides url / ready / header / nav / link here. The profile sources are then
-// derived from PROJECT_SOURCES, so both page types always cover the same sources
-// — which is how Codeberg stays in the profile comparison.
-const PROFILE_SELECTORS = {
-  github: {
-    url: 'https://github.com/torvalds',
-    ready: 'nav[aria-label="User profile"]',
-    header: ['header[role="banner"]', '.AppHeader'],
-    nav: [
-      'main [data-turbo-frame="user-profile-frame"] nav[aria-label="User profile"]',
-      'nav[aria-label="User profile"]',
-    ],
-    link: [
-      '.js-pinned-items-reorder-container a[href]',
-      '.p-note a[href]',
-      '.js-profile-editable-area a[href]',
-      'main article a[href]',
-    ],
-  },
-  gitlab: {
-    url: 'https://gitlab.com/dzaporozhets',
-    ready: '.super-sidebar, .user-profile-header',
-    header: ['header', '.header-content'],
-    nav: ['.super-sidebar .gl-scroll-scrim ul', '.super-sidebar ul'],
-    link: [
-      '.user-profile a[href]',
-      '.profile-readme a[href]',
-      'main article a[href]',
-    ],
-  },
-  gitea: {
-    url: 'https://codeberg.org/forgejo',
-    ready: '.user.profile, .profile-header, .ui.container',
-    header: ['#navbar'],
-    nav: [
-      '.ui.tabular.menu',
-      '.ui.secondary.pointing.menu',
-      'nav',
-      '.ui.container',
-    ],
-    link: ['#readme a[href]', '.markdown a[href]', 'main a[href]'],
-  },
-  bitbucket: {
-    url: 'https://bitbucket.org/tutorials/workspace/repositories/',
-    ready: '[data-testid="profile-repository-row"]',
-    header: ['header[data-layout-slot="true"]', 'header'],
-    nav: [
-      '[data-gs-bb-nav]',
-      '[data-testid="bb-sidebar"]',
-      '[data-testid="sidebar"]',
-      'nav',
-    ],
-    link: ['main a[href]'],
-  },
-  // Gerrit has no public profile; its closest list page is a change list scoped
-  // to one project.
-  gerrit: {
-    url: 'https://gerrit-review.googlesource.com/q/project:gerrit+status:open',
-    ready: 'gr-app#pg-app',
-    header: ['gr-main-header'],
-    nav: ['gr-main-header nav', 'nav'],
-    link: ['main a[href]', 'a[href]'],
-  },
-};
 
 const PROFILE_SOURCES = PROJECT_SOURCES.map((source) => ({
   ...source,
@@ -247,36 +127,6 @@ const PROFILE_WORDS = [
   'Contributed projects',
   'Starred projects',
 ];
-
-// The navigation shape a target is built to comes from the skin's own `layout`
-// (github = top bar + row, gitlab = left sidebar), so it is not restated here.
-// The words its menu carries are a reviewed list per page type. Both are keyed
-// over the registry's skins, so a new skin is measured without an edit here.
-const PROJECT_VOCAB = {
-  github: ['Code', 'Pull requests', 'Actions', 'Insights', 'Projects'],
-  gitlab: [
-    'Repository',
-    'Merge requests',
-    'CI/CD',
-    'Analytics',
-    'Issue boards',
-  ],
-  bitbucket: ['Source', 'Pull requests', 'Pipelines'],
-};
-const PROFILE_VOCAB = {
-  github: ['Overview', 'Repositories', 'Projects', 'Packages', 'Stars'],
-  gitlab: [
-    'Activity',
-    'Groups',
-    'Contributed projects',
-    'Personal projects',
-    'Starred projects',
-    'Snippets',
-    'Followers',
-    'Following',
-  ],
-  bitbucket: ['Overview', 'Repositories', 'Projects', 'Snippets'],
-};
 
 const targetFor = (skin, vocab) => ({
   layout: SITES.skins[skin].layout === 'github' ? 'row' : 'column',

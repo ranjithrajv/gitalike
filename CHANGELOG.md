@@ -59,6 +59,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A shared test loader (`tools/plugin-test.mjs`) for the per-plugin tests, and
   `src/plugins/core.test.mjs` for the plugin API's own acceptance and rejection
   cases.
+- A **compare-recipe contract** (`tests/compare/recipes.test.mjs`): every
+  registry source must have a capture recipe (or a documented exclusion),
+  project and profile style-parity selectors, and all of its `compare`
+  capabilities, and every skin a target vocabulary. `tools/new-plugin.mjs`
+  scaffolds them — a capture stub, selector stubs, the `compare` block and the
+  vocab entries — so a new plugin is never silently absent from a parity table;
+  the contract names whatever is still missing.
 
 ### Changed
 

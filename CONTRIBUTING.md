@@ -335,8 +335,10 @@ and is added one instance at a time. **More are wanted.** Sourcehut is a genuine
 new *source* forge (one people host) also needs classifying. Either way,
 `tests/contracts.test.mjs` is the checklist — it fails with the pieces still
 missing — and `node tools/new-plugin.mjs source <name>` writes the folder (its
-definition and a test). Classifying a host and adding the vocabulary are the
-parts that still need judgement. [`PLUGINS.md`](PLUGINS.md) is the generated
+definition, a test, and stubs for its `compare` capabilities and its capture and
+style-parity recipes). Classifying a host and adding the vocabulary are the
+parts that still need judgement, and `tests/compare/recipes.test.mjs` is the
+compare-side checklist. [`PLUGINS.md`](PLUGINS.md) is the generated
 author catalog, and `npm run plugins` prints the registry.
 
 ### A forge that already speaks one of the two dialects
@@ -392,7 +394,7 @@ steps 1–4 for you; the rest is the part that needs judgement.
 | 2 | `src/plugins/skins/<name>/as-<name>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
 | 3 | `src/plugins/skins/<name>/<name>.test.mjs` | the skin's own tests, beside it. `npm test` discovers them; the cross-skin invariants stay in `tests/ux.test.mjs` |
 | 4 | load lists | the entry is added to `PLUGIN_JS` and `CONTENT_CSS` in `src/background.js`, `src/popup/popup.html` and `tools/plugins.mjs`; the Firefox manifest derives its list from the folder. `tools/new-plugin.mjs` does this for you |
-| 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and `npm run registry` to relist it in the site, `plugins.json` and `PLUGINS.md` |
+| 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the target vocabulary in `tools/compare/style-recipes.mjs` (scaffolded as a `TODO`), and a capture variant on every source in `tools/compare/captures.mjs` plus `npm run screenshots`; `npm run registry` relists it in the site, `plugins.json` and `PLUGINS.md`. `tests/compare/recipes.test.mjs` names anything missing |
 
 The completeness gate is **`tests/contracts.test.mjs`**: it derives the skin and
 source lists and fails with the parts a new one is still missing, by name. Run

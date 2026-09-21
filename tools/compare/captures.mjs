@@ -212,6 +212,7 @@ export const SOURCES = [
       ],
     },
   },
+  // plugins:capture-anchor — tools/new-plugin.mjs inserts a source recipe above.
 ];
 
 /**
