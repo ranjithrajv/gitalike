@@ -1,5 +1,5 @@
 /**
- * Unit tests for tools/captures.mjs — the capture tables that three things have
+ * Unit tests for tools/compare/captures.mjs — the capture tables that three things have
  * to agree on: the table, the PNGs on disk, and the `<picture>` blocks in
  * docs/index.html. It is the same idiom as the `// css` selector test: one place
  * declares the contract, a test proves the others still match it.
@@ -13,14 +13,18 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 
-import { PROFILE_JOBS, PROJECT_JOBS, STORE_SHOTS } from '../tools/captures.mjs';
+import {
+  PROFILE_JOBS,
+  PROJECT_JOBS,
+  STORE_SHOTS,
+} from '../../tools/compare/captures.mjs';
 
 const docsJobs = [...PROJECT_JOBS, ...PROFILE_JOBS];
 const captureFiles = (job) => [job.base, ...job.skins.map((skin) => skin.over)];
 const page = () =>
-  readFileSync(new URL('../docs/index.html', import.meta.url), 'utf8');
+  readFileSync(new URL('../../docs/index.html', import.meta.url), 'utf8');
 const onDisk = (file) =>
-  existsSync(new URL(`../docs/${file}`, import.meta.url));
+  existsSync(new URL(`../../docs/${file}`, import.meta.url));
 
 // Names index.html uses that are not captures.
 const PAGE_ASSETS = new Set(['icon-32.png', 'icon-128.png', 'og.png']);
@@ -38,7 +42,7 @@ describe('capture tables', () => {
     for (const shot of STORE_SHOTS) {
       assert.ok(
         existsSync(
-          new URL(`../store/screenshots/${shot.file}`, import.meta.url),
+          new URL(`../../store/screenshots/${shot.file}`, import.meta.url),
         ),
         `${shot.file} exists`,
       );

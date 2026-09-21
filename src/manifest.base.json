@@ -8,7 +8,8 @@
     "*://github.com/*",
     "*://gitlab.com/*",
     "*://codeberg.org/*",
-    "*://gitea.com/*"
+    "*://gitea.com/*",
+    "*://bitbucket.org/*"
   ],
   "optional_host_permissions": ["*://*/*"],
   "action": {

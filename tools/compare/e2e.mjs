@@ -9,7 +9,7 @@
  * shortcut, the Gitea tab reorder, the Bitbucket skin in place of GitHub's, and
  * a clean revert.
  *
- *   node tools/e2e.mjs
+ *   node tools/compare/e2e.mjs
  *
  * Only `playwright-core` is needed — the browser is the system Chromium, so
  * nothing is downloaded. Point at a different browser with `GS_CHROME=...`.

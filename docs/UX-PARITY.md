@@ -7,15 +7,17 @@ is the map and the scorecard.
 ## Skins
 
 A skin is a *target* UI — its key is the `html.gs-theme-<name>` class and its
-stylesheet is `themes/as-<name>.css`. There are three: **GitLab** and **GitHub**,
-which the two source products are shown with, and **Bitbucket**, which is a
-target only (no host is classified as it) and can be worn by any source. A skin
+stylesheet is `themes/as-<name>.css`. There are three: **GitLab**, **GitHub** and
+**Bitbucket**. Bitbucket is both a target and a source — a Bitbucket host wears
+the GitHub or GitLab UI, and any source can be pinned to the Bitbucket UI.
+Gerrit is a source only. A skin
 names the shape it is built to in `SITES.skins[<name>].layout` (`github` = top
 bar + tab row, `gitlab` = left sidebar); Bitbucket's repo nav is a left
-sidebar, so it reuses GitLab's, and the structural passes and the shared layout
-CSS apply unchanged while only its palette, words and tab set differ. The
-directional tables below still describe the two-way pair; Bitbucket's are in
-`src/lib/ux.js` under `bitbucket` and are covered by `tests/ux.test.mjs`.
+sidebar, so it reuses GitLab's layout, but its menu is flat — grouping follows
+the skin, so it gets no GitLab group headings — and only its palette, words and
+tab set differ. The directional tables below still describe the two-way pair;
+Bitbucket's are in `src/lib/ux.js` under `bitbucket` and are covered by
+`tests/ux.test.mjs`.
 
 ## Directions
 
@@ -25,6 +27,13 @@ directional tables below still describe the two-way pair; Bitbucket's are in
   (`html.gs-theme-github`, `themes/as-github.css`)
 - **→B** — any source shown with the Bitbucket UI
   (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`, layout `gitlab`)
+- **B→G / B→L** — a Bitbucket source shown with the GitHub or GitLab UI.
+  Bitbucket has no structural CSS or selectors yet (its page is a client-rendered
+  SPA with no capturable public repository page), so this is the
+  source-agnostic passes only: copy, control labels and reference markers.
+- **Ger→G / Ger→L** — a Gerrit source shown with the GitHub or GitLab UI. Same
+  vocabulary-only treatment as Bitbucket, and without even the reference-marker
+  support: Gerrit identifies a change by number/Change-Id, not a `#`/`!` marker.
 
 ## Status
 
@@ -56,6 +65,120 @@ Legend: ✅ done · ❌ not built
 `gitea`. They are GitHub-flavoured, so they can wear either UI: under the GitLab
 UI the repo tabs are rebuilt as a grouped sidebar, and under the GitHub UI as
 GitHub's tab row. See [Codeberg / Gitea](#codeberg--gitea).
+
+## Parity scoring
+
+The status matrix above says *what exists*. This scores how much of the imitated
+product's own surface a given source actually reproduces under each skin: the
+weighted share of the target product's page that the skin matches, out of 10.
+It is a coverage estimate, not a quality judgement, and it says nothing about
+the source's own features — only how closely the applied UI reads as the product
+it is pretending to be.
+
+The score is derived from the tables in `src/lib/ux.js` and the pass gating in
+`src/content/ux-*.js`, not measured. Each page type has its own rubric, a set of
+weighted dimensions; a cell is the sum of (weight × share reproduced), rounded
+to one decimal.
+
+**Project pages** — palette & tokens 12; navigation orientation 18; nav labels
+10; nav order 8; nav groups 6; nav keep/hide 10; metadata block & heading 12;
+control labels 6; reference markers 5; no-counterpart markers 5; shortcuts 8.
+
+**Profile pages** — palette & activity-graph palette 12; orientation 16; rebuilt
+profile menu 20; identity/card reshape 12; pinned/landing heading 5; account
+chrome 8; copy & control labels 8; no-counterpart markers 6; reference markers
+5; shortcuts 8.
+
+A source shown with its own UI is the native pair: no skin is painted, so every
+dimension is satisfied and the score is 10.0. There is no `—`.
+"Open on the other host" is left out of the score in both rubrics: it is
+theme-independent, and it is absent on profiles by design.
+
+`Codeberg` and `gitea.com` are the Gitea/Forgejo sources; `bitbucket.org` is the
+Bitbucket source; Gerrit has no bundled host (its instances are added one origin
+at a time from the popup).
+
+### Project pages, sources × skins
+
+| Source ↓ / Skin → | GitHub UI | GitLab UI | Bitbucket UI |
+| --- | :--: | :--: | :--: |
+| **GitHub** | 10.0 | 9.7 | 8.4 |
+| **GitLab** | 9.7 | 10.0 | 8.4 |
+| **Gitea / Forgejo** | 8.1 | 7.9 | 8.0 |
+| **Bitbucket** | 2.6 | 2.0 | 10.0 |
+| **Gerrit** | 2.2 | 1.6 | 2.2 |
+
+### Profile pages, sources × skins
+
+| Source ↓ / Skin → | GitHub UI | GitLab UI | Bitbucket UI |
+| --- | :--: | :--: | :--: |
+| **GitHub** | 10.0 | 9.9 | 6.7 |
+| **GitLab** | 9.5 | 10.0 | 6.7 |
+| **Gitea / Forgejo** | 5.0 | 5.0 | 4.3 |
+| **Bitbucket** | 2.5 | 2.5 | 10.0 |
+| **Gerrit** | 2.1 | 2.1 | 2.1 |
+
+### Where the points are lost
+
+- **GitHub → GitLab, project (9.7)** — the reference direction. It loses only on
+  nav keep/hide, which is GitLab's hide-list rather than GitLab's full menu: a
+  GitHub DOM cannot grow the destinations GitLab has and GitHub does not.
+- **GitHub → Bitbucket, project (8.4)** — palette, nav words, order and the
+  keep-list map, with Bitbucket's flat sidebar. The metadata is GitLab's block
+  rather than a captured Bitbucket shape, no shortcut table exists for Bitbucket,
+  and the issue-reference marker is partial.
+- **GitLab → GitHub, project (9.7)** — a full rebuild; the only loss is `g n`
+  (notifications ⇄ todos), which has no navigation link to click and so is
+  G→L only.
+- **GitLab → Bitbucket, project (8.4)** — the sidebar, tab words, order and
+  keep-list map, with Bitbucket's flat menu. The metadata, reference and shortcut
+  dimensions are partial for Bitbucket.
+- **Gitea → GitHub (8.1) / GitLab (7.9)** — the repo nav is rebuilt or restyled
+  and reordered, but Gitea's description and topics keep Gitea's placement and
+  its own `g`-combos are left alone, costing the metadata and shortcut
+  dimensions. The GitHub UI edges it because Gitea is GitHub-flavoured and
+  GitHub's whitelist matches its menu more closely than GitLab's hide-list.
+- **Gitea → Bitbucket, project (8.0)** — Bitbucket's flat sidebar is the closest
+  fit to Gitea's rebuilt nav, so the structure tracks the target best of the
+  three; metadata, references and shortcuts are again the losses.
+- **GitHub → GitLab (9.9) / GitLab → GitHub (9.5), profile** — the rail, the
+  re-shaped card and the rebuilt menu all land. The deductions are the one thing
+  neither source can supply: GitLab has no pinning, so "Personal projects" is
+  still GitHub's pinned selection, and GitHub's Pinned section has no GitLab
+  data. `g n` is the other deduction in the L→G direction.
+- **GitHub / GitLab → Bitbucket, profile (6.7)** — the menu is rebuilt from
+  Bitbucket's own destinations, but Bitbucket has no public profile of its own,
+  so the identity card is not re-shaped (the rail and stats passes are
+  GitLab/GitHub only) and shortcuts are unmapped.
+- **Gitea → any skin, profile (4.3–5.0)** — the profile passes are keyed to
+  GitHub's and GitLab's profile markup (`SELECTORS.github.profile*`,
+  `SELECTORS.gitlab.profile*`), so a Gitea/Forgejo profile gets the shared
+  palette, copy, account-chrome and reference-marker work but none of the menu,
+  rail or card rebuilding. This is the largest scoring gap, and the docs make no
+  profile claim for Gitea/Forgejo; the captures agree — there is no
+  `codeberg-profile-*.png` in `docs/`.
+- **Bitbucket as a source (2.6 / 2.0 project, 2.5 profile)** — the lowest row,
+  and deliberately so: a Bitbucket host can wear the GitHub or GitLab UI, but
+  only the source-agnostic passes run — copy, control labels, account chrome and
+  reference markers (its `/pull-requests/N` routes are matched). There is no
+  token block, `SELECTORS` entry or `NAV_RULES` rule for Bitbucket markup, so
+  palette, orientation, navigation, metadata and shortcuts are near zero. That
+  is a statement about missing markup coverage, not a bug: Bitbucket Cloud is a
+  client-rendered SPA and serves no capturable public repository page, so its
+  structural hooks cannot be verified the way GitHub's, GitLab's and Gitea's
+  are. The diagonal is 10.0 because a source on its own UI needs no
+  transformation.
+- **Gerrit as a source (2.2 / 1.6 project, 2.1 profile)** — the same story as
+  Bitbucket, one notch lower: Gerrit's PolyGerrit UI is client-rendered, there is
+  no bundled host (instances are added one origin at a time), and even the
+  reference markers do not carry over — Gerrit identifies a change by its change
+  number (`/c/<project>/+/<N>`) and a Change-Id, not a `#`/`!` pull-request
+  number — so the `refs` dimension is partial too. Copy and control labels are
+  the only passes that reach it.
+
+The scores are computed by `tools/compare/parity-score.mjs` (`npm run parity`, or
+`npm run parity -- --detail` for the per-dimension breakdown) and
+`tests/parity-score.test.mjs` fails if this section and the module disagree.
 
 ## Copy
 

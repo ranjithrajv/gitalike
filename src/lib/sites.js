@@ -27,6 +27,10 @@
     // carries a token block for them (see "Gitea / Forgejo").
     'codeberg.org': 'github',
     'gitea.com': 'github',
+    // Bitbucket is a source product as well as a target: a Bitbucket host can
+    // wear the GitHub or GitLab UI. Its markup is its own, so a Bitbucket site
+    // wearing the Bitbucket UI is its own UI (a no-op), the same way GitHub is.
+    'bitbucket.org': 'bitbucket',
   };
 
   /**
@@ -73,6 +77,11 @@
   const kinds = {
     github: { theme: 'gitlab' },
     gitlab: { theme: 'github' },
+    // Bitbucket and Gerrit are sources too. There is no single "other" product
+    // for a third or fourth kind, so they default to the GitHub UI; the popup
+    // can pick either.
+    bitbucket: { theme: 'github' },
+    gerrit: { theme: 'github' },
   };
 
   const isKind = (value) => Object.hasOwn(kinds, value);

@@ -53,7 +53,7 @@ another permission needs a very good argument.
 npm install          # dev-only deps; also installs the git hooks
 npm run build        # -> dist/chromium and dist/firefox
 npm test             # unit tests, no browser needed
-node tools/e2e.mjs   # Playwright end-to-end test against the live sites
+node tools/compare/e2e.mjs   # Playwright end-to-end test against the live sites
 npm run lint         # web-ext lint over the Firefox build
 npm run lint:js      # oxlint (Vite+ / Oxc) over src, tools and tests
 npm run fmt          # oxfmt — format the code in place
@@ -79,7 +79,7 @@ standard library, and the tests use Node's built-in `node:test`. Four dev
 dependencies exist: [`web-ext`](https://github.com/mozilla/web-ext) for
 `npm run lint` and `npm run package`,
 [`playwright-core`](https://playwright.dev/) for `npm run screenshots` and
-`node tools/e2e.mjs` (both drive the system Chromium and download no browser of
+`node tools/compare/e2e.mjs` (both drive the system Chromium and download no browser of
 their own), and the **[Vite+](https://viteplus.dev)/Oxc** pair
 [`oxlint`](https://oxc.rs/docs/guide/usage/linter) and
 [`oxfmt`](https://oxc.rs/docs/guide/usage/formatter) for `npm run lint:js` and
@@ -181,7 +181,7 @@ prefix at all. A manifest match pattern cannot wildcard a host's middle —
 time for *every* instance.
 
 So the manifest grants only the bundled hosts (`github.com`, `gitlab.com`,
-`codeberg.org`, `gitea.com`), and declares
+`codeberg.org`, `gitea.com`, `bitbucket.org`), and declares
 `optional_host_permissions` for the rest. When you add an instance in the popup,
 it calls `permissions.request()` for that one origin — the Add a site click is a
 user gesture, so the browser allows it — and the origin is granted from then on.
@@ -304,11 +304,13 @@ in `themes/ux-nav.css`.
 
 ## Adding another forge — contributions welcome
 
-gitalike knows two source products, GitHub and GitLab, and paints three skins —
-GitLab, GitHub and Bitbucket. Codeberg (Forgejo) and gitea.com (Gitea) are
-bundled as GitHub-flavoured sources, shown with the GitLab UI. **More are
-wanted.** Sourcehut is a genuinely different product that needs its own skin; a
-new *source* forge (one people host) also needs classifying. There are two
+gitalike knows five source products — GitHub, GitLab, Gitea/Forgejo, Bitbucket
+and Gerrit — and paints three skins: GitLab, GitHub and Bitbucket. Codeberg
+(Forgejo) and gitea.com (Gitea) are bundled as GitHub-flavoured sources, shown
+with the GitLab UI; Bitbucket is bundled as its own source, shown with the GitHub
+UI. Gerrit is a source with no bundled host, added one instance at a time. **More
+are wanted.** Sourcehut is a genuinely different product that needs its own skin;
+a new *source* forge (one people host) also needs classifying. There are two
 levels, and the easy one is real work, not a consolation prize.
 
 ### A forge that already speaks one of the two dialects
@@ -350,9 +352,9 @@ it works out of the box.
 ### A genuinely different product
 
 Sourcehut is not GitHub with a different logo; it needs its own skin and its own
-vocabulary. **Bitbucket is the worked example**: it is a *target only* — no host
-is classified as Bitbucket — so it can be worn by any source. Adding a target
-means:
+vocabulary. **Bitbucket is the worked example**: it began as a *target only* —
+no host was classified as it, so it could be worn by any source — and is now a
+source in its own right as well. Adding a target means:
 
 | # | File | What goes there |
 | - | ---- | --------------- |
@@ -403,7 +405,7 @@ classification, vocabulary tables), and they need no browser.
 exactly the kind of edge case that is easy to miss — a bare host versus a URL, a
 refused `javascript:` string, a host that is unknown rather than merely off.
 
-`node tools/e2e.mjs` is the Playwright end-to-end test: it loads `dist/chromium`
+`node tools/compare/e2e.mjs` is the Playwright end-to-end test: it loads `dist/chromium`
 unpacked, turns both skins on through the extension's own storage, and asserts
 against the live sites — navigation orientation, relabelling, reference markers,
 no-counterpart badges, a keyboard shortcut, the Codeberg (Gitea) sidebar and tab
@@ -411,7 +413,7 @@ row, and a clean revert. It needs a build first (`npm run build:chromium`) and, 
 drives live sites, a network hiccup can fail a step; the summary names it and the
 exit code is non-zero.
 
-`npm run canary` (`tools/selector-canary.mjs`) is the live selector canary: a
+`npm run canary` (`tools/compare/selector-canary.mjs`) is the live selector canary: a
 plain `fetch` of the pages the skins are verified against, asserting the anchors
 they key on are still in the served HTML. The hooks are not written in the tool:
 it reads `SELECTORS` and `CANARY_PAGES` from `src/lib/ux.js`, the same table
@@ -432,7 +434,7 @@ Every claim in the README was checked rather than assumed. `dist/chromium` was
 loaded unpacked into Chromium and driven with Playwright against the live sites —
 `github.com/microsoft/vscode`, the `gitlab.com/gitlab-org/gitlab` project page,
 `code.swecha.org` — plus a local mock standing in for an enterprise host. The
-repeatable parts are `node tools/e2e.mjs`; the rest were checked by hand.
+repeatable parts are `node tools/compare/e2e.mjs`; the rest were checked by hand.
 
 Covered:
 
@@ -562,13 +564,17 @@ read.
 
 ## Pull requests
 
+The template at `.github/PULL_REQUEST_TEMPLATE.md` is the checklist below in
+short form — it is added to every new pull request, so work through it before
+you ask for review.
+
 - One concern per pull request.
 - **One branch or `git worktree` per session, and stage only your own paths.**
   This tree has been worked by more than one agent at once, and a bare
   `git add -A` / `git commit -a` swept one session's work into another's commit.
   See [MAINTENANCE.md](MAINTENANCE.md#working-in-a-shared-checkout).
 - `npm test && npm run lint && npm run lint:js && npm run fmt:check` must pass,
-  and `node tools/e2e.mjs` if you touched what it covers. The pre-commit gate
+  and `node tools/compare/e2e.mjs` if you touched what it covers. The pre-commit gate
   enforces these; do not treat
   `--no-verify` as a normal workflow.
 - Behaviour changes need a `README.md` update, and an entry under
@@ -601,7 +607,7 @@ To cut a release:
 
 ```sh
 npm test && npm run lint
-node tools/e2e.mjs
+node tools/compare/e2e.mjs
 npm run package              # dist/artifacts/*/gitalike_github_gitlab_ui-X.Y.Z.zip
 npm run screenshots          # refresh store/screenshots/
 ```
@@ -657,9 +663,14 @@ With none set, the release job just builds and attaches the ZIPs.
 
 ## Reporting an issue
 
-The popup's **Report a missed spot** link opens a prefilled issue with the host
-and the applied skin already filled in — nothing is read from the page. Fill in
-the rest; the most useful report includes:
+Two templates guide a report, and both are offered on `issues/new`: a **bug
+report** and a **feature request**. Blank issues are deliberately left on, so
+anything that fits neither is still welcome; the chooser also links the live
+preview, the README and this guide (`.github/ISSUE_TEMPLATE/`).
+
+The popup's **Report a missed spot** link opens the bug form with the host, the
+applied skin and the version already filled in — nothing is read from the page.
+Fill in the rest; the most useful report includes:
 
 - the host, and whether you were **signed in**;
 - the site's theme (light or dark) — they are separate code paths;
@@ -669,6 +680,11 @@ the rest; the most useful report includes:
 
 Screenshots help a lot. "It looks wrong" is hard to act on; "this bar is grey
 where GitLab's is white" is not.
+
+A feature request is easier to take if it says which product the change should
+match — or why it has no counterpart and should be marked instead — and if it
+holds the [ground rules](#ground-rules): inert when the skin is off, nothing
+leaving the browser, no new permission, and no vendor artwork.
 
 ## License
 

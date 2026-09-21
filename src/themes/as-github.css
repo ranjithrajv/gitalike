@@ -95,64 +95,11 @@ html.gs-theme-github.gs-dark {
   --gs-header-fg: #f0f6fc;
 }
 
-/* ------------------------------------------- Pajamas tokens -> Primer -- */
+/* The Pajamas alias list that used to open this section is shared with the
+   Bitbucket skin and now lives in themes/gs-tokens.css. What remains here is
+   GitHub-specific: the neutral ramp and brand hues. */
 
 html.gs-theme-github {
-  /* text */
-  --gl-text-color-default: var(--gs-fg) !important;
-  --gl-text-color-heading: var(--gs-fg) !important;
-  --gl-text-color-strong: var(--gs-fg) !important;
-  --gl-text-color-subtle: var(--gs-fg-muted) !important;
-  --gl-text-color-disabled: var(--gs-fg-subtle) !important;
-  --gl-text-color-link: var(--gs-link) !important;
-  --gl-text-color-success: var(--gs-success) !important;
-  --gl-text-color-danger: var(--gs-danger) !important;
-  --gl-text-color-warning: var(--gs-attention) !important;
-
-  /* deprecated text aliases still used by older components */
-  --gl-text-color: var(--gs-fg) !important;
-  --gl-text-color-secondary: var(--gs-fg-muted) !important;
-  --gl-text-color-tertiary: var(--gs-fg-subtle) !important;
-
-  /* surfaces */
-  --gl-background-color-default: var(--gs-canvas) !important;
-  --gl-background-color-subtle: var(--gs-canvas-subtle) !important;
-  --gl-background-color-strong: var(--gs-canvas-subtle) !important;
-  --gl-background-color-overlap: var(--gs-canvas-overlay) !important;
-  --gl-background-color-section: var(--gs-canvas) !important;
-  --gl-background-color-disabled: var(--gs-canvas-subtle) !important;
-  --gl-background-color: var(--gs-canvas) !important;
-
-  /* borders */
-  --gl-border-color-default: var(--gs-border) !important;
-  --gl-border-color-subtle: var(--gs-border-muted) !important;
-  --gl-border-color-strong: var(--gs-border) !important;
-  --gl-border-color-section: var(--gs-border) !important;
-  --gl-border-color: var(--gs-border) !important;
-
-  /* feedback */
-  --gl-feedback-info-background-color: var(--gs-accent-subtle) !important;
-  --gl-feedback-success-background-color: var(--gs-success-subtle) !important;
-  --gl-feedback-danger-background-color: var(--gs-danger-subtle) !important;
-  --gl-feedback-warning-background-color: var(--gs-attention-subtle) !important;
-  --gl-status-success-background-color: var(--gs-success-subtle) !important;
-  --gl-status-danger-background-color: var(--gs-danger-subtle) !important;
-  --gl-status-warning-background-color: var(--gs-attention-subtle) !important;
-  --gl-status-brand-background-color: var(--gs-accent-subtle) !important;
-  --gl-highlight-target-background-color: var(--gs-accent-subtle) !important;
-
-  /* controls */
-  --gl-control-background-color-default: var(--gs-canvas) !important;
-  --gl-control-border-color-default: var(--gs-border) !important;
-  --gl-control-border-color-focus: var(--gs-accent) !important;
-  --gl-control-placeholder-color: var(--gs-fg-subtle) !important;
-  --gl-control-border-radius: var(--gs-radius-md) !important;
-
-  /* shape */
-  --gl-border-radius-sm: var(--gs-radius-sm) !important;
-  --gl-border-radius-base: var(--gs-radius-md) !important;
-  --gl-border-radius-lg: var(--gs-radius-lg) !important;
-
   /* the neutral ramp, re-pitched to GitHub's greys */
   --gl-color-neutral-0: #ffffff !important;
   --gl-color-neutral-10: #f6f8fa !important;
@@ -389,75 +336,11 @@ html.gs-theme-github
 /* --------------------------------------------------- Gitea / Forgejo -- */
 
 /* Codeberg (Forgejo) and gitea.com are GitHub-flavoured, so they can also be
-   shown with the *GitHub* UI. They do not use GitLab's Pajamas tokens, so this
-   block re-points Gitea's own `--color-*` custom properties at the same Primer
-   palette. `[data-theme]` is Gitea's marker on <html> and neither GitHub nor
-   GitLab sets it, so these rules are inert elsewhere. This is the counterpart of
-   the "Gitea / Forgejo" block in as-gitlab.css. */
-
-html.gs-theme-github[data-theme] {
-  /* surfaces */
-  --color-body: var(--gs-canvas) !important;
-  --color-card: var(--gs-canvas-subtle) !important;
-  --color-box-body: var(--gs-canvas-subtle) !important;
-  --color-box-body-highlight: var(--gs-canvas-inset) !important;
-  --color-box-header: var(--gs-canvas-inset) !important;
-  --color-menu: var(--gs-canvas) !important;
-  --color-secondary-bg: var(--gs-canvas-subtle) !important;
-  --color-input-background: var(--gs-canvas) !important;
-  --color-input-toggle-background: var(--gs-canvas) !important;
-  --color-code-bg: var(--gs-canvas-subtle) !important;
-  --color-markup-code-block: var(--gs-canvas-inset) !important;
-  --color-markup-code-inline: var(--gs-canvas-inset) !important;
-  --color-header-wrapper: var(--gs-canvas-subtle) !important;
-  --color-diff-inactive: var(--gs-canvas-inset) !important;
-
-  /* text */
-  --color-text: var(--gs-fg) !important;
-  --color-text-dark: var(--gs-fg) !important;
-  --color-text-light: var(--gs-fg-muted) !important;
-  --color-text-light-1: var(--gs-fg-muted) !important;
-  --color-text-light-2: var(--gs-fg-muted) !important;
-  --color-text-light-3: var(--gs-fg-subtle) !important;
-  --color-input-text: var(--gs-fg) !important;
-  --color-placeholder-text: var(--gs-fg-subtle) !important;
-  --color-label-text: var(--gs-fg) !important;
-
-  /* borders */
-  --color-input-border: var(--gs-border) !important;
-  --color-input-border-hover: var(--gs-fg-muted) !important;
-  --color-secondary: var(--gs-border) !important;
-  --color-light-border: var(--gs-border) !important;
-  --color-timeline: var(--gs-border-muted) !important;
-  --color-expand-button: var(--gs-border-muted) !important;
-
-  /* accent — GitHub's blue */
-  --color-primary: var(--gs-accent) !important;
-  --color-primary-dark-1: var(--gs-accent-hover) !important;
-  --color-primary-dark-2: var(--gs-accent-hover) !important;
-  --color-primary-light-1: var(--gs-accent) !important;
-  --color-primary-light-2: var(--gs-accent) !important;
-  --color-primary-light-3: var(--gs-accent) !important;
-  --color-primary-light-4: var(--gs-accent) !important;
-  --color-primary-light-5: var(--gs-accent-subtle) !important;
-  --color-primary-light-6: var(--gs-accent-subtle) !important;
-  --color-primary-light-7: var(--gs-accent-subtle) !important;
-  --color-primary-alpha-10: color-mix(in srgb, var(--gs-accent) 10%, transparent) !important;
-  --color-primary-alpha-20: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
-  --color-primary-alpha-30: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
-  --color-primary-alpha-40: color-mix(in srgb, var(--gs-accent) 40%, transparent) !important;
-  --color-primary-alpha-50: color-mix(in srgb, var(--gs-accent) 50%, transparent) !important;
-  --color-primary-alpha-60: color-mix(in srgb, var(--gs-accent) 60%, transparent) !important;
-  --color-primary-alpha-70: color-mix(in srgb, var(--gs-accent) 70%, transparent) !important;
-  --color-primary-alpha-80: color-mix(in srgb, var(--gs-accent) 80%, transparent) !important;
-  --color-primary-alpha-90: color-mix(in srgb, var(--gs-accent) 90%, transparent) !important;
-  --color-accent: var(--gs-accent) !important;
-  --color-small-accent: var(--gs-accent-subtle) !important;
-  --color-highlight-fg: var(--gs-accent) !important;
-  --color-highlight-bg: var(--gs-accent-subtle) !important;
-  --color-reaction-active-bg: color-mix(in srgb, var(--gs-accent) 20%, transparent) !important;
-  --color-reaction-hover-bg: color-mix(in srgb, var(--gs-accent) 30%, transparent) !important;
-}
+   shown with the *GitHub* UI. They do not use GitLab's Pajamas tokens, so the
+   shared "Gitea tokens" block in themes/gs-tokens.css re-points Gitea's own
+   `--color-*` custom properties at the applied skin's palette. `[data-theme]`
+   is Gitea's marker on <html> and neither GitHub nor GitLab sets it, so those
+   rules are inert elsewhere. Only the top bar is GitHub-specific. */
 
 /* Gitea states its own nav colours on #navbar; GitHub's top bar is dark in both
    modes, which is the cue that the site is wearing GitHub's UI. */

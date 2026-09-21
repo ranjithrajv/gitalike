@@ -289,6 +289,17 @@
     ],
     bitbucket: [
       {
+        // GitLab's project sidebar, shown as Bitbucket. Its repository group is
+        // resolved by the *displayed* label: NAV renames Repository/Code to
+        // Source first, so the container is the group that holds "Source", and
+        // it is reordered to Bitbucket's tabs in place.
+        source: 'gitlab',
+        scope: '.super-sidebar',
+        contains: 'Source',
+        item: 'li',
+        order: BITBUCKET_REPO_ORDER,
+      },
+      {
         source: 'github',
         container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
         item: 'li',
@@ -304,13 +315,13 @@
   };
 
   // The GitLab project sidebar groups its items (Plan, Code, Build, …). GitHub's
-  // repo tabs are flat, so on a GitLab-shaped skin they are gathered under the
-  // same group headings, using the *displayed* label (after translation). An item
-  // not listed here stands alone, with no heading.
+  // repo tabs are flat, so on the GitLab skin they are gathered under the same
+  // group headings, using the *displayed* label (after translation). An item not
+  // listed here stands alone, with no heading.
   //
-  // Keyed by *layout* (see sites.js `skins[].layout`), not by skin: the grouping
-  // is part of the shape, and the pass that applies it is guarded on the layout
-  // too, so any skin built to this shape gets the same headings.
+  // Keyed by *skin*: only GitLab groups its sidebar. GitHub and Bitbucket are
+  // flat, so a skin that shares GitLab's layout (Bitbucket) does not inherit its
+  // headings. `paintNavGroups` and `repoNav` both look this up by skin.
   const NAV_GROUPS = {
     gitlab: {
       Members: 'Manage',
@@ -410,7 +421,7 @@
   // markup a site is built on (its `source`, see sites.js `sourceFor`) — not by
   // the skin applied to it, because a Gitea site wears either UI but keeps
   // Gitea's markup. `src/content/ux.js` reads these instead of carrying
-  // literals, and `tools/selector-canary.mjs` probes the same entries against
+  // literals, and `tools/compare/selector-canary.mjs` probes the same entries against
   // the live forges, so a renamed hook is one edit and one failing check,
   // rather than a literal to hunt through three files.
   //
@@ -462,7 +473,7 @@
     },
   };
 
-  // The live pages `tools/selector-canary.mjs` fetches and the landmarks each
+  // The live pages `tools/compare/selector-canary.mjs` fetches and the landmarks each
   // must still carry. A key names a `SELECTORS[source]` entry; the canary turns
   // that selector into a loose token match, so the hooks it checks and the
   // hooks the skin uses can never drift. A page that cannot be fetched is a
@@ -662,14 +673,14 @@
   /**
    * The reference marker a link should show for the given theme. A GitHub
    * `/pull/N` or GitLab `/-/merge_requests/N` link becomes `!N` under the
-   * GitLab UI and `#N` under the GitHub UI. Gitea/Forgejo use `/pulls/N`, so
-   * that form is matched too. Anything else (issues, files)
-   * returns null and is left alone.
+   * GitLab UI and `#N` under the GitHub UI. Gitea/Forgejo use `/pulls/N` and
+   * Bitbucket `/pull-requests/N`, so both are matched too. Anything else
+   * (issues, files) returns null and is left alone.
    */
   function refMarker(href, theme) {
     if (!href) return null;
     const match = String(href).match(
-      /\/(?:pulls?|merge_requests)\/(\d+)(?:[/?#]|$)/,
+      /\/(?:pulls?|pull-requests|merge_requests)\/(\d+)(?:[/?#]|$)/,
     );
     if (!match) return null;
     return (theme === 'gitlab' ? '!' : '#') + match[1];
@@ -1053,6 +1064,111 @@
     return (url && HOST_PAIRS[url.hostname]?.product) ?? null;
   }
 
+  /* --------------------------------------------------- forge discovery -- */
+
+  // Which forge a link belongs to, guessed from the link alone, so the popup can
+  // pre-select the product for a site it has not been told about instead of
+  // always asking. Nothing is fetched — a hostname and a path are all it reads —
+  // so this stays inside gitalike's no-network promise. A deep link is the
+  // reliable signal: the two big forges spell the same page differently, and a
+  // host we have never seen still reveals itself in its routes.
+
+  // Bundled hosts are known outright, and which markup family each belongs to
+  // lives in sites.js (`builtin` and `SOURCES`). Read it there rather than
+  // repeat the table, so a new bundled forge is one edit. `sites.js` is loaded
+  // alongside this file by every context; when this module is imported on its
+  // own it is absent, and a bundled host simply falls through to the path and
+  // host hints below.
+  function bundledSource(host) {
+    const sites = globalThis.GITALIKE;
+    if (!sites?.isBuiltin?.(host)) return null;
+    return sites.sourceFor(host, null);
+  }
+
+  // A self-hosted instance often names its product in the host, which is worth a
+  // low-confidence guess when the path says nothing (a bare repository root).
+  const HOST_HINTS = [
+    [/(?:^|\.)github\./, 'github'],
+    [/(?:^|\.)gitlab\./, 'gitlab'],
+    [/(?:^|\.)(?:codeberg|gitea|forgejo)\./, 'gitea'],
+    [/(?:^|\.)bitbucket\./, 'bitbucket'],
+    [/gerrit/, 'gerrit'],
+  ];
+
+  // Distinctive routes, checked in order against `pathname + hash`. GitLab's
+  // `/-/` separator must be tested before GitHub's bare `/blob/`, and Gitea's
+  // `/pulls/` before GitHub's `/pull/`.
+  const PATH_FORGE = [
+    // Gerrit: /c/<project>/+/<change>, and the legacy /#/c/<change> form. A
+    // Gerrit project can be nested (`/c/foo/bar/+/1`), so the middle is `.+`.
+    [/(?:^|\/)c\/.+\/\+/, 'gerrit'],
+    [/#\/c\/\d+/, 'gerrit'],
+    // Bitbucket Server / Data Center: /projects/<KEY>/repos/<slug>/…
+    [/^\/projects\/[^/]+\/repos\//, 'bitbucket'],
+    // Bitbucket Cloud: /<workspace>/<repo>/pull-requests/<n>
+    [/(?:^|\/)pull-requests\/\d+/, 'bitbucket'],
+    // GitLab: the /-/ route separator.
+    [/(?:^|\/)-(\/|$)/, 'gitlab'],
+    // Gitea / Forgejo: /<owner>/<repo>/pulls/<n> and /src/branch/<b>.
+    [/(?:^|\/)pulls\/\d+/, 'gitea'],
+    [/(?:^|\/)src\/branch\//, 'gitea'],
+    // GitHub: /pull/<n> (Gitea is /pulls/), /blob/<ref>/, /tree/<ref>/.
+    [/(?:^|\/)pull\/\d+/, 'github'],
+    [/(?:^|\/)blob\/[^/]+/, 'github'],
+    [/(?:^|\/)tree\/[^/]+/, 'github'],
+  ];
+
+  // A Gitea/Forgejo instance is classified as the GitHub-flavoured kind, so its
+  // *product* button is GitHub even though its markup is its own.
+  const kindForSource = (source) => (source === 'gitea' ? 'github' : source);
+
+  /**
+   * The forge a link looks like, or null when it says nothing useful. Returns
+   * `{ source, kind, confidence, reason }`; `kind` is the product button the
+   * popup would press. Accepts a full URL or a bare host, and never throws.
+   */
+  function guessForge(raw) {
+    if (!raw) return null;
+    const text = String(raw).trim();
+    const url = parseUrl(text) || parseUrl(`https://${text}`);
+    if (!url) return null;
+    const host = url.hostname.toLowerCase();
+
+    const known = bundledSource(host);
+    if (known) {
+      return {
+        source: known,
+        kind: kindForSource(known),
+        confidence: 'high',
+        reason: 'host',
+      };
+    }
+
+    const where = `${url.pathname}${url.hash}`;
+    for (const [re, source] of PATH_FORGE) {
+      if (re.test(where)) {
+        return {
+          source,
+          kind: kindForSource(source),
+          confidence: 'high',
+          reason: 'path',
+        };
+      }
+    }
+
+    for (const [re, source] of HOST_HINTS) {
+      if (re.test(host)) {
+        return {
+          source,
+          kind: kindForSource(source),
+          confidence: 'low',
+          reason: 'host',
+        };
+      }
+    }
+    return null;
+  }
+
   globalThis.GITALIKE_UX = {
     PHRASES,
     NAV,
@@ -1087,5 +1203,6 @@
     repoNav,
     otherHostUrl,
     hostProduct,
+    guessForge,
   };
 })();

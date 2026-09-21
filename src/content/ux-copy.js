@@ -14,7 +14,7 @@
   const ATTRS = ['title', 'aria-label', 'placeholder', 'alt'];
   const ATTR_SELECTOR = ATTRS.map((a) => `[${a}]`).join(',');
   const REF_SELECTOR =
-    'a[href*="/pull/"],a[href*="/pulls/"],a[href*="/merge_requests/"]';
+    'a[href*="/pull/"],a[href*="/pulls/"],a[href*="/pull-requests/"],a[href*="/merge_requests/"]';
 
   // Copy and control labels in one traversal. Inside a control (UX.LABEL_SCOPE)
   // the *original* whole label is matched first, so a label that also contains a

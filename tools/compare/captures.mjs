@@ -86,6 +86,28 @@ export const PROJECT_JOBS = [
       },
     ],
   },
+  // Bitbucket as a source. Its markup is its own and there is no palette or
+  // navigation pass for it yet, so the GitHub and GitLab skins change the words
+  // (and nothing structural) — the caption on the page says so. The page is
+  // client-rendered, so `ready` waits for the ref selector, not a shell.
+  {
+    name: 'Bitbucket project',
+    url: 'https://bitbucket.org/atlassian/atlassian-connect-express/src/master/',
+    ready: '[data-testid="ref-selector-trigger"]',
+    base: 'bitbucket-default.png',
+    skins: [
+      {
+        setting: { bitbucket: 'github' },
+        cls: 'gs-theme-github',
+        over: 'bitbucket-github.png',
+      },
+      {
+        setting: { bitbucket: 'gitlab' },
+        cls: 'gs-theme-gitlab',
+        over: 'bitbucket-gitlab.png',
+      },
+    ],
+  },
 ];
 
 // Profile-page jobs. The profiles are public and rich enough to show both the
@@ -127,6 +149,26 @@ export const PROFILE_JOBS = [
         setting: { gitlab: 'bitbucket' },
         cls: 'gs-theme-bitbucket',
         over: 'gitlab-profile-bitbucket.png',
+      },
+    ],
+  },
+  // Bitbucket has no public user profile, so its account reference is the
+  // workspace repositories page — the closest thing it serves.
+  {
+    name: 'Bitbucket profile',
+    url: 'https://bitbucket.org/tutorials/workspace/repositories/',
+    ready: '[data-testid="profile-repository-row"]',
+    base: 'bitbucket-profile-default.png',
+    skins: [
+      {
+        setting: { bitbucket: 'github' },
+        cls: 'gs-theme-github',
+        over: 'bitbucket-profile-github.png',
+      },
+      {
+        setting: { bitbucket: 'gitlab' },
+        cls: 'gs-theme-gitlab',
+        over: 'bitbucket-profile-gitlab.png',
       },
     ],
   },

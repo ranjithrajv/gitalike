@@ -17,16 +17,16 @@
  * public pages and asserts those anchors are still in the served HTML. It is
  * deliberately a plain `fetch`, not a browser: it checks the markup a forge
  * ships, needs no download, and is cheap enough to run daily. It is the same
- * signal `tools/e2e.mjs` would give, without the live browser.
+ * signal `tools/compare/e2e.mjs` would give, without the live browser.
  *
- *   node tools/selector-canary.mjs
+ *   node tools/compare/selector-canary.mjs
  *
  * A missing hook fails the run. A page that cannot be fetched is a warning, not
  * a failure — an outage should not look like a renamed class — but it is
  * printed so a persistent block is visible.
  */
 
-import '../src/lib/ux.js';
+import '../../src/lib/ux.js';
 
 const UX = globalThis.GITALIKE_UX;
 if (!UX?.SELECTORS || !UX?.CANARY_PAGES) {

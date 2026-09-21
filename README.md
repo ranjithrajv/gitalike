@@ -2,13 +2,18 @@
 
 Use any forge, keep your muscle memory.
 
-gitalike is a small browser extension that re-skins the big forges so they look —
-and read — like each other. It repaints the interface from the target product's
-design tokens, then matches its *words and habits*: copy is rewritten ("Pull
-request" becomes "Merge request"), reference markers are swapped, the repo
-navigation is relabelled and reordered, and the other product's `g`-shortcuts
-work. It never changes what the site *does* — no requests are intercepted, no
-data is touched — and every change is reverted the moment you switch a skin off.
+**Nothing else makes GitHub read like GitLab — and back.** gitalike re-skins the
+forge in front of you as the product you know best — GitHub, GitLab or Bitbucket
+— down to the words, the navigation, the `#42` / `!42` reference markers and the
+`g`-shortcuts. It is reciprocal, in both directions, and it covers the forges
+people actually use: GitHub, GitLab, Codeberg/Gitea, Bitbucket, Gerrit and any
+instance you add.
+
+It is a reskin, not a service. No account, no network requests, no telemetry, no
+remote code: both stylesheets ship in the bundle and every mark is an inline data
+URI. It changes nothing about what the site *does* — no requests are intercepted,
+no data is touched — and every change is recorded and reverted exactly the moment
+you switch a skin off.
 
 Three skins — **GitLab**, **GitHub** and **Bitbucket** — and any host you have
 set up can wear any of them from the popup.
@@ -19,15 +24,26 @@ set up can wear any of them from the popup.
  any site                 + Bitbucket UI  ->  gitalike mark, Atlassian blue bar
 ```
 
-It works on `github.com`, `gitlab.com`, `codeberg.org` and `gitea.com` out of
-the box. Any other instance — a self-hosted GitLab, **GitHub Enterprise Server**
-— is added from the popup, which asks for that one site's access.
+- **Reciprocal.** GitHub shown as GitLab and GitLab shown as GitHub — both
+  directions, not one.
+- **Semantic.** It does not stop at colour: the words, the navigation, the
+  reference markers and the `g`-shortcuts follow the skin.
+- **Local.** No account, no network requests, no telemetry, no remote code.
+- **Reversible.** Every change is recorded, and undone the moment the skin is
+  switched off.
+
+It works on `github.com`, `gitlab.com`, `codeberg.org`, `gitea.com` and
+`bitbucket.org` out of the box. Any other instance — a self-hosted GitLab,
+**GitHub Enterprise Server**, a Bitbucket Data Center, a **Gerrit** — is added
+from the popup, which asks for that one site's access.
 
 gitalike starts with the two big forges, GitHub and GitLab, and grows from
 there. The GitHub-flavoured **Codeberg** (Forgejo) and **gitea.com** (Gitea) are
 bundled too — they speak GitHub's dialect, so by default they are shown with the
 GitLab UI, and the per-site picker can show them with the GitHub or Bitbucket UI
-instead. Sourcehut is the next candidate. A forge that already speaks one of the
+instead. **Bitbucket** is a source as well as a target: a Bitbucket host can be
+shown with the GitHub or GitLab UI. **Gerrit** is a source too, added by
+instance. Sourcehut is the next candidate. A forge that already speaks one of the
 two dialects needs only to be classified as that kind of site; until then, any
 instance works today through the popup's **Add a site** flow. If you would like
 to help add one, see
@@ -39,8 +55,8 @@ the mark it paints on a skinned page is its own. GitHub is a trademark of
 GitHub, Inc. GITLAB is a trademark of GitLab Inc. in the United States and other
 countries and regions.
 
-**Live preview:** <https://ranjithrajv.github.io/gitalike/> — swipe each site
-against every skin it can wear.
+**Live preview:** <https://ranjithrajv.github.io/gitalike/> — drag the divider
+and watch each site wear every skin it can.
 
 ## Install
 
@@ -105,12 +121,12 @@ Open the toolbar popup. **Show the web with** is one radio group — **GitLab UI
 **GitHub UI**, **Bitbucket UI** or **Off** — so exactly one skin is active at a
 time. Each option lists the hosts it covers:
 
-| Choice            | Normally covers                                                             | Result               |
-| ----------------- | --------------------------------------------------------------------------- | -------------------- |
-| **GitLab UI**     | `github.com`, `codeberg.org`, `gitea.com`, your GitHub Enterprise instances  | rendered as GitLab   |
-| **GitHub UI**     | `gitlab.com`, `codeberg.org`, `gitea.com`, your GitLab ones                  | rendered as GitHub   |
-| **Bitbucket UI**  | every host you have set up                                                   | rendered as Bitbucket |
-| **Off**           | —                                                                           | each site's own UI   |
+| Choice            | Normally covers                                                                                          | Result               |
+| ----------------- | -------------------------------------------------------------------------------------------------------- | -------------------- |
+| **GitLab UI**     | `github.com`, `codeberg.org`, `gitea.com`, `bitbucket.org`, your GitHub Enterprise and Gerrit instances    | rendered as GitLab   |
+| **GitHub UI**     | `gitlab.com`, `codeberg.org`, `gitea.com`, `bitbucket.org`, your GitLab and Gerrit instances               | rendered as GitHub   |
+| **Bitbucket UI**  | every host you have set up                                                                                | rendered as Bitbucket |
+| **Off**           | —                                                                                                        | each site's own UI   |
 
 It starts on **Off**. A choice applies to every host it covers at once, and the
 option covering the site you are on is highlighted.
@@ -133,21 +149,27 @@ forges only). Rebind either at `chrome://extensions/shortcuts` (Firefox:
 
 While a skin is active the toolbar icon shows a small **GL** or **GH** badge.
 
-## Adding GitHub Enterprise (or another GitLab)
+## Adding a self-hosted instance (GitHub Enterprise, GitLab, Bitbucket, Gerrit)
 
 Any host the extension has not seen before is left completely alone. There are
-two ways in, and they open the same form. One thing to keep straight in both:
-the buttons ask **which product the site is**, not which skin you want — a
-GitHub Enterprise server is a GitHub site, so choosing **GitHub** is what gives
-it the GitLab UI.
+two ways in, and they open the same form. **gitalike reads the address and
+highlights the product it looks like** — a deep link such as
+`/-/merge_requests/42` names GitLab, `/pull/42` names GitHub, `/pulls/42` names
+Gitea/Forgejo, `/pull-requests/42` names Bitbucket and `/c/project/+/42` names
+Gerrit, even on a host it has never seen — so usually you just confirm the
+highlighted button. It reads the link only, never the page, and makes no
+network request. The buttons ask **which product the site is**, not which skin
+you want — a GitHub Enterprise server is a GitHub site, so choosing **GitHub** is
+what gives it the GitLab UI.
 
 **From the page you are on.** Open the popup; when the host in front of you
 needs a decision the form is already open and filled in.
 
-1. Open the popup on the instance. It reads *"`github.acme.com` is not set up"*
-   and prefills the field.
-2. Choose **GitHub** or **GitLab**. It is remembered, and the skin switches on
-   immediately on the page you already have open — no reload.
+1. Open the popup on the instance. It reads *"`github.acme.com` is not set up"*,
+   prefills the field, and highlights the product the link points at.
+2. Choose **GitHub**, **GitLab**, **Bitbucket** or **Gerrit** — or just press the
+   highlighted one. It is remembered, and the skin switches on immediately on
+   the page you already have open — no reload.
 
 **By typing the address.** You do not have to visit an instance to add it, which
 is the point when the address is one you would have to look up:
@@ -158,11 +180,12 @@ is the point when the address is one you would have to look up:
    because a port or path would never match the host you actually land on. An
    `http://` address is accepted but flagged — the skin still applies, though the
    connection is not encrypted.
-3. Choose **GitHub** or **GitLab**.
+3. Choose **GitHub**, **GitLab**, **Bitbucket** or **Gerrit**, or press the
+   highlighted product. Pressing **Enter** takes the highlighted one.
 
 Anything that is not a web address is refused rather than stored, including
 `javascript:` and other non-http schemes. Built-in hosts
-(`github.com`, `gitlab.com`, `codeberg.org`, `gitea.com`) are
+(`github.com`, `gitlab.com`, `codeberg.org`, `gitea.com`, `bitbucket.org`) are
 refused too — they are already set up and cannot be removed.
 
 To undo, open the popup on that host and choose **Remove**. That also clears any
@@ -222,10 +245,10 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
 - **"Open on the other host" covers the two public forges only.** A self-hosted
   instance has no pair to guess, so the action is absent there.
 - **Access is bundled hosts at install, one origin at a time after that.** The
-  install prompt covers the public forges and Codeberg (`github.com`,
-  `gitlab.com`, `codeberg.org`, `gitea.com`). A self-hosted instance is granted
-  when you add it — the popup asks for that one origin, a prompt you only see if
-  you asked for that host. There is no all-sites grant.
+  install prompt covers the public forges, Codeberg and Bitbucket (`github.com`,
+  `gitlab.com`, `codeberg.org`, `gitea.com`, `bitbucket.org`). A self-hosted
+  instance is granted when you add it — the popup asks for that one origin, a
+  prompt you only see if you asked for that host. There is no all-sites grant.
 - **The content scripts and stylesheets load only on hosts you have set up and
   granted.** The background registers them for the configured hosts, so an
   unconfigured page parses neither. This is what the `scripting` permission is
@@ -252,8 +275,23 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   taken from an archived Bitbucket repository page (Atlassian's `#0049B0` bar,
   `#0052CC` accent, and the Source/Commits/Branches/Pull requests/Pipelines/
   Deployments/Jira issues/Security/Downloads menu) rather than a live page. Its
-  navigation is a left sidebar, so it reuses GitLab's layout. It cannot be
-  watched by the selector canary for the same reason.
+  navigation is a left sidebar, so it reuses GitLab's layout, but its menu is
+  flat: it drops GitLab's group headings rather than inheriting them. It cannot
+  be watched by the selector canary for the same reason.
+- **Bitbucket as a source is vocabulary-only for now.** A Bitbucket host can be
+  classified and shown with the GitHub or GitLab UI, and its copy, control labels
+  and `/pull-requests/N` reference markers follow the applied product — but there
+  is no palette, navigation or metadata pass for Bitbucket markup. Bitbucket
+  Cloud renders its repository page client-side and serves no capturable public
+  page, so its structural hooks cannot be verified the way the other forges' are;
+  the skin stops at the source-agnostic passes until a capture exists.
+- **Gerrit as a source is vocabulary-only too, and has no bundled host.** A
+  Gerrit instance is added one origin at a time from the popup, and can be shown
+  with the GitHub or GitLab UI. Like Bitbucket, its PolyGerrit UI is
+  client-rendered with no capturable markup, so there is no palette, navigation
+  or metadata pass; and its changes are numbered (`/c/<project>/+/<N>`) with a
+  Change-Id rather than a `#`/`!` pull-request marker, so even the reference
+  markers do not apply. Copy and control labels are what reach it.
 - **The Codeberg and gitea.com skin now re-orients the navigation, but not the
   whole page.** They are GitHub-flavoured, so they can wear either UI. Under the
   **GitLab UI** the repo tabs are rebuilt as a grouped left sidebar (GitLab's

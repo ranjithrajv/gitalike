@@ -195,6 +195,12 @@ main {
   font-weight: 600;
 }
 
+/* the product auto-discovery matched from the address, before the user picks */
+.add__button--guess {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
 .add__button--quiet {
   margin-left: auto;
   color: var(--fg-muted);

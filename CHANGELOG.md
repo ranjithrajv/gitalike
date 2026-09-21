@@ -14,16 +14,41 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `npm run fmt:check`). Both run in the pre-commit gate and in CI. Only code is
   formatted — the hand-wrapped Markdown, the YAML, the HTML and the theme CSS
   are left alone (`.oxlintrc.json`, `.oxfmtrc.json`).
-- A third skin: **Bitbucket**. It is a *target only* — no host is classified as
-  Bitbucket — so any configured GitHub, GitLab or Gitea site can wear it. Its
-  Atlassian palette is mapped for each source's own tokens (Primer on GitHub,
-  Pajamas on GitLab, `--color-*` on Gitea), its repository navigation is a left
-  sidebar (so it reuses GitLab's layout), and its vocabulary and tab set are
-  Bitbucket's — taken from an archived Bitbucket repository page:
+- A third skin: **Bitbucket**. Any configured GitHub, GitLab, Gitea or Bitbucket
+  site can wear it. Its Atlassian palette is mapped for each source's own tokens
+  (Primer on GitHub, Pajamas on GitLab, `--color-*` on Gitea), its repository
+  navigation is a left sidebar (so it reuses GitLab's layout), and its vocabulary
+  and tab set are Bitbucket's — taken from an archived Bitbucket repository page:
   Source, Commits, Branches, Pull requests, Pipelines, Deployments, Jira issues,
   Security, Downloads. The global **Show the web with** radio and the per-site
   picker both offer it (`src/themes/as-bitbucket.css`, `src/lib/ux.js`,
   `src/lib/sites.js`, `src/background.js`).
+- **Bitbucket is a source product too.** `bitbucket.org` is bundled as the
+  `bitbucket` kind, and a Bitbucket Data Center host can be added from the popup,
+  so a Bitbucket site can be shown with the GitHub or GitLab UI. Its markup is
+  its own: the source-agnostic passes run — copy, control labels, account chrome
+  and reference markers (its `/pull-requests/N` routes are matched) — but there
+  is no token block, `SELECTORS` entry or `NAV_RULES` rule for it yet, because
+  Bitbucket Cloud renders its repository page client-side and serves no
+  capturable public page to key them on. The parity scorecard carries the gap as
+  its own row (`src/lib/sites.js`, `src/lib/ux.js`, `src/content/ux-copy.js`,
+  `src/popup/`, `src/manifest.base.json`, `tools/compare/parity-score.mjs`).
+- **Gerrit is a source too.** It is added one instance at a time from the popup
+  (there is no canonical host to bundle) and can be shown with the GitHub or
+  GitLab UI. Like Bitbucket it is vocabulary-only: its PolyGerrit UI is
+  client-rendered, so there is no token, `SELECTORS` or `NAV_RULES` coverage;
+  and its changes are numbered (`/c/<project>/+/<N>`) with a Change-Id rather
+  than a `#`/`!` pull-request marker, so the reference-marker pass does not reach
+  it either (`src/lib/sites.js`, `src/popup/`, `tools/compare/parity-score.mjs`).
+- **Auto-discovery of a link's forge.** When a host is not set up yet, the popup
+  reads the address and highlights the product it looks like, so a pasted deep
+  link needs only a confirmation: `/-/merge_requests/42` is GitLab, `/pull/42`
+  GitHub, `/pulls/42` Gitea/Forgejo, `/pull-requests/42` Bitbucket and
+  `/c/project/+/42` Gerrit — even on a host never seen before. It is a pure read
+  of the URL (no page access, no network, no new permission), falls back to the
+  hostname, and leaves the product buttons for a bare host it cannot place.
+  Pressing Enter takes the highlighted product (`src/lib/ux.js` `guessForge`,
+  `src/popup/popup.js`, `tests/ux.test.mjs`).
 - A `layout` on each skin (`github` = top bar + tab row, `gitlab` = left
   sidebar) and a matching `gs-layout-*` class on `<html>`, so a skin that shares
   another's shape reuses its structural CSS and passes instead of copying them.
@@ -65,17 +90,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   injected together and scoped by `html.gs-theme-*`, so the file name should
   track that axis; the old names described only the original two hosts and were
   wrong for the Gitea blocks.
-- A selector canary, `tools/selector-canary.mjs` (`npm run canary`), with a
+- A selector canary, `tools/compare/selector-canary.mjs` (`npm run canary`), with a
   scheduled workflow (`.github/workflows/canary.yml`). It fetches the live pages
   the skins are verified against — GitHub, GitLab and Codeberg (Forgejo
   project and pull-request pages) — and fails when an anchor the extension
   relies on is gone, so an upstream rename is caught by a daily job rather than
   by a user. A failure also opens or refreshes a tracking issue, so the drift is
   owned.
-- A **Report a missed spot** link in the popup opens a prefilled issue with the
-  host, the applied skin and the fields `CONTRIBUTING.md` asks for. Nothing is
-  read from the page; the reporter pastes the element and property themselves
+- A **Report a missed spot** link in the popup opens the bug-report form with the
+  host, the applied skin and the version prefilled by field id. Nothing is read
+  from the page; the reporter pastes the element and property themselves
   (`src/popup/`).
+- Issue and pull-request templates. `.github/ISSUE_TEMPLATE/` holds a bug report
+  (host, signed-in, site theme, browser, version, expected-versus-saw, element
+  and property, screenshots) and a feature request (kind, proposal, counterpart,
+  the ground rules), behind a chooser that links the live preview, the README and
+  `CONTRIBUTING.md`; `.github/PULL_REQUEST_TEMPLATE.md` carries the
+  pull-request checklist. Blank issues stay enabled.
+- The **See it** gallery now covers the **Bitbucket source**: a project page and
+  its workspace repositories page, each shown against the GitHub and GitLab UIs.
+  Bitbucket's markup has no palette or navigation pass yet, so the cards say so
+  and the skins visibly change only the words. The capture table gained the two
+  jobs, `docs/index.html` the two cards, and `tools/compare/screenshots.mjs` a
+  `GS_ONLY` filter so one job can be re-shot without rewriting every PNG
+  (`tools/compare/captures.mjs`, `docs/index.html`, `docs/bitbucket-*.png`).
 - The end-to-end suite runs on a schedule (and on demand) in
   `.github/workflows/e2e.yml`, beside the selector canary. It drives the live
   sites, so it is not a commit gate, but it is the only test of the CSS and DOM
@@ -100,15 +138,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Picking a skin turns the other off, and a state stored with both on is reduced
   to one when the popup opens. The per-kind settings the background and the badge
   read are unchanged (`src/popup/`).
-- Grouping and the layout axis now agree. `NAV_GROUPS`/`navGroupFor` are keyed by
-  the skin's *layout* rather than the skin, matching the layout guard that applies
-  them, so any skin built to the GitLab shape shares the group headings. The
+- Grouping follows the skin, so only GitLab groups its sidebar. `NAV_GROUPS`/
+  `navGroupFor` are keyed by the skin, and both the live pass and Gitea's
+  rebuild look them up by skin: a skin that shares GitLab's layout (Bitbucket)
+  keeps its flat list, so GitHub's flat tabs are not gathered under GitLab's
+  headings and a GitLab source's own headings are dropped under Bitbucket. The
   `LABELS`/`CHROME` round-trip test — which only held for a pair of skins — is
   replaced by a coverage property across all three targets
-  (`src/lib/ux.js`, `src/content/ux.js`, `tests/ux.test.mjs`).
+  (`src/lib/ux.js`, `src/content/ux-nav.js`, `src/content/ux-project.js`,
+  `src/themes/ux-nav.css`, `tests/ux.test.mjs`).
 
 ### Fixed
 
+- A GitLab project shown with the Bitbucket skin is now reordered to Bitbucket's
+  tab order. `NAV_RULES.bitbucket` had a rule for a GitHub and a Gitea source
+  but none for GitLab, so its sidebar kept GitLab's order (Repository, Branches,
+  Commits, …) instead of Bitbucket's (Source, Commits, Branches, …); the rule
+  resolves GitLab's repository group by its displayed label ("Source") the same
+  way the GitHub skin's GitLab rule does (`src/lib/ux.js`, `tests/ux.test.mjs`).
 - Elements hidden with the `hidden` attribute are actually hidden now. An
   author `display` rule outranks the UA stylesheet's `[hidden]`, so the popup's
   "open on the other host" button and the new reset link showed as empty boxes

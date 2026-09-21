@@ -10,10 +10,13 @@ to work in the shared checkout without stepping on another session.
   Chromium builds, which share the extension API) and Firefox **142 or newer**,
   including the forks that track it (LibreWolf, Floorp, Zen). Manifest V3 only;
   there is no MV2 build.
-- **Forge sources.** GitHub (`github.com`, GitHub Enterprise Server) and GitLab
-  (`gitlab.com`, self-hosted) out of the box; Gitea/Forgejo (`codeberg.org`,
-  `gitea.com`) bundled. A self-hosted instance is added from the popup, which
-  requests that one origin (`optional_host_permissions`).
+- **Forge sources.** GitHub (`github.com`, GitHub Enterprise Server), GitLab
+  (`gitlab.com`, self-hosted), Gitea/Forgejo (`codeberg.org`, `gitea.com`) and
+  Bitbucket (`bitbucket.org`, Bitbucket Data Center) out of the box, plus Gerrit
+  (no bundled host). A self-hosted instance is added from the popup, which
+  requests that one origin (`optional_host_permissions`). Bitbucket and Gerrit
+  are the newest sources and are vocabulary-only so far (no structural
+  CSS/selectors — see README's known limitations).
 - **Skins.** GitLab UI, GitHub UI and Bitbucket UI. Any configured host can wear
   any of them; one skin is active at a time, with a per-site override.
 - **Response.** Best effort — bug reports and pull requests are welcome, but
@@ -24,7 +27,7 @@ to work in the shared checkout without stepping on another session.
 Cut from `main`, on a green suite:
 
 1. `npm test && npm run lint && npm run lint:js && npm run fmt:check`, and
-   `node tools/e2e.mjs` when the CSS or DOM layer changed (it drives the live
+   `node tools/compare/e2e.mjs` when the CSS or DOM layer changed (it drives the live
    sites, so it is network-flaky by nature and runs on a schedule too).
 2. Bump `version` in `package.json` — the only place it is written — and add a
    `CHANGELOG.md` entry under `## [Unreleased]`.

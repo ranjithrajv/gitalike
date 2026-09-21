@@ -95,6 +95,9 @@ const CONTENT_JS = [
   'content/ux.js',
 ];
 const CONTENT_CSS = [
+  // The token mappings shared by more than one skin, first so a skin's own
+  // rule of equal specificity still wins where it deliberately diverges.
+  'themes/gs-tokens.css',
   'themes/as-gitlab.css',
   'themes/as-github.css',
   'themes/as-bitbucket.css',

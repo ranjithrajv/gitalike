@@ -24,7 +24,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 /** The unpacked Chromium build the tools drive. */
 export const EXT = process.env.GS_EXT ?? join(root, 'dist', 'chromium');

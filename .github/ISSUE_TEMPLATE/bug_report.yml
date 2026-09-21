@@ -1,0 +1,119 @@
+name: Bug report
+description: Something on a skinned page looks or reads wrong, or a skin misbehaves.
+title: '[Bug]: '
+labels: ['bug']
+body:
+  # The popup's "Report a missed spot" link opens this form and prefills the
+  # `host`, `showing` and `version` fields by id, so keep those ids stable.
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. The popup's **Report a missed spot** link opens
+        this form with the host, the applied skin and the version already filled
+        in.
+
+        gitalike makes no network requests and reads nothing from a page, so
+        please do not paste page contents or anything private unless you choose
+        to. Screenshots are the most useful thing you can add.
+  - type: input
+    id: host
+    attributes:
+      label: Host
+      description: The site you were on — the hostname alone is enough.
+      placeholder: github.com
+    validations:
+      required: true
+  - type: input
+    id: showing
+    attributes:
+      label: Showing
+      description: >-
+        Which UI the site was wearing, and which product it actually is. The
+        install prompt covers the bundled hosts; a self-hosted instance says so.
+      placeholder: GitLab UI on a GitHub site
+    validations:
+      required: true
+  - type: dropdown
+    id: signed_in
+    attributes:
+      label: Were you signed in?
+      description: >-
+        Both sites serve entirely different chrome once you log in, and the skin
+        has separate code paths for each.
+      options:
+        - 'Yes'
+        - 'No'
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: site_theme
+    attributes:
+      label: The site's theme
+      description: Light and dark are separate palettes.
+      options:
+        - Light
+        - Dark
+        - Follows the OS or account
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome or another Chromium build
+        - Firefox
+        - Edge
+        - Brave
+        - Opera
+        - Vivaldi
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: gitalike version
+      description: Shown at the top of the popup, or on the release you installed.
+      placeholder: 0.1.2
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected versus what you saw
+      description: >-
+        "It looks wrong" is hard to act on; "this bar is grey where GitLab's is
+        white" is not.
+    validations:
+      required: true
+  - type: textarea
+    id: element
+    attributes:
+      label: Element and property (for a skin miss)
+      description: >-
+        The element and the property that is off, from DevTools. A CSS snippet
+        is ideal.
+      placeholder: ".Box has `background: #fff`; GitLab's would be `#fbfafd`"
+      render: css
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag images in here. Before/after, or the skin on and off, both help.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you file
+      options:
+        - label: I checked the site with the skin **off** as well as on.
+        - label: I am running the latest release.
+        - label: >-
+            I understand gitalike is cosmetic — the page can influence it — and
+            is not a security boundary.

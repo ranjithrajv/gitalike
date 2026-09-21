@@ -28,6 +28,8 @@
   // The last time each nav container was reordered, so a framework that
   // re-renders its list cannot make the two of us thrash.
   const orderStamp = new WeakMap();
+  // How long a container is left alone after a reorder.
+  const REORDER_COOLDOWN_MS = 1000;
 
   // The nav controls inside the nav regions: the anchors, buttons and summaries
   // the relabel, hide and marker passes all walk. One traversal, one selector.
@@ -164,7 +166,10 @@
       // A framework that re-renders its list would undo this and, if we kept
       // re-applying, would thrash. Reorder once, then leave it be for a moment.
       const now = Date.now();
-      if (orderStamp.has(container) && now - orderStamp.get(container) < 1000)
+      if (
+        orderStamp.has(container) &&
+        now - orderStamp.get(container) < REORDER_COOLDOWN_MS
+      )
         continue;
       orderStamp.set(container, now);
       ledger(container, 'dom-order', () => ({
@@ -183,12 +188,14 @@
     }
   }
 
-  // Insert GitLab-style group headings into the (now ordered) sidebar. Runs
-  // after paintOrder so the headings land on the final order, and rebuilds only
-  // when the headings no longer match — otherwise our own insertions would feed
-  // back through the mutation observer.
+  // Insert GitLab-style group headings into the (now ordered) sidebar. Only the
+  // GitLab skin groups its menu; GitHub and Bitbucket are flat, and `NAV_GROUPS`
+  // is keyed by skin so they get no headings. Runs after paintOrder so the
+  // headings land on the final order, and rebuilds only when the headings no
+  // longer match — otherwise our own insertions would feed back through the
+  // mutation observer.
   function paintNavGroups(t) {
-    if (!UX.NAV_GROUPS[rt.layoutOf(t)]) return;
+    if (!UX.NAV_GROUPS[t]) return;
     // The group headings apply to the same list paintOrder resolves, so reuse
     // that container instead of re-scanning every NAV_SCOPE region per flush.
     const rule = (UX.NAV_RULES[t] || []).find((r) => r.container);
@@ -201,7 +208,7 @@
     let last = null;
     for (const li of items) {
       const label = (li.textContent || '').replace(/\s+/g, ' ').trim();
-      const group = UX.navGroupFor(label, rt.layoutOf(t));
+      const group = UX.navGroupFor(label, t);
       if (group && group !== last) {
         desired.push({ group, before: li });
         last = group;

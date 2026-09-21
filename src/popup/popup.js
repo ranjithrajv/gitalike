@@ -108,6 +108,44 @@
     addHint.classList.toggle('add__hint--error', Boolean(isError));
   }
 
+  function kindLabel(kind) {
+    const button = kindButtons.find((entry) => entry.dataset.kind === kind);
+    return button ? button.textContent.trim() : kind;
+  }
+
+  // Auto-discovery: a link names its forge from its routes (`/-/merge_requests`
+  // is GitLab, `/pull/` is GitHub), so the product button that would be added is
+  // highlighted and named before the user chooses it. Purely local — it reads
+  // the URL, not the page.
+  function showGuess(known) {
+    let guess = null;
+    if (!known) {
+      // The typed address, then the page in front of the user — but the page only
+      // when the address is still that host, so typing a different site does not
+      // inherit this tab's route. The current tab's full URL carries the path
+      // that names the forge, where the prefilled bare host does not.
+      const typed = addInput.value.trim();
+      const values = [typed];
+      if (!typed || SITES.parseHost(typed) === host) values.push(pageUrl);
+      for (const value of values) {
+        const found = UX.guessForge(value);
+        if (!found) continue;
+        if (
+          !guess ||
+          (found.confidence === 'high' && guess.confidence !== 'high')
+        )
+          guess = found;
+      }
+    }
+    for (const button of kindButtons) {
+      button.classList.toggle(
+        'add__button--guess',
+        Boolean(guess) && button.dataset.kind === guess.kind,
+      );
+    }
+    return guess;
+  }
+
   function render() {
     const currentKind = SITES.kindFor(host, instances);
     renderSkin();
@@ -224,6 +262,16 @@
       hint(HINT_INSECURE(host), false);
     }
 
+    // Pre-select the product the link points at, for a host not set up yet. The
+    // click on the highlighted button is still the permission grant.
+    const guess = showGuess(known);
+    if (!known && guess && pageProtocol !== 'http:') {
+      hint(
+        `Looks like ${kindLabel(guess.kind)} — press it to add the site.`,
+        false,
+      );
+    }
+
     // Open automatically the first time there is a decision waiting, then
     // respect whatever the user does with the toggle.
     if (!openedOnce && (host === '' || !known || added)) {
@@ -310,15 +358,38 @@
   addInput.addEventListener('input', () => {
     if (addHint.classList.contains('add__hint--error'))
       hint(HINT_DEFAULT, false);
+    // Re-guess as the address is typed, so a pasted deep link names its forge.
+    const hostname = SITES.parseHost(addInput.value);
+    const known = Boolean(hostname && SITES.kindFor(hostname, instances));
+    const guess = showGuess(known);
+    if (!known && guess) {
+      hint(
+        `Looks like ${kindLabel(guess.kind)} — press it to add the site.`,
+        false,
+      );
+    }
   });
 
   addInput.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter') return;
-    // One field, two possible answers — so Enter takes the host's real product.
+    // One field, several possible answers — so Enter takes the host's real
+    // product, or the one its link points at.
     const hostname = SITES.parseHost(addInput.value);
     const kind = hostname ? SITES.kindFor(hostname, instances) : null;
-    if (kind) submit(kind);
-    else hint('Pick GitHub or GitLab.', false);
+    if (kind) {
+      submit(kind);
+      return;
+    }
+    const guess =
+      UX.guessForge(addInput.value) ||
+      (SITES.parseHost(addInput.value) === host
+        ? UX.guessForge(pageUrl)
+        : null);
+    if (guess) {
+      submit(guess.kind);
+      return;
+    }
+    hint('Pick GitHub, GitLab, Bitbucket or Gerrit.', false);
   });
 
   addRemove.addEventListener('click', async () => {
@@ -379,34 +450,26 @@
     openOther.onclick = () => api.tabs.create({ url: other });
   }
 
-  // A prefilled issue, carrying what the popup already knows and the fields
-  // CONTRIBUTING.md asks a reporter for. It deliberately does not attach the
-  // page: gitalike reads nothing from a page and sends nothing anywhere, and a
-  // report should not be the one exception.
+  // A prefilled bug report. The issue form in `.github/ISSUE_TEMPLATE/` is the
+  // source of the fields a reporter is asked for, so this fills the ones the
+  // popup already knows — by the form's field ids — and leaves the rest for the
+  // reporter. It deliberately does not attach the page: gitalike reads nothing
+  // from a page and sends nothing anywhere, and a report should not be the one
+  // exception.
   function renderReport() {
     report.onclick = () => {
       const theme = SITES.themeFor(host, settings, instances, hostSettings);
       const showing = theme
         ? `the ${SITES.skins[theme].product} UI`
         : 'no skin (the site is not set up, or is switched off)';
-      const title = host ? `Skin miss on ${host}` : 'Skin miss';
-      const body = [
-        `**Host:** ${host || '(not a website)'}`,
-        `**Showing:** ${showing}`,
-        '**Signed in:** <!-- yes/no -->',
-        '**Theme:** <!-- light/dark -->',
-        '',
-        '**What I expected versus what I saw:**',
-        '<!-- ... -->',
-        '',
-        '**Element and property (for a skin miss):**',
-        "<!-- e.g. `.Box` has `background: #fff`, GitLab's would be #fbfafd -->",
-        '',
-        `_Reported with gitalike ${api.runtime.getManifest().version}._`,
-      ].join('\n');
-      api.tabs.create({
-        url: `${ISSUES_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`,
+      const params = new URLSearchParams({
+        template: 'bug_report.yml',
+        title: host ? `Skin miss on ${host}` : 'Skin miss',
+        host: host || '(not a website)',
+        showing,
+        version: api.runtime.getManifest().version,
       });
+      api.tabs.create({ url: `${ISSUES_URL}?${params}` });
     };
   }
 

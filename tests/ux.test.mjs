@@ -9,6 +9,9 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
+// `guessForge` reads the bundled host -> markup table from sites.js, so the two
+// modules are loaded together here exactly as every runtime context loads them.
+import '../src/lib/sites.js';
 import '../src/lib/ux.js';
 
 const UX = globalThis.GITALIKE_UX;
@@ -45,6 +48,7 @@ const {
   repoNav,
   otherHostUrl,
   hostProduct,
+  guessForge,
 } = UX;
 
 describe('module shape', () => {
@@ -527,6 +531,67 @@ describe('hostProduct', () => {
   });
 });
 
+describe('guessForge', () => {
+  const forge = (url) => guessForge(url)?.source ?? null;
+
+  test('recognises the bundled hosts outright', () => {
+    assert.equal(guessForge('https://github.com/o/r').kind, 'github');
+    assert.equal(guessForge('https://gitlab.com/g/p').kind, 'gitlab');
+    assert.equal(guessForge('https://bitbucket.org/o/r').kind, 'bitbucket');
+    // Gitea/Forgejo is GitHub-flavoured, so its product button is GitHub.
+    assert.equal(guessForge('https://codeberg.org/o/r').source, 'gitea');
+    assert.equal(guessForge('https://codeberg.org/o/r').kind, 'github');
+    assert.equal(guessForge('https://gitea.com/o/r').source, 'gitea');
+    for (const url of [
+      'https://github.com/o/r',
+      'https://gitlab.com/g/p',
+      'https://codeberg.org/o/r',
+    ]) {
+      assert.equal(guessForge(url).confidence, 'high');
+      assert.equal(guessForge(url).reason, 'host');
+    }
+  });
+
+  test('reads a deep link on a host it has never seen', () => {
+    // The same page is spelled differently by each product, so the path names
+    // the forge even when the hostname says nothing.
+    assert.equal(
+      forge('https://git.acme.com/g/p/-/merge_requests/7'),
+      'gitlab',
+    );
+    assert.equal(forge('https://code.acme.com/o/r/pull/7'), 'github');
+    assert.equal(forge('https://git.acme.com/o/r/pulls/7'), 'gitea');
+    assert.equal(forge('https://bb.acme.com/o/r/pull-requests/7'), 'bitbucket');
+    assert.equal(
+      forge('https://bb.acme.com/projects/KEY/repos/r/pull-requests/7'),
+      'bitbucket',
+    );
+    assert.equal(forge('https://cr.acme.com/c/my/project/+/12345'), 'gerrit');
+    assert.equal(forge('https://cr.acme.com/#/c/12345'), 'gerrit');
+  });
+
+  test('GitLab wins over GitHub for a /-/blob link', () => {
+    assert.equal(forge('https://git.acme.com/g/p/-/blob/main/a.js'), 'gitlab');
+    assert.equal(forge('https://gh.acme.com/o/r/blob/main/a.js'), 'github');
+  });
+
+  test('falls back to the hostname when the path says nothing', () => {
+    assert.equal(forge('https://gitlab.acme.com/g/p'), 'gitlab');
+    assert.equal(forge('https://github.acme.com/o/r'), 'github');
+    assert.equal(forge('https://gerrit.acme.com/'), 'gerrit');
+    assert.equal(guessForge('https://gerrit.acme.com/').confidence, 'low');
+  });
+
+  test('accepts a bare host, and returns null when it cannot tell', () => {
+    assert.equal(forge('gitlab.acme.com'), 'gitlab');
+    assert.equal(forge('github.acme.com'), 'github');
+    assert.equal(guessForge('example.com/o/r'), null);
+    assert.equal(guessForge('not a url'), null);
+    assert.equal(guessForge(''), null);
+    assert.equal(guessForge(null), null);
+  });
+});
+
 describe('UNMAPPED', () => {
   test('names the product that lacks the feature', () => {
     assert.equal(noEquivalentFor('Discussions', 'gitlab'), 'GitLab');
@@ -591,9 +656,10 @@ describe('NAV_GROUPS', () => {
     assert.equal(navGroupFor('Merge requests', 'github'), null);
   });
 
-  test('is keyed by layout, not by skin', () => {
-    // Only the GitLab layout groups its sidebar; the skin that wears it is
-    // irrelevant, matching the layout guard that calls this.
+  test('only the GitLab skin groups its sidebar', () => {
+    // Grouping follows the skin, so a skin that shares GitLab's layout
+    // (Bitbucket) stays flat: `paintNavGroups` looks the table up by skin and
+    // `repoNav` groups by skin too. Bitbucket's own menu is a flat list.
     assert.deepEqual(Object.keys(NAV_GROUPS), ['gitlab']);
     assert.equal(navGroupFor('Repository', 'gitlab'), 'Code');
     assert.equal(navGroupFor('Repository', 'bitbucket'), null);
@@ -707,6 +773,17 @@ describe('refMarker', () => {
     assert.equal(
       refMarker('https://codeberg.org/o/r/pulls/11', 'gitlab'),
       '!11',
+    );
+  });
+
+  test('a Bitbucket /pull-requests/N URL is matched too', () => {
+    assert.equal(
+      refMarker('https://bitbucket.org/o/r/pull-requests/12', 'gitlab'),
+      '!12',
+    );
+    assert.equal(
+      refMarker('https://bitbucket.org/o/r/pull-requests/12/commits', 'github'),
+      '#12',
     );
   });
 
@@ -997,6 +1074,7 @@ describe('SELECTORS / CANARY_PAGES', () => {
     // `SELECTORS` marks the entries a stylesheet owns with `// css`; CSS cannot
     // read the table, so this is the only thing that proves the two agree.
     const themes = [
+      'gs-tokens.css',
       'as-gitlab.css',
       'as-github.css',
       'ux-markers.css',
@@ -1160,7 +1238,21 @@ describe('Bitbucket skin', () => {
 
   test('carries a nav rule for each source', () => {
     const sources = NAV_RULES.bitbucket.map((r) => r.source).sort();
-    assert.deepEqual(sources, ['gitea', 'github']);
+    assert.deepEqual(sources, ['gitea', 'github', 'gitlab']);
+  });
+
+  test('reorders a GitLab project sidebar too, resolved by its displayed label', () => {
+    // NAV renames GitLab's Repository/Code to Source before paintOrder runs, so
+    // the GitLab rule resolves the group by "Source" and uses Bitbucket's order,
+    // like the GitHub and Gitea rules.
+    const rule = NAV_RULES.bitbucket.find((r) => r.source === 'gitlab');
+    assert.equal(rule.scope, '.super-sidebar');
+    assert.equal(rule.contains, 'Source');
+    assert.equal(rule.item, 'li');
+    assert.deepEqual(
+      rule.order,
+      NAV_RULES.bitbucket.find((r) => r.source === 'github').order,
+    );
   });
 });
 

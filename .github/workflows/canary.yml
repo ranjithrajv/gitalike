@@ -24,12 +24,12 @@ jobs:
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
 
       # Standard library only, so there is nothing to install.
       - name: Check the upstream selector hooks
         id: canary
-        run: node tools/selector-canary.mjs
+        run: node tools/compare/selector-canary.mjs
 
       # A rename should not wait to be discovered from a bug report: file (or
       # refresh) an issue so the drift is owned, and keep the run red.
@@ -44,10 +44,10 @@ jobs:
             echo 'The daily selector canary found an anchor the extension relies'
             echo 'on missing from a live forge page. Update the selector and the'
             echo 'canary hooks together (`src/lib/ux.js`, `src/themes/*.css`,'
-            echo '`tools/selector-canary.mjs`).'
+            echo '`tools/compare/selector-canary.mjs`).'
             echo
             echo '```'
-            node tools/selector-canary.mjs 2>&1 || true
+            node tools/compare/selector-canary.mjs 2>&1 || true
             echo '```'
             echo
             echo "Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

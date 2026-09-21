@@ -1,10 +1,11 @@
 # Forge UX
 
 gitalike re-skins one forge's interface onto another. This is the map of the
-source products it handles — GitHub, GitLab, and Gitea/Forgejo (Codeberg,
-`gitea.com`) — and the three UIs it can paint them with: **GitLab**, **GitHub**
-and **Bitbucket**. The structural passes and the vocabulary tables live in
-`src/lib/ux.js`; this file is the map and the reasoning.
+source products it handles — GitHub, GitLab, Gitea/Forgejo (Codeberg,
+`gitea.com`), Bitbucket and Gerrit — and the three UIs it can paint them with:
+**GitLab**, **GitHub** and **Bitbucket**. The structural passes and the
+vocabulary tables live in `src/lib/ux.js`; this file is the map and the
+reasoning.
 
 ## The skins
 
@@ -17,9 +18,10 @@ structural passes apply unchanged and only its palette, words and tab set
 differ.
 
 A source product wears the *other* product's UI by default (GitHub ⇄ GitLab);
-Gitea is GitHub-flavoured and can wear either; Bitbucket is a target only (no
-host is classified as it) and can be chosen for any source. The popup picks one
-skin at a time, with a per-site override — see
+Gitea is GitHub-flavoured and can wear either; Bitbucket is both a source and a
+target — a Bitbucket host wears the GitHub or GitLab UI, and any source can be
+chosen for the Bitbucket UI. Gerrit is a source only, added one instance at a
+time. The popup picks one skin at a time, with a per-site override — see
 [UX-PARITY.md](UX-PARITY.md#skin-selection).
 
 ## Directions
@@ -30,6 +32,10 @@ skin at a time, with a per-site override — see
   (`html.gs-theme-github`, `themes/as-github.css`)
 - **→B** — any source shown with the Bitbucket UI
   (`html.gs-theme-bitbucket`, `themes/as-bitbucket.css`)
+- **B→G / B→L** — a Bitbucket source shown with the GitHub or GitLab UI, with
+  no structural pass yet (see [Other forges](#other-forges))
+- **Ger→G / Ger→L** — a Gerrit source shown with the GitHub or GitLab UI, the
+  same vocabulary-only treatment
 
 ## Captures
 
@@ -418,10 +424,26 @@ UI as GitHub's underlined tab row. Gitea's description and topics keep Gitea's
 own placement — they are not moved into a GitLab "Project information" block or
 a GitHub "About" rail — and Gitea's own `g`-combos are left alone.
 
-**Bitbucket** is a target-only skin: no host is classified as Bitbucket, so it
-is chosen from the popup for any source. Its layout is GitLab's (Bitbucket's
-repo nav is a left sidebar), so what differs is its palette (`#0052cc`), its
-words and its tab set (`Source`, `Pull requests`, `Pipelines`, `Issues`).
+**Bitbucket** is both a skin and a source. As a *skin* it is chosen from the
+popup for any source: its layout is GitLab's (Bitbucket's repo nav is a left
+sidebar), but its menu is flat — grouping follows the skin, so it takes no GitLab
+group headings — and what differs is its palette (`#0052cc`), its words and its
+tab set (`Source`, `Pull requests`, `Pipelines`, `Issues`). As a *source*,
+`bitbucket.org` (and any Bitbucket Data Center host you add) can wear the GitHub
+or GitLab UI. Only the source-agnostic passes run on it — copy, control labels
+and reference markers (Bitbucket's `/pull-requests/N` routes are matched); there
+is no token block, `SELECTORS` entry or `NAV_RULES` rule for its markup, because
+Bitbucket Cloud renders its repository page client-side and serves no capturable
+public page to key them on. The scorecard in
+[UX-PARITY.md](UX-PARITY.md#parity-scoring) carries that gap as its own row.
+
+**Gerrit** is a source only, and has no bundled host: an instance is added from
+the popup one origin at a time. Its PolyGerrit UI is client-rendered like
+Bitbucket Cloud, so it gets the same vocabulary-only treatment — copy and
+control labels — with no token, `SELECTORS` or `NAV_RULES` coverage. Its changes
+are numbered (`/c/<project>/+/<N>`) with a Change-Id, not a `#`/`!`
+pull-request marker, so the reference-marker pass does not reach it either. The
+scorecard carries it as its own row.
 
 The current forge specifics — which Gitea selector each pass hooks, the
 `overflow-menu` handling, and the per-skin tables — are in

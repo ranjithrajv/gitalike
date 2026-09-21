@@ -1,0 +1,15 @@
+# Blank issues stay available: a report that fits neither template should not be
+# turned away, and the popup's "Report a missed spot" link opens the bug form
+# directly. Keep `contact_links` short — each one is a reason not to read the
+# README first.
+blank_issues_enabled: true
+contact_links:
+  - name: Live preview
+    url: https://ranjithrajv.github.io/gitalike/
+    about: Swipe every site against every skin it can wear, before filing.
+  - name: README
+    url: https://github.com/ranjithrajv/gitalike/blob/main/README.md
+    about: What gitalike does, how to install it, and its known limitations.
+  - name: Contributing guide
+    url: https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md
+    about: Build, test, the ground rules, and how to add a forge or a translation.

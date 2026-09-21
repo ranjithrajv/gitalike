@@ -80,6 +80,10 @@ describe('module shape', () => {
   test('a kind is always skinned with the *other* product by default', () => {
     assert.equal(kinds.github.theme, 'gitlab');
     assert.equal(kinds.gitlab.theme, 'github');
+    // There is no single "other" product for a third kind; Bitbucket and
+    // Gerrit default to the GitHub UI.
+    assert.equal(kinds.bitbucket.theme, 'github');
+    assert.equal(kinds.gerrit.theme, 'github');
   });
 
   test('every skin names the product whose UI it is, and its layout', () => {
@@ -161,6 +165,10 @@ describe('kindFor', () => {
     // GitHub-flavoured forges: the github kind, shown with the GitLab UI.
     assert.equal(kindFor('codeberg.org', {}), 'github');
     assert.equal(kindFor('gitea.com', {}), 'github');
+    // Bitbucket is a source too, so its own host is the bitbucket kind. Gerrit
+    // has no bundled host, so it is only ever added by the user.
+    assert.equal(kindFor('bitbucket.org', {}), 'bitbucket');
+    assert.equal(kindFor('gerrit.example.com', {}), null);
     // A self-hosted instance is not bundled; it is added by the user.
     assert.equal(kindFor('code.swecha.org', {}), null);
   });
@@ -169,6 +177,14 @@ describe('kindFor', () => {
     const added = { 'github.acme.com': 'github', 'gl.acme.com': 'gitlab' };
     assert.equal(kindFor('github.acme.com', added), 'github');
     assert.equal(kindFor('gl.acme.com', added), 'gitlab');
+    assert.equal(
+      kindFor('bb.acme.com', { 'bb.acme.com': 'bitbucket' }),
+      'bitbucket',
+    );
+    assert.equal(
+      kindFor('cr.example.com', { 'cr.example.com': 'gerrit' }),
+      'gerrit',
+    );
   });
 
   test('returns null for hosts it has never seen', () => {
@@ -179,7 +195,7 @@ describe('kindFor', () => {
 
   test('ignores junk stored against a host', () => {
     assert.equal(
-      kindFor('evil.example', { 'evil.example': 'bitbucket' }),
+      kindFor('evil.example', { 'evil.example': 'gitbucket' }),
       null,
     );
     assert.equal(kindFor('evil.example', { 'evil.example': null }), null);
@@ -202,6 +218,11 @@ describe('hostsFor', () => {
     assert.deepEqual(hostsFor('gitlab', { 'gl.acme.com': 'gitlab' }), [
       'gitlab.com',
       'gl.acme.com',
+    ]);
+    assert.deepEqual(hostsFor('bitbucket', {}), ['bitbucket.org']);
+    assert.deepEqual(hostsFor('bitbucket', { 'bb.acme.com': 'bitbucket' }), [
+      'bitbucket.org',
+      'bb.acme.com',
     ]);
   });
 
@@ -295,15 +316,18 @@ describe('isBuiltin / isKind', () => {
     assert.equal(isBuiltin('code.swecha.org'), false);
     assert.equal(isBuiltin('codeberg.org'), true);
     assert.equal(isBuiltin('gitea.com'), true);
+    assert.equal(isBuiltin('bitbucket.org'), true);
     assert.equal(isBuiltin('github.acme.com'), false);
     // Guard against prototype-key false positives.
     assert.equal(isBuiltin('constructor'), false);
   });
 
-  test('accepts exactly the two kinds', () => {
+  test('accepts exactly the known kinds', () => {
     assert.equal(isKind('github'), true);
     assert.equal(isKind('gitlab'), true);
-    assert.equal(isKind('bitbucket'), false);
+    assert.equal(isKind('bitbucket'), true);
+    assert.equal(isKind('gerrit'), true);
+    assert.equal(isKind('gitbucket'), false);
     assert.equal(isKind(''), false);
     assert.equal(isKind(null), false);
   });
@@ -351,7 +375,12 @@ describe('stateFrom', () => {
     assert.deepEqual(
       stateFrom({ [SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' } })
         .settings,
-      { github: 'gitlab', gitlab: 'gitlab' },
+      {
+        github: 'gitlab',
+        gitlab: 'gitlab',
+        bitbucket: 'gitlab',
+        gerrit: 'gitlab',
+      },
     );
   });
 
@@ -398,6 +427,8 @@ describe('kindOn', () => {
   test('is true when any skin is chosen for a kind', () => {
     assert.equal(kindOn('github', { github: 'gitlab' }), true);
     assert.equal(kindOn('gitlab', { gitlab: 'github' }), true);
+    assert.equal(kindOn('bitbucket', { bitbucket: 'gitlab' }), true);
+    assert.equal(kindOn('gerrit', { gerrit: 'gitlab' }), true);
     // A kind can now hold any theme, including one it does not default to.
     assert.equal(kindOn('github', { github: 'bitbucket' }), true);
     assert.equal(kindOn('github', { github: 'github' }), true);
@@ -410,7 +441,7 @@ describe('kindOn', () => {
   });
 
   test('an unknown kind is off, never a throw', () => {
-    assert.equal(kindOn('bitbucket', { bitbucket: 'gitlab' }), false);
+    assert.equal(kindOn('gitbucket', { gitbucket: 'gitlab' }), false);
     assert.equal(kindOn(null, { github: 'gitlab' }), false);
   });
 });
@@ -462,6 +493,22 @@ describe('sourceFor', () => {
   test('the Gitea-family forges are Gitea markup, not GitHub', () => {
     assert.equal(sourceFor('codeberg.org', {}), 'gitea');
     assert.equal(sourceFor('gitea.com', {}), 'gitea');
+  });
+
+  test('Bitbucket is its own markup', () => {
+    assert.equal(sourceFor('bitbucket.org', {}), 'bitbucket');
+    assert.equal(
+      sourceFor('bb.acme.com', { 'bb.acme.com': 'bitbucket' }),
+      'bitbucket',
+    );
+  });
+
+  test('Gerrit is its own markup, and only ever user-added', () => {
+    assert.equal(sourceFor('gerrit.example.com', {}), null);
+    assert.equal(
+      sourceFor('cr.example.com', { 'cr.example.com': 'gerrit' }),
+      'gerrit',
+    );
   });
 
   test('a user-added host is assumed to be built on its product', () => {
@@ -611,9 +658,60 @@ describe('themeFor', () => {
     );
   });
 
+  test('Bitbucket can wear either UI, and its own UI is a no-op', () => {
+    // Bitbucket is a source as well as a target: its own markup is no source's
+    // own "other" UI.
+    assert.equal(
+      themeFor('bitbucket.org', {}, {}, { 'bitbucket.org': 'github' }),
+      'github',
+    );
+    assert.equal(
+      themeFor('bitbucket.org', {}, {}, { 'bitbucket.org': 'gitlab' }),
+      'gitlab',
+    );
+    // ...and painting a Bitbucket site as Bitbucket is off, like GitHub on a
+    // GitHub host.
+    assert.equal(
+      themeFor('bitbucket.org', { bitbucket: 'bitbucket' }, {}, {}),
+      null,
+    );
+    // A user-added Bitbucket host behaves the same.
+    assert.equal(
+      themeFor(
+        'bb.acme.com',
+        { bitbucket: 'gitlab' },
+        { 'bb.acme.com': 'bitbucket' },
+      ),
+      'gitlab',
+    );
+  });
+
+  test('Gerrit can wear either UI; it is only ever user-added', () => {
+    // No host is bundled as Gerrit, so it is set up by adding one, which then
+    // carries its per-host skin choice.
+    assert.equal(
+      themeFor(
+        'cr.example.com',
+        {},
+        { 'cr.example.com': 'gerrit' },
+        { 'cr.example.com': 'github' },
+      ),
+      'github',
+    );
+    assert.equal(
+      themeFor(
+        'cr.example.com',
+        {},
+        { 'cr.example.com': 'gerrit' },
+        { 'cr.example.com': 'gitlab' },
+      ),
+      'gitlab',
+    );
+  });
+
   test('a host can wear the Bitbucket skin, whatever its own markup is', () => {
-    // Bitbucket is a target only, so it is never any site's "own UI" — a
-    // GitHub, GitLab or Gitea host can all be pinned to it.
+    // GitHub, GitLab and Gitea markup are all not Bitbucket's, so any of them
+    // can be pinned to the Bitbucket UI.
     assert.equal(
       themeFor(
         'github.com',
@@ -655,12 +753,21 @@ describe('globalSkin / settingsForSkin', () => {
     assert.deepEqual(settingsForSkin('gitlab'), {
       github: 'gitlab',
       gitlab: 'gitlab',
+      bitbucket: 'gitlab',
+      gerrit: 'gitlab',
     });
     assert.deepEqual(settingsForSkin('bitbucket'), {
       github: 'bitbucket',
       gitlab: 'bitbucket',
+      bitbucket: 'bitbucket',
+      gerrit: 'bitbucket',
     });
-    assert.deepEqual(settingsForSkin('off'), { github: 'off', gitlab: 'off' });
+    assert.deepEqual(settingsForSkin('off'), {
+      github: 'off',
+      gitlab: 'off',
+      bitbucket: 'off',
+      gerrit: 'off',
+    });
   });
 
   test('globalSkin round-trips settingsForSkin', () => {
@@ -684,24 +791,27 @@ describe('globalSkin / settingsForSkin', () => {
 describe('hostsForSkin', () => {
   test('lists the hosts whose own markup is not already that skin', () => {
     // github.com is GitHub's own markup, so the GitHub UI leaves it alone;
-    // Gitea is not, so the GitHub UI repaints it.
+    // Gitea and Bitbucket are not, so the GitHub UI repaints them.
     assert.deepEqual(hostsForSkin('github', {}).sort(), [
+      'bitbucket.org',
       'codeberg.org',
       'gitea.com',
       'gitlab.com',
     ]);
     assert.deepEqual(hostsForSkin('gitlab', {}).sort(), [
+      'bitbucket.org',
       'codeberg.org',
       'gitea.com',
       'github.com',
     ]);
   });
 
-  test('bitbucket is no source own UI, so it lists every host', () => {
+  test('the Bitbucket skin repaints every host except Bitbucket markup', () => {
     assert.deepEqual(
       hostsForSkin('bitbucket', {}).sort(),
       [...hostsFor('github', {}), ...hostsFor('gitlab', {})].sort(),
     );
+    assert.ok(!hostsForSkin('bitbucket', {}).includes('bitbucket.org'));
   });
 
   test('off repaints nothing', () => {
@@ -720,9 +830,9 @@ describe('manifest permissions', () => {
         'utf8',
       ),
     );
-    const expected = [...hostsFor('github', {}), ...hostsFor('gitlab', {})].map(
-      (host) => `*://${host}/*`,
-    );
+    const expected = Object.keys(kinds)
+      .flatMap((kind) => hostsFor(kind, {}))
+      .map((host) => `*://${host}/*`);
     assert.deepEqual([...manifest.host_permissions].sort(), expected.sort());
     assert.ok(
       (manifest.optional_host_permissions || []).length > 0,

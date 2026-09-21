@@ -84,6 +84,13 @@
   const SKIP_SELECTOR =
     'script,style,noscript,template,code,pre,[contenteditable=""],[contenteditable="true"],[data-gs-ux-skip]';
 
+  // The timing knobs, named together: how long a batch of mutations is
+  // collected before it is painted, how often the undo ledger is swept for
+  // detached nodes, and how long a `g` waits for its second key.
+  const FLUSH_MS = 120;
+  const SWEEP_MS = 3000;
+  const COMBO_WINDOW_MS = 1200;
+
   let theme = null;
   let domObserver = null;
   let classObserver = null;
@@ -394,11 +401,11 @@
       }
       paintGlobal(current);
       const now = Date.now();
-      if (now - lastSweep > 3000) {
+      if (now - lastSweep > SWEEP_MS) {
         lastSweep = now;
         forgetDetached();
       }
-    }, 120);
+    }, FLUSH_MS);
   }
 
   /* ------------------------------------------------------- body watching -- */
@@ -495,7 +502,8 @@
       if (event.key.length !== 1) return;
       const key = event.key.toLowerCase();
       const now = Date.now();
-      const combo = gPending && now - gPending < 1200 ? `g${key}` : '';
+      const combo =
+        gPending && now - gPending < COMBO_WINDOW_MS ? `g${key}` : '';
       gPending = key === 'g' ? now : 0;
       if (!combo) return;
       const target = (UX.SHORTCUTS[theme] || {})[combo];

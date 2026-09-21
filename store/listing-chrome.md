@@ -49,11 +49,12 @@ inputs or editable regions; a control label changes only on an exact whole-label
 match; and a feature the other product lacks is marked rather than guessed at.
 Search, copy/paste and screen readers keep working.
 
-Works on github.com and gitlab.com out of the box, on the bundled self-hosted
-instance code.swecha.org, on Codeberg (Forgejo) and gitea.com (Gitea), and on any
-other instance you point it at — GitHub Enterprise Server included. Three skins —
-GitLab, GitHub and Bitbucket — and any site you have set up can wear any of them.
-Sourcehut is the next candidate.
+Works on github.com, gitlab.com and bitbucket.org out of the box, on the bundled
+self-hosted instance code.swecha.org, on Codeberg (Forgejo) and gitea.com
+(Gitea), and on any other instance you point it at — GitHub Enterprise Server,
+Bitbucket Data Center and Gerrit included. Three skins — GitLab, GitHub and
+Bitbucket — and any site you have set up can wear any of them. Sourcehut is the
+next candidate.
 
 Runs in Chrome, Edge, Brave, Opera, Vivaldi and the other Chromium browsers,
 which share the extension API.

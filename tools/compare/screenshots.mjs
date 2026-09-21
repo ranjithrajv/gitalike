@@ -3,11 +3,11 @@
  * Captures the extension's screenshots — the GitHub Pages before/after pairs and
  * the store-listing shots — from the built extension and the live sites.
  *
- *   node tools/screenshots.mjs project   # docs/ orientation pairs (repo pages)
- *   node tools/screenshots.mjs profile   # docs/ orientation pairs (profiles)
- *   node tools/screenshots.mjs store     # store/screenshots, 1280x720
+ *   node tools/compare/screenshots.mjs project   # docs/ orientation pairs (repo pages)
+ *   node tools/compare/screenshots.mjs profile   # docs/ orientation pairs (profiles)
+ *   node tools/compare/screenshots.mjs store     # store/screenshots, 1280x720
  *
- * What it captures lives in `tools/captures.mjs`, which the tests and the page
+ * What it captures lives in `tools/compare/captures.mjs`, which the tests and the page
  * are checked against; this file is only the capture loop.
  *
  * A *job* is one URL: the base frame with every skin off, then one frame per skin
@@ -20,8 +20,9 @@
  * image that looks fine until someone compares it with the live site.
  *
  * Only `playwright-core` is needed — the browser is the system Chromium, so
- * nothing is downloaded. Point at a different browser with `GS_CHROME=...`, and
- * at a different output directory with `GS_OUT=...`.
+ * nothing is downloaded. Point at a different browser with `GS_CHROME=...`, at
+ * a different output directory with `GS_OUT=...`, and at a single job with
+ * `GS_ONLY=<name substring>` so one new capture does not rewrite every PNG.
  *
  * The store requirements this satisfies:
  *   - Chrome Web Store: at least one 1280x720 screenshot.
@@ -34,7 +35,7 @@ import { fileURLToPath } from 'node:url';
 import { launch, retry } from './harness.mjs';
 import { PROFILE_JOBS, PROJECT_JOBS, STORE_SHOTS } from './captures.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 const OFF = { github: 'off', gitlab: 'off' };
 const PAGE = { width: 1280, height: 900 };
@@ -182,13 +183,18 @@ const mode = process.argv[2];
 const config = MODES[mode];
 if (!config) {
   console.error(
-    `usage: node tools/screenshots.mjs <${Object.keys(MODES).join('|')}>`,
+    `usage: node tools/compare/screenshots.mjs <${Object.keys(MODES).join('|')}>`,
   );
   process.exit(1);
 }
 
 const out = process.env.GS_OUT ?? join(root, config.out);
 await mkdir(out, { recursive: true });
+
+// `GS_ONLY` narrows a mode to the jobs whose name contains it, so a single new
+// capture can be added without re-shooting (and rewriting) the whole set.
+const only = process.env.GS_ONLY;
+const jobs = config.jobs?.filter((job) => !only || job.name.includes(only));
 
 const { context, popup, setSettings, close } = await launch({
   viewport: config.viewport,
@@ -197,7 +203,7 @@ const { context, popup, setSettings, close } = await launch({
 });
 
 try {
-  if (config.jobs) await captureJobs(context, setSettings, out, config.jobs);
+  if (jobs) await captureJobs(context, setSettings, out, jobs);
   if (config.shots) await captureShots(context, setSettings, out, config.shots);
   if (config.popup) await capturePopup(context, popup, out, config.viewport);
   console.log(`\nwrote ${mode} screenshots to ${out}`);

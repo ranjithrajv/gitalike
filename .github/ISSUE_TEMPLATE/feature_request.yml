@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest a forge, a skin, a translation, or a behaviour.
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        gitalike is deliberately small and conservative: it re-skins a page
+        rather than re-implementing it, it stays inert when the skin is off, and
+        it ships no vendor artwork. A proposal that holds those lines is much
+        easier to take. The ground rules are in
+        [CONTRIBUTING.md](https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md#ground-rules).
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this?
+      options:
+        - A new source forge or Git instance
+        - A new skin (target product)
+        - A translation or vocabulary fix
+        - Navigation, layout or metadata
+        - A keyboard shortcut
+        - Popup or settings
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The proposal
+      description: What should change, and where you would expect to see it.
+    validations:
+      required: true
+  - type: textarea
+    id: counterpart
+    attributes:
+      label: Which product should it match, and why
+      description: >-
+        Most of gitalike is one product's words and habits applied to another's
+        page — name the product it should behave like, or the reason it has no
+        counterpart and should be marked instead.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Including "do nothing", if the site already offers it.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: The ground rules
+      options:
+        - label: The extension would stay completely inert while the skin is off.
+        - label: Nothing would leave the browser — no network request, no telemetry.
+        - label: It needs no new permission.
+        - label: No vendor's logo or vector path data would be bundled.

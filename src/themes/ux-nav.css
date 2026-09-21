@@ -1080,6 +1080,29 @@ html.gs-layout-github .super-sidebar ul[data-testid="pinned-nav-items"] {
   order: 2 !important;
 }
 
+/* ------------------ as-gitlab · Bitbucket's flat repo menu -- */
+
+/* Bitbucket's repository menu is a flat list of its own tabs, but a GitLab
+   source keeps GitLab's collapsible group headings: `repoNav` builds a flat
+   list for a Gitea source and `paintNavGroups` inserts nothing (the skin has no
+   group table), but GitLab's own headings are part of its markup. Drop the
+   group toggles and show their contents so a GitLab project reads flat under
+   Bitbucket too. Scoped to project pages — the same `.super-sidebar` is
+   GitLab's global navigation elsewhere. */
+html.gs-theme-bitbucket
+  body[data-page^="projects:"]
+  .super-sidebar
+  [data-testid="menu-section-button"] {
+  display: none !important;
+}
+
+html.gs-theme-bitbucket
+  body[data-page^="projects:"]
+  .super-sidebar
+  [data-testid="menu-section"] {
+  display: contents !important;
+}
+
 /* ------------------------------------------------------------ heatmaps -- */
 
 /* GitHub's contribution graph is green; GitLab's activity graph is indigo.
