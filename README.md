@@ -51,7 +51,8 @@ Both links follow the newest release. The asset names deliberately carry no
 version number, so `/releases/latest/download/...` keeps working as releases
 pile up.
 
-**Chromium** (also loads in Chrome, Edge and Brave, which share the API)
+**Chromium** (also loads in Chrome, Edge, Brave, Opera, Vivaldi and the other
+Chromium-based browsers, which share the API)
 
 1. Unzip `gitalike-chromium.zip`
 2. Go to `chrome://extensions` — that is Chromium's own URL scheme, not a typo
@@ -63,9 +64,10 @@ wherever that folder lives — so do not move or delete it afterwards.
 
 **Firefox**
 
-`gitalike-firefox.zip` is unsigned, so Firefox will only load it **temporarily** —
-it is gone when the browser restarts. A permanent install comes from
-addons.mozilla.org.
+`gitalike-firefox.zip` needs Firefox **142 or newer**, and works in the forks
+that track it (LibreWolf, Floorp, Zen, …). It is unsigned, so Firefox will only
+load it **temporarily** — it is gone when the browser restarts. A permanent
+install comes from addons.mozilla.org.
 
 1. Go to `about:debugging#/runtime/this-firefox`
 2. **Load Temporary Add-on…** → choose `gitalike-firefox.zip` itself; it does not

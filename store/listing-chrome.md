@@ -55,6 +55,9 @@ other instance you point it at — GitHub Enterprise Server included. Three skin
 GitLab, GitHub and Bitbucket — and any site you have set up can wear any of them.
 Sourcehut is the next candidate.
 
+Runs in Chrome, Edge, Brave, Opera, Vivaldi and the other Chromium browsers,
+which share the extension API.
+
 • Three skins — GitLab UI, GitHub UI or Bitbucket UI (or Off) — one at a time,
   plus a per-site picker for the site you are on.
 • Add any instance by visiting it, or by typing its address. It is remembered.

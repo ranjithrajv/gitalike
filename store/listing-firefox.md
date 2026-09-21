@@ -46,6 +46,9 @@ other instance you point it at — GitHub Enterprise Server and self-hosted GitL
 included. Three skins — GitLab, GitHub and Bitbucket — and any site you have set
 up can wear any of them. Sourcehut is the next candidate.
 
+Runs in Firefox 142 or newer, and in the forks that track it (LibreWolf,
+Floorp, Zen).
+
 Features
 - Three skins — GitLab UI, GitHub UI or Bitbucket UI (or Off) — one at a time,
   plus a per-site picker for the site you are on.
