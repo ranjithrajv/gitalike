@@ -1,7 +1,8 @@
 # UX parity
 
 What GitAlike matches between GitHub and GitLab beyond colour, and where the two
-directions still differ. The tables themselves live in `src/lib/ux.js`; this file
+directions still differ. The tables themselves live in `src/lib/skins.js` (the
+skins) and `src/lib/sources.js`; this file
 is the map and the scorecard.
 
 ## Skins
@@ -16,7 +17,7 @@ bar + tab row, `gitlab` = left sidebar); Bitbucket's repo nav is a left
 sidebar, so it reuses GitLab's layout, but its menu is flat — grouping follows
 the skin, so it gets no GitLab group headings — and only its palette, words and
 tab set differ. The directional tables below still describe the two-way pair;
-Bitbucket's are in `src/lib/ux.js` under `bitbucket` and are covered by
+Bitbucket's are in `src/lib/skins.js` under `bitbucket` and are covered by
 `tests/ux.test.mjs`.
 
 ## Directions
@@ -78,7 +79,7 @@ It is a coverage estimate, not a quality judgement, and it says nothing about
 the source's own features — only how closely the applied UI reads as the product
 it is pretending to be.
 
-The score is derived from the tables in `src/lib/ux.js` and the pass gating in
+The score is derived from the tables in `src/lib/skins.js` and the pass gating in
 `src/content/ux-*.js`, not measured. Each page type has its own rubric, a set of
 weighted dimensions; a cell is the sum of (weight × share reproduced), rounded
 to one decimal.

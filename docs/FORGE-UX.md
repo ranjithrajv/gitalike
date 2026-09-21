@@ -3,9 +3,9 @@
 GitAlike re-skins one forge's interface onto another. This is the map of the
 source products it handles — GitHub, GitLab, Gitea/Forgejo (Codeberg,
 `gitea.com`), Bitbucket and Gerrit — and the three UIs it can paint them with:
-**GitLab**, **GitHub** and **Bitbucket**. The structural passes and the
-vocabulary tables live in `src/lib/ux.js`; this file is the map and the
-reasoning.
+**GitLab**, **GitHub** and **Bitbucket**. The skins live in
+`src/lib/skins.js`, the forge markup hooks in `src/lib/sources.js`, and the
+structural passes in `src/lib/ux.js`; this file is the map and the reasoning.
 
 ## The skins
 
@@ -125,7 +125,7 @@ item is **Repository** while the clone button is still **Code**. So
 prose it would corrupt the clone button. This is exactly why `NAV` is matched
 only within `NAV_SCOPE` (`nav[aria-label="Repository"]`, `.super-sidebar`, …)
 and never through `PHRASES` — see
-[`src/lib/ux.js`](../src/lib/ux.js) and
+[`src/lib/skins.js`](../src/lib/skins.js) and
 [UX-PARITY.md](UX-PARITY.md#navigation).
 
 ### 5. Namespace depth
@@ -412,7 +412,7 @@ hosts issue different usernames, so there is no path to map between them.
 ### See also
 
 - [UX-PARITY.md](UX-PARITY.md) — the full parity status matrix
-- [`src/lib/ux.js`](../src/lib/ux.js) — the vocabulary, navigation and shortcut tables
+- [`src/lib/skins.js`](../src/lib/skins.js) — the vocabulary, navigation and shortcut tables, one object per skin
 - [`themes/ux-nav.css`](../src/themes/ux-nav.css) — the orientation rules
 
 ## Other forges
@@ -453,5 +453,5 @@ The current forge specifics — which Gitea selector each pass hooks, the
 
 - [UX-PARITY.md](UX-PARITY.md) — the full parity status matrix
 - [`index.html`](index.html) — live orientation captures
-- [`src/lib/ux.js`](../src/lib/ux.js) — the vocabulary, navigation and shortcut tables
+- [`src/lib/skins.js`](../src/lib/skins.js) — the vocabulary, navigation and shortcut tables, one object per skin
 - [`themes/ux-nav.css`](../src/themes/ux-nav.css) — the orientation rules

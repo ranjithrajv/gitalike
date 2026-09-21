@@ -23,10 +23,14 @@ would like to keep it that way. The only data that leaves the machine is
 settings and the hostnames they added, never anything read from a page.
 
 **One source of truth per concern.** Hosts, kinds, address parsing and the
-storage schema live in `src/lib/sites.js`; the vocabulary, navigation, keyboard,
-path-translation and forge-selector tables live in `src/lib/ux.js`. Neither
-touches the DOM, which is what makes them unit-testable. The manifest repeats
-hostnames only because the manifest format cannot read a JavaScript file.
+storage schema live in `src/lib/sites.js`; the **skins** — one object per target
+UI, carrying its vocabulary, navigation order, profile menu and shortcuts — live
+in `src/lib/skins.js`; the **sources** — one object per forge markup family,
+carrying its DOM hooks and canary pages — live in `src/lib/sources.js`; and the
+pure helpers that compose them (path translation, forge selection, the shared
+nav scopes) live in `src/lib/ux.js`. None touches the DOM, which is what makes
+them unit-testable. The manifest repeats hostnames only because the manifest
+format cannot read a JavaScript file.
 
 **Stay conservative on the page.** The UX layer must never rewrite text inside
 `<code>`, inputs, editable regions or anything marked `[data-gs-ux-skip]`, and
@@ -150,7 +154,7 @@ palette, then fixes up a few structural things the tokens cannot reach (the top
 bar, the logo, active-tab accents, navigation orientation). The stylesheets and
 two classes do the visual half; a second content script does the copy,
 reference, navigation and keyboard half, driven by the tables in
-`src/lib/ux.js`.
+`src/lib/skins.js` and `src/lib/sources.js`.
 
 ```
 content script (document_start, registered for the configured hosts only)
@@ -160,7 +164,7 @@ content script (document_start, registered for the configured hosts only)
   └─ reacts to storage + DOM changes
 
 ux content script (inert unless a theme class is present)
-  ├─ rewrites page copy and nav labels        -> src/lib/ux.js tables
+  ├─ rewrites page copy and nav labels        -> src/lib/skins.js tables
   ├─ rewrites # / ! reference markers          by the link's href
   ├─ reorders the repo navigation              into the other product's order
   ├─ marks features the other product lacks    -> a .gs-no-equiv badge
@@ -228,7 +232,7 @@ Each theme file has three parts:
    Add a line here whenever you find a spot the skin misses.
 
    If the fix is structural rather than colour, add the selector itself to
-   `SELECTORS` in `src/lib/ux.js` — keyed by the *source* product (the site's
+   `SELECTORS` in `src/lib/sources.js` — keyed by the *source* product (the site's
    markup), not the skin applied to it — and read it from `src/content/ux-*.js`.
    A literal there cannot be checked by `npm run canary`; a `SELECTORS` entry
    can, and the canary probes every entry a `CANARY_PAGES` page names.
@@ -270,7 +274,7 @@ mark rather than copying a forge's.
 
 ### Add a label translation
 
-1. Add it to the right table in `src/lib/ux.js`. `PHRASES` is ordinary page copy,
+1. Add it to the right table in `src/lib/skins.js`. `PHRASES` is ordinary page copy,
    `NAV` is navigation labels, `LABELS`/`CHROME` are whole control and account
    labels, `UNMAPPED` is features the other product lacks. Longest key wins, so
    add the plural before the singular.
@@ -280,13 +284,13 @@ mark rather than copying a forge's.
 
 ### Add a keyboard shortcut
 
-`SHORTCUTS` in `src/lib/ux.js`, plus a test. A combo that has a navigation link
+`SHORTCUTS` in `src/lib/skins.js`, plus a test. A combo that has a navigation link
 is delivered as a click (`SHORTCUT_TARGETS`); the rest fall back to synthetic key
 events.
 
 ### Change the navigation order or orientation
 
-`NAV_RULES` in `src/lib/ux.js` holds the desired item order; orientation is CSS
+`NAV_RULES` in `src/lib/skins.js` holds the desired item order; orientation is CSS
 in `themes/ux-nav.css`.
 
 - **G→L** turns GitHub's repo tab bar into a left sidebar by making `main` a grid
@@ -336,10 +340,11 @@ Add the host to `tests/sites.test.mjs`. If the forge is Gitea-family it does not
 use GitHub's Primer tokens, so the classification alone only changes the words —
 `themes/as-gitlab.css` and `themes/as-github.css` each have a
 **Gitea / Forgejo** block that re-points its `--color-*` custom properties at that
-skin's palette, and `src/lib/ux.js` adds its repo tab list to
-`NAV_SCOPE`/`NAV_RULES` (for both themes) and its markup hooks to
-`SELECTORS.gitea` so its tabs are relabelled and reordered and the canary can
-watch them. The GitLab skin also rebuilds those tabs as a grouped sidebar:
+skin's palette, `src/lib/sources.js` adds its markup hooks to `SELECTORS.gitea`
+so the canary can watch them, and `src/lib/skins.js` adds its repo tab list to
+each skin's `navRules` (with the shared `NAV_SCOPE` in `ux.js` covering its
+region) so its tabs are relabelled and reordered. The GitLab skin also rebuilds
+those tabs as a grouped sidebar:
 `content/ux-project.js` `paintGiteaNav` and the `UX.repoNav` model, keyed off Gitea's
 `[data-theme]` marker, apply to any Gitea-family instance. Record the host in
 `SOURCES` in `src/lib/sites.js` too, so the picker knows
@@ -364,7 +369,7 @@ source in its own right as well. Adding a target means:
 | 1 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab') — which joins `THEMES` automatically |
 | 2 | `src/themes/as-<target>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
 | 3 | `src/background.js` | add the stylesheet to `CONTENT_CSS` |
-| 4 | `src/lib/ux.js` | the target's `PHRASES`, `NAV`, `LABELS`, `CHROME`, `UNMAPPED`, `NAV_RULES` and `PROFILE_MENU`, plus whichever of `SHORTCUTS`, `TOPBAR_HIDE`, `NAV_GROUPS`, `NAV_KEEP`/`NAV_HIDE` and `PROJECT_TABS` the skin needs |
+| 4 | `src/lib/skins.js` | one object for the skin: its `phrases`, `nav`, `labels`, `chrome`, `unmapped`, `repoOrder`, `navRules` and `profileMenu`, plus whichever of `shortcuts`, `topbarHide`, `groups`, `keep`/`hide` and `projectTabs` it needs |
 | 5 | `tests/` | cases for the tables, `projectTabs`, `activeTabFor` and the vocabulary — the pinned Bitbucket suite is the template |
 | 6 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and the regenerated screenshots |
 

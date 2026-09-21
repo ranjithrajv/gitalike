@@ -32,7 +32,7 @@ https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md#pull-requests
 
 - [ ] `src/lib/sites.js` and `src/manifest.base.json` are in step (the
       manifest-permissions test covers a built-in host).
-- [ ] Tables in `src/lib/ux.js` have matching cases in `tests/`.
+- [ ] Skins in `src/lib/skins.js` and sources in `src/lib/sources.js` have matching cases in `tests/`.
 - [ ] Any structural selector added to a theme has a `SELECTORS` entry (and a
       `CANARY_PAGES` page) so `npm run canary` can watch it.
 - [ ] No vendor logo or vector path data is bundled; the skin paints GitAlike's
