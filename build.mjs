@@ -23,7 +23,9 @@ const SRC = join(root, 'src');
 const DIST = join(root, 'dist');
 const BASE_MANIFEST = 'manifest.base.json';
 
-const { version } = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+const { version } = JSON.parse(
+  await readFile(join(root, 'package.json'), 'utf8'),
+);
 
 // Only the files the extension actually loads should reach the bundle. Drop
 // editor/OS junk and source maps that happen to sit in src/, so a stray backup

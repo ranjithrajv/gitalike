@@ -41,8 +41,18 @@
    * the structural passes key on this rather than on the theme name.
    */
   const skins = {
-    gitlab: { product: 'GitLab', badge: 'GL', color: '#7759c2', layout: 'gitlab' },
-    github: { product: 'GitHub', badge: 'GH', color: '#24292f', layout: 'github' },
+    gitlab: {
+      product: 'GitLab',
+      badge: 'GL',
+      color: '#7759c2',
+      layout: 'gitlab',
+    },
+    github: {
+      product: 'GitHub',
+      badge: 'GH',
+      color: '#24292f',
+      layout: 'github',
+    },
     bitbucket: {
       product: 'Bitbucket',
       badge: 'BB',
@@ -148,7 +158,8 @@
   };
 
   function sourceFor(host, added) {
-    if (Object.prototype.hasOwnProperty.call(SOURCES, host)) return SOURCES[host];
+    if (Object.prototype.hasOwnProperty.call(SOURCES, host))
+      return SOURCES[host];
     return kindFor(host, added);
   }
 
@@ -176,7 +187,11 @@
     const hosts = Object.keys(builtin).filter((host) => builtin[host] === kind);
     const extra = added || {};
     for (const host of Object.keys(extra)) {
-      if (extra[host] === kind && isHostname(host) && hosts.indexOf(host) === -1) {
+      if (
+        extra[host] === kind &&
+        isHostname(host) &&
+        hosts.indexOf(host) === -1
+      ) {
         hosts.push(host);
       }
     }
@@ -198,7 +213,9 @@
    * @returns {string|null} the hostname, or null if it is not usable
    */
   function parseHost(value) {
-    const raw = String(value === undefined || value === null ? '' : value).trim();
+    const raw = String(
+      value === undefined || value === null ? '' : value,
+    ).trim();
     if (!raw) return null;
 
     const hasScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(raw);
@@ -226,7 +243,9 @@
    */
   function kindOn(kind, settings) {
     const meta = kinds[kind];
-    return Boolean(meta) && Boolean(settings) && THEMES.includes(settings[kind]);
+    return (
+      Boolean(meta) && Boolean(settings) && THEMES.includes(settings[kind])
+    );
   }
 
   /**
@@ -239,7 +258,10 @@
    * @returns {string|null} a theme name, 'off', or null
    */
   function hostSkinFor(host, hostSettings) {
-    if (!hostSettings || !Object.prototype.hasOwnProperty.call(hostSettings, host)) {
+    if (
+      !hostSettings ||
+      !Object.prototype.hasOwnProperty.call(hostSettings, host)
+    ) {
       return null;
     }
     const value = hostSettings[host];

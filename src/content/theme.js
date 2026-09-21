@@ -109,9 +109,9 @@
     // computed `color-scheme` for the same reason as GitHub's `auto`: our own
     // palette sets that property, so reading it back would answer ourselves.
     const dataTheme = root.getAttribute('data-theme') || '';
-    if (/dark$/.test(dataTheme)) return true;
-    if (/light$/.test(dataTheme)) return false;
-    if (/auto$/.test(dataTheme)) return prefersDark.matches;
+    if (dataTheme.endsWith('dark')) return true;
+    if (dataTheme.endsWith('light')) return false;
+    if (dataTheme.endsWith('auto')) return prefersDark.matches;
     // Last resort, for anything that advertises its mode only this way.
     const scheme = getComputedStyle(root).colorScheme || '';
     if (scheme.includes('dark') && !scheme.includes('light')) return true;

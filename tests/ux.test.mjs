@@ -68,7 +68,19 @@ describe('module shape', () => {
     ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, NAV_GROUPS, NAV_HIDE, NAV_KEEP, LABELS, CHROME, UNMAPPED, SHORTCUTS, SELECTORS, PROFILE_MENU]) {
+    for (const table of [
+      PHRASES,
+      NAV,
+      NAV_GROUPS,
+      NAV_HIDE,
+      NAV_KEEP,
+      LABELS,
+      CHROME,
+      UNMAPPED,
+      SHORTCUTS,
+      SELECTORS,
+      PROFILE_MENU,
+    ]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
@@ -92,8 +104,10 @@ describe('module shape', () => {
 
   test('longest phrase wins', () => {
     // "Pull request" must not clobber "Pull requests" first.
-    assert.equal(translate('Pull requests and a Pull request', 'gitlab'),
-      'Merge requests and a Merge request');
+    assert.equal(
+      translate('Pull requests and a Pull request', 'gitlab'),
+      'Merge requests and a Merge request',
+    );
   });
 
   test('sentence case is translated too', () => {
@@ -103,7 +117,10 @@ describe('module shape', () => {
   });
 
   test('leaves untouched copy untouched', () => {
-    assert.equal(translate('A normal sentence.', 'gitlab'), 'A normal sentence.');
+    assert.equal(
+      translate('A normal sentence.', 'gitlab'),
+      'A normal sentence.',
+    );
     assert.equal(translate('', 'gitlab'), '');
   });
 
@@ -135,9 +152,15 @@ describe('LABELS', () => {
   test('translateControl maps a whole control label', () => {
     assert.equal(translateControl('Merge', 'github'), 'Merge pull request');
     assert.equal(translateControl('Merge pull request', 'gitlab'), 'Merge');
-    assert.equal(translateControl('Squash commits', 'github'), 'Squash and merge');
+    assert.equal(
+      translateControl('Squash commits', 'github'),
+      'Squash and merge',
+    );
     assert.equal(translateControl('Rebase and merge', 'gitlab'), 'Rebase');
-    assert.equal(translateControl('Security and quality', 'gitlab'), 'Security');
+    assert.equal(
+      translateControl('Security and quality', 'gitlab'),
+      'Security',
+    );
   });
 
   test('translateControl falls back to the phrase table', () => {
@@ -150,15 +173,24 @@ describe('LABELS', () => {
     // is left alone; only an exact control label is touched.
     assert.equal(translate('Squash and merge', 'gitlab'), 'Squash and merge');
     assert.equal(translate('Rebase', 'github'), 'Rebase');
-    assert.equal(translate('Security and quality', 'gitlab'), 'Security and quality');
+    assert.equal(
+      translate('Security and quality', 'gitlab'),
+      'Security and quality',
+    );
     assert.equal(translate('Merge', 'github'), 'Merge');
   });
 });
 
 describe('CHROME', () => {
   test('translateControl maps account/menu chrome', () => {
-    assert.equal(translateControl('Your repositories', 'gitlab'), 'Your projects');
-    assert.equal(translateControl('Your projects', 'github'), 'Your repositories');
+    assert.equal(
+      translateControl('Your repositories', 'gitlab'),
+      'Your projects',
+    );
+    assert.equal(
+      translateControl('Your projects', 'github'),
+      'Your repositories',
+    );
     assert.equal(translateControl('Your gists', 'gitlab'), 'Your snippets');
     assert.equal(translateControl('Starred projects', 'github'), 'Your stars');
   });
@@ -236,7 +268,10 @@ describe('controlLabel', () => {
     // "Merge pull request" contains the phrase "pull request": if phrase
     // translation runs first it becomes "Merge merge request" and the exact
     // entry is missed. The whole-label lookup has to run on the original.
-    assert.equal(translate('Merge pull request', 'gitlab'), 'Merge merge request');
+    assert.equal(
+      translate('Merge pull request', 'gitlab'),
+      'Merge merge request',
+    );
     assert.equal(
       controlLabel('Merge pull request', 'gitlab') ??
         translate('Merge pull request', 'gitlab'),
@@ -292,7 +327,10 @@ describe('SHORTCUTS', () => {
     const targets = UX.SHORTCUT_TARGETS;
     for (const theme of ['gitlab', 'github']) {
       for (const [combo, label] of Object.entries(targets[theme])) {
-        assert.ok(SHORTCUTS[theme][combo], `${theme}: ${combo} is not a mapped combo`);
+        assert.ok(
+          SHORTCUTS[theme][combo],
+          `${theme}: ${combo} is not a mapped combo`,
+        );
         assert.equal(typeof label, 'string');
         assert.ok(label.length > 0);
       }
@@ -341,7 +379,10 @@ describe('NAV_RULES', () => {
     assert.ok(order.includes('Work items'));
     assert.ok(!order.includes('Issues'));
     assert.deepEqual(
-      orderIndexes(['CI/CD', 'Work items', 'Repository', 'Merge requests'], order),
+      orderIndexes(
+        ['CI/CD', 'Work items', 'Repository', 'Merge requests'],
+        order,
+      ),
       [1, 3, 2, 0],
     );
   });
@@ -453,7 +494,10 @@ describe('otherHostUrl', () => {
   test('refuses paths that are not a repository', () => {
     assert.equal(otherHostUrl('https://github.com/settings'), null);
     assert.equal(otherHostUrl('https://github.com/orgs/foo'), null);
-    assert.equal(otherHostUrl('https://gitlab.com/dashboard/merge_requests'), null);
+    assert.equal(
+      otherHostUrl('https://gitlab.com/dashboard/merge_requests'),
+      null,
+    );
     assert.equal(otherHostUrl('https://github.com'), null);
   });
 
@@ -503,7 +547,11 @@ describe('UNMAPPED', () => {
   });
 
   test('never marks something it also translates', () => {
-    const targets = { gitlab: 'GitLab', github: 'GitHub', bitbucket: 'Bitbucket' };
+    const targets = {
+      gitlab: 'GitLab',
+      github: 'GitHub',
+      bitbucket: 'Bitbucket',
+    };
     for (const theme of ['gitlab', 'github', 'bitbucket']) {
       const mapped = new Set([
         ...Object.keys(PHRASES[theme]),
@@ -512,7 +560,10 @@ describe('UNMAPPED', () => {
       ]);
       for (const [label, product] of Object.entries(UNMAPPED[theme])) {
         assert.equal(product, targets[theme], `${theme}: ${label}`);
-        assert.ok(!mapped.has(label), `${theme}: ${label} is both mapped and marked`);
+        assert.ok(
+          !mapped.has(label),
+          `${theme}: ${label} is both mapped and marked`,
+        );
       }
     }
   });
@@ -577,13 +628,32 @@ describe('NAV_HIDE', () => {
 
 describe('NAV_KEEP', () => {
   test('keeps only GitHub’s project-page options under the GitHub skin', () => {
-    for (const keep of ['Code', 'Issues', 'Pull requests', 'Actions', 'Projects', 'Wiki', 'Security', 'Insights', 'Settings']) {
+    for (const keep of [
+      'Code',
+      'Issues',
+      'Pull requests',
+      'Actions',
+      'Projects',
+      'Wiki',
+      'Security',
+      'Insights',
+      'Settings',
+    ]) {
       assert.equal(navKeep(keep, 'github'), true, keep);
     }
   });
 
   test('drops the items GitHub’s project page does not show', () => {
-    for (const drop of ['Branches', 'Commits', 'Tags', 'Labels', 'Milestones', 'Members', 'Help', 'GitLab']) {
+    for (const drop of [
+      'Branches',
+      'Commits',
+      'Tags',
+      'Labels',
+      'Milestones',
+      'Members',
+      'Help',
+      'GitLab',
+    ]) {
       assert.equal(navKeep(drop, 'github'), false, drop);
     }
   });
@@ -618,10 +688,7 @@ describe('NAV_KEEP', () => {
 
 describe('refMarker', () => {
   test('a GitHub pull URL becomes a GitLab ! marker', () => {
-    assert.equal(
-      refMarker('https://github.com/o/r/pull/42', 'gitlab'),
-      '!42',
-    );
+    assert.equal(refMarker('https://github.com/o/r/pull/42', 'gitlab'), '!42');
   });
 
   test('a GitLab merge-request URL becomes a GitHub # marker', () => {
@@ -637,7 +704,10 @@ describe('refMarker', () => {
   });
 
   test('a Gitea/Forgejo /pulls/N URL is matched too', () => {
-    assert.equal(refMarker('https://codeberg.org/o/r/pulls/11', 'gitlab'), '!11');
+    assert.equal(
+      refMarker('https://codeberg.org/o/r/pulls/11', 'gitlab'),
+      '!11',
+    );
   });
 
   test('issues and unrelated links are left alone', () => {
@@ -687,7 +757,10 @@ describe('orderIndexes', () => {
   const order = ['Code', 'Issues', 'Merge requests', 'Actions'];
 
   test('hands back the permutation of known labels, not the labels', () => {
-    assert.deepEqual(orderIndexes(['Actions', 'Code', 'Issues'], order), [1, 2, 0]);
+    assert.deepEqual(
+      orderIndexes(['Actions', 'Code', 'Issues'], order),
+      [1, 2, 0],
+    );
   });
 
   test('ranks a label carrying a counter by its prefix', () => {
@@ -698,11 +771,17 @@ describe('orderIndexes', () => {
   });
 
   test('unknown labels keep their relative order at the end', () => {
-    assert.deepEqual(orderIndexes(['Zed', 'Actions', 'Alpha'], order), [1, 0, 2]);
+    assert.deepEqual(
+      orderIndexes(['Zed', 'Actions', 'Alpha'], order),
+      [1, 0, 2],
+    );
   });
 
   test('an already-ordered list is its own permutation', () => {
-    assert.deepEqual(orderIndexes(['Code', 'Issues', 'Actions'], order), [0, 1, 2]);
+    assert.deepEqual(
+      orderIndexes(['Code', 'Issues', 'Actions'], order),
+      [0, 1, 2],
+    );
   });
 });
 
@@ -754,7 +833,16 @@ describe('projectTabs', () => {
   test('keeps GitHub’s tab order', () => {
     assert.deepEqual(
       projectTabs('/a/b').map(([label]) => label),
-      ['Code', 'Issues', 'Pull requests', 'Actions', 'Projects', 'Wiki', 'Security and quality', 'Insights'],
+      [
+        'Code',
+        'Issues',
+        'Pull requests',
+        'Actions',
+        'Projects',
+        'Wiki',
+        'Security and quality',
+        'Insights',
+      ],
     );
   });
 });
@@ -774,7 +862,17 @@ describe('PROFILE_MENU', () => {
     assert.equal(menu[0][1], '/octocat');
     assert.deepEqual(
       menu.map(([label]) => label),
-      ['The Octocat', 'Activity', 'Groups', 'Contributed projects', 'Personal projects', 'Starred projects', 'Snippets', 'Followers', 'Following'],
+      [
+        'The Octocat',
+        'Activity',
+        'Groups',
+        'Contributed projects',
+        'Personal projects',
+        'Starred projects',
+        'Snippets',
+        'Followers',
+        'Following',
+      ],
     );
   });
 });
@@ -826,7 +924,10 @@ describe('repoNav', () => {
     const entries = repoNav(items, 'gitlab', order);
     const activity = entries.findIndex((e) => e.label === 'Activity');
     assert.equal(typeof entries[activity - 1].label, 'string');
-    assert.equal(entries.some((e) => e.group === 'Activity'), false);
+    assert.equal(
+      entries.some((e) => e.group === 'Activity'),
+      false,
+    );
   });
 });
 
@@ -857,10 +958,14 @@ describe('SELECTORS / CANARY_PAGES', () => {
   test('the nav rules and the selector table name the same containers', () => {
     // NAV_RULES spells its containers out before SELECTORS exists; this keeps
     // the two from drifting apart.
-    const githubRule = NAV_RULES.gitlab.find((r) => r.container.includes('UnderlineNav'));
+    const githubRule = NAV_RULES.gitlab.find((r) =>
+      r.container.includes('UnderlineNav'),
+    );
     assert.equal(githubRule.container, SELECTORS.github.repoNavList);
     for (const theme of ['gitlab', 'github']) {
-      const giteaRule = NAV_RULES[theme].find((r) => r.container?.includes('overflow-menu'));
+      const giteaRule = NAV_RULES[theme].find((r) =>
+        r.container?.includes('overflow-menu'),
+      );
       assert.equal(giteaRule.container, SELECTORS.gitea.repoNavList);
     }
   });
@@ -887,7 +992,9 @@ describe('SELECTORS / CANARY_PAGES', () => {
       'ux-markers.css',
       'ux-nav.css',
     ]
-      .map((file) => readFileSync(new URL(`../src/themes/${file}`, import.meta.url), 'utf8'))
+      .map((file) =>
+        readFileSync(new URL(`../src/themes/${file}`, import.meta.url), 'utf8'),
+      )
       .join('\n');
     // The classes, ids and attribute tests a selector names, so a compound
     // selector is checked token by token rather than as one exact string.
@@ -902,12 +1009,20 @@ describe('SELECTORS / CANARY_PAGES', () => {
         for (const m of bare.matchAll(/\.([\w-]+)/g)) found.push(`.${m[1]}`);
         return found;
       });
-    const source = readFileSync(new URL('../src/lib/ux.js', import.meta.url), 'utf8');
+    const source = readFileSync(
+      new URL('../src/lib/ux.js', import.meta.url),
+      'utf8',
+    );
     let checked = 0;
-    for (const m of source.matchAll(/^\s*[A-Za-z0-9_]+:\s*'([^']+)',\s*\/\/ css\s*$/gm)) {
+    for (const m of source.matchAll(
+      /^\s*[A-Za-z0-9_]+:\s*'([^']+)',\s*\/\/ css\s*$/gm,
+    )) {
       checked += 1;
       for (const probe of probes(m[1])) {
-        assert.ok(themes.includes(probe), `${m[1]} — ${probe} is in a stylesheet`);
+        assert.ok(
+          themes.includes(probe),
+          `${m[1]} — ${probe} is in a stylesheet`,
+        );
       }
     }
     assert.ok(checked > 0, 'the scan found the // css markers');
@@ -930,7 +1045,10 @@ describe('SELECTORS / CANARY_PAGES', () => {
         `SELECTORS.${m[1]}.${m[2]} is read by content/ux.js`,
       );
     }
-    assert.ok(checked > 0, 'the scan found the content script’s selector reads');
+    assert.ok(
+      checked > 0,
+      'the scan found the content script’s selector reads',
+    );
   });
 });
 
@@ -982,7 +1100,10 @@ describe('Bitbucket skin', () => {
   test('activeTabFor returns the tab in the applied product’s words', () => {
     assert.equal(activeTabFor('projects:tree', 'github'), 'Code');
     assert.equal(activeTabFor('projects:tree', 'bitbucket'), 'Source');
-    assert.equal(activeTabFor('projects:merge_requests', 'bitbucket'), 'Pull requests');
+    assert.equal(
+      activeTabFor('projects:merge_requests', 'bitbucket'),
+      'Pull requests',
+    );
     assert.equal(activeTabFor('projects:pipelines', 'bitbucket'), 'Pipelines');
   });
 
@@ -1016,7 +1137,12 @@ describe('Bitbucket skin', () => {
       NAV_RULES.bitbucket.find((r) => r.source === 'gitea').order,
     );
     const labels = entries.filter((e) => e.label).map((e) => e.label);
-    assert.deepEqual(labels, ['Source', 'Pull requests', 'Pipelines', 'Jira issues']);
+    assert.deepEqual(labels, [
+      'Source',
+      'Pull requests',
+      'Pipelines',
+      'Jira issues',
+    ]);
     assert.equal(entries[0].active, true);
   });
 

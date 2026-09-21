@@ -37,14 +37,18 @@ const CHROME_CANDIDATES = [
 ];
 
 function resolveChrome() {
-  const chrome = process.env.GS_CHROME ?? CHROME_CANDIDATES.find((p) => existsSync(p));
-  if (!chrome) throw new Error('no Chromium found — set GS_CHROME=/path/to/chrome');
+  const chrome =
+    process.env.GS_CHROME ?? CHROME_CANDIDATES.find((p) => existsSync(p));
+  if (!chrome)
+    throw new Error('no Chromium found — set GS_CHROME=/path/to/chrome');
   return chrome;
 }
 
 function requireBuild() {
   if (!existsSync(join(EXT, 'manifest.json'))) {
-    throw new Error(`no manifest.json in ${EXT} — run "npm run build:chromium" first`);
+    throw new Error(
+      `no manifest.json in ${EXT} — run "npm run build:chromium" first`,
+    );
   }
 }
 
@@ -60,7 +64,11 @@ function requireBuild() {
  *   close: () => Promise<void>,
  * }>}
  */
-export async function launch({ viewport, headless = true, profilePrefix = 'gs-' } = {}) {
+export async function launch({
+  viewport,
+  headless = true,
+  profilePrefix = 'gs-',
+} = {}) {
   const chrome = resolveChrome();
   requireBuild();
 
@@ -79,7 +87,8 @@ export async function launch({ viewport, headless = true, profilePrefix = 'gs-' 
   });
 
   let worker = context.serviceWorkers()[0];
-  if (!worker) worker = await context.waitForEvent('serviceworker', { timeout: 25000 });
+  if (!worker)
+    worker = await context.waitForEvent('serviceworker', { timeout: 25000 });
   const extensionId = new URL(worker.url()).host;
 
   const popup = await context.newPage();
@@ -94,7 +103,8 @@ export async function launch({ viewport, headless = true, profilePrefix = 'gs-' 
     );
   const setHostSettings = (hostSettings) =>
     popup.evaluate(
-      (s) => chrome.storage.sync.set({ [globalThis.GITALIKE.HOST_SETTINGS_KEY]: s }),
+      (s) =>
+        chrome.storage.sync.set({ [globalThis.GITALIKE.HOST_SETTINGS_KEY]: s }),
       hostSettings,
     );
 

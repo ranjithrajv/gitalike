@@ -178,7 +178,10 @@ describe('kindFor', () => {
   });
 
   test('ignores junk stored against a host', () => {
-    assert.equal(kindFor('evil.example', { 'evil.example': 'bitbucket' }), null);
+    assert.equal(
+      kindFor('evil.example', { 'evil.example': 'bitbucket' }),
+      null,
+    );
     assert.equal(kindFor('evil.example', { 'evil.example': null }), null);
   });
 
@@ -346,14 +349,17 @@ describe('stateFrom', () => {
     // from the older per-kind model reads back with a single skin, written to
     // every kind, so every context agrees.
     assert.deepEqual(
-      stateFrom({ [SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' } }).settings,
+      stateFrom({ [SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' } })
+        .settings,
       { github: 'gitlab', gitlab: 'gitlab' },
     );
   });
 
   test('leaves a state whose kinds agree alone', () => {
     assert.deepEqual(
-      stateFrom({ [SETTINGS_KEY]: { github: 'bitbucket', gitlab: 'bitbucket' } }).settings,
+      stateFrom({
+        [SETTINGS_KEY]: { github: 'bitbucket', gitlab: 'bitbucket' },
+      }).settings,
       { github: 'bitbucket', gitlab: 'bitbucket' },
     );
     assert.deepEqual(
@@ -365,7 +371,10 @@ describe('stateFrom', () => {
   test('does not mutate the stored settings while normalising', () => {
     const stored = { [SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' } };
     stateFrom(stored);
-    assert.deepEqual(stored[SETTINGS_KEY], { github: 'gitlab', gitlab: 'github' });
+    assert.deepEqual(stored[SETTINGS_KEY], {
+      github: 'gitlab',
+      gitlab: 'github',
+    });
   });
 
   test('rejects a stored value that is not a plain object', () => {
@@ -408,8 +417,14 @@ describe('kindOn', () => {
 
 describe('hostSkinFor', () => {
   test('reads a chosen skin or off', () => {
-    assert.equal(hostSkinFor('gh.acme.com', { 'gh.acme.com': 'gitlab' }), 'gitlab');
-    assert.equal(hostSkinFor('gh.acme.com', { 'gh.acme.com': 'github' }), 'github');
+    assert.equal(
+      hostSkinFor('gh.acme.com', { 'gh.acme.com': 'gitlab' }),
+      'gitlab',
+    );
+    assert.equal(
+      hostSkinFor('gh.acme.com', { 'gh.acme.com': 'github' }),
+      'github',
+    );
     assert.equal(hostSkinFor('gh.acme.com', { 'gh.acme.com': 'off' }), 'off');
   });
 
@@ -450,8 +465,14 @@ describe('sourceFor', () => {
   });
 
   test('a user-added host is assumed to be built on its product', () => {
-    assert.equal(sourceFor('gh.acme.com', { 'gh.acme.com': 'github' }), 'github');
-    assert.equal(sourceFor('gl.acme.com', { 'gl.acme.com': 'gitlab' }), 'gitlab');
+    assert.equal(
+      sourceFor('gh.acme.com', { 'gh.acme.com': 'github' }),
+      'github',
+    );
+    assert.equal(
+      sourceFor('gl.acme.com', { 'gl.acme.com': 'gitlab' }),
+      'gitlab',
+    );
     assert.equal(sourceFor('unknown.example', {}), null);
   });
 });
@@ -486,7 +507,10 @@ describe('themeFor', () => {
 
   test('user-added hosts behave like bundled ones', () => {
     const added = { 'gl.acme.com': 'gitlab' };
-    assert.equal(themeFor('gl.acme.com', { gitlab: 'github' }, added), 'github');
+    assert.equal(
+      themeFor('gl.acme.com', { gitlab: 'github' }, added),
+      'github',
+    );
   });
 
   test('a host can be given a skin without the product switch', () => {
@@ -514,7 +538,12 @@ describe('themeFor', () => {
     );
     // ...and only that host; github.com still follows the product switch.
     assert.equal(
-      themeFor('github.com', { github: 'gitlab' }, {}, { 'gh.acme.com': 'off' }),
+      themeFor(
+        'github.com',
+        { github: 'gitlab' },
+        {},
+        { 'gh.acme.com': 'off' },
+      ),
       'gitlab',
     );
   });
@@ -550,21 +579,34 @@ describe('themeFor', () => {
     );
     // ...and it follows its product switch (the GitHub-flavoured default is the
     // GitLab UI) when no skin is chosen.
-    assert.equal(themeFor('codeberg.org', { github: 'gitlab' }, {}, {}), 'gitlab');
+    assert.equal(
+      themeFor('codeberg.org', { github: 'gitlab' }, {}, {}),
+      'gitlab',
+    );
     assert.equal(themeFor('gitea.com', { github: 'gitlab' }, {}, {}), 'gitlab');
   });
 
-  test('a host can wear the other product\'s skin even when its own is offered', () => {
+  test("a host can wear the other product's skin even when its own is offered", () => {
     // The default is the cross skin; an explicit choice overrides it.
     assert.equal(
-      themeFor('github.com', { github: 'gitlab' }, {}, { 'github.com': 'gitlab' }),
+      themeFor(
+        'github.com',
+        { github: 'gitlab' },
+        {},
+        { 'github.com': 'gitlab' },
+      ),
       'gitlab',
     );
   });
 
   test('an override on an unknown host still does nothing', () => {
     assert.equal(
-      themeFor('example.com', { github: 'gitlab' }, {}, { 'example.com': 'gitlab' }),
+      themeFor(
+        'example.com',
+        { github: 'gitlab' },
+        {},
+        { 'example.com': 'gitlab' },
+      ),
       null,
     );
   });
@@ -573,11 +615,21 @@ describe('themeFor', () => {
     // Bitbucket is a target only, so it is never any site's "own UI" — a
     // GitHub, GitLab or Gitea host can all be pinned to it.
     assert.equal(
-      themeFor('github.com', { github: 'gitlab' }, {}, { 'github.com': 'bitbucket' }),
+      themeFor(
+        'github.com',
+        { github: 'gitlab' },
+        {},
+        { 'github.com': 'bitbucket' },
+      ),
       'bitbucket',
     );
     assert.equal(
-      themeFor('gitlab.com', { gitlab: 'github' }, {}, { 'gitlab.com': 'bitbucket' }),
+      themeFor(
+        'gitlab.com',
+        { gitlab: 'github' },
+        {},
+        { 'gitlab.com': 'bitbucket' },
+      ),
       'bitbucket',
     );
     assert.equal(

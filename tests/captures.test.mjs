@@ -17,8 +17,10 @@ import { PROFILE_JOBS, PROJECT_JOBS, STORE_SHOTS } from '../tools/captures.mjs';
 
 const docsJobs = [...PROJECT_JOBS, ...PROFILE_JOBS];
 const captureFiles = (job) => [job.base, ...job.skins.map((skin) => skin.over)];
-const page = () => readFileSync(new URL('../docs/index.html', import.meta.url), 'utf8');
-const onDisk = (file) => existsSync(new URL(`../docs/${file}`, import.meta.url));
+const page = () =>
+  readFileSync(new URL('../docs/index.html', import.meta.url), 'utf8');
+const onDisk = (file) =>
+  existsSync(new URL(`../docs/${file}`, import.meta.url));
 
 // Names index.html uses that are not captures.
 const PAGE_ASSETS = new Set(['icon-32.png', 'icon-128.png', 'og.png']);
@@ -35,7 +37,9 @@ describe('capture tables', () => {
   test('every store shot has a PNG on disk', () => {
     for (const shot of STORE_SHOTS) {
       assert.ok(
-        existsSync(new URL(`../store/screenshots/${shot.file}`, import.meta.url)),
+        existsSync(
+          new URL(`../store/screenshots/${shot.file}`, import.meta.url),
+        ),
         `${shot.file} exists`,
       );
     }
@@ -58,10 +62,14 @@ describe('capture tables', () => {
     // The other direction, so a deleted job does not leave an orphan image on
     // the page and a hand-added image is not served without a capture.
     const known = new Set();
-    for (const job of docsJobs) for (const file of captureFiles(job)) known.add(file);
+    for (const job of docsJobs)
+      for (const file of captureFiles(job)) known.add(file);
     for (const name of page().match(/[a-z0-9-]+\.png/g) || []) {
       if (PAGE_ASSETS.has(name)) continue;
-      assert.ok(known.has(name), `index.html references ${name}, which no capture job produces`);
+      assert.ok(
+        known.has(name),
+        `index.html references ${name}, which no capture job produces`,
+      );
     }
   });
 });

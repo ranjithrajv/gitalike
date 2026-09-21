@@ -57,8 +57,18 @@
   const layoutOf = (t) => (SITES.skins[t] && SITES.skins[t].layout) || t;
 
   const SKIP_TAGS = new Set([
-    'SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'CODE', 'PRE', 'KBD', 'SAMP',
-    'TEXTAREA', 'INPUT', 'SELECT', 'OPTION',
+    'SCRIPT',
+    'STYLE',
+    'NOSCRIPT',
+    'TEMPLATE',
+    'CODE',
+    'PRE',
+    'KBD',
+    'SAMP',
+    'TEXTAREA',
+    'INPUT',
+    'SELECT',
+    'OPTION',
   ]);
   const SKIP_SELECTOR =
     'script,style,noscript,template,code,pre,[contenteditable=""],[contenteditable="true"],[data-gs-ux-skip]';
@@ -223,10 +233,15 @@
     const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, {
       acceptNode(n) {
         const parent = n.parentElement;
-        if (!parent || SKIP_TAGS.has(parent.tagName) || parent.isContentEditable) {
+        if (
+          !parent ||
+          SKIP_TAGS.has(parent.tagName) ||
+          parent.isContentEditable
+        ) {
           return NodeFilter.FILTER_REJECT;
         }
-        if (!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if (!n.nodeValue || !n.nodeValue.trim())
+          return NodeFilter.FILTER_REJECT;
         if (parent.closest(SKIP_SELECTOR)) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       },
@@ -240,7 +255,12 @@
   function rememberText(node) {
     const entry = ledger(node, 'text', () => {
       const original = node.nodeValue;
-      return { original, restore: () => { node.nodeValue = original; } };
+      return {
+        original,
+        restore: () => {
+          node.nodeValue = original;
+        },
+      };
     });
     return entry.original;
   }
@@ -255,7 +275,7 @@
     walkText(node, (text, isControl) => {
       const original = rememberText(text);
       const value = isControl
-        ? UX.controlLabel(original.trim(), t) ?? UX.translate(original, t)
+        ? (UX.controlLabel(original.trim(), t) ?? UX.translate(original, t))
         : UX.translate(original, t);
       if (value !== text.nodeValue) text.nodeValue = value;
     });
@@ -293,7 +313,11 @@
       if (!/^[#!]?\d+$/.test(current)) continue;
       ledger(anchor, 'ref', () => {
         const original = anchor.textContent;
-        return { restore: () => { anchor.textContent = original; } };
+        return {
+          restore: () => {
+            anchor.textContent = original;
+          },
+        };
       });
       if (current !== marker) anchor.textContent = marker;
     }
@@ -500,7 +524,9 @@
     const sidebar = document.querySelector(SELECTORS.gitlab.superSidebar);
     if (!sidebar) return;
     const nav = sidebar.querySelector(SELECTORS.gitlab.navContainer);
-    const anchors = [...sidebar.querySelectorAll('a:not([data-gs-project-tab])')];
+    const anchors = [
+      ...sidebar.querySelectorAll('a:not([data-gs-project-tab])'),
+    ];
     const findHref = (labels) => {
       for (const a of anchors) {
         const text = (a.textContent || '').replace(/\s+/g, ' ').trim();
@@ -742,12 +768,15 @@
       // markup change degrade to "no reorder" instead of a mangled nav.
       const itemSet = new Set(items);
       let slot = 0;
-      const next = children.map((child) => (itemSet.has(child) ? sorted[slot++] : child));
+      const next = children.map((child) =>
+        itemSet.has(child) ? sorted[slot++] : child,
+      );
       if (next.every((child, i) => child === children[i])) continue;
       // A framework that re-renders its list would undo this and, if we kept
       // re-applying, would thrash. Reorder once, then leave it be for a moment.
       const now = Date.now();
-      if (orderStamp.has(container) && now - orderStamp.get(container) < 1000) continue;
+      if (orderStamp.has(container) && now - orderStamp.get(container) < 1000)
+        continue;
       orderStamp.set(container, now);
       ledger(container, 'dom-order', () => ({
         restore: () => {
@@ -940,7 +969,9 @@
     // GitHub's card has no "About"/"Info"/"Contact" headings; GitLab's card
     // does, so they are dropped rather than left as foreign labels.
     if (sourceIsGitlab) {
-      for (const heading of document.querySelectorAll(SELECTORS.gitlab.profileSidebar)) {
+      for (const heading of document.querySelectorAll(
+        SELECTORS.gitlab.profileSidebar,
+      )) {
         const text = (heading.textContent || '').trim();
         if (text === 'About' || text === 'Info' || text === 'Contact') {
           hide(heading.closest('li') || heading, true);
@@ -953,7 +984,9 @@
     const name = (
       (
         document.querySelector(
-          sourceIsGitlab ? SELECTORS.gitlab.profileName : SELECTORS.github.profileName,
+          sourceIsGitlab
+            ? SELECTORS.gitlab.profileName
+            : SELECTORS.github.profileName,
         ) || {}
       ).textContent || ''
     ).trim();
@@ -962,7 +995,9 @@
     const signature = `${t}:${user}`;
 
     for (const container of containers) {
-      if (container.getAttribute('data-gs-profile-menu-signature') === signature) {
+      if (
+        container.getAttribute('data-gs-profile-menu-signature') === signature
+      ) {
         continue;
       }
       resetProfileMenu(container);
@@ -985,7 +1020,9 @@
           const key = source === '@first' ? profileLabelOf(anchor) : source;
           setProfileLabel(anchor, key, label);
           anchor.setAttribute('href', href);
-          const holder = sourceIsGitlab ? anchor.closest('li') || anchor : anchor;
+          const holder = sourceIsGitlab
+            ? anchor.closest('li') || anchor
+            : anchor;
           // The label-match pass may have hidden this item before the menu was
           // rebuilt; it belongs to the applied product's menu, so show it again.
           holder.style.removeProperty('display');
@@ -1009,7 +1046,9 @@
 
       for (const child of [...container.children]) {
         if (child.hasAttribute('data-gs-profile-menu')) continue;
-        const anchor = child.matches('a') ? child : child.querySelector(':scope > a');
+        const anchor = child.matches('a')
+          ? child
+          : child.querySelector(':scope > a');
         if (anchor && used.has(anchor)) continue;
         hide(child, true);
       }
@@ -1227,7 +1266,13 @@
 
   function installKeys() {
     keyHandler = (event) => {
-      if (!theme || event.__gsUx || event.ctrlKey || event.metaKey || event.altKey) {
+      if (
+        !theme ||
+        event.__gsUx ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey
+      ) {
         return;
       }
       const active = document.activeElement;
@@ -1251,7 +1296,8 @@
       // the key the site actually implements, so its own shortcuts are left
       // alone. `source` is set by content/theme.js from the shared tables.
       const expectedSource = theme === 'github' ? 'gitlab' : 'github';
-      if (root.dataset.gsSource && root.dataset.gsSource !== expectedSource) return;
+      if (root.dataset.gsSource && root.dataset.gsSource !== expectedSource)
+        return;
       // The real `g` already reached the site; swallow this second key and
       // deliver the destination the site's own product would have used.
       event.preventDefault();
@@ -1271,7 +1317,10 @@
     // the body observer is the expensive one and only runs while a skin is on
     // (see watchBody), so an unclassified page carries neither.
     classObserver = new MutationObserver(syncTheme);
-    classObserver.observe(root, { attributes: true, attributeFilter: ['class'] });
+    classObserver.observe(root, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
     installKeys();
     theme = themeOf();
     if (theme) {

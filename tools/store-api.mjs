@@ -40,7 +40,10 @@ export async function newestZip(dir) {
   if (!existsSync(dir)) return '';
   const zips = (await readdir(dir)).filter((name) => name.endsWith('.zip'));
   const dated = await Promise.all(
-    zips.map(async (name) => ({ name, time: (await stat(join(dir, name))).mtimeMs })),
+    zips.map(async (name) => ({
+      name,
+      time: (await stat(join(dir, name))).mtimeMs,
+    })),
   );
   dated.sort((a, b) => b.time - a.time);
   return dated.length ? join(dir, dated[0].name) : '';

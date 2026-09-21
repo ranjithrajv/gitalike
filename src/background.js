@@ -12,7 +12,8 @@
 // you pull in a sibling file. Firefox runs both scripts listed in the manifest
 // in one shared scope, so there it is already defined and importScripts does
 // not exist.
-if (typeof importScripts === 'function') importScripts('lib/sites.js', 'lib/ux.js');
+if (typeof importScripts === 'function')
+  importScripts('lib/sites.js', 'lib/ux.js');
 
 const api = globalThis.browser ?? globalThis.chrome;
 const SITES = globalThis.GITALIKE;
@@ -56,7 +57,8 @@ async function refreshBadge(tabId, url, state) {
   shownBadge.set(tabId, { text, title });
 
   await api.action.setBadgeText({ tabId, text });
-  if (on) await api.action.setBadgeBackgroundColor({ tabId, color: skin.color });
+  if (on)
+    await api.action.setBadgeBackgroundColor({ tabId, color: skin.color });
   await api.action.setTitle({ tabId, title });
 }
 
@@ -92,7 +94,8 @@ const CONTENT_CSS = [
 ];
 
 const hostPattern = (host) => `*://${host}/*`;
-const patternHost = (pattern) => pattern.replace(/^\*:\/\//, '').replace(/\/\*$/, '');
+const patternHost = (pattern) =>
+  pattern.replace(/^\*:\/\//, '').replace(/\/\*$/, '');
 
 // `permissions.contains` is a promise in Firefox and a callback in Chromium;
 // accept either, and treat a browser without the API as "granted" so a host the
@@ -152,11 +155,11 @@ function sameDefinition(previous, patterns) {
   const css = previous.find((entry) => entry.id === CSS_ID);
   return Boolean(
     js &&
-      css &&
-      (js.matches || []).join('\n') === want &&
-      (css.matches || []).join('\n') === want &&
-      (js.js || []).join('\n') === CONTENT_JS.join('\n') &&
-      (css.css || []).join('\n') === CONTENT_CSS.join('\n'),
+    css &&
+    (js.matches || []).join('\n') === want &&
+    (css.matches || []).join('\n') === want &&
+    (js.js || []).join('\n') === CONTENT_JS.join('\n') &&
+    (css.css || []).join('\n') === CONTENT_CSS.join('\n'),
   );
 }
 
@@ -171,7 +174,10 @@ async function injectIntoOpenTabs(hosts) {
       // targets whatever is loaded now, not the URL that matched.
       const current = await api.tabs.get(tab.id).catch(() => null);
       if (!current || !hosts.has(hostOf(current.url))) continue;
-      await api.scripting.insertCSS({ target: { tabId: tab.id }, files: CONTENT_CSS });
+      await api.scripting.insertCSS({
+        target: { tabId: tab.id },
+        files: CONTENT_CSS,
+      });
       await api.scripting.executeScript({
         target: { tabId: tab.id },
         files: CONTENT_JS,
@@ -186,7 +192,9 @@ async function registerContentScripts(injectNew) {
   if (!api.scripting?.registerContentScripts) return;
 
   const { instances } = await readState();
-  const patterns = await grantedPatterns(knownHosts(instances).map(hostPattern));
+  const patterns = await grantedPatterns(
+    knownHosts(instances).map(hostPattern),
+  );
 
   // What was registered before unregistering, so a newly added host can be
   // injected into the tab that is already open on it.
@@ -210,8 +218,18 @@ async function registerContentScripts(injectNew) {
 
   if (patterns.length) {
     await api.scripting.registerContentScripts([
-      { id: SCRIPT_ID, matches: patterns, js: CONTENT_JS, runAt: 'document_start' },
-      { id: CSS_ID, matches: patterns, css: CONTENT_CSS, runAt: 'document_start' },
+      {
+        id: SCRIPT_ID,
+        matches: patterns,
+        js: CONTENT_JS,
+        runAt: 'document_start',
+      },
+      {
+        id: CSS_ID,
+        matches: patterns,
+        css: CONTENT_CSS,
+        runAt: 'document_start',
+      },
     ]);
   }
 
@@ -307,7 +325,9 @@ api.storage.onChanged.addListener((changes, area) => {
 // A host's permission can be granted or revoked outside a storage change — the
 // popup's Add a site asks for the origin, and the user can revoke it later — so
 // the registration is re-scoped either way.
-api.permissions?.onAdded?.addListener(() => syncContentScripts({ injectNew: true }));
+api.permissions?.onAdded?.addListener(() =>
+  syncContentScripts({ injectNew: true }),
+);
 api.permissions?.onRemoved?.addListener(() => syncContentScripts());
 
 api.runtime.onInstalled.addListener(() => {

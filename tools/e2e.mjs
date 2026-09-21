@@ -21,13 +21,15 @@
 import { launch, retry } from './harness.mjs';
 
 const results = [];
-const check = (name, ok, detail) => results.push({ name, ok: Boolean(ok), detail });
+const check = (name, ok, detail) =>
+  results.push({ name, ok: Boolean(ok), detail });
 
-const { context, extensionId, setSettings, setHostSettings, close } = await launch({
-  viewport: { width: 1280, height: 900 },
-  headless: true,
-  profilePrefix: 'gs-e2e-',
-});
+const { context, extensionId, setSettings, setHostSettings, close } =
+  await launch({
+    viewport: { width: 1280, height: 900 },
+    headless: true,
+    profilePrefix: 'gs-e2e-',
+  });
 check('extension loads', Boolean(extensionId));
 
 // Live-forge navigations fail intermittently (ERR_NETWORK_CHANGED, a slow TLS
@@ -36,7 +38,11 @@ check('extension loads', Boolean(extensionId));
 // slow SPA by waiting on the rewrite rather than a fixed delay.
 const gotoLive = (page, url, options = {}) =>
   retry(() =>
-    page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000, ...options }),
+    page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
+      ...options,
+    }),
   );
 
 try {
@@ -55,7 +61,9 @@ try {
   );
   await gh.waitForTimeout(2500);
   const g = await gh.evaluate(async () => {
-    const ul = document.querySelector('nav[aria-label="Repository"] ul.UnderlineNav-body');
+    const ul = document.querySelector(
+      'nav[aria-label="Repository"] ul.UnderlineNav-body',
+    );
     const ref = document.createElement('a');
     ref.setAttribute('href', '/git/git/pull/42');
     ref.id = 'gs-ref';
@@ -84,7 +92,11 @@ try {
     };
   });
   check('G→L repo nav is vertical', g.direction === 'column', g.direction);
-  check('G→L nav relabelled', g.nav.includes('Repository') && g.nav.includes('Merge requests 387'), g.nav.slice(0, 4).join(', '));
+  check(
+    'G→L nav relabelled',
+    g.nav.includes('Repository') && g.nav.includes('Merge requests 387'),
+    g.nav.slice(0, 4).join(', '),
+  );
   check('G→L reference marker #42 → !42', g.ref === '!42', g.ref);
   check('G→L no-counterpart badge', g.badge === '≠ GitLab', g.badge);
   // GitLab has a light top bar of its own, so GitHub's is shown, flipped light.
@@ -111,11 +123,15 @@ try {
     const nav = document.querySelector(
       'main [data-turbo-frame="user-profile-frame"] nav[aria-label="User profile"]',
     );
-    const content = document.querySelector('main > .container-xl > .Layout > .Layout-main');
+    const content = document.querySelector(
+      'main > .container-xl > .Layout > .Layout-main',
+    );
     return {
       direction: nav ? getComputedStyle(nav).flexDirection : null,
       left: nav ? Math.round(nav.getBoundingClientRect().left) : null,
-      contentWidth: content ? Math.round(content.getBoundingClientRect().width) : null,
+      contentWidth: content
+        ? Math.round(content.getBoundingClientRect().width)
+        : null,
       nav: nav
         ? [...nav.querySelectorAll('a')]
             .filter((a) => getComputedStyle(a).display !== 'none')
@@ -125,7 +141,9 @@ try {
         .filter((b) => b.querySelector('a[href*="tab=achievements"]'))
         .map((b) => getComputedStyle(b).display),
       pinned: document.querySelector('.js-pinned-items-reorder-container')
-        ? getComputedStyle(document.querySelector('.js-pinned-items-reorder-container')).display
+        ? getComputedStyle(
+            document.querySelector('.js-pinned-items-reorder-container'),
+          ).display
         : null,
       // GitHub's pinned repositories become GitLab's "Personal projects"
       // section (content/ux.js renames the heading), so the profile has the
@@ -138,8 +156,16 @@ try {
   });
   await ghp.close();
   check('G→L profile nav is vertical', gp.direction === 'column', gp.direction);
-  check('G→L profile nav sits in the left rail', gp.left !== null && gp.left < 120, `${gp.left}px`);
-  check('G→L profile content stays wide', gp.contentWidth > 800, `${gp.contentWidth}px`);
+  check(
+    'G→L profile nav sits in the left rail',
+    gp.left !== null && gp.left < 120,
+    `${gp.left}px`,
+  );
+  check(
+    'G→L profile content stays wide',
+    gp.contentWidth > 800,
+    `${gp.contentWidth}px`,
+  );
   check(
     'G→L profile hides GitHub’s Achievements block',
     gp.achievements.length > 0 && gp.achievements.every((d) => d === 'none'),
@@ -155,9 +181,17 @@ try {
   );
   check(
     'G→L profile nav is GitLab’s',
-    ['Personal projects', 'Contributed projects', 'Starred projects', 'Activity', 'Groups', 'Snippets', 'Followers', 'Following'].every(
-      (label) => gp.nav.some((t) => t.startsWith(label)),
-    ) && !gp.nav.some((t) => t.startsWith('Repositories')),
+    [
+      'Personal projects',
+      'Contributed projects',
+      'Starred projects',
+      'Activity',
+      'Groups',
+      'Snippets',
+      'Followers',
+      'Following',
+    ].every((label) => gp.nav.some((t) => t.startsWith(label))) &&
+      !gp.nav.some((t) => t.startsWith('Repositories')),
     gp.nav.join(', '),
   );
 
@@ -176,7 +210,10 @@ try {
     .waitForFunction(
       () =>
         [...document.querySelectorAll('.super-sidebar a')].some((a) =>
-          /^Pull requests/.test((a.textContent || '').replace(/\s+/g, ' ').trim()),
+          (a.textContent || '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .startsWith('Pull requests'),
         ),
       null,
       { timeout: 45000 },
@@ -189,14 +226,23 @@ try {
     return {
       position: sb ? getComputedStyle(sb).position : null,
       mainWidth: main ? Math.round(main.getBoundingClientRect().width) : null,
-      nav: [...document.querySelectorAll('.super-sidebar a')]
-        .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim()),
+      nav: [...document.querySelectorAll('.super-sidebar a')].map((a) =>
+        (a.textContent || '').replace(/\s+/g, ' ').trim(),
+      ),
       badges: document.querySelectorAll('.gs-no-equiv').length,
     };
   });
-  check('L→G sidebar is horizontal (static)', l.position === 'static', l.position);
+  check(
+    'L→G sidebar is horizontal (static)',
+    l.position === 'static',
+    l.position,
+  );
   check('L→G content stays full width', l.mainWidth > 1000, `${l.mainWidth}px`);
-  check('L→G nav relabelled', l.nav.some((t) => t.startsWith('Pull requests')), l.nav.slice(0, 2).join(', '));
+  check(
+    'L→G nav relabelled',
+    l.nav.some((t) => t.startsWith('Pull requests')),
+    l.nav.slice(0, 2).join(', '),
+  );
   check('L→G no-counterpart badges', l.badges > 0, `${l.badges} badges`);
 
   /* GitLab profile, skinned as GitHub: counts move under the photo. */
@@ -210,9 +256,13 @@ try {
   // Wait for the profile rewrite itself (content/ux.js clones the follower
   // counts into `[data-gs-profile-stats]`), not a guessed delay.
   await glp
-    .waitForFunction(() => Boolean(document.querySelector('[data-gs-profile-stats]')), null, {
-      timeout: 45000,
-    })
+    .waitForFunction(
+      () => Boolean(document.querySelector('[data-gs-profile-stats]')),
+      null,
+      {
+        timeout: 45000,
+      },
+    )
     .catch(() => {});
   await glp.waitForTimeout(500);
   const lp = await glp.evaluate(() => {
@@ -227,19 +277,35 @@ try {
       inCard: stats ? Boolean(stats.closest('.user-profile-header')) : false,
       navHidden: followerLi ? getComputedStyle(followerLi).display : null,
       localTime: document.querySelector('[data-testid="user-local-time"]')
-        ? getComputedStyle(document.querySelector('[data-testid="user-local-time"]')).display
+        ? getComputedStyle(
+            document.querySelector('[data-testid="user-local-time"]'),
+          ).display
         : null,
       nav: nav
         ? [...nav.querySelectorAll('a')]
-            .filter((a) => getComputedStyle(a.closest('li') || a).display !== 'none')
+            .filter(
+              (a) => getComputedStyle(a.closest('li') || a).display !== 'none',
+            )
             .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
         : [],
     };
   });
   await glp.close();
-  check('L→G profile counts sit under the photo', lp.inCard && /followers/i.test(lp.stats || ''), lp.stats);
-  check('L→G profile counts leave the navigation', lp.navHidden === 'none', lp.navHidden);
-  check('L→G profile hides GitLab’s local time', lp.localTime === 'none', lp.localTime);
+  check(
+    'L→G profile counts sit under the photo',
+    lp.inCard && /followers/i.test(lp.stats || ''),
+    lp.stats,
+  );
+  check(
+    'L→G profile counts leave the navigation',
+    lp.navHidden === 'none',
+    lp.navHidden,
+  );
+  check(
+    'L→G profile hides GitLab’s local time',
+    lp.localTime === 'none',
+    lp.localTime,
+  );
   check(
     'L→G profile nav is GitHub’s',
     ['Overview', 'Repositories', 'Projects', 'Packages', 'Stars'].every(
@@ -251,7 +317,11 @@ try {
   await gl.keyboard.press('g');
   await gl.keyboard.press('p');
   await gl.waitForTimeout(3000);
-  check('L→G shortcut g p opens merge requests', /\/merge_requests$/.test(gl.url()), gl.url());
+  check(
+    'L→G shortcut g p opens merge requests',
+    gl.url().endsWith('/merge_requests'),
+    gl.url(),
+  );
 
   /* ------------------------------ Codeberg (Gitea) ------------------------------ */
   await setHostSettings({
@@ -284,9 +354,13 @@ try {
       const rows = nav ? [...nav.querySelectorAll('a')] : [];
       const menu = document.querySelector('.secondary-nav > overflow-menu');
       return {
-        labels: rows.map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim()),
+        labels: rows.map((a) =>
+          (a.textContent || '').replace(/\s+/g, ' ').trim(),
+        ),
         groups: nav
-          ? [...nav.querySelectorAll('.gs-nav-group')].map((g) => g.textContent.trim())
+          ? [...nav.querySelectorAll('.gs-nav-group')].map((g) =>
+              g.textContent.trim(),
+            )
           : [],
         active: rows
           .filter((a) => a.classList.contains('active'))
@@ -325,7 +399,11 @@ try {
     .waitForFunction(
       () =>
         document.documentElement.classList.contains('gs-theme-github') &&
-        [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].some((a) =>
+        [
+          ...document.querySelectorAll(
+            'overflow-menu .overflow-menu-items a.item',
+          ),
+        ].some((a) =>
           /^Code\b/.test((a.textContent || '').replace(/\s+/g, ' ').trim()),
         ),
       null,
@@ -333,9 +411,12 @@ try {
     )
     .catch(() => {});
   const cg = await cb.evaluate(() => {
-    const items = [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')];
+    const items = [
+      ...document.querySelectorAll('overflow-menu .overflow-menu-items a.item'),
+    ];
     const label = (a) => (a.textContent || '').replace(/\s+/g, ' ').trim();
-    const shown = (a) => getComputedStyle(a.closest('li') || a).display !== 'none';
+    const shown = (a) =>
+      getComputedStyle(a.closest('li') || a).display !== 'none';
     return {
       nav: items.filter(shown).map(label),
       hidden: items.filter((a) => !shown(a)).map(label),
@@ -390,7 +471,11 @@ try {
         .filter(Boolean),
     };
   });
-  check('GitHub can wear the Bitbucket skin', /gs-theme-bitbucket/.test(bb.cls), bb.cls);
+  check(
+    'GitHub can wear the Bitbucket skin',
+    /gs-theme-bitbucket/.test(bb.cls),
+    bb.cls,
+  );
   check(
     'Bitbucket top bar is Atlassian blue',
     bb.header === 'rgb(0, 73, 176)',
@@ -403,7 +488,8 @@ try {
   );
   check(
     'Bitbucket repo tabs read Source / Pipelines',
-    bb.nav.some((t) => t.startsWith('Source')) && bb.nav.some((t) => t.startsWith('Pipelines')),
+    bb.nav.some((t) => t.startsWith('Source')) &&
+      bb.nav.some((t) => t.startsWith('Pipelines')),
     bb.nav.slice(0, 4).join(', '),
   );
   await setHostSettings({});
@@ -413,14 +499,24 @@ try {
   await gh.waitForTimeout(1500);
   const r = await gh.evaluate(() => ({
     cls: document.documentElement.className,
-    direction: getComputedStyle(document.querySelector('nav[aria-label="Repository"] ul.UnderlineNav-body')).flexDirection,
+    direction: getComputedStyle(
+      document.querySelector(
+        'nav[aria-label="Repository"] ul.UnderlineNav-body',
+      ),
+    ).flexDirection,
     nav: [...document.querySelectorAll('nav[aria-label="Repository"] a')]
       .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
       .filter(Boolean),
     badges: document.querySelectorAll('.gs-no-equiv').length,
   }));
   check('revert removes the theme class', !/gs-theme/.test(r.cls), r.cls);
-  check('revert restores the nav', r.direction === 'row' && r.nav.includes('Code') && r.nav.includes('Pull requests 387'), r.nav.slice(0, 3).join(', '));
+  check(
+    'revert restores the nav',
+    r.direction === 'row' &&
+      r.nav.includes('Code') &&
+      r.nav.includes('Pull requests 387'),
+    r.nav.slice(0, 3).join(', '),
+  );
   check('revert removes badges', r.badges === 0, `${r.badges} badges`);
 } catch (error) {
   check('run completed', false, error.message);
@@ -431,7 +527,9 @@ try {
 let failed = 0;
 for (const { name, ok, detail } of results) {
   if (!ok) failed += 1;
-  console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}${detail ? `  — ${detail}` : ''}`);
+  console.log(
+    `${ok ? 'ok  ' : 'FAIL'}  ${name}${detail ? `  — ${detail}` : ''}`,
+  );
 }
 console.log(`\n${results.length - failed}/${results.length} checks passed`);
 if (failed) process.exitCode = 1;

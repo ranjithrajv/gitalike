@@ -25,7 +25,9 @@ const docs = join(root, 'docs');
 const QUALITY = '82';
 
 function which(cmd) {
-  const res = spawnSync('sh', ['-c', `command -v ${cmd}`], { encoding: 'utf8' });
+  const res = spawnSync('sh', ['-c', `command -v ${cmd}`], {
+    encoding: 'utf8',
+  });
   return res.status === 0 ? res.stdout.trim() : null;
 }
 
@@ -40,7 +42,14 @@ function run(cmd, args) {
 function convert(png, webp) {
   if (cwebp) return run(cwebp, ['-quiet', '-q', QUALITY, png, '-o', webp]);
   if (magick) {
-    return run(magick, [png, '-quality', QUALITY, '-define', 'webp:method=6', webp]);
+    return run(magick, [
+      png,
+      '-quality',
+      QUALITY,
+      '-define',
+      'webp:method=6',
+      webp,
+    ]);
   }
   if (python) {
     return run(python, [
@@ -50,7 +59,9 @@ function convert(png, webp) {
       webp,
     ]);
   }
-  console.error('webp: need cwebp, ImageMagick or Pillow (python3-PIL) on PATH');
+  console.error(
+    'webp: need cwebp, ImageMagick or Pillow (python3-PIL) on PATH',
+  );
   process.exit(1);
 }
 

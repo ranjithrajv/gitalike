@@ -32,12 +32,20 @@
  */
 import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { body, defaultSource, has, opt, reporter, sleep } from './store-api.mjs';
+import {
+  body,
+  defaultSource,
+  has,
+  opt,
+  reporter,
+  sleep,
+} from './store-api.mjs';
 
 const { die, check } = reporter('publish-edge');
 
 const API =
-  process.env.EDGE_API_BASE || 'https://api.addons.microsoftedge.microsoft.com/v1';
+  process.env.EDGE_API_BASE ||
+  'https://api.addons.microsoftedge.microsoft.com/v1';
 
 const clientId = process.env.EDGE_CLIENT_ID || '';
 const apiKey = process.env.EDGE_API_KEY || '';
@@ -77,11 +85,14 @@ async function pollOperation(location, label) {
 async function upload() {
   const zip = await readFile(source);
   console.log(`uploading ${source} (${zip.length} bytes)`);
-  const res = await fetch(`${API}/products/${productId}/submissions/draft/package`, {
-    method: 'POST',
-    headers: { ...authHeaders(), 'Content-Type': 'application/zip' },
-    body: zip,
-  });
+  const res = await fetch(
+    `${API}/products/${productId}/submissions/draft/package`,
+    {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/zip' },
+      body: zip,
+    },
+  );
   const json = check(res, await body(res), 'upload');
   // A fast upload may already be done; otherwise the Location header carries the
   // operation to poll.

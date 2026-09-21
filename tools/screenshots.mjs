@@ -152,14 +152,17 @@ async function captureShots(context, setSettings, out, shots) {
 async function capturePopup(context, popup, out, viewport) {
   await popup.setViewportSize({ width: 420, height: 1000 });
   const toggle = popup.locator('#add-toggle');
-  if ((await toggle.getAttribute('aria-expanded')) === 'true') await toggle.click();
+  if ((await toggle.getAttribute('aria-expanded')) === 'true')
+    await toggle.click();
   await popup.waitForTimeout(300);
 
   // Keep the PNG bytes in hand rather than writing then re-reading them.
   const shot = await popup.locator('body').screenshot();
   await writeFile(join(out, '03-popup.png'), shot);
   const box = await popup.locator('body').boundingBox();
-  console.log(`    -> 03-popup.png (${Math.round(box.width)}x${Math.round(box.height)})`);
+  console.log(
+    `    -> 03-popup.png (${Math.round(box.width)}x${Math.round(box.height)})`,
+  );
 
   // A Chrome Web Store shot must be exactly 1280x720, so frame the popup.
   const frame = await context.newPage();
@@ -178,7 +181,9 @@ async function capturePopup(context, popup, out, viewport) {
 const mode = process.argv[2];
 const config = MODES[mode];
 if (!config) {
-  console.error(`usage: node tools/screenshots.mjs <${Object.keys(MODES).join('|')}>`);
+  console.error(
+    `usage: node tools/screenshots.mjs <${Object.keys(MODES).join('|')}>`,
+  );
   process.exit(1);
 }
 

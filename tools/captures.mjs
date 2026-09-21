@@ -28,18 +28,35 @@ export const PROJECT_JOBS = [
     ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
     base: 'github-default.png',
     skins: [
-      { setting: { github: 'gitlab' }, cls: 'gs-theme-gitlab', over: 'github-gitlab.png' },
-      { setting: { github: 'bitbucket' }, cls: 'gs-theme-bitbucket', over: 'github-bitbucket.png' },
+      {
+        setting: { github: 'gitlab' },
+        cls: 'gs-theme-gitlab',
+        over: 'github-gitlab.png',
+      },
+      {
+        setting: { github: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'github-bitbucket.png',
+      },
     ],
   },
   {
     name: 'GitLab project',
     url: 'https://gitlab.com/gitlab-org/gitlab',
-    ready: '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
+    ready:
+      '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
     base: 'gitlab-default.png',
     skins: [
-      { setting: { gitlab: 'github' }, cls: 'gs-theme-github', over: 'gitlab-github.png' },
-      { setting: { gitlab: 'bitbucket' }, cls: 'gs-theme-bitbucket', over: 'gitlab-bitbucket.png' },
+      {
+        setting: { gitlab: 'github' },
+        cls: 'gs-theme-github',
+        over: 'gitlab-github.png',
+      },
+      {
+        setting: { gitlab: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'gitlab-bitbucket.png',
+      },
     ],
   },
   // Codeberg is GitHub-flavoured, so any of the three skins can be captured from
@@ -52,9 +69,21 @@ export const PROJECT_JOBS = [
     ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
     base: 'codeberg-default.png',
     skins: [
-      { setting: { github: 'gitlab' }, cls: 'gs-theme-gitlab', over: 'codeberg-gitlab.png' },
-      { setting: { github: 'github' }, cls: 'gs-theme-github', over: 'codeberg-github.png' },
-      { setting: { github: 'bitbucket' }, cls: 'gs-theme-bitbucket', over: 'codeberg-bitbucket.png' },
+      {
+        setting: { github: 'gitlab' },
+        cls: 'gs-theme-gitlab',
+        over: 'codeberg-gitlab.png',
+      },
+      {
+        setting: { github: 'github' },
+        cls: 'gs-theme-github',
+        over: 'codeberg-github.png',
+      },
+      {
+        setting: { github: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'codeberg-bitbucket.png',
+      },
     ],
   },
 ];
@@ -68,8 +97,16 @@ export const PROFILE_JOBS = [
     ready: 'nav[aria-label="User profile"]',
     base: 'github-profile-default.png',
     skins: [
-      { setting: { github: 'gitlab' }, cls: 'gs-theme-gitlab', over: 'github-profile-gitlab.png' },
-      { setting: { github: 'bitbucket' }, cls: 'gs-theme-bitbucket', over: 'github-profile-bitbucket.png' },
+      {
+        setting: { github: 'gitlab' },
+        cls: 'gs-theme-gitlab',
+        over: 'github-profile-gitlab.png',
+      },
+      {
+        setting: { github: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'github-profile-bitbucket.png',
+      },
     ],
   },
   {
@@ -77,11 +114,20 @@ export const PROFILE_JOBS = [
     // A profile with bio, location and contact links set, so the card has more
     // than the name to show — sytses (the example in the docs) has neither.
     url: 'https://gitlab.com/dzaporozhets',
-    ready: '.super-sidebar:not(.super-sidebar-loading) .user-profile-header, .user-profile-header',
+    ready:
+      '.super-sidebar:not(.super-sidebar-loading) .user-profile-header, .user-profile-header',
     base: 'gitlab-profile-default.png',
     skins: [
-      { setting: { gitlab: 'github' }, cls: 'gs-theme-github', over: 'gitlab-profile-github.png' },
-      { setting: { gitlab: 'bitbucket' }, cls: 'gs-theme-bitbucket', over: 'gitlab-profile-bitbucket.png' },
+      {
+        setting: { gitlab: 'github' },
+        cls: 'gs-theme-github',
+        over: 'gitlab-profile-github.png',
+      },
+      {
+        setting: { gitlab: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'gitlab-profile-bitbucket.png',
+      },
     ],
   },
 ];
@@ -102,7 +148,8 @@ export const STORE_SHOTS = [
     url: 'https://gitlab.com/gitlab-org/gitlab',
     setting: { gitlab: 'github' },
     cls: 'gs-theme-github',
-    ready: '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
+    ready:
+      '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
     file: '02-as-github.png',
   },
 ];

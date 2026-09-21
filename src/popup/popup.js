@@ -233,7 +233,10 @@
 
     addRemove.hidden = !added;
     for (const button of kindButtons) {
-      button.classList.toggle('add__button--current', button.dataset.kind === currentKind);
+      button.classList.toggle(
+        'add__button--current',
+        button.dataset.kind === currentKind,
+      );
     }
   }
 
@@ -244,7 +247,9 @@
     // user gesture). Bundled hosts are already granted; a self-hosted instance
     // prompts once. Declining adds nothing.
     if (api.permissions?.request) {
-      const granted = await permissionsRequest({ origins: [`*://${hostname}/*`] });
+      const granted = await permissionsRequest({
+        origins: [`*://${hostname}/*`],
+      });
       if (!granted) return false;
     }
     // Asking to show a site implies showing it — don't make it a second click.
@@ -303,7 +308,8 @@
   }
 
   addInput.addEventListener('input', () => {
-    if (addHint.classList.contains('add__hint--error')) hint(HINT_DEFAULT, false);
+    if (addHint.classList.contains('add__hint--error'))
+      hint(HINT_DEFAULT, false);
   });
 
   addInput.addEventListener('keydown', (event) => {

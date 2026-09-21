@@ -44,7 +44,10 @@ const clientSecret = process.env.CWS_CLIENT_SECRET || '';
 const refreshToken = process.env.CWS_REFRESH_TOKEN || '';
 const publisherId = opt('--publisher') || process.env.CWS_PUBLISHER_ID || '';
 const itemId =
-  opt('--item') || process.env.CWS_ITEM_ID || process.env.CWS_EXTENSION_ID || '';
+  opt('--item') ||
+  process.env.CWS_ITEM_ID ||
+  process.env.CWS_EXTENSION_ID ||
+  '';
 const dryRun = has('--dry-run');
 
 const source = opt('--source') || (await defaultSource());
@@ -93,7 +96,8 @@ async function upload(token) {
   const json = check(res, await body(res), 'upload');
 
   if (json.uploadState === 'SUCCEEDED') return json;
-  if (json.uploadState !== 'IN_PROGRESS') die(`upload state ${json.uploadState}`);
+  if (json.uploadState !== 'IN_PROGRESS')
+    die(`upload state ${json.uploadState}`);
 
   // Large packages upload asynchronously; poll until it settles.
   const deadline = Date.now() + 5 * 60 * 1000;

@@ -668,7 +668,9 @@
    */
   function refMarker(href, theme) {
     if (!href) return null;
-    const match = String(href).match(/\/(?:pulls?|merge_requests)\/(\d+)(?:[/?#]|$)/);
+    const match = String(href).match(
+      /\/(?:pulls?|merge_requests)\/(\d+)(?:[/?#]|$)/,
+    );
     if (!match) return null;
     return (theme === 'gitlab' ? '!' : '#') + match[1];
   }
@@ -747,7 +749,10 @@
   // `body[data-page]`, so the tab the applied UI would underline can be picked
   // without a page. Pure, so it is unit-tested rather than only seen live.
   const ACTIVE_TABS = [
-    [/^projects:(show|tree|blob|commits|compare|branches|tags|forks|network)\b/, 'Code'],
+    [
+      /^projects:(show|tree|blob|commits|compare|branches|tags|forks|network)\b/,
+      'Code',
+    ],
     [/^projects:work_items\b/, 'Issues'],
     [/^projects:merge_requests\b/, 'Pull requests'],
     [/^projects:(pipelines|jobs|builds|ci)\b/, 'Actions'],
@@ -773,7 +778,10 @@
   // (240)"), so the digits and their brackets are stripped before the label is
   // compared.
   const sectionLabelText = (text) =>
-    String(text || '').replace(/[\d,()]+/g, ' ').replace(/\s+/g, ' ').trim();
+    String(text || '')
+      .replace(/[\d,()]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
 
   // GitHub's About sections that GitLab's "Project information" block does not
   // list, matched by `sectionLabelText`.
@@ -857,7 +865,9 @@
   // rows, so the DOM builder and the unit tests share one decision.
   function repoNav(items, theme, order, layout = theme) {
     const nav = NAV[theme] || {};
-    const labels = items.map((item) => nav[item.label] ?? translate(item.label, theme));
+    const labels = items.map(
+      (item) => nav[item.label] ?? translate(item.label, theme),
+    );
     const entries = [];
     let last = null;
     for (const index of orderIndexes(labels, order || [])) {
@@ -903,15 +913,51 @@
   // First path segments that name a product-wide page, not a repository, so
   // they are never mistaken for an owner/repo pair.
   const GITHUB_RESERVED = new Set([
-    'settings', 'notifications', 'explore', 'marketplace', 'orgs', 'users',
-    'login', 'logout', 'signup', 'features', 'about', 'pricing', 'topics',
-    'collections', 'sponsors', 'apps', 'codespaces', 'issues', 'pulls',
-    'search', 'new', 'dashboard', 'account', 'organizations', 'enterprise',
-    'security', 'customer-stories', 'readme', 'sponsors',
+    'settings',
+    'notifications',
+    'explore',
+    'marketplace',
+    'orgs',
+    'users',
+    'login',
+    'logout',
+    'signup',
+    'features',
+    'about',
+    'pricing',
+    'topics',
+    'collections',
+    'sponsors',
+    'apps',
+    'codespaces',
+    'issues',
+    'pulls',
+    'search',
+    'new',
+    'dashboard',
+    'account',
+    'organizations',
+    'enterprise',
+    'security',
+    'customer-stories',
+    'readme',
+    'sponsors',
   ]);
   const GITLAB_RESERVED = new Set([
-    'dashboard', 'explore', 'users', 'admin', 'projects', 'groups', 'help',
-    'search', 'profile', 'public', 'sign_in', 'oauth', 'import', 'invites',
+    'dashboard',
+    'explore',
+    'users',
+    'admin',
+    'projects',
+    'groups',
+    'help',
+    'search',
+    'profile',
+    'public',
+    'sign_in',
+    'oauth',
+    'import',
+    'invites',
   ]);
 
   // The route segment each forge uses for the same page. Only the GitHub side
@@ -934,7 +980,9 @@
   // Map one product's path onto the other's. Returns null when the path is not
   // a repository (or is a GitLab group nested too deep for GitHub's owner/repo).
   function translatePath(pathname, from) {
-    const seg = String(pathname || '').split('/').filter(Boolean);
+    const seg = String(pathname || '')
+      .split('/')
+      .filter(Boolean);
     const gitlab = from !== 'github';
 
     // GitLab marks the project path off from the route with `/-/`; GitHub has
@@ -959,7 +1007,8 @@
     // The merge-request list and detail pages name different segments on each
     // side (`pulls` vs `pull`), so those two forms are resolved first.
     if (!gitlab && head === 'pulls') return `${base}/-/merge_requests`;
-    if (gitlab && head === 'merge_requests' && !tail.length) return `${base}/pulls`;
+    if (gitlab && head === 'merge_requests' && !tail.length)
+      return `${base}/pulls`;
 
     const to = gitlab ? GITLAB_ROUTES[head] : GITHUB_ROUTES[head];
     if (!to) return base;

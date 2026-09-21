@@ -57,7 +57,8 @@ function alternatives(selector) {
         else tokens.push(attr);
       }
       const stripped = part.replace(/\[[^\]]*\]/g, ' ');
-      for (const m of stripped.matchAll(/#([\w-]+)/g)) tokens.push(`id="${m[1]}"`);
+      for (const m of stripped.matchAll(/#([\w-]+)/g))
+        tokens.push(`id="${m[1]}"`);
       for (const m of stripped.matchAll(/\.([\w-]+)/g)) tokens.push(m[1]);
       return tokens;
     })
@@ -97,7 +98,9 @@ for (const page of UX.CANARY_PAGES) {
     html = await fetchHtml(page.url);
   } catch (error) {
     warned += 1;
-    console.warn(`WARN  ${page.name} — could not fetch ${page.url}: ${error.message}`);
+    console.warn(
+      `WARN  ${page.name} — could not fetch ${page.url}: ${error.message}`,
+    );
     continue;
   }
 
@@ -105,13 +108,17 @@ for (const page of UX.CANARY_PAGES) {
     const selector = source[key];
     if (!selector) {
       failed += 1;
-      console.error(`FAIL  ${page.name} — SELECTORS.${page.source}.${key} is missing`);
+      console.error(
+        `FAIL  ${page.name} — SELECTORS.${page.source}.${key} is missing`,
+      );
       continue;
     }
     const ok = present(html, selector);
     if (ok === null) {
       warned += 1;
-      console.warn(`WARN  ${page.name} — ${key} (${selector}) has nothing to probe`);
+      console.warn(
+        `WARN  ${page.name} — ${key} (${selector}) has nothing to probe`,
+      );
     } else if (ok) {
       console.log(`ok    ${page.name} — ${key}`);
     } else {
@@ -121,7 +128,9 @@ for (const page of UX.CANARY_PAGES) {
   }
 }
 
-console.log(`\n${failed} missing hook(s), ${warned} page(s)/hook(s) not checked`);
+console.log(
+  `\n${failed} missing hook(s), ${warned} page(s)/hook(s) not checked`,
+);
 if (failed) {
   console.error(
     '\nA forge changed its markup. Update the selector in src/lib/ux.js\n' +
