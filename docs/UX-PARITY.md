@@ -104,23 +104,23 @@ at a time from the popup).
 
 ### Project pages, sources × skins
 
-| Source ↓ / Skin → | GitHub UI | GitLab UI | Bitbucket UI |
+| Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
-| **GitHub** | 10.0 | 9.7 | 8.4 |
-| **GitLab** | 9.7 | 10.0 | 8.4 |
-| **Gitea / Forgejo** | 8.1 | 7.9 | 8.0 |
-| **Bitbucket** | 3.6 | 3.0 | 10.0 |
-| **Gerrit** | 2.2 | 1.6 | 2.2 |
+| **Bitbucket** | 10.0 | 6.5 | 5.9 |
+| **Gerrit** | 1.5 | 1.5 | 1.5 |
+| **Gitea / Forgejo** | 8.0 | 8.1 | 7.9 |
+| **GitHub** | 8.4 | 10.0 | 9.7 |
+| **GitLab** | 8.4 | 9.7 | 10.0 |
 
 ### Profile pages, sources × skins
 
-| Source ↓ / Skin → | GitHub UI | GitLab UI | Bitbucket UI |
+| Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
-| **GitHub** | 10.0 | 9.9 | 6.7 |
-| **GitLab** | 9.5 | 10.0 | 6.7 |
-| **Gitea / Forgejo** | 5.0 | 5.0 | 4.3 |
-| **Bitbucket** | 3.4 | 3.4 | 10.0 |
-| **Gerrit** | 2.1 | 2.1 | 2.1 |
+| **Bitbucket** | 10.0 | 4.8 | 4.8 |
+| **Gerrit** | 1.9 | 1.9 | 1.9 |
+| **Gitea / Forgejo** | 4.3 | 5.0 | 5.0 |
+| **GitHub** | 6.7 | 10.0 | 9.9 |
+| **GitLab** | 6.7 | 9.5 | 10.0 |
 
 ### Where the points are lost
 

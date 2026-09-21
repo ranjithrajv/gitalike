@@ -35,47 +35,53 @@ import '../plugins.mjs';
 
 const SITES = globalThis.GITALIKE;
 const UX = globalThis.GITALIKE_UX;
-if (!SITES?.skins || !UX?.NAV) {
+const PLUGINS = globalThis.GITALIKE_PLUGINS;
+if (!SITES?.skins || !UX?.NAV || !PLUGINS?.sources) {
   console.error('the plugin registry did not publish the skin tables');
   process.exit(1);
 }
 
-/** The markup families a host can be built on. */
-export const SOURCES = [
-  { key: 'github', label: 'GitHub' },
-  { key: 'gitlab', label: 'GitLab' },
-  { key: 'gitea', label: 'Gitea / Forgejo' },
-  { key: 'bitbucket', label: 'Bitbucket' },
-  { key: 'gerrit', label: 'Gerrit' },
-];
+/**
+ * The sources and skins are read from the plugin registry, so this matrix
+ * cannot list a plugin the extension does not ship and a new one is registered
+ * once. A source's table label is its registry label shortened at the em-dash
+ * qualifier ("GitHub — Primer" -> "GitHub"); a skin's is its product plus "UI".
+ */
+export const SOURCES = Object.entries(PLUGINS.sources).map(([key, source]) => ({
+  key,
+  label: source.label.split(' — ')[0],
+}));
 
 /** The target UIs a source can wear. */
-export const SKINS = [
-  { key: 'github', label: 'GitHub UI' },
-  { key: 'gitlab', label: 'GitLab UI' },
-  { key: 'bitbucket', label: 'Bitbucket UI' },
-];
+export const SKINS = Object.entries(PLUGINS.skins).map(([key, skin]) => ({
+  key,
+  label: `${skin.product} UI`,
+}));
 
 /**
- * Sources the skins have structural coverage for: a token block re-points their
- * CSS variables and `SELECTORS`/`NAV_RULES` hook their navigation. Gitea has
- * both; Bitbucket Cloud and Gerrit are client-rendered SPAs with no capturable
- * public page, so they are wired only for the source-agnostic passes (copy,
- * control labels, reference markers) and their structural dimensions are
- * credited a token amount rather than 1.
+ * A source's coverage is three independent capabilities, not one markup flag:
+ *
+ *   palette  a skin re-points the design tokens the source reads
+ *            (`themes/gs-tokens.css`). Every source has one now.
+ *   nav      a skin pass reorients/relabels the source's navigation.
+ *   page     the page-wide passes (copy, control labels, `unmapped`, markers)
+ *            reach the source's DOM.
+ *
+ * GitHub, GitLab and Gitea have all three. Bitbucket Cloud is light DOM with a
+ * nav pass, but no `NAV_RULES` entry (so its nav is not reordered or filtered)
+ * and no metadata profile. Gerrit is client-rendered inside shadow DOM, so only
+ * its palette lands — the page-wide and nav passes do not reach it.
  */
-const NO_MARKUP = new Set(['bitbucket', 'gerrit']);
-const hasMarkup = (source) => !NO_MARKUP.has(source);
+const PALETTE = new Set(['github', 'gitlab', 'gitea', 'bitbucket', 'gerrit']);
+const NAV = new Set(['github', 'gitlab', 'gitea', 'bitbucket']);
+const PAGE = new Set(['github', 'gitlab', 'gitea', 'bitbucket']);
 
-/**
- * Sources whose design tokens the skins re-point. Palette coverage is broader
- * than structural coverage: Bitbucket Cloud exposes Atlassian's `--ds-*` tokens
- * on <html>, so the GitHub and GitLab skins repaint it from the token layer
- * (see gs-tokens.css) even though no Bitbucket selector or nav rule exists.
- * Gerrit exposes no such token layer, so its palette stays near zero.
- */
-const NO_PALETTE = new Set(['gerrit']);
-const hasPalette = (source) => !NO_PALETTE.has(source);
+// Gerrit's palette re-points text, links, borders and feedback but not its
+// surfaces or header, so it is a partial re-point rather than the full one the
+// others get.
+const PALETTE_SHARE = { gerrit: 0.6 };
+const paletteShare = (source) =>
+  PALETTE.has(source) ? (PALETTE_SHARE[source] ?? 1) : 0.2;
 
 /**
  * How much of a `g`-combo remap works for a source under a skin. GitHub honours
@@ -106,7 +112,7 @@ const PROJECT = [
   {
     key: 'palette',
     weight: 12,
-    share: ({ source, native }) => (native ? 1 : hasPalette(source) ? 1 : 0.2),
+    share: ({ source, native }) => (native ? 1 : paletteShare(source)),
   },
   {
     key: 'orientation',
@@ -117,11 +123,13 @@ const PROJECT = [
     share: ({ source, layout, native }) =>
       native
         ? 1
-        : !hasMarkup(source)
-          ? 0.2
+        : !NAV.has(source)
+          ? 0.1
           : source === 'gitea' && layout === 'github'
             ? 0.9
-            : 1,
+            : source === 'bitbucket'
+              ? 0.9
+              : 1,
   },
   {
     key: 'navLabels',
@@ -131,7 +139,7 @@ const PROJECT = [
     share: ({ skin, source, native }) =>
       native
         ? 1
-        : hasMarkup(source) && Object.keys(UX.NAV[skin] || {}).length
+        : NAV.has(source) && Object.keys(UX.NAV[skin] || {}).length
           ? 1
           : 0,
   },
@@ -153,7 +161,15 @@ const PROJECT = [
     // the skin in every path. A Bitbucket source keeps its own flat menu, which
     // matches the flat skins but not GitLab's groups.
     share: ({ skin, source, native }) =>
-      native ? 1 : !hasMarkup(source) ? (skin === 'gitlab' ? 0 : 1) : 1,
+      native
+        ? 1
+        : !NAV.has(source)
+          ? 0
+          : source === 'bitbucket'
+            ? skin === 'gitlab'
+              ? 0
+              : 1
+            : 1,
   },
   {
     key: 'navKeep',
@@ -162,7 +178,8 @@ const PROJECT = [
     // no hooked nav region (Bitbucket) filters nothing.
     share: ({ skin, source, native }) => {
       if (native) return 1;
-      if (!hasMarkup(source)) return 0.2;
+      if (!NAV.has(source)) return 0;
+      if (source === 'bitbucket') return 0.2;
       return UX.NAV_KEEP[skin] ? 1 : UX.NAV_HIDE[skin] ? 0.7 : 0;
     },
   },
@@ -175,7 +192,7 @@ const PROJECT = [
     share: ({ source, skin, native }) =>
       native
         ? 1
-        : source === 'gitea' || !hasMarkup(source)
+        : source === 'gitea' || source === 'bitbucket' || !PAGE.has(source)
           ? 0.2
           : skin === 'bitbucket'
             ? 0.5
@@ -187,7 +204,7 @@ const PROJECT = [
     // Control labels are matched page-wide, so they work on any markup; the
     // wording tables are target-specific, so a source with no hooks is partial.
     share: ({ skin, source, native }) =>
-      native ? 1 : !UX.LABELS[skin] ? 0 : hasMarkup(source) ? 1 : 0.5,
+      native ? 1 : !UX.LABELS[skin] ? 0 : PAGE.has(source) ? 1 : 0.2,
   },
   {
     key: 'refs',
@@ -202,7 +219,7 @@ const PROJECT = [
     key: 'unmapped',
     weight: 5,
     share: ({ skin, source, native }) =>
-      native ? 1 : UX.UNMAPPED[skin] ? (hasMarkup(source) ? 1 : 0.3) : 0,
+      native ? 1 : UX.UNMAPPED[skin] ? (PAGE.has(source) ? 1 : 0.2) : 0,
   },
   {
     key: 'shortcuts',
@@ -216,7 +233,7 @@ const PROFILE = [
   {
     key: 'palette',
     weight: 12,
-    share: ({ source, native }) => (native ? 1 : hasPalette(source) ? 1 : 0.2),
+    share: ({ source, native }) => (native ? 1 : paletteShare(source)),
   },
   {
     key: 'orientation',
@@ -226,13 +243,15 @@ const PROFILE = [
     share: ({ source, skin, native }) =>
       native
         ? 1
-        : !hasMarkup(source)
-          ? 0.2
+        : !NAV.has(source)
+          ? 0.1
           : source === 'gitea'
             ? 0.4
-            : skin === 'bitbucket'
-              ? 0.6
-              : 1,
+            : source === 'bitbucket'
+              ? 0.3
+              : skin === 'bitbucket'
+                ? 0.6
+                : 1,
   },
   {
     key: 'menu',
@@ -253,7 +272,8 @@ const PROFILE = [
     // GitHub skin; neither runs for a source with no profile hooks.
     share: ({ source, skin, native }) => {
       if (native) return 1;
-      if (source === 'gitea' || !hasMarkup(source)) return 0.1;
+      if (source === 'gitea' || source === 'bitbucket') return 0.1;
+      if (!PAGE.has(source)) return 0.1;
       if (skin === 'bitbucket') return 0.3;
       return 1;
     },
@@ -265,8 +285,9 @@ const PROFILE = [
     // pinned selection; GitLab has no pinned data for GitHub's section.
     share: ({ source, skin, native }) => {
       if (native) return 1;
-      if (source === 'gitea' || !hasMarkup(source) || skin === 'bitbucket')
+      if (source === 'gitea' || source === 'bitbucket' || !PAGE.has(source))
         return 0.2;
+      if (skin === 'bitbucket') return 0.2;
       return skin === 'gitlab' ? 0.8 : 0.5;
     },
   },
@@ -276,7 +297,7 @@ const PROFILE = [
     share: ({ skin, source, native }) => {
       if (native) return 1;
       if (!UX.CHROME[skin]) return 0;
-      return hasMarkup(source) ? (skin === 'bitbucket' ? 0.8 : 1) : 0.5;
+      return PAGE.has(source) ? (skin === 'bitbucket' ? 0.8 : 1) : 0.2;
     },
   },
   {
@@ -285,7 +306,7 @@ const PROFILE = [
     share: ({ skin, source, native }) => {
       if (native) return 1;
       if (!Object.keys(UX.PHRASES[skin] || {}).length) return 0;
-      return hasMarkup(source) ? (skin === 'bitbucket' ? 0.8 : 1) : 0.5;
+      return PAGE.has(source) ? (skin === 'bitbucket' ? 0.8 : 1) : 0.2;
     },
   },
   {
@@ -294,7 +315,7 @@ const PROFILE = [
     share: ({ skin, source, native }) => {
       if (native) return 1;
       if (!UX.UNMAPPED[skin]) return 0;
-      return hasMarkup(source) ? (skin === 'bitbucket' ? 0.9 : 1) : 0.3;
+      return PAGE.has(source) ? (skin === 'bitbucket' ? 0.9 : 1) : 0.2;
     },
   },
   {

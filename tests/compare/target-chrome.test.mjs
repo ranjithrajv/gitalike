@@ -14,6 +14,8 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import '../../tools/plugins.mjs';
+
 const fixture = JSON.parse(
   readFileSync(
     new URL('../fixtures/target-chrome.json', import.meta.url),
@@ -21,7 +23,10 @@ const fixture = JSON.parse(
   ),
 );
 
-const PRODUCTS = ['github', 'gitlab', 'bitbucket'];
+// The skins are the registry's, so a new skin is checked here without an edit;
+// the "every skin has a reviewed entry" test below is what fails loudly when it
+// has no fixture, rather than this list going stale.
+const PRODUCTS = Object.keys(globalThis.GITALIKE_PLUGINS.skins);
 const HEX = /^#[0-9a-f]{6}$/;
 
 // The light palette only: the first `html.gs-theme-<product> {` block, cut

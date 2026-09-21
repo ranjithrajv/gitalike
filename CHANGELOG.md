@@ -56,6 +56,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The comparison framework reads its skins and sources from the plugin registry:
+  `tools/compare/parity-score.mjs`, `tools/compare/style-parity.mjs` and
+  `tests/compare/target-chrome.test.mjs` no longer hand-list them, and
+  `style-parity` fails loudly when a source has no capture (Gerrit is the one
+  documented exception — no bundled host, client-rendered). The parity model now
+  scores three independent capabilities (palette, navigation, page-wide passes)
+  instead of one markup flag, so Bitbucket's navigation pass and the
+  Bitbucket/Gerrit palettes are credited and Gerrit's unreachable shadow DOM is
+  not.
 - The skins and sources are now self-contained folders under `src/plugins/`:
   `src/plugins/skins/<name>/` holds the definition (`index.js`), the palette
   (`as-<name>.css`) and the plugin's own tests (`<name>.test.mjs`), and

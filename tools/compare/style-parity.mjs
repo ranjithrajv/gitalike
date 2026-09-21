@@ -41,8 +41,25 @@ import { fileURLToPath } from 'node:url';
 
 import { launch, retry, waitForTheme } from './harness.mjs';
 import { SOURCES as CAPTURE_SOURCES } from './captures.mjs';
+import '../plugins.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
+const PLUGINS = globalThis.GITALIKE_PLUGINS;
+
+// The skins are the registry's, not a hand-kept list. And every source the
+// registry ships must have a live capture for this browser-driven check, or an
+// explicit reason it cannot — so a new source fails loudly here instead of
+// silently going unmeasured.
+const SKINS = Object.keys(PLUGINS.skins);
+const NO_CAPTURE = new Set(['gerrit']); // no bundled host; client-rendered app
+const captured = new Set(CAPTURE_SOURCES.map((source) => source.key));
+const uncaptured = Object.keys(PLUGINS.sources).filter(
+  (key) => !captured.has(key) && !NO_CAPTURE.has(key),
+);
+if (uncaptured.length) {
+  console.error(`style-parity: no capture for ${uncaptured.join(', ')}`);
+  process.exit(1);
+}
 
 // The reviewed, skin-independent reference: the target products' real chrome
 // colours. Scoring against these — not the applied skin's own `--gs-*`
@@ -266,9 +283,6 @@ const PAGES = [
   { type: 'project', sources: PROJECT_SOURCES, navWords: REPO_WORDS },
   { type: 'profile', sources: PROFILE_SOURCES, navWords: PROFILE_WORDS },
 ];
-
-// A source never wears its own UI, so these are the real cells.
-const SKINS = ['gitlab', 'github', 'bitbucket'];
 
 const WEIGHTS = {
   theme: 1,
