@@ -94,6 +94,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Picking a skin turns the other off, and a state stored with both on is reduced
   to one when the popup opens. The per-kind settings the background and the badge
   read are unchanged (`src/popup/`).
+- Grouping and the layout axis now agree. `NAV_GROUPS`/`navGroupFor` are keyed by
+  the skin's *layout* rather than the skin, matching the layout guard that applies
+  them, so any skin built to the GitLab shape shares the group headings. The
+  `LABELS`/`CHROME` round-trip test — which only held for a pair of skins — is
+  replaced by a coverage property across all three targets
+  (`src/lib/ux.js`, `src/content/ux.js`, `tests/ux.test.mjs`).
 
 ### Fixed
 
