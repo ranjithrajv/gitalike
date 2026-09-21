@@ -7,7 +7,7 @@
   orange #fc6d26, yellow #fca326). It lands on the light bar gitalike gives a
   GitHub-flavoured site.
 
-  Baked into src/themes/github-as-gitlab.css as the gs-mark variable.
+  Baked into src/themes/as-gitlab.css as the gs-mark variable.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 84 84" role="img" aria-label="gitalike">
   <title>gitalike mark in GitLab colours</title>

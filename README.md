@@ -238,13 +238,15 @@ deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
   popup's **Show *this site* with** picker (and `Alt` + `Shift` + `G`) chooses
   the skin for a single host, which is how an enterprise instance is skinned
   without `github.com`; there is no bulk per-host list beyond that.
-- **The Codeberg and gitea.com skin is token-level, with its navigation
-  relabelled and reordered.** They are GitHub-flavoured, so they can wear either
-  UI — colours, words, reference markers and repo-tab order — but Gitea's layout
-  is not GitHub's or GitLab's: the navigation is not re-oriented into a
-  sidebar/top bar, and the structural rules that target the two big forges'
-  markup do not apply there. Gitea's own keyboard shortcuts are left alone (the
-  GitHub/GitLab `g`-combo remap does not run on it).
+- **The Codeberg and gitea.com skin now re-orients the navigation, but not the
+  whole page.** They are GitHub-flavoured, so they can wear either UI. Under the
+  **GitLab UI** the repo tabs are rebuilt as a grouped left sidebar (GitLab's
+  Plan/Code/Build/Deploy headings), and under the **GitHub UI** they are a
+  GitHub-style underlined tab row; colours, words, reference markers and the
+  active tab follow the applied product either way. Gitea's description and
+  topics stay where Gitea puts them (they are not moved into a GitLab "Project
+  information" block or a GitHub "About" rail), and Gitea's own keyboard
+  shortcuts are left alone (the GitHub/GitLab `g`-combo remap does not run on it).
 - **The shortcut cannot set up a new host**, only toggle one already classified,
   because classifying requires choosing which product it is.
 - **The in-page mark is gitalike's own, in the other product's palette.** The

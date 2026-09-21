@@ -8,7 +8,7 @@
   GitLab-flavoured site, where GitHub's own mark would be white — so this is
   best previewed on a dark background.
 
-  Baked into src/themes/gitlab-as-github.css as the gs-mark variable.
+  Baked into src/themes/as-github.css as the gs-mark variable.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="22 22 84 84" role="img" aria-label="gitalike">
   <title>gitalike mark in GitHub colours</title>

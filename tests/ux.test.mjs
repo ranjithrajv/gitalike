@@ -7,6 +7,7 @@
  */
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import '../src/lib/ux.js';
 
@@ -23,6 +24,8 @@ const {
   UNMAPPED,
   LABEL_SCOPE,
   NAV_RULES,
+  SELECTORS,
+  CANARY_PAGES,
   SHORTCUTS,
   translate,
   translateControl,
@@ -34,6 +37,12 @@ const {
   navHidden,
   navKeep,
   orderIndexes,
+  activeTabFor,
+  sectionLabelText,
+  METADATA_HIDE,
+  projectTabs,
+  PROFILE_MENU,
+  repoNav,
   otherHostUrl,
   hostProduct,
 } = UX;
@@ -50,15 +59,21 @@ describe('module shape', () => {
       navHidden,
       navKeep,
       orderIndexes,
+      activeTabFor,
+      sectionLabelText,
+      projectTabs,
+      repoNav,
       otherHostUrl,
       hostProduct,
     ]) {
       assert.equal(typeof fn, 'function');
     }
-    for (const table of [PHRASES, NAV, NAV_GROUPS, NAV_HIDE, NAV_KEEP, LABELS, CHROME, UNMAPPED, SHORTCUTS]) {
+    for (const table of [PHRASES, NAV, NAV_GROUPS, NAV_HIDE, NAV_KEEP, LABELS, CHROME, UNMAPPED, SHORTCUTS, SELECTORS, PROFILE_MENU]) {
       assert.equal(typeof table, 'object');
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
+    assert.ok(Array.isArray(METADATA_HIDE));
+    assert.ok(Array.isArray(CANARY_PAGES));
   });
 
   test('directly maps a phrase to the target product', () => {
@@ -531,6 +546,29 @@ describe('NAV_KEEP', () => {
   test('the other theme has no whitelist', () => {
     assert.equal(navKeep('Branches', 'gitlab'), true);
   });
+
+  // Gitea renders the count with no separator ("Issues1.5k"), GitHub with a
+  // space and a suffix ("Issues 5k+"), GitLab with a space or a bare "-". All
+  // three are the same tab and all three have to survive the whitelist.
+  test('keeps a tab however its forge spells the counter', () => {
+    for (const label of [
+      'Issues1.5k',
+      'Pull requests150',
+      'Actions14',
+      'Issues 5k+',
+      'Pull requests 2.7k',
+      'Security 54',
+      'Issues 1,234',
+      'Pull requests -',
+    ]) {
+      assert.equal(navKeep(label, 'github'), true, label);
+    }
+  });
+
+  test('a counter is digits, not extra words', () => {
+    assert.equal(navKeep('Actions analytics', 'github'), false);
+    assert.equal(navKeep('Code review analytics', 'github'), false);
+  });
 });
 
 describe('refMarker', () => {
@@ -581,6 +619,18 @@ describe('labelMatches', () => {
     assert.equal(labelMatches('Mergeable', 'Merge'), false);
   });
 
+  test('matches a counter with no separator before it', () => {
+    assert.equal(labelMatches('Issues1.5k', 'Issues'), true);
+    assert.equal(labelMatches('Pull requests150', 'Pull requests'), true);
+  });
+
+  // "Code review analytics" is its own destination, not the Code tab wearing a
+  // counter — matching it as "Code" marked the wrong item active.
+  test('does not match a label that carries extra words', () => {
+    assert.equal(labelMatches('Code review analytics', 'Code'), false);
+    assert.equal(labelMatches('Actions analytics', 'Actions'), false);
+  });
+
   test('rejects empty and unrelated text', () => {
     assert.equal(labelMatches('', 'Merge'), false);
     assert.equal(labelMatches(null, 'Merge'), false);
@@ -608,5 +658,233 @@ describe('orderIndexes', () => {
 
   test('an already-ordered list is its own permutation', () => {
     assert.deepEqual(orderIndexes(['Code', 'Issues', 'Actions'], order), [0, 1, 2]);
+  });
+});
+
+describe('activeTabFor', () => {
+  test('maps each GitLab project page to GitHub’s tab', () => {
+    assert.equal(activeTabFor('projects:merge_requests:show'), 'Pull requests');
+    assert.equal(activeTabFor('projects:tree:show'), 'Code');
+    assert.equal(activeTabFor('projects:wikis:show'), 'Wiki');
+    assert.equal(activeTabFor('projects:pipelines:index'), 'Actions');
+  });
+
+  test('leaves a page with no GitHub counterpart unmarked', () => {
+    assert.equal(activeTabFor('users:show'), null);
+    assert.equal(activeTabFor(''), null);
+    assert.equal(activeTabFor(undefined), null);
+  });
+
+  test('does not mistake a longer page name for a prefix', () => {
+    // "projects:issues" is not a GitLab page, and "projects:merge_requestsfoo"
+    // must not rank as merge requests.
+    assert.equal(activeTabFor('projects:issues'), null);
+    assert.equal(activeTabFor('projects:merge_requestsfoo'), null);
+  });
+});
+
+describe('sectionLabelText', () => {
+  test('strips the counter GitHub embeds in a section heading', () => {
+    assert.equal(sectionLabelText('Releases240 (240)'), 'Releases');
+    assert.equal(sectionLabelText('Contributors2,572 (2,572)'), 'Contributors');
+  });
+
+  test('normalises whitespace and tolerates an empty heading', () => {
+    assert.equal(sectionLabelText('  Used   by '), 'Used by');
+    assert.equal(sectionLabelText(''), '');
+    assert.equal(sectionLabelText(null), '');
+  });
+});
+
+describe('projectTabs', () => {
+  test('uses the links GitLab renders and synthesises the rest', () => {
+    const tabs = projectTabs('/a/b', { issues: '/a/b/-/issues' });
+    assert.deepEqual(tabs[0], ['Code', '/a/b']);
+    assert.deepEqual(tabs[1], ['Issues', '/a/b/-/issues']);
+    assert.deepEqual(tabs[2], ['Pull requests', '/a/b/-/merge_requests']);
+    assert.deepEqual(tabs[5], ['Wiki', '/a/b/-/wikis/home']);
+    assert.equal(tabs.length, 8);
+  });
+
+  test('keeps GitHub’s tab order', () => {
+    assert.deepEqual(
+      projectTabs('/a/b').map(([label]) => label),
+      ['Code', 'Issues', 'Pull requests', 'Actions', 'Projects', 'Wiki', 'Security and quality', 'Insights'],
+    );
+  });
+});
+
+describe('PROFILE_MENU', () => {
+  test('is GitHub’s profile tabs, in GitHub’s order', () => {
+    const menu = PROFILE_MENU.github('octocat');
+    assert.deepEqual(
+      menu.map(([label]) => label),
+      ['Overview', 'Repositories', 'Projects', 'Packages', 'Stars'],
+    );
+  });
+
+  test('is GitLab’s destinations, named after the user', () => {
+    const menu = PROFILE_MENU.gitlab('octocat', 'The Octocat');
+    assert.equal(menu[0][0], 'The Octocat');
+    assert.equal(menu[0][1], '/octocat');
+    assert.deepEqual(
+      menu.map(([label]) => label),
+      ['The Octocat', 'Activity', 'Groups', 'Contributed projects', 'Personal projects', 'Starred projects', 'Snippets', 'Followers', 'Following'],
+    );
+  });
+});
+
+describe('repoNav', () => {
+  const items = [
+    { href: '/code', label: 'Code', active: true },
+    { href: '/issues', label: 'Issues' },
+    { href: '/pulls', label: 'Pull requests' },
+    { href: '/projects', label: 'Projects' },
+    { href: '/releases', label: 'Releases' },
+    { href: '/packages', label: 'Packages' },
+    { href: '/activity', label: 'Activity' },
+    { href: '/actions', label: 'Actions' },
+  ];
+  const order = NAV_RULES.gitlab.find((r) => r.source === 'gitea').order;
+
+  test('relabels, orders and groups Gitea’s repo tabs as GitLab’s sidebar', () => {
+    const entries = repoNav(items, 'gitlab', order);
+    assert.deepEqual(
+      entries.map((e) => e.group ?? e.label),
+      [
+        'Plan',
+        'Work items',
+        'Issue boards',
+        'Code',
+        'Merge requests',
+        'Repository',
+        'Build',
+        'CI/CD',
+        'Deploy',
+        'Releases',
+        'Packages',
+        'Activity',
+      ],
+    );
+  });
+
+  test('carries the source label and the active page through', () => {
+    const entries = repoNav(items, 'gitlab', order);
+    const repo = entries.find((e) => e.label === 'Repository');
+    assert.equal(repo.raw, 'Code');
+    assert.equal(repo.href, '/code');
+    assert.equal(repo.active, true);
+    assert.equal(entries.find((e) => e.label === 'Work items').active, false);
+  });
+
+  test('an item with no group is left ungrouped', () => {
+    const entries = repoNav(items, 'gitlab', order);
+    const activity = entries.findIndex((e) => e.label === 'Activity');
+    assert.equal(typeof entries[activity - 1].label, 'string');
+    assert.equal(entries.some((e) => e.group === 'Activity'), false);
+  });
+});
+
+describe('SELECTORS / CANARY_PAGES', () => {
+  test('every source names the repo-navigation hook the nav tables use', () => {
+    for (const source of Object.keys(SELECTORS)) {
+      assert.equal(typeof SELECTORS[source], 'object');
+    }
+    // The nav rules key their containers off the same strings, so the canary
+    // and the reorder cannot drift.
+    assert.ok(SELECTORS.github.repoNavList.includes('UnderlineNav-body'));
+    assert.ok(SELECTORS.gitea.repoNavList.includes('overflow-menu'));
+  });
+
+  test('every canary page references a selector that exists', () => {
+    for (const page of CANARY_PAGES) {
+      assert.ok(SELECTORS[page.source], `${page.name} names a known source`);
+      for (const key of page.keys) {
+        assert.equal(
+          typeof SELECTORS[page.source][key],
+          'string',
+          `${page.source}.${key} exists`,
+        );
+      }
+    }
+  });
+
+  test('the nav rules and the selector table name the same containers', () => {
+    // NAV_RULES spells its containers out before SELECTORS exists; this keeps
+    // the two from drifting apart.
+    const githubRule = NAV_RULES.gitlab.find((r) => r.container.includes('UnderlineNav'));
+    assert.equal(githubRule.container, SELECTORS.github.repoNavList);
+    for (const theme of ['gitlab', 'github']) {
+      const giteaRule = NAV_RULES[theme].find((r) => r.container?.includes('overflow-menu'));
+      assert.equal(giteaRule.container, SELECTORS.gitea.repoNavList);
+    }
+  });
+
+  test('every nav rule names the markup source it belongs to', () => {
+    // The source is how a caller picks the rule for a known forge without
+    // matching an implementation detail such as its item selector.
+    for (const rules of Object.values(NAV_RULES)) {
+      for (const rule of rules) {
+        assert.ok(
+          ['github', 'gitlab', 'gitea'].includes(rule.source),
+          `${rule.container || rule.scope} names a source`,
+        );
+      }
+    }
+  });
+
+  test('every selector a stylesheet owns appears in a stylesheet', () => {
+    // `SELECTORS` marks the entries a stylesheet owns with `// css`; CSS cannot
+    // read the table, so this is the only thing that proves the two agree.
+    const themes = [
+      'as-gitlab.css',
+      'as-github.css',
+      'ux-markers.css',
+      'ux-nav.css',
+    ]
+      .map((file) => readFileSync(new URL(`../src/themes/${file}`, import.meta.url), 'utf8'))
+      .join('\n');
+    // The classes, ids and attribute tests a selector names, so a compound
+    // selector is checked token by token rather than as one exact string.
+    const probes = (selector) =>
+      selector.split(',').flatMap((part) => {
+        const found = [];
+        const bare = part.replace(/\[[^\]]*\]/g, (attr) => {
+          found.push(attr.replace(/\s+/g, ' '));
+          return ' ';
+        });
+        for (const m of bare.matchAll(/#([\w-]+)/g)) found.push(`#${m[1]}`);
+        for (const m of bare.matchAll(/\.([\w-]+)/g)) found.push(`.${m[1]}`);
+        return found;
+      });
+    const source = readFileSync(new URL('../src/lib/ux.js', import.meta.url), 'utf8');
+    let checked = 0;
+    for (const m of source.matchAll(/^\s*[A-Za-z0-9_]+:\s*'([^']+)',\s*\/\/ css\s*$/gm)) {
+      checked += 1;
+      for (const probe of probes(m[1])) {
+        assert.ok(themes.includes(probe), `${m[1]} — ${probe} is in a stylesheet`);
+      }
+    }
+    assert.ok(checked > 0, 'the scan found the // css markers');
+  });
+
+  test('every SELECTORS key the content script reads exists', () => {
+    // A missing key would be read as `undefined` and silently yield an empty
+    // NodeList, so the pass would just do nothing. Scan the content script for
+    // the keys it names and require each one.
+    const source = readFileSync(
+      new URL('../src/content/ux.js', import.meta.url),
+      'utf8',
+    );
+    let checked = 0;
+    for (const m of source.matchAll(/SELECTORS\.([a-z]+)\.([A-Za-z0-9_]+)/g)) {
+      checked += 1;
+      assert.equal(
+        typeof SELECTORS[m[1]]?.[m[2]],
+        'string',
+        `SELECTORS.${m[1]}.${m[2]} is read by content/ux.js`,
+      );
+    }
+    assert.ok(checked > 0, 'the scan found the content script’s selector reads');
   });
 });

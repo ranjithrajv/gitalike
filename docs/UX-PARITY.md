@@ -7,9 +7,9 @@ is the map and the scorecard.
 ## Directions
 
 - **G→L** — a GitHub-flavoured site shown with the GitLab UI
-  (`html.gs-theme-gitlab`, `themes/gitlab-as-github.css`)
+  (`html.gs-theme-gitlab`, `themes/as-gitlab.css`)
 - **L→G** — a GitLab-flavoured site shown with the GitHub UI
-  (`html.gs-theme-github`, `themes/github-as-gitlab.css`)
+  (`html.gs-theme-github`, `themes/as-github.css`)
 
 ## Status
 
@@ -36,6 +36,11 @@ is the map and the scorecard.
 | "Open on the other host" | ✅ | ✅ | `lib/ux.js` + popup |
 
 Legend: ✅ done · ❌ not built
+
+**Codeberg (Forgejo)** and **gitea.com (Gitea)** are a third source product,
+`gitea`. They are GitHub-flavoured, so they can wear either UI: under the GitLab
+UI the repo tabs are rebuilt as a grouped sidebar, and under the GitHub UI as
+GitHub's tab row. See [Codeberg / Gitea](#codeberg--gitea).
 
 ## Copy
 
@@ -237,6 +242,26 @@ query and fragment. It returns nothing for a self-hosted host (there is no pair
 to guess) or a path that is not a repository, so the button is simply absent
 there.
 
+## Codeberg / Gitea
+
+Codeberg (Forgejo) and gitea.com (Gitea) are a third source product, `gitea`.
+They are GitHub-flavoured, so they can wear either UI, and each skin re-orients
+their navigation:
+
+- **Gitea → GitLab** — the horizontal repo tab row (`overflow-menu`) is rebuilt
+  as GitLab's left sidebar, with GitLab's Plan/Code/Build/Deploy group headings,
+  the active row tinted, and counts as trailing figures. The `overflow-menu` web
+  component collapses its own tabs into a "more" popup once they stop fitting, so
+  it is kept off-screen at a width where its tabs stay in the DOM for the rebuild
+  (`content/ux.js` `paintGiteaNav`, `UX.repoNav`), and the stylesheet hides it.
+- **Gitea → GitHub** — the tab row is restyled in place as GitHub's underlined
+  UnderlineNav: muted inactive tabs, an orange active underline, GitHub's rounded
+  counter pills, and a single hairline under the row. It is not rebuilt.
+
+Gitea's description and topics keep Gitea's own placement — they are not moved
+into a GitLab "Project information" block or a GitHub "About" rail — and Gitea's
+own `g`-combos are left alone.
+
 ## Not built
 
 - **Behaviour** behind search, notifications and the merge flow: only their
@@ -245,10 +270,16 @@ there.
 ## Extending
 
 Add to `PHRASES` for prose, `LABELS` for a control label, `CHROME` for account
-chrome, `NAV` for a nav label, `SHORTCUTS` for a `g`-combo. Keep control words in
-`LABELS`/`CHROME`, not `PHRASES` — the control scope is what makes an ordinary
-word safe. The tests enforce that every `LABELS` and `CHROME` entry round-trips
-and that `PHRASES` stays the same size in both directions.
+chrome, `NAV` for a nav label, `SELECTORS` for a DOM hook, `SHORTCUTS` for a
+`g`-combo. Keep control words in `LABELS`/`CHROME`, not `PHRASES` — the control
+scope is what makes an ordinary word safe. The tests enforce that every `LABELS`
+and `CHROME` entry round-trips and that `PHRASES` stays the same size in both
+directions.
+
+A selector a pass keys on goes in `SELECTORS`, under the *source* product whose
+markup it matches — `src/content/ux.js` reads it from there rather than carrying
+a literal. Name the hook in a `CANARY_PAGES` entry too, and
+`npm run canary` will assert the live forge still serves it.
 
 ## Verification
 

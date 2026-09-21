@@ -24,14 +24,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   GitHub-flavoured, so they are classified as the `github` kind and default to
   the GitLab UI, and the per-site picker can show them with the **GitHub UI**
   instead. Either way a token block re-points Gitea's `--color-*` custom
-  properties at the skin's palette (including a dark top bar), their repo tabs
-  are relabelled and reordered into that product's order, reference markers match
-  Gitea's `/pulls/N` links, and dark mode reads Gitea's `data-theme`
-  (`src/themes/github-as-gitlab.css`, `src/themes/gitlab-as-github.css`,
-  `src/lib/ux.js`). A `sources` table records that Gitea is not GitHub's markup,
+  properties at the skin's palette (the top bar follows the skin's header
+  surface and mark), their repo tabs are relabelled into that product's order,
+  reference markers match Gitea's `/pulls/N` links, and dark mode reads Gitea's
+  `data-theme` (`src/themes/as-gitlab.css`, `src/themes/as-github.css`,
+  `src/lib/ux.js`). The GitLab UI rebuilds the repo tabs as a grouped left
+  sidebar (Plan/Code/Build/Deploy) and the GitHub UI restyles them as GitHub's
+  underlined tab row; the model behind both is the pure `repoNav` in
+  `src/lib/ux.js`. A `sources` table records that Gitea is not GitHub's markup,
   so the GitHub UI is a real skin there rather than a no-op, and the
   GitHub/GitLab `g`-combo remap is skipped on it so Gitea's own shortcuts are
   left alone (`src/lib/sites.js`, `src/content/theme.js`, `src/content/ux.js`).
+- The two skin stylesheets are named for the skin they apply, not the forge they
+  came from: `themes/as-gitlab.css` and `themes/as-github.css` (was
+  `github-as-gitlab.css` / `gitlab-as-github.css`). All four stylesheets are
+  injected together and scoped by `html.gs-theme-*`, so the file name should
+  track that axis; the old names described only the original two hosts and were
+  wrong for the Gitea blocks.
 - A selector canary, `tools/selector-canary.mjs` (`npm run canary`), with a
   scheduled workflow (`.github/workflows/canary.yml`). It fetches the live pages
   the skins are verified against — GitHub, GitLab and Codeberg (Forgejo

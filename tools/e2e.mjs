@@ -105,12 +105,20 @@ try {
         .filter(Boolean),
       ref: document.getElementById('gs-ref')?.textContent ?? null,
       badge: document.querySelector('.gs-no-equiv')?.textContent ?? null,
+      header: (() => {
+        const h = document.querySelector(
+          'header[role="banner"], header.GlobalNav, .AppHeader, .js-header-wrapper',
+        );
+        return h ? getComputedStyle(h).display : null;
+      })(),
     };
   });
   check('G→L repo nav is vertical', g.direction === 'column', g.direction);
   check('G→L nav relabelled', g.nav.includes('Repository') && g.nav.includes('Merge requests 387'), g.nav.slice(0, 4).join(', '));
   check('G→L reference marker #42 → !42', g.ref === '!42', g.ref);
   check('G→L no-counterpart badge', g.badge === '≠ GitLab', g.badge);
+  // GitLab has no top bar; its navigation is the sidebar alone.
+  check('G→L hides GitHub’s top bar', g.header === 'none', g.header);
 
   /* GitHub profile, skinned as GitLab: the tab strip becomes a left rail. */
   const ghp = await context.newPage();
@@ -278,11 +286,11 @@ try {
     null,
     { timeout: 45000 },
   );
-  // Wait for the rewrite itself rather than a guessed delay.
+  // Wait for the rebuilt sidebar itself rather than a guessed delay.
   await cb
     .waitForFunction(
       () =>
-        [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].some((a) =>
+        [...document.querySelectorAll('[data-gs-gitea-nav] a')].some((a) =>
           /Merge requests/.test(a.textContent || ''),
         ),
       null,
@@ -290,25 +298,45 @@ try {
     )
     .catch(() => {});
   await cb.waitForTimeout(500);
-  const readTabs = () =>
-    cb.evaluate(() =>
-      [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')].map((a) =>
-        (a.textContent || '').replace(/\s+/g, ' ').trim(),
-      ),
-    );
-  const c = { nav: await readTabs() };
+  const readSidebar = () =>
+    cb.evaluate(() => {
+      const nav = document.querySelector('[data-gs-gitea-nav]');
+      const rows = nav ? [...nav.querySelectorAll('a')] : [];
+      const menu = document.querySelector('.secondary-nav > overflow-menu');
+      return {
+        labels: rows.map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim()),
+        groups: nav
+          ? [...nav.querySelectorAll('.gs-nav-group')].map((g) => g.textContent.trim())
+          : [],
+        active: rows
+          .filter((a) => a.classList.contains('active'))
+          .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim()),
+        menuVisibility: menu ? getComputedStyle(menu).visibility : null,
+      };
+    });
+  const c = { nav: await readSidebar() };
   check(
-    'Codeberg (Gitea) tabs relabelled',
-    c.nav.some((t) => t.startsWith('Repository')) && c.nav.some((t) => t.startsWith('Merge requests')),
-    c.nav.join(', '),
+    'Codeberg (Gitea) GitLab UI: repo tabs become a sidebar',
+    c.nav.labels.some((t) => t.startsWith('Repository')) &&
+      c.nav.labels.some((t) => t.startsWith('Merge requests')),
+    c.nav.labels.join(', '),
   );
-  const giteaWorkItems = c.nav.findIndex((t) => t.startsWith('Work items'));
-  const giteaMerge = c.nav.findIndex((t) => t.startsWith('Merge requests'));
-  const giteaRepo = c.nav.findIndex((t) => t.startsWith('Repository'));
   check(
-    'Codeberg (Gitea) tabs reordered into GitLab’s order',
-    giteaWorkItems > -1 && giteaWorkItems < giteaMerge && giteaMerge < giteaRepo,
-    `${giteaWorkItems}/${giteaMerge}/${giteaRepo}`,
+    'Codeberg (Gitea) GitLab UI: sidebar is grouped like GitLab’s',
+    ['plan', 'code', 'build', 'deploy'].every((g) =>
+      c.nav.groups.map((x) => x.toLowerCase()).includes(g),
+    ),
+    c.nav.groups.join(', '),
+  );
+  check(
+    'Codeberg (Gitea) GitLab UI: the current page is the active row',
+    c.nav.active.includes('Repository'),
+    c.nav.active.join(', '),
+  );
+  check(
+    'Codeberg (Gitea) GitLab UI: the horizontal menu is off-screen',
+    c.nav.menuVisibility === 'hidden',
+    c.nav.menuVisibility,
   );
 
   // The same site, told to wear the GitHub UI instead.
@@ -324,13 +352,27 @@ try {
       { timeout: 45000 },
     )
     .catch(() => {});
-  const cg = { nav: await readTabs() };
+  const cg = await cb.evaluate(() => {
+    const items = [...document.querySelectorAll('overflow-menu .overflow-menu-items a.item')];
+    const label = (a) => (a.textContent || '').replace(/\s+/g, ' ').trim();
+    const shown = (a) => getComputedStyle(a.closest('li') || a).display !== 'none';
+    return {
+      nav: items.filter(shown).map(label),
+      hidden: items.filter((a) => !shown(a)).map(label),
+      sidebar: Boolean(document.querySelector('[data-gs-gitea-nav]')),
+    };
+  });
   check(
-    'Codeberg (Gitea) can wear the GitHub UI',
+    'Codeberg (Gitea) GitHub UI: repo tabs stay GitHub’s tab row',
     cg.nav.findIndex((t) => t.startsWith('Code')) === 0 &&
       cg.nav.findIndex((t) => t.startsWith('Issues')) === 1 &&
-      cg.nav.findIndex((t) => t.startsWith('Pull requests')) === 2,
-    cg.nav.join(', '),
+      cg.nav.findIndex((t) => t.startsWith('Pull requests')) === 2 &&
+      !cg.sidebar &&
+      // GitHub has no repo tab for these, so the whitelist hides them.
+      ['Releases', 'Packages', 'Activity'].every((t) =>
+        cg.hidden.some((h) => h.startsWith(t)),
+      ),
+    `shown: ${cg.nav.join(', ')} | hidden: ${cg.hidden.join(', ')}`,
   );
   await cb.close();
   // Clear the per-site choice so it does not leak into the revert check.

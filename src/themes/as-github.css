@@ -1,13 +1,16 @@
 /* =====================================================================
-   gitalike — "GitLab, shown with a GitHub UI"
-   Injected on https://gitlab.com/* by the manifest.
-   Entirely inert until the content script adds .gs-theme-github to <html>.
+   gitalike — the GitHub skin (the applied product, not the source).
+   Every rule is scoped to html.gs-theme-github, so the file is inert until the
+   content script adds that class to <html>. It is registered alongside
+   as-gitlab.css on every configured host; which one paints is decided by the
+   class, never by the host.
 
    GitLab is mid-migration to the Pajamas design tokens, which are exposed as
    --gl-* CSS custom properties: the modern parts of the app read them, the
    legacy parts still carry compiled colours. So this file does both — it
    re-points the tokens at the Primer palette, then reaches the older
-   components with structural selectors.
+   components with structural selectors. The "Gitea / Forgejo" block does the
+   same for Gitea's own --color-* tokens.
    ===================================================================== */
 
 /* ------------------------------------------------------------- palette -- */
@@ -390,7 +393,7 @@ html.gs-theme-github
    block re-points Gitea's own `--color-*` custom properties at the same Primer
    palette. `[data-theme]` is Gitea's marker on <html> and neither GitHub nor
    GitLab sets it, so these rules are inert elsewhere. This is the counterpart of
-   the "Gitea / Forgejo" block in github-as-gitlab.css. */
+   the "Gitea / Forgejo" block in as-gitlab.css. */
 
 html.gs-theme-github[data-theme] {
   /* surfaces */
@@ -472,6 +475,19 @@ html.gs-theme-github[data-theme] #navbar a {
   color: var(--gs-header-fg) !important;
 }
 
+/* Gitea's navbar mark is tuned for its own bar; replace it with gitalike's, as
+   the other forges' marks are. Scoped to the navbar so the footer's copy of the
+   same logo is left alone. */
+html.gs-theme-github[data-theme] #navbar-logo .branding {
+  width: 30px;
+  height: 30px;
+  background: var(--gs-mark) center / contain no-repeat !important;
+}
+
+html.gs-theme-github[data-theme] #navbar-logo .branding img {
+  visibility: hidden !important;
+}
+
 /* GitHub's primary buttons are green, Gitea's are the accent colour. */
 html.gs-theme-github[data-theme]
   :is(.ui.primary.button, .ui.primary.buttons .button, button.primary) {
@@ -480,9 +496,60 @@ html.gs-theme-github[data-theme]
   color: #ffffff !important;
 }
 
-/* GitHub underlines the active repo tab in orange; Gitea uses its accent. */
+/* GitHub underlines the active repo tab in orange, with a hairline under the
+   whole row; Gitea points at its active tab with its accent instead. Shape the
+   row and its tabs like GitHub's UnderlineNav. */
+html.gs-theme-github[data-theme] .overflow-menu-items {
+  gap: 8px !important;
+}
+
+html.gs-theme-github[data-theme] .overflow-menu-items a.item {
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px !important;
+  color: var(--gs-fg-muted) !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+}
+
+html.gs-theme-github[data-theme] .overflow-menu-items a.item:hover {
+  color: var(--gs-fg) !important;
+  border-bottom-color: var(--gs-border) !important;
+}
+
 html.gs-theme-github[data-theme] .overflow-menu-items a.item.active {
-  box-shadow: inset 0 -2px 0 #fd8c73 !important;
+  box-shadow: none !important;
+  color: var(--gs-fg) !important;
+  border-bottom-color: #fd8c73 !important;
   font-weight: 600 !important;
+}
+
+/* Fomantic's pointing arrow is not part of GitHub's flat tab row. */
+html.gs-theme-github[data-theme] .overflow-menu-items a.item::before,
+html.gs-theme-github[data-theme] .overflow-menu-items a.item::after {
+  display: none !important;
+}
+
+/* GitHub counts are small rounded pills, not bare figures. */
+html.gs-theme-github[data-theme] .overflow-menu-items a.item .ui.small.label {
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  margin: 0 !important;
+  padding: 0 6px !important;
+  border: 1px solid var(--gs-border) !important;
+  border-radius: 999px !important;
+  background-color: var(--gs-canvas-subtle) !important;
+  color: var(--gs-fg) !important;
+  font-weight: 500 !important;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* GitHub's tab row ends in a single hairline. */
+html.gs-theme-github[data-theme] .ui.tabs.divider {
+  border-top: 0 !important;
+  border-bottom: 1px solid var(--gs-border) !important;
 }
 

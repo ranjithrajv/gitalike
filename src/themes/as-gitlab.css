@@ -1,13 +1,16 @@
 /* =====================================================================
-   gitalike — "GitHub, shown with a GitLab UI"
-   Injected on https://github.com/* by the manifest.
-   Entirely inert until the content script adds .gs-theme-gitlab to <html>.
+   gitalike — the GitLab skin (the applied product, not the source).
+   Every rule is scoped to html.gs-theme-gitlab, so the file is inert until the
+   content script adds that class to <html>. It is registered alongside
+   as-github.css on every configured host; which one paints is decided by the
+   class, never by the host, so a GitHub site, a Gitea site and a self-hosted
+   GitLab all read from here when shown with the GitLab UI.
 
-   github.com is built on Primer, and nearly every colour on the page is
-   read from a small set of CSS custom properties. Re-pointing those at the
-   GitLab/Pajamas palette re-skins the whole app from one place. A short
-   structural section at the end handles what tokens cannot reach: the top
-   bar and the logo.
+   GitHub is built on Primer, and nearly every colour on the page is read from a
+   small set of CSS custom properties. Re-pointing those at the GitLab/Pajamas
+   palette re-skins the whole app from one place. A short structural section at
+   the end handles what tokens cannot reach: the top bar and the logo. The
+   "Gitea / Forgejo" block re-points Gitea's own --color-* tokens the same way.
    ===================================================================== */
 
 /* ------------------------------------------------------------- palette -- */
@@ -480,20 +483,33 @@ html.gs-theme-gitlab[data-theme] {
 }
 
 /* Gitea states its own nav colours on #navbar, so re-pointing :root is not
-   enough — the bar has to be told directly. GitLab's top header is dark in both
-   modes, which is the cue that the site is wearing GitLab's UI. */
+   enough — the bar has to be told directly. GitLab's top bar is light, so the
+   bar takes the skin's header surface rather than Gitea's dark default. */
 html.gs-theme-gitlab[data-theme] #navbar {
-  --color-nav-bg: #28272d !important;
-  --color-nav-hover-bg: #3d3b44 !important;
-  --color-text: #ececef !important;
+  --color-nav-bg: var(--gs-header-bg) !important;
+  --color-nav-hover-bg: color-mix(in srgb, var(--gs-header-fg) 10%, transparent) !important;
+  --color-text: var(--gs-header-fg) !important;
 }
 
 html.gs-theme-gitlab[data-theme] a {
   color: var(--gs-link) !important;
 }
 
-/* ...except on the dark top bar, where the links stay light. */
+/* ...except on the top bar, where the links take the header's foreground. */
 html.gs-theme-gitlab[data-theme] #navbar a {
-  color: #ececef !important;
+  color: var(--gs-header-fg) !important;
+}
+
+/* Gitea's navbar mark is tuned for its own dark bar; on the light GitLab bar it
+   would wash out. Replace it with gitalike's, as the other forges' marks are.
+   Scoped to the navbar so the footer's copy of the same logo is left alone. */
+html.gs-theme-gitlab[data-theme] #navbar-logo .branding {
+  width: 30px;
+  height: 30px;
+  background: var(--gs-mark) center / contain no-repeat !important;
+}
+
+html.gs-theme-gitlab[data-theme] #navbar-logo .branding img {
+  visibility: hidden !important;
 }
 

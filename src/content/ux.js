@@ -22,6 +22,11 @@
  *   - the nav is only reordered by moving its items among the slots they
  *     already occupy, so children we do not recognise stay where they are.
  *
+ * The tables this reads live in src/lib/ux.js: the vocabulary, the nav order,
+ * the shortcuts and — since the forge's markup is the thing most likely to
+ * change underneath us — every DOM selector, under `SELECTORS`, keyed by the
+ * site's source product. Add a hook there, not here.
+ *
  * Limitations worth knowing: text updates the site makes *inside* an already
  * processed node are not re-translated (SPA re-renders that replace nodes are),
  * and the keyboard remap falls back to synthetic key events for destinations
@@ -41,6 +46,8 @@
   if (globalThis.__gitalikeUx) return;
   globalThis.__gitalikeUx = true;
 
+  const SELECTORS = UX.SELECTORS;
+
   const root = document.documentElement;
   // Which themes exist is derived from the shared `kinds` table, not listed here.
   const THEMES = SITES.THEMES;
@@ -56,18 +63,6 @@
   const REF_SELECTOR =
     'a[href*="/pull/"],a[href*="/pulls/"],a[href*="/merge_requests/"]';
 
-  // Iterable (not WeakMap) because reverting has to walk them.
-  const textOrig = new Map();
-  const attrOrig = new Map();
-  const refOrig = new Map();
-  const orderOrig = new Map();
-  const orderStamp = new WeakMap();
-  const markerOrig = new Map();
-  const hiddenOrig = new Map();
-  // A NAV_RULES rule resolves to one container; keep it while that container is
-  // still in the page so later mutation flushes do not re-scan the document.
-  const navContainer = new WeakMap();
-
   let theme = null;
   let domObserver = null;
   let classObserver = null;
@@ -75,8 +70,101 @@
   let keyHandler = null;
   let lastSweep = 0;
 
+  // A NAV_RULES rule resolves to one container; keep it while that container is
+  // still in the page so later mutation flushes do not re-scan the document.
+  const navContainer = new WeakMap();
+  // The last time each nav container was reordered, so a framework that
+  // re-renders its list cannot make the two of us thrash.
+  const orderStamp = new WeakMap();
+  // The detail elements the profile rail is currently hiding, so a rebuild can
+  // release exactly the ones it hid before hiding the new set.
+  let railDetails = new Set();
+  // The profile-menu containers, kept while they are in the page for the same
+  // reason as `navContainer`.
+  const profileContainerCache = { key: null, list: [] };
+
   const themeOf = () =>
     THEMES.find((name) => root.classList.contains(`gs-theme-${name}`)) || null;
+
+  /* ------------------------------------------------------- undo ledger -- */
+
+  // Every change the skin makes is recorded here, so a switch-off restores the
+  // page exactly and a node the framework has detached can be forgotten before
+  // the ledger keeps its subtree alive. One entry per (target, kind); the first
+  // entry recorded for a pair is the one kept, so re-painting never overwrites
+  // the value captured when the skin first touched the node. That is what makes
+  // a new pass a single `ledger(...)` call instead of an edit to the revert
+  // walk and to the forget walk as well.
+  /** @type {Map<Node, Map<string, {restore: () => void}>>} */
+  const undo = new Map();
+
+  /**
+   * The ledger entry for (target, kind), built by `make` the first time.
+   * @returns {{restore: () => void}}
+   */
+  function ledger(target, kind, make) {
+    let kinds = undo.get(target);
+    if (!kinds) {
+      kinds = new Map();
+      undo.set(target, kinds);
+    }
+    let entry = kinds.get(kind);
+    if (!entry) {
+      entry = make();
+      kinds.set(kind, entry);
+    }
+    return entry;
+  }
+
+  // Undo one entry and drop it. A pass that has to rebuild a subtree (the
+  // profile rail and menu) uses this to release the old nodes before it hides
+  // the new ones; the ledger alone could only undo them at switch-off.
+  function release(target, kind) {
+    const kinds = undo.get(target);
+    if (!kinds) return;
+    const entry = kinds.get(kind);
+    if (!entry) return;
+    entry.restore();
+    kinds.delete(kind);
+    if (!kinds.size) undo.delete(target);
+  }
+
+  // Undo every entry of a kind whose target sits inside `root`.
+  function releaseWithin(root, kind) {
+    for (const [target, kinds] of undo) {
+      if (!kinds.has(kind) || !root.contains(target)) continue;
+      kinds.get(kind).restore();
+      kinds.delete(kind);
+      if (!kinds.size) undo.delete(target);
+    }
+  }
+
+  // Hide an element, recording how to show it again. `important` matches the
+  // site's own !important on the elements that need it (the profile card).
+  function hide(el, important = false) {
+    const display = el.style.display;
+    ledger(el, 'display', () => ({
+      restore: () => {
+        if (display) el.style.display = display;
+        else el.style.removeProperty('display');
+      },
+    }));
+    if (important) el.style.setProperty('display', 'none', 'important');
+    else if (el.style.display !== 'none') el.style.display = 'none';
+  }
+
+  // Set the flex `order` an item now has, recording the original. Kept apart
+  // from the nav reorder's kind so the two cannot release each other.
+  function setOrder(el, value) {
+    const order = el.style.order;
+    ledger(el, 'style-order', () => ({
+      restore: () => {
+        if (order) el.style.order = order;
+        else el.style.removeProperty('order');
+      },
+    }));
+    el.style.setProperty('order', value);
+  }
 
   /* ---------------------------------------------------------- utilities -- */
 
@@ -146,8 +234,11 @@
   }
 
   function rememberText(node) {
-    if (!textOrig.has(node)) textOrig.set(node, node.nodeValue);
-    return textOrig.get(node);
+    const entry = ledger(node, 'text', () => {
+      const original = node.nodeValue;
+      return { original, restore: () => { node.nodeValue = original; } };
+    });
+    return entry.original;
   }
 
   /* -------------------------------------------------------------- paints -- */
@@ -168,15 +259,21 @@
 
   function paintAttrs(node, t) {
     for (const el of scope(node, ATTR_SELECTOR)) {
-      let store = attrOrig.get(el);
+      const entry = ledger(el, 'attrs', () => {
+        const values = {};
+        return {
+          values,
+          restore: () => {
+            for (const attr of Object.keys(values)) {
+              el.setAttribute(attr, values[attr]);
+            }
+          },
+        };
+      });
       for (const attr of ATTRS) {
         if (!el.hasAttribute(attr)) continue;
-        if (!store) {
-          store = {};
-          attrOrig.set(el, store);
-        }
-        if (!(attr in store)) store[attr] = el.getAttribute(attr);
-        const next = UX.translate(store[attr], t);
+        if (!(attr in entry.values)) entry.values[attr] = el.getAttribute(attr);
+        const next = UX.translate(entry.values[attr], t);
         if (next !== el.getAttribute(attr)) el.setAttribute(attr, next);
       }
     }
@@ -190,7 +287,10 @@
       // Only touch links that are *just* a reference (optionally with its
       // existing # / ! marker), never a title with the number in it.
       if (!/^[#!]?\d+$/.test(current)) continue;
-      if (!refOrig.has(anchor)) refOrig.set(anchor, anchor.textContent);
+      ledger(anchor, 'ref', () => {
+        const original = anchor.textContent;
+        return { restore: () => { anchor.textContent = original; } };
+      });
       if (current !== marker) anchor.textContent = marker;
     }
   }
@@ -208,20 +308,18 @@
         const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
         // A whitelist means "show only the applied product's own options";
         // otherwise hide the ones it has no page for.
-        let hide = keep ? !UX.navKeep(label, t) : UX.navHidden(label, t);
+        let drop = keep ? !UX.navKeep(label, t) : UX.navHidden(label, t);
         // GitLab lists some destinations twice (pinned and in a group); GitHub's
         // bar lists each once.
         const href = el.getAttribute('href');
-        if (!hide && href) {
-          if (seenHref.has(href)) hide = true;
+        if (!drop && href) {
+          if (seenHref.has(href)) drop = true;
           else seenHref.add(href);
         }
-        if (!hide) continue;
+        if (!drop) continue;
         // A group toggle is a button whose `li` holds the group's items; hiding
         // the `li` would take the items with it, so only the button goes.
-        const target = el.tagName === 'BUTTON' ? el : el.closest('li') || el;
-        if (!hiddenOrig.has(target)) hiddenOrig.set(target, target.style.display);
-        if (target.style.display !== 'none') target.style.display = 'none';
+        hide(el.tagName === 'BUTTON' ? el : el.closest('li') || el);
       }
     }
   }
@@ -230,29 +328,15 @@
   // sidebar lists a different set (Releases, Packages, Used by, Contributors,
   // Languages). On the GitLab skin the GitHub-only sections are hidden so the
   // block shows the items GitLab's project page does.
-  const METADATA_HIDE = ['Releases', 'Packages', 'Used by', 'Contributors', 'Languages'];
-  const metadataHiddenOrig = new Map();
-
-  // GitHub puts a counter inside the section heading ("Releases240 (240)",
-  // "Contributors2,572 (2,572)"), so the digits and their brackets are stripped
-  // before the label is compared.
-  const sectionLabel = (heading) =>
-    heading
-      ? (heading.textContent || '').replace(/[\d,()]+/g, ' ').replace(/\s+/g, ' ').trim()
-      : '';
-
   function paintMetadata(t) {
     if (t !== 'gitlab') return;
-    const grid = document.querySelector('[class*="CodeViewSidebar-"]');
+    const grid = document.querySelector(SELECTORS.github.metadataSidebar);
     if (!grid) return;
     for (const section of grid.children) {
       const heading = section.querySelector('h2, h3');
-      const label = sectionLabel(heading);
-      if (!METADATA_HIDE.includes(label)) continue;
-      if (!metadataHiddenOrig.has(section)) {
-        metadataHiddenOrig.set(section, section.style.display);
-      }
-      if (section.style.display !== 'none') section.style.display = 'none';
+      const label = UX.sectionLabelText(heading && heading.textContent);
+      if (!UX.METADATA_HIDE.includes(label)) continue;
+      hide(section);
     }
   }
 
@@ -260,14 +344,11 @@
   // About has no counterpart, so it is hidden on the GitHub skin.
   function paintAboutExtras(t) {
     if (t !== 'github') return;
-    for (const block of document.querySelectorAll('.project-page-sidebar-block')) {
+    for (const block of document.querySelectorAll(
+      SELECTORS.gitlab.projectSidebarBlock,
+    )) {
       if (!/^Created on\b/i.test(block.textContent.trim())) continue;
-      if (!metadataHiddenOrig.has(block)) {
-        metadataHiddenOrig.set(block, block.style.display);
-      }
-      if (block.style.display !== 'none') {
-        block.style.setProperty('display', 'none', 'important');
-      }
+      hide(block, true);
     }
   }
 
@@ -296,7 +377,7 @@
       }
     };
     if (t === 'gitlab') {
-      const grid = document.querySelector('[class*="CodeViewSidebar-"]');
+      const grid = document.querySelector(SELECTORS.github.metadataSidebar);
       if (grid) {
         for (const heading of grid.querySelectorAll('h2, h3')) {
           if (heading.textContent.trim() === 'About') {
@@ -317,8 +398,8 @@
       return;
     }
     const sidebar =
-      document.querySelector('.project-page-sidebar-block') ||
-      document.querySelector('.project-page-layout-sidebar');
+      document.querySelector(SELECTORS.gitlab.projectSidebarBlock) ||
+      document.querySelector(SELECTORS.gitlab.projectLayoutSidebar);
     if (!sidebar) return;
     for (const heading of sidebar.querySelectorAll('h2, h3')) {
       if (heading.textContent.trim() === 'Project information') {
@@ -330,25 +411,14 @@
   // GitLab marks the project-name item active on the project overview rather
   // than the tab GitHub would underline, and its own highlight is a blue pill
   // rather than GitHub's underline. The page marker is mapped to GitHub's tab
-  // and that tab is marked here; the underline styling lives in the theme.
-  const L2G_ACTIVE = [
-    [/^projects:(show|tree|blob|commits|compare|branches|tags|forks|network)\b/, 'Code'],
-    [/^projects:work_items/, 'Issues'],
-    [/^projects:merge_requests/, 'Pull requests'],
-    [/^projects:(pipelines|jobs|builds|ci)\b/, 'Actions'],
-    [/^projects:boards/, 'Projects'],
-    [/^projects:(security|vulnerabilities)/, 'Security and quality'],
-    [/^projects:wikis/, 'Wiki'],
-    [/^projects:(insights|analytics)/, 'Insights'],
-  ];
-
+  // (`UX.activeTabFor`) and that tab is marked here; the underline styling lives
+  // in the theme.
   function paintActiveTab(t) {
     if (t !== 'github') return;
     const page = (document.body && document.body.dataset.page) || '';
-    const rule = L2G_ACTIVE.find(([re]) => re.test(page));
-    const label = rule ? rule[1] : null;
+    const label = UX.activeTabFor(page);
     for (const anchor of document.querySelectorAll(
-      '.super-sidebar a, [data-gs-project-tabs] a',
+      `${SELECTORS.gitlab.superSidebar} a, [data-gs-project-tabs] a`,
     )) {
       const text = (anchor.textContent || '').replace(/\s+/g, ' ').trim();
       if (label && UX.labelMatches(text, label)) {
@@ -365,23 +435,21 @@
   // the originals are hidden, so the card reads like GitLab's profile.
   function paintProfileRail(t) {
     if (t !== 'gitlab') return;
-    if (!document.querySelector('nav[aria-label="User profile"]')) return;
-    const editable = document.querySelector('.js-profile-editable-replace');
+    if (!document.querySelector(SELECTORS.github.profileNav)) return;
+    const editable = document.querySelector(SELECTORS.github.profileEditable);
     if (!editable) return;
-    const details = [...editable.querySelectorAll('.vcard-detail')].filter(
-      (d) => !d.closest('[data-gs-profile-rail]'),
-    );
+    const details = [
+      ...editable.querySelectorAll(SELECTORS.github.profileDetail),
+    ].filter((d) => !d.closest('[data-gs-profile-rail]'));
     const user = location.pathname.split('/').filter(Boolean)[0] || '';
     const signature = `${user}:${details.map((d) => d.textContent.trim()).join('|')}`;
     let rail = editable.querySelector('[data-gs-profile-rail]');
     if (rail && rail.getAttribute('data-gs-signature') === signature) return;
     if (rail) rail.remove();
-    for (const [el, display] of profileRailHidden) {
-      if (!el.isConnected) continue;
-      if (display) el.style.display = display;
-      else el.style.removeProperty('display');
-    }
-    profileRailHidden.clear();
+    // The details the old rail hid are released, then re-hidden below if they
+    // are still in it; one no longer in it is shown again.
+    for (const el of railDetails) release(el, 'display');
+    railDetails = new Set();
     if (!details.length) return;
     rail = document.createElement('div');
     rail.setAttribute('data-gs-profile-rail', '');
@@ -391,9 +459,9 @@
     // The `itemprop` sits on the detail element itself, not a descendant.
     const has = (d, sel) => d.matches(sel) || !!d.querySelector(sel);
     const groupOf = (d) =>
-      has(d, '[itemprop="worksFor"], .p-org')
+      has(d, SELECTORS.github.profileOrg)
         ? 'About'
-        : has(d, '[itemprop="homeLocation"], .p-label')
+        : has(d, SELECTORS.github.profileLocation)
           ? 'Info'
           : 'Contact';
     for (const d of details) groups[groupOf(d)].push(d);
@@ -405,8 +473,8 @@
       rail.appendChild(heading);
       for (const d of list) {
         rail.appendChild(d.cloneNode(true));
-        if (!profileRailHidden.has(d)) profileRailHidden.set(d, d.style.display);
-        d.style.setProperty('display', 'none', 'important');
+        hide(d, true);
+        railDetails.add(d);
       }
     }
     editable.appendChild(rail);
@@ -416,15 +484,15 @@
   // block and collapsible groups (so items duplicate, and Wiki/Security are not
   // even rendered when the project has them disabled), and its group tree gives
   // no single list to reorder. The GitHub skin therefore rebuilds the strip as
-  // GitHub's repo tabs, in GitHub's order, reusing each link GitLab does render
-  // and synthesising the tabs GitLab omits.
+  // GitHub's repo tabs, in GitHub's order (`UX.projectTabs`), reusing each link
+  // GitLab does render and synthesising the tabs GitLab omits.
   function paintProjectTabs(t) {
     if (t !== 'github') return;
     const page = (document.body && document.body.dataset.page) || '';
     if (!page.startsWith('projects:')) return;
-    const sidebar = document.querySelector('.super-sidebar');
+    const sidebar = document.querySelector(SELECTORS.gitlab.superSidebar);
     if (!sidebar) return;
-    const nav = sidebar.querySelector('[data-testid="nav-container"]');
+    const nav = sidebar.querySelector(SELECTORS.gitlab.navContainer);
     const anchors = [...sidebar.querySelectorAll('a:not([data-gs-project-tab])')];
     const findHref = (labels) => {
       for (const a of anchors) {
@@ -435,8 +503,15 @@
       }
       return null;
     };
-    const codeHref = findHref(['Code', 'Repository']);
-    const base = [codeHref, findHref(['Issues', 'Work items']), findHref(['Actions', 'Pipelines'])]
+    const hrefs = {
+      code: findHref(['Code', 'Repository']),
+      issues: findHref(['Issues', 'Work items']),
+      pullRequests: findHref(['Pull requests', 'Merge requests']),
+      actions: findHref(['Actions', 'Pipelines', 'CI/CD']),
+      projects: findHref(['Projects', 'Issue boards']),
+      insights: findHref(['Insights', 'Analytics']),
+    };
+    const base = [hrefs.code, hrefs.issues, hrefs.actions]
       .filter(Boolean)
       .map((href) => href.split('/-/')[0])
       .find(Boolean);
@@ -448,16 +523,7 @@
     let list = document.querySelector('[data-gs-project-tabs]');
     if (list && list.getAttribute('data-gs-signature') === signature) return;
     if (list) list.remove();
-    const tabs = [
-      ['Code', codeHref || base],
-      ['Issues', findHref(['Issues', 'Work items']) || `${base}/-/work_items`],
-      ['Pull requests', findHref(['Pull requests', 'Merge requests']) || `${base}/-/merge_requests`],
-      ['Actions', findHref(['Actions', 'Pipelines', 'CI/CD']) || `${base}/-/pipelines`],
-      ['Projects', findHref(['Projects', 'Issue boards']) || `${base}/-/boards`],
-      ['Wiki', `${base}/-/wikis/home`],
-      ['Security and quality', `${base}/-/security/dashboard`],
-      ['Insights', findHref(['Insights', 'Analytics']) || `${base}/-/analytics`],
-    ];
+    const tabs = UX.projectTabs(base, hrefs);
     list = document.createElement('ul');
     list.setAttribute('data-gs-project-tabs', '');
     list.setAttribute('data-gs-ux-skip', '');
@@ -476,7 +542,7 @@
     // of the page. When the project page has that header (the repository root),
     // the strip is hosted there and the sidebar shell is hidden by CSS; other
     // project pages keep the top strip.
-    const files = document.querySelector('.project-show-files');
+    const files = document.querySelector(SELECTORS.gitlab.projectFiles);
     if (files && files.parentElement) {
       files.parentElement.insertBefore(list, files);
       list.setAttribute('data-gs-tab-host', 'content');
@@ -486,6 +552,92 @@
     } else {
       list.remove();
     }
+  }
+
+  /** The label of a repo-nav item: its text without the counter pill. */
+  function navItemLabel(anchor) {
+    return textNodes(anchor)
+      .filter(
+        (n) => !n.parentElement || !n.parentElement.closest('.ui.small.label'),
+      )
+      .map((n) => n.nodeValue)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Gitea/Forgejo's repo navigation is an `overflow-menu` web component that
+  // collapses its tabs into a "more" popup whenever they stop fitting — which is
+  // every row once the nav is one column wide, so it cannot be the GitLab
+  // sidebar itself. The GitHub skin can restyle it in place (its horizontal tab
+  // row is already GitHub's shape); the GitLab skin rebuilds it instead, exactly
+  // as the GitHub skin rebuilds GitLab's sidebar (`paintProjectTabs`). The
+  // applied product's labels, order and group headings come from `UX.repoNav`;
+  // the original menu is hidden by the stylesheet.
+  function paintGiteaNav(t) {
+    if (t !== 'gitlab') return;
+    const menu = document.querySelector(SELECTORS.gitea.repoMenu);
+    if (!menu) return;
+    const anchors = [...menu.querySelectorAll('a.item')].filter((a) =>
+      a.getAttribute('href'),
+    );
+    if (anchors.length < 2) return;
+    const items = anchors
+      .map((a) => ({
+        href: a.getAttribute('href'),
+        label: navItemLabel(a),
+        active: a.classList.contains('active'),
+      }))
+      .filter((item) => item.label);
+    if (items.length < 2) return;
+    const rule = (UX.NAV_RULES[t] || []).find((r) => r.source === 'gitea');
+    const entries = UX.repoNav(items, t, rule && rule.order);
+    const signature = `${location.pathname}|${items
+      .map((item) => `${item.href}:${item.label}:${item.active ? 1 : 0}`)
+      .join('|')}`;
+    const shell = menu.parentElement;
+    if (!shell) return;
+    let list = shell.querySelector('[data-gs-gitea-nav]');
+    if (list && list.getAttribute('data-gs-signature') === signature) return;
+    if (list) list.remove();
+
+    const byRaw = new Map();
+    anchors.forEach((anchor, index) => {
+      if (items[index]) byRaw.set(items[index].label, anchor);
+    });
+    list = document.createElement('ul');
+    list.setAttribute('data-gs-gitea-nav', '');
+    list.setAttribute('data-gs-signature', signature);
+    for (const entry of entries) {
+      if (entry.group) {
+        const heading = document.createElement('li');
+        heading.className = 'gs-nav-group';
+        heading.textContent = entry.group;
+        list.appendChild(heading);
+        continue;
+      }
+      const source = byRaw.get(entry.raw);
+      if (!source) continue;
+      const anchor = source.cloneNode(true);
+      anchor.removeAttribute('id');
+      anchor.classList.toggle('active', entry.active);
+      // Relabel the item, leaving its icon and counter in place.
+      const walker = document.createTreeWalker(anchor, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        const current = node.nodeValue.trim();
+        if (!UX.labelMatches(current, entry.raw)) continue;
+        node.nodeValue = node.nodeValue.replace(current, entry.label);
+        break;
+      }
+      const item = document.createElement('li');
+      item.appendChild(anchor);
+      list.appendChild(item);
+    }
+    // Everything is already in the applied product's words, and the list must
+    // not be re-painted as page copy, so the whole subtree opts out.
+    list.setAttribute('data-gs-ux-skip', '');
+    shell.insertBefore(list, menu);
   }
 
   function paintUnmapped(node, t) {
@@ -502,9 +654,14 @@
       // Deliberately not aria-hidden: the marker should reach screen readers too,
       // so the feature is not announced as if it existed here.
       badge.textContent = `≠ ${missing}`;
+      ledger(badge, 'marker', () => ({
+        restore: () => {
+          if (badge.isConnected) badge.remove();
+          if (el.isConnected) el.removeAttribute('data-gs-no-equiv');
+        },
+      }));
       el.appendChild(badge);
       el.setAttribute('data-gs-no-equiv', missing);
-      markerOrig.set(badge, el);
     };
     for (const region of scope(node, UX.NAV_SCOPE)) {
       for (const el of scope(region, 'a,button,summary')) mark(el);
@@ -581,11 +738,17 @@
       const next = children.map((child) => (itemSet.has(child) ? sorted[slot++] : child));
       if (next.every((child, i) => child === children[i])) continue;
       // A framework that re-renders its list would undo this and, if we kept
-      // re-applying, thrash. Reorder once, then leave it be for a moment.
+      // re-applying, would thrash. Reorder once, then leave it be for a moment.
       const now = Date.now();
       if (orderStamp.has(container) && now - orderStamp.get(container) < 1000) continue;
       orderStamp.set(container, now);
-      if (!orderOrig.has(container)) orderOrig.set(container, children);
+      ledger(container, 'dom-order', () => ({
+        restore: () => {
+          if (container.isConnected) {
+            for (const el of children) container.appendChild(el);
+          }
+        },
+      }));
       // One replaceChildren instead of a re-append per child: fewer layout
       // passes, and the observer never sees the intermediate order.
       const watching = Boolean(domObserver);
@@ -673,14 +836,11 @@
   function paintProfileStats(t) {
     if (t !== 'github') return;
     if (!document.body || document.body.dataset.page !== 'users:show') return;
-    const identity = document.querySelector(
-      '.user-profile-header > div:last-child',
-    );
+    const identity = document.querySelector(SELECTORS.gitlab.profileIdentity);
     if (!identity) return;
     const links = [
       ...document.querySelectorAll(
-        '.super-sidebar a[data-track-label="followers_menu"],' +
-          '.super-sidebar a[data-track-label="following_menu"]',
+        `${SELECTORS.gitlab.followersLink}, ${SELECTORS.gitlab.followingLink}`,
       ),
     ];
     if (!links.length) return;
@@ -702,40 +862,6 @@
     box.dataset.gsSignature = signature;
     if (!existing) identity.appendChild(box);
   }
-
-  // A profile page's navigation is a different set of destinations on each
-  // product, so it is rebuilt as the applied product's menu — same labels, same
-  // order, same options — rather than shown as a mix. Where the applied product
-  // has no page for an item, the closest real page on the source product is
-  // used: GitLab's activity and contributed-project views are part of GitHub's
-  // Overview, GitHub's organizations are a tab, and gists live on
-  // gist.github.com. GitLab's menu omits Packages, which has no user-level
-  // GitLab page (GitHub itself hides Packages when there are none).
-  const PROFILE_MENU = {
-    // Applied GitHub UI (source GitLab): GitHub's profile tabs, in order.
-    github: (u) => [
-      ['Overview', `/${u}`, '@first'],
-      ['Repositories', `/users/${u}/projects`, 'Personal projects'],
-      ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
-      ['Packages', `/users/${u}/packages`, null],
-      ['Stars', `/users/${u}/starred`, 'Starred projects'],
-    ],
-    // Applied GitLab UI (source GitHub): GitLab's profile destinations, in order.
-    gitlab: (u, name) => [
-      [name, `/${u}`, 'Overview'],
-      ['Activity', `/${u}?tab=overview`, null],
-      ['Groups', `/${u}?tab=organizations`, null],
-      ['Contributed projects', `/${u}?tab=overview`, 'Projects'],
-      ['Personal projects', `/${u}?tab=repositories`, 'Repositories'],
-      ['Starred projects', `/${u}?tab=stars`, 'Stars'],
-      ['Snippets', `https://gist.github.com/${u}`, null],
-      ['Followers', `/${u}?tab=followers`, null],
-      ['Following', `/${u}?tab=following`, null],
-    ],
-  };
-  const profileHiddenOrig = new Map();
-  const profileOrderOrig = new Map();
-  const profileRailHidden = new Map();
 
   /** The label of an item: its text without the icon, counter or `≠` badge. */
   function profileLabelOf(el) {
@@ -759,41 +885,13 @@
     }
   }
 
-  function hideProfileItem(el) {
-    const target = el.closest('li') || el;
-    // Another pass may already hide it (and own the restore); do not re-store.
-    if (target.style.display === 'none') return;
-    if (!profileHiddenOrig.has(target)) {
-      profileHiddenOrig.set(target, target.style.display);
-    }
-    target.style.setProperty('display', 'none', 'important');
-  }
-
-  function rememberOrder(el) {
-    if (!profileOrderOrig.has(el)) profileOrderOrig.set(el, el.style.order);
-  }
-
   function resetProfileMenu(container) {
     for (const el of container.querySelectorAll('[data-gs-profile-menu]')) {
       el.remove();
     }
-    for (const [el, display] of [...profileHiddenOrig]) {
-      if (!container.contains(el)) continue;
-      if (display) el.style.display = display;
-      else el.style.removeProperty('display');
-      profileHiddenOrig.delete(el);
-    }
-    for (const [el, order] of [...profileOrderOrig]) {
-      if (!container.contains(el)) continue;
-      if (order) el.style.order = order;
-      else el.style.removeProperty('order');
-      profileOrderOrig.delete(el);
-    }
+    releaseWithin(container, 'display');
+    releaseWithin(container, 'style-order');
   }
-
-  // The containers are looked up on every flush; keep them while they are still
-  // in the page so a continuously-mutating profile does not re-scan the document.
-  const profileContainerCache = { key: null, list: [] };
 
   function profileMenuContainers(sourceIsGitlab) {
     const key = sourceIsGitlab ? 'gitlab-source' : 'github-source';
@@ -806,13 +904,21 @@
     }
     profileContainerCache.key = key;
     profileContainerCache.list = sourceIsGitlab
-      ? [...document.querySelectorAll('.super-sidebar .gl-scroll-scrim ul')]
-      : [...document.querySelectorAll('nav[aria-label="User profile"]')];
+      ? [...document.querySelectorAll(SELECTORS.gitlab.profileMenu)]
+      : [...document.querySelectorAll(SELECTORS.github.profileMenu)];
     return profileContainerCache.list;
   }
 
+  // A profile page's navigation is a different set of destinations on each
+  // product, so it is rebuilt as the applied product's menu (`UX.PROFILE_MENU`)
+  // — same labels, same order, same options — rather than shown as a mix. Where
+  // the applied product has no page for an item, the closest real page on the
+  // source product is used: GitLab's activity and contributed-project views are
+  // part of GitHub's Overview, GitHub's organizations are a tab, and gists live
+  // on gist.github.com. GitLab's menu omits Packages, which has no user-level
+  // GitLab page (GitHub itself hides Packages when there are none).
   function paintProfileMenu(t) {
-    const build = PROFILE_MENU[t];
+    const build = UX.PROFILE_MENU[t];
     if (!build || !document.body) return;
 
     const sourceIsGitlab = t === 'github';
@@ -827,10 +933,10 @@
     // GitHub's card has no "About"/"Info"/"Contact" headings; GitLab's card
     // does, so they are dropped rather than left as foreign labels.
     if (sourceIsGitlab) {
-      for (const heading of document.querySelectorAll('.user-profile-sidebar h2')) {
+      for (const heading of document.querySelectorAll(SELECTORS.gitlab.profileSidebar)) {
         const text = (heading.textContent || '').trim();
         if (text === 'About' || text === 'Info' || text === 'Contact') {
-          hideProfileItem(heading);
+          hide(heading.closest('li') || heading, true);
         }
       }
     }
@@ -840,7 +946,7 @@
     const name = (
       (
         document.querySelector(
-          sourceIsGitlab ? '.user-profile-header h1' : '.h-card .p-name',
+          sourceIsGitlab ? SELECTORS.gitlab.profileName : SELECTORS.github.profileName,
         ) || {}
       ).textContent || ''
     ).trim();
@@ -873,11 +979,10 @@
           setProfileLabel(anchor, key, label);
           anchor.setAttribute('href', href);
           const holder = sourceIsGitlab ? anchor.closest('li') || anchor : anchor;
-          rememberOrder(holder);
           // The label-match pass may have hidden this item before the menu was
           // rebuilt; it belongs to the applied product's menu, so show it again.
           holder.style.removeProperty('display');
-          holder.style.setProperty('order', String(index));
+          setOrder(holder, String(index));
           return;
         }
         const anchorNew = document.createElement('a');
@@ -891,7 +996,7 @@
         } else {
           anchorNew.setAttribute('data-gs-profile-menu', '');
         }
-        holder.style.setProperty('order', String(index));
+        setOrder(holder, String(index));
         container.appendChild(holder);
       });
 
@@ -899,11 +1004,7 @@
         if (child.hasAttribute('data-gs-profile-menu')) continue;
         const anchor = child.matches('a') ? child : child.querySelector(':scope > a');
         if (anchor && used.has(anchor)) continue;
-        if (child.style.display === 'none') continue;
-        if (!profileHiddenOrig.has(child)) {
-          profileHiddenOrig.set(child, child.style.display);
-        }
-        child.style.setProperty('display', 'none', 'important');
+        hide(child, true);
       }
     }
   }
@@ -919,131 +1020,66 @@
     paintUnmapped(node, t);
   }
 
+  // The whole-document passes. One list, so `paintAll` and the mutation flush
+  // cannot disagree about which passes run. Order matters where one pass reads
+  // what an earlier one wrote — `paintProjectTabs` builds the strip that
+  // `paintActiveTab` then marks — so it is kept explicit here.
+  const GLOBAL_PASSES = [
+    paintOrder,
+    paintNavGroups,
+    paintGiteaNav,
+    paintMetadata,
+    paintAboutExtras,
+    paintHeadings,
+    paintProjectTabs,
+    paintActiveTab,
+    paintProfileRail,
+    paintProfileStats,
+    paintProfileMenu,
+  ];
+
+  function paintGlobal(t) {
+    for (const pass of GLOBAL_PASSES) pass(t);
+  }
+
   function paintAll(t, node = document.body) {
     if (!node) return;
     paintNode(node, t);
-    paintOrder(t);
-    paintNavGroups(t);
-    paintMetadata(t);
-    paintAboutExtras(t);
-    paintHeadings(t);
-    paintActiveTab(t);
-    paintProjectTabs(t);
-    paintProfileRail(t);
-    paintProfileStats(t);
-    paintProfileMenu(t);
+    paintGlobal(t);
   }
 
   /* ------------------------------------------------------------- revert -- */
 
   function revertAll() {
-    for (const [node, value] of textOrig) {
-      if (node.isConnected && node.nodeValue !== value) node.nodeValue = value;
+    for (const kinds of undo.values()) {
+      for (const entry of kinds.values()) entry.restore();
     }
-    for (const [badge, el] of markerOrig) {
-      if (badge.isConnected) badge.remove();
-      if (el.isConnected) el.removeAttribute('data-gs-no-equiv');
+    undo.clear();
+    railDetails = new Set();
+    // Nodes the skin created are removed outright: they have no earlier state
+    // to restore, so they are not in the ledger.
+    for (const el of document.querySelectorAll(
+      '.gs-nav-group,[data-gs-profile-stats],[data-gs-profile-menu],' +
+        '[data-gs-profile-rail],[data-gs-project-tabs],[data-gs-gitea-nav]',
+    )) {
+      el.remove();
     }
-    for (const [el, display] of hiddenOrig) {
-      if (el.isConnected) el.style.display = display;
-    }
-    for (const [el, store] of attrOrig) {
-      if (!el.isConnected) continue;
-      for (const attr of Object.keys(store)) el.setAttribute(attr, store[attr]);
-    }
-    for (const [el, value] of refOrig) {
-      if (el.isConnected) el.textContent = value;
-    }
-    for (const [container, items] of orderOrig) {
-      if (container.isConnected) for (const el of items) container.appendChild(el);
-    }
-    for (const el of document.querySelectorAll('.gs-nav-group')) el.remove();
     for (const el of document.querySelectorAll('[data-gs-active]')) {
       el.removeAttribute('data-gs-active');
     }
-    for (const el of document.querySelectorAll('[data-gs-profile-stats]')) el.remove();
-    for (const el of document.querySelectorAll('[data-gs-profile-menu]')) el.remove();
-    for (const el of document.querySelectorAll('[data-gs-profile-rail]')) el.remove();
-    for (const el of document.querySelectorAll('[data-gs-project-tabs]')) el.remove();
-    for (const [el, display] of profileRailHidden) {
-      if (!el.isConnected) continue;
-      if (display) el.style.display = display;
-      else el.style.removeProperty('display');
-    }
-    profileRailHidden.clear();
-    for (const [el, display] of profileHiddenOrig) {
-      if (!el.isConnected) continue;
-      if (display) el.style.display = display;
-      else el.style.removeProperty('display');
-    }
-    for (const [el, order] of profileOrderOrig) {
-      if (!el.isConnected) continue;
-      if (order) el.style.order = order;
-      else el.style.removeProperty('order');
-    }
-    for (const [el, display] of metadataHiddenOrig) {
-      if (!el.isConnected) continue;
-      if (display) el.style.display = display;
-      else el.style.removeProperty('display');
-    }
-    textOrig.clear();
-    attrOrig.clear();
-    refOrig.clear();
-    orderOrig.clear();
-    markerOrig.clear();
-    hiddenOrig.clear();
-    metadataHiddenOrig.clear();
-    profileHiddenOrig.clear();
-    profileOrderOrig.clear();
     profileContainerCache.key = null;
     profileContainerCache.list = [];
   }
 
-  // Drop the entries the framework has discarded, so the undo ledger cannot hold
-  // a detached subtree alive. A node is restored before it is forgotten: if the
+  // Drop the entries the framework has discarded, so the ledger cannot hold a
+  // detached subtree alive. A node is restored before it is forgotten: if the
   // site later re-attaches it, it comes back with the site's own text and the
   // normal paint records it again, so a revert stays exact.
   function forgetDetached() {
-    for (const [node, value] of textOrig) {
-      if (node.isConnected) continue;
-      node.nodeValue = value;
-      textOrig.delete(node);
-    }
-    for (const [el, store] of attrOrig) {
-      if (el.isConnected) continue;
-      for (const attr of Object.keys(store)) el.setAttribute(attr, store[attr]);
-      attrOrig.delete(el);
-    }
-    for (const [el, value] of refOrig) {
-      if (el.isConnected) continue;
-      el.textContent = value;
-      refOrig.delete(el);
-    }
-    for (const [el, display] of hiddenOrig) {
-      if (el.isConnected) continue;
-      el.style.display = display;
-      hiddenOrig.delete(el);
-    }
-    for (const [container] of orderOrig) {
-      if (!container.isConnected) orderOrig.delete(container);
-    }
-    for (const [badge, el] of markerOrig) {
-      if (badge.isConnected) continue;
-      badge.remove();
-      el.removeAttribute('data-gs-no-equiv');
-      markerOrig.delete(badge);
-    }
-    for (const [el, display] of profileHiddenOrig) {
-      if (el.isConnected) continue;
-      if (display) el.style.display = display;
-      else el.style.removeProperty('display');
-      profileHiddenOrig.delete(el);
-    }
-    for (const [el, order] of profileOrderOrig) {
-      if (el.isConnected) continue;
-      if (order) el.style.order = order;
-      else el.style.removeProperty('order');
-      profileOrderOrig.delete(el);
+    for (const [target, kinds] of undo) {
+      if (target.isConnected) continue;
+      for (const entry of kinds.values()) entry.restore();
+      undo.delete(target);
     }
   }
 
@@ -1103,16 +1139,7 @@
         done.add(node);
         paintNode(node, current);
       }
-      paintOrder(current);
-      paintNavGroups(current);
-      paintMetadata(current);
-      paintAboutExtras(current);
-      paintHeadings(current);
-      paintActiveTab(current);
-      paintProjectTabs(current);
-      paintProfileRail(current);
-      paintProfileStats(current);
-      paintProfileMenu(current);
+      paintGlobal(current);
       const now = Date.now();
       if (now - lastSweep > 3000) {
         lastSweep = now;

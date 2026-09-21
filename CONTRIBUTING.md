@@ -23,10 +23,10 @@ would like to keep it that way. The only data that leaves the machine is
 settings and the hostnames they added, never anything read from a page.
 
 **One source of truth per concern.** Hosts, kinds, address parsing and the
-storage schema live in `src/lib/sites.js`; the vocabulary, navigation, keyboard
-and path-translation tables live in `src/lib/ux.js`. Neither touches the DOM,
-which is what makes them unit-testable. The manifest repeats hostnames only
-because the manifest format cannot read a JavaScript file.
+storage schema live in `src/lib/sites.js`; the vocabulary, navigation, keyboard,
+path-translation and forge-selector tables live in `src/lib/ux.js`. Neither
+touches the DOM, which is what makes them unit-testable. The manifest repeats
+hostnames only because the manifest format cannot read a JavaScript file.
 
 **Stay conservative on the page.** The UX layer must never rewrite text inside
 `<code>`, inputs, editable regions or anything marked `[data-gs-ux-skip]`, and
@@ -101,11 +101,13 @@ src/
 ├── background.js        keyboard shortcuts and per-tab badge
 ├── lib/
 │   ├── sites.js         hosts, kinds, parseHost, schema — pure, no DOM
-│   └── ux.js            vocabulary/nav/shortcut/path tables — pure, no DOM
+│   └── ux.js            vocabulary/nav/shortcut/path/selector tables — pure, no DOM
 ├── content/
 │   ├── theme.js         applies the theme classes, tracks light/dark
 │   └── ux.js            performs the text and nav rewrites, undoably
-├── themes/              ALL colour lives here — two stylesheets + the marker/nav ones
+├── themes/              ONE AXIS: as-gitlab.css and as-github.css are keyed by
+│                        the applied skin (not the source forge), plus
+│                        ux-markers.css and ux-nav.css for shared structure
 ├── popup/               toolbar UI
 └── icons/
 logos/                   editable logo sources, inlined into the themes
@@ -208,6 +210,12 @@ Each theme file has three parts:
 
    Add a line here whenever you find a spot the skin misses.
 
+   If the fix is structural rather than colour, add the selector itself to
+   `SELECTORS` in `src/lib/ux.js` — keyed by the *source* product (the site's
+   markup), not the skin applied to it — and read it from `src/content/ux.js`.
+   A literal there cannot be checked by `npm run canary`; a `SELECTORS` entry
+   can, and the canary probes every entry a `CANARY_PAGES` page names.
+
 3. **A logo data URI**, `--gs-mark`, that paints gitalike's own mark in the
    other product's palette — GitLab's red→orange→yellow in the GitHub→GitLab
    skin, Primer's ink and accent blue in the GitLab→GitHub one.
@@ -237,7 +245,7 @@ mark rather than copying a forge's.
 
 1. Edit the SVG in `logos/` (these are the editable sources).
 2. Re-encode it as a data URI into the relevant theme variable — `--gs-mark` in
-   both `themes/github-as-gitlab.css` and `themes/gitlab-as-github.css`.
+   both `themes/as-gitlab.css` and `themes/as-github.css`.
    Injected CSS cannot resolve extension-relative URLs, which is why it is
    inlined rather than linked.
 3. Check both light and dark: the two palettes are chosen for their background.
@@ -304,11 +312,15 @@ const builtin = {
 
 Add the host to `tests/sites.test.mjs`. If the forge is Gitea-family it does not
 use GitHub's Primer tokens, so the classification alone only changes the words —
-`themes/github-as-gitlab.css` and `themes/gitlab-as-github.css` each have a
+`themes/as-gitlab.css` and `themes/as-github.css` each have a
 **Gitea / Forgejo** block that re-points its `--color-*` custom properties at that
 skin's palette, and `src/lib/ux.js` adds its repo tab list to
-`NAV_SCOPE`/`NAV_RULES` (for both themes) so its tabs are relabelled and
-reordered. Record it in `SOURCES` in `src/lib/sites.js` too, so the picker knows
+`NAV_SCOPE`/`NAV_RULES` (for both themes) and its markup hooks to
+`SELECTORS.gitea` so its tabs are relabelled and reordered and the canary can
+watch them. The GitLab skin also rebuilds those tabs as a grouped sidebar:
+`content/ux.js` `paintGiteaNav` and the `UX.repoNav` model, keyed off Gitea's
+`[data-theme]` marker, apply to any Gitea-family instance. Record the host in
+`SOURCES` in `src/lib/sites.js` too, so the picker knows
 the site is *not* the product it is classified as (making the other UI a real
 skin) and the `g`-combo remap is skipped on it. Copy those shapes for another
 token system or another tab bar. Only add vocabulary if the forge uses a
@@ -326,7 +338,7 @@ skin and their own vocabulary. That means five files:
 | # | File | What goes there |
 | - | ---- | --------------- |
 | 1 | `src/themes/<a>-as-<b>.css` | the skin — a palette block plus a token mapping |
-| 2 | `src/lib/ux.js` | `PHRASES`, `NAV`, `NAV_RULES`, `SHORTCUTS` keyed by the new theme name |
+| 2 | `src/lib/ux.js` | `PHRASES`, `NAV`, `NAV_RULES`, `SELECTORS`, `SHORTCUTS` keyed by the new theme/source name |
 | 3 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color` (its key is the theme name and joins `THEMES` automatically) — and, if it is a new kind, a `kinds` entry naming its default skin |
 | 4 | `src/popup/popup.html` + `popup.css` | a row for the kind, and its accent colour |
 | 5 | `tests/` | cases for the skin, the host table and the vocabulary |
@@ -367,18 +379,21 @@ refused `javascript:` string, a host that is unknown rather than merely off.
 `node tools/e2e.mjs` is the Playwright end-to-end test: it loads `dist/chromium`
 unpacked, turns both skins on through the extension's own storage, and asserts
 against the live sites — navigation orientation, relabelling, reference markers,
-no-counterpart badges, a keyboard shortcut, the Codeberg (Gitea) tab reorder, and
-a clean revert. It needs a build first (`npm run build:chromium`) and, because it
+no-counterpart badges, a keyboard shortcut, the Codeberg (Gitea) sidebar and tab
+row, and a clean revert. It needs a build first (`npm run build:chromium`) and, because it
 drives live sites, a network hiccup can fail a step; the summary names it and the
 exit code is non-zero.
 
 `npm run canary` (`tools/selector-canary.mjs`) is the live selector canary: a
 plain `fetch` of the pages the skins are verified against, asserting the anchors
-they key on are still in the served HTML. It runs daily on a schedule, not on a
-pull request, so an upstream rename is caught without making every PR depend on
-the forges' markup; when it fails it also opens (or refreshes) an issue, so the
-drift is owned rather than just red. Update its hooks in step with the selectors
-in `src/lib/ux.js` and `src/themes/*.css`.
+they key on are still in the served HTML. The hooks are not written in the tool:
+it reads `SELECTORS` and `CANARY_PAGES` from `src/lib/ux.js`, the same table
+`src/content/ux.js` reads, so a rename is one edit there that both the skin and
+the canary pick up. It runs daily on a schedule, not on a pull request, so an
+upstream rename is caught without making every PR depend on the forges' markup;
+when it fails it also opens (or refreshes) an issue, so the drift is owned rather
+than just red. The stylesheets still spell their selectors out — CSS cannot read
+the table — so update a theme rule and its `SELECTORS` entry together.
 
 The single most useful habit: after a change, load the extension and check the
 site with the skin **off** as well as on. A skin that leaks when disabled is the
@@ -408,9 +423,9 @@ Covered:
   a site told to wear its own UI → left alone; and a choice alone never
   classifies an unknown host
 - **Codeberg (Forgejo)**, light and dark, **with either UI**: GitHub-flavoured,
-  so the GitLab UI (GitLab ink, tabs relabelled and reordered) and the GitHub UI
-  (GitHub ink, tabs kept in GitHub's order, links `#0969da`, dark top bar) both
-  apply, with Gitea's `data-theme` driving `gs-dark`
+  so both apply — under the GitLab UI the repo tabs become a grouped left sidebar
+  (Plan/Code/Build/Deploy, the current page active), and under the GitHub UI a
+  GitHub-style underlined tab row. Gitea's `data-theme` drives `gs-dark`.
 - re-skinning an already-open tab with no reload, and a clean revert
 - the popup, including that it lists every configured host, shows the per-site
   pin for a known host, and opens the prefilled report link

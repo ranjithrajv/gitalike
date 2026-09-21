@@ -194,6 +194,7 @@
   const NAV_RULES = {
     gitlab: [
       {
+        source: 'github',
         container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
         item: 'li',
         order: GITLAB_REPO_ORDER,
@@ -201,6 +202,7 @@
       {
         // Gitea/Forgejo (Codeberg, gitea.com) repo tabs: a flat `overflow-menu`
         // list of `a.item`s, so they take GitLab's order the same way.
+        source: 'gitea',
         container: 'overflow-menu .overflow-menu-items',
         item: 'a.item',
         order: GITLAB_REPO_ORDER,
@@ -208,6 +210,7 @@
     ],
     github: [
       {
+        source: 'gitlab',
         scope: '.super-sidebar',
         contains: 'Code',
         item: 'li',
@@ -217,6 +220,7 @@
         // Gitea/Forgejo repo tabs, shown with the GitHub UI. Its labels already
         // read GitHub's ("Code", "Issues", "Pull requests"), so the order does
         // most of the work; unknown labels rank after the known ones.
+        source: 'gitea',
         container: 'overflow-menu .overflow-menu-items',
         item: 'a.item',
         order: GITHUB_REPO_ORDER,
@@ -299,6 +303,108 @@
       'Settings',
     ],
   };
+
+  /* ---------------------------------------------------------- selectors -- */
+
+  // Every forge-specific DOM hook the skin relies on, in one home keyed by the
+  // markup a site is built on (its `source`, see sites.js `sourceFor`) — not by
+  // the skin applied to it, because a Gitea site wears either UI but keeps
+  // Gitea's markup. `src/content/ux.js` reads these instead of carrying
+  // literals, and `tools/selector-canary.mjs` probes the same entries against
+  // the live forges, so a renamed hook is one edit and one failing check,
+  // rather than a literal to hunt through three files.
+  //
+  // The stylesheets still spell their selectors out — CSS cannot read this
+  // table — so an entry a stylesheet owns is marked `// css`; when a rule moves,
+  // update the theme file and the entry together. An entry a stylesheet or the
+  // canary owns but content/ux.js does not is still listed, so the canary has
+  // one table to probe.
+  const SELECTORS = {
+    // GitHub's markup (Primer).
+    github: {
+      repoNavList: 'nav[aria-label="Repository"] ul.UnderlineNav-body', // css
+      appHeader: 'header[role="banner"], .AppHeader', // css
+      metadataSidebar: '[class*="CodeViewSidebar-"]',
+      metadataPane: '[class*="PageLayoutContent-"]', // css
+      profileNav: 'nav[aria-label="User profile"]', // css
+      profileMenu: 'nav[aria-label="User profile"]',
+      profileFrame: '[data-turbo-frame="user-profile-frame"]',
+      profileEditable: '.js-profile-editable-replace',
+      profileDetail: '.vcard-detail',
+      profileOrg: '[itemprop="worksFor"], .p-org',
+      profileLocation: '[itemprop="homeLocation"], .p-label',
+      profileName: '.h-card .p-name',
+    },
+    // GitLab's markup (Pajamas, plus its older CSS).
+    gitlab: {
+      superSidebar: '.super-sidebar', // css
+      navContainer: '[data-testid="nav-container"]',
+      projectFiles: '.project-show-files',
+      projectSidebarBlock: '.project-page-sidebar-block',
+      projectLayoutSidebar: '.project-page-layout-sidebar',
+      profileHeader: '.user-profile-header', // css
+      profileIdentity: '.user-profile-header > div:last-child',
+      profileSidebar: '.user-profile-sidebar', // css
+      profileName: '.user-profile-header h1',
+      profileMenu: '.super-sidebar .gl-scroll-scrim ul',
+      followersLink: '.super-sidebar a[data-track-label="followers_menu"]',
+      followingLink: '.super-sidebar a[data-track-label="following_menu"]',
+    },
+    // Gitea / Forgejo's markup (Codeberg, gitea.com). Its navigation hooks also
+    // live in NAV_RULES; a test asserts the two stay equal.
+    gitea: {
+      repoNavList: 'overflow-menu .overflow-menu-items',
+      repoMenu: '.page-content.repository > .secondary-nav > overflow-menu',
+      themeMarker: '[data-theme]', // css
+      topBar: '#navbar', // css
+      repoHeader: '.repo-header', // css
+      pullLink: 'a[href*="/pulls/"]',
+    },
+  };
+
+  // The live pages `tools/selector-canary.mjs` fetches and the landmarks each
+  // must still carry. A key names a `SELECTORS[source]` entry; the canary turns
+  // that selector into a loose token match, so the hooks it checks and the
+  // hooks the skin uses can never drift. A page that cannot be fetched is a
+  // warning, never a failure — an outage should not look like a rename.
+  const CANARY_PAGES = [
+    {
+      name: 'GitHub repository page',
+      url: 'https://github.com/git/git',
+      source: 'github',
+      keys: ['repoNavList', 'metadataSidebar', 'metadataPane', 'appHeader'],
+    },
+    {
+      name: 'GitHub profile page',
+      url: 'https://github.com/torvalds',
+      source: 'github',
+      keys: ['profileNav', 'profileFrame'],
+    },
+    {
+      name: 'GitLab project page',
+      url: 'https://gitlab.com/gitlab-org/gitlab',
+      source: 'gitlab',
+      keys: ['superSidebar', 'projectSidebarBlock'],
+    },
+    {
+      name: 'GitLab profile page',
+      url: 'https://gitlab.com/dzaporozhets',
+      source: 'gitlab',
+      keys: ['superSidebar', 'profileHeader', 'profileSidebar'],
+    },
+    {
+      name: 'Codeberg (Forgejo) project page',
+      url: 'https://codeberg.org/forgejo/forgejo',
+      source: 'gitea',
+      keys: ['themeMarker', 'topBar', 'repoHeader', 'repoNavList', 'repoMenu'],
+    },
+    {
+      name: 'Codeberg (Forgejo) pull requests',
+      url: 'https://codeberg.org/forgejo/forgejo/pulls',
+      source: 'gitea',
+      keys: ['themeMarker', 'pullLink'],
+    },
+  ];
 
   /* ---------------------------------------------------------- shortcuts -- */
 
@@ -439,10 +545,23 @@
     return (theme === 'gitlab' ? '!' : '#') + match[1];
   }
 
+  /**
+   * A nav label with its counter removed. Each forge renders the count its own
+   * way: GitLab "Pull requests 387" (and "-" when the count is empty), GitHub
+   * "Issues 5k+", Gitea "Issues1.5k" with no separator between the two at all.
+   * Only a trailing counter goes — extra *words* stay, so "Actions analytics"
+   * keeps them and is still not "Actions".
+   */
+  function withoutCounter(text) {
+    return String(text || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\s*(?:[\d,.]+[kKmM]?\+?|-)$/, '');
+  }
+
   /** Does a control's text match a whole label, counter and all? */
   function labelMatches(text, label) {
-    const normalized = String(text || '').replace(/\s+/g, ' ').trim();
-    return normalized === label || normalized.startsWith(`${label} `);
+    return withoutCounter(text) === label;
   }
 
   /** The GitLab-style group heading a nav item belongs under, or null. */
@@ -464,17 +583,15 @@
 
   /**
    * Is this nav item one the applied product's own project menu shows? True when
-   * the theme has no whitelist (then everything is kept). A label may carry a
-   * counter ("Pull requests -", "Pull requests 387") but not extra words, so
-   * "Actions analytics" does not count as "Actions".
+   * the theme has no whitelist (then everything is kept). The counter is taken
+   * off by `withoutCounter`, so every forge's spelling of it is kept — including
+   * Gitea's "Issues1.5k", which has no separator — while extra *words* are not a
+   * counter, so "Actions analytics" still does not count as "Actions".
    */
   function navKeep(label, theme) {
     const list = NAV_KEEP[theme];
     if (!list) return true;
-    return list.some((key) => {
-      if (label === key) return true;
-      return new RegExp(`^${escapeRe(key)}\\s+[\\d,.-]+$`).test(label);
-    });
+    return list.includes(withoutCounter(label));
   }
 
   /**
@@ -494,6 +611,114 @@
       .map((label, index) => ({ index, rank: rank(label) }))
       .sort((a, b) => a.rank - b.rank || a.index - b.index)
       .map((entry) => entry.index);
+  }
+
+  /* ---------------------------------------------- pure view decisions -- */
+
+  // The GitLab pages that map onto a GitHub repo tab, keyed by GitLab's
+  // `body[data-page]`, so the tab the applied UI would underline can be picked
+  // without a page. Pure, so it is unit-tested rather than only seen live.
+  const ACTIVE_TABS = [
+    [/^projects:(show|tree|blob|commits|compare|branches|tags|forks|network)\b/, 'Code'],
+    [/^projects:work_items\b/, 'Issues'],
+    [/^projects:merge_requests\b/, 'Pull requests'],
+    [/^projects:(pipelines|jobs|builds|ci)\b/, 'Actions'],
+    [/^projects:boards\b/, 'Projects'],
+    [/^projects:(security|vulnerabilities)\b/, 'Security and quality'],
+    [/^projects:wikis\b/, 'Wiki'],
+    [/^projects:(insights|analytics)\b/, 'Insights'],
+  ];
+
+  /** The GitHub repo tab a GitLab page should mark active, or null. */
+  function activeTabFor(page) {
+    const rule = ACTIVE_TABS.find(([re]) => re.test(String(page || '')));
+    return rule ? rule[1] : null;
+  }
+
+  // GitHub puts a counter inside a metadata section heading ("Releases240
+  // (240)"), so the digits and their brackets are stripped before the label is
+  // compared.
+  const sectionLabelText = (text) =>
+    String(text || '').replace(/[\d,()]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  // GitHub's About sections that GitLab's "Project information" block does not
+  // list, matched by `sectionLabelText`.
+  const METADATA_HIDE = [
+    'Releases',
+    'Packages',
+    'Used by',
+    'Contributors',
+    'Languages',
+  ];
+
+  // GitHub's repo tabs for a GitLab project, in GitHub's order. `hrefs` carries
+  // the links GitLab actually renders (found by label); a tab GitLab omits is
+  // synthesised from `base`. Pure, so the tab set is testable without a page.
+  function projectTabs(base, hrefs = {}) {
+    return [
+      ['Code', hrefs.code || base],
+      ['Issues', hrefs.issues || `${base}/-/work_items`],
+      ['Pull requests', hrefs.pullRequests || `${base}/-/merge_requests`],
+      ['Actions', hrefs.actions || `${base}/-/pipelines`],
+      ['Projects', hrefs.projects || `${base}/-/boards`],
+      ['Wiki', `${base}/-/wikis/home`],
+      ['Security and quality', `${base}/-/security/dashboard`],
+      ['Insights', hrefs.insights || `${base}/-/analytics`],
+    ];
+  }
+
+  // GitHub's profile tabs (source: GitLab) and GitLab's profile destinations
+  // (source: GitHub), each in the applied product's order. The third element
+  // names the item already on the page to reuse — `@first` is its first anchor,
+  // a label is matched by `labelMatches`, null synthesises one. Pure, so both
+  // menus are pinned by tests instead of only by a live profile.
+  const PROFILE_MENU = {
+    github: (u) => [
+      ['Overview', `/${u}`, '@first'],
+      ['Repositories', `/users/${u}/projects`, 'Personal projects'],
+      ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
+      ['Packages', `/users/${u}/packages`, null],
+      ['Stars', `/users/${u}/starred`, 'Starred projects'],
+    ],
+    gitlab: (u, name) => [
+      [name, `/${u}`, 'Overview'],
+      ['Activity', `/${u}?tab=overview`, null],
+      ['Groups', `/${u}?tab=organizations`, null],
+      ['Contributed projects', `/${u}?tab=overview`, 'Projects'],
+      ['Personal projects', `/${u}?tab=repositories`, 'Repositories'],
+      ['Starred projects', `/${u}?tab=stars`, 'Stars'],
+      ['Snippets', `https://gist.github.com/${u}`, null],
+      ['Followers', `/${u}?tab=followers`, null],
+      ['Following', `/${u}?tab=following`, null],
+    ],
+  };
+
+  // Gitea/Forgejo's repo navigation, arranged as GitLab's sidebar: the items the
+  // page renders, relabelled to the applied product, ordered by the same rule
+  // the live reorder uses, and gathered under GitLab's group headings. `items`
+  // is `{ href, label, active }` read from the page (label without its counter);
+  // the result mixes `{ group }` headings with `{ href, label, raw, active }`
+  // rows, so the DOM builder and the unit tests share one decision.
+  function repoNav(items, theme, order) {
+    const nav = NAV[theme] || {};
+    const labels = items.map((item) => nav[item.label] ?? translate(item.label, theme));
+    const entries = [];
+    let last = null;
+    for (const index of orderIndexes(labels, order || [])) {
+      const label = labels[index];
+      const group = navGroupFor(label, theme);
+      if (group && group !== last) {
+        entries.push({ group });
+        last = group;
+      }
+      entries.push({
+        href: items[index].href,
+        label,
+        raw: items[index].label,
+        active: Boolean(items[index].active),
+      });
+    }
+    return entries;
   }
 
   /* ------------------------------------------------------ other host -- */
@@ -615,6 +840,8 @@
     NAV_SCOPE,
     LABEL_SCOPE,
     NAV_RULES,
+    SELECTORS,
+    CANARY_PAGES,
     SHORTCUTS,
     SHORTCUT_TARGETS,
     translate,
@@ -627,6 +854,12 @@
     navHidden,
     navKeep,
     orderIndexes,
+    activeTabFor,
+    sectionLabelText,
+    METADATA_HIDE,
+    projectTabs,
+    PROFILE_MENU,
+    repoNav,
     otherHostUrl,
     hostProduct,
   };

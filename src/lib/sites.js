@@ -23,7 +23,7 @@
     'code.swecha.org': 'gitlab',
     // GitHub-flavoured forges: they speak GitHub's dialect, so they are the
     // 'github' kind and are shown with the GitLab UI. Codeberg runs Forgejo and
-    // gitea.com runs Gitea; both are Gitea's markup, so themes/github-as-gitlab.css
+    // gitea.com runs Gitea; both are Gitea's markup, so themes/as-gitlab.css
     // carries a token block for them (see "Gitea / Forgejo").
     'codeberg.org': 'github',
     'gitea.com': 'github',

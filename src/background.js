@@ -83,8 +83,8 @@ const CONTENT_JS = [
   'content/ux.js',
 ];
 const CONTENT_CSS = [
-  'themes/github-as-gitlab.css',
-  'themes/gitlab-as-github.css',
+  'themes/as-gitlab.css',
+  'themes/as-github.css',
   'themes/ux-markers.css',
   'themes/ux-nav.css',
 ];

@@ -146,6 +146,170 @@ html.gs-theme-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
   margin-top: 4px;
 }
 
+/* ------------------------------------------------- Gitea → GitLab -- */
+
+/* Gitea/Forgejo (Codeberg, gitea.com) is GitHub-flavoured, so the GitLab skin
+   gets the same treatment its GitHub sibling does: the repo header moves to the
+   top of the content and the horizontal tab row becomes a left sidebar. Gitea
+   wraps the header *and* the tabs in one `.secondary-nav`, so that wrapper and
+   its container are dissolved (`display: contents`) and the page grid places the
+   header and the sidebar as separate columns. The sidebar itself is rebuilt by
+   `paintGiteaNav` (the `overflow-menu` component collapses its tabs when they
+   stop fitting, so it cannot be the sidebar); the original menu is hidden below.
+   `[data-theme]` is Gitea's marker on <html>; neither GitHub nor GitLab sets it,
+   so nothing here can reach them. */
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu) {
+  display: grid !important;
+  grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 24px;
+  max-width: none !important;
+}
+
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu)
+  > .secondary-nav,
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu)
+  > .secondary-nav
+  > div.ui.container {
+  display: contents !important;
+}
+
+/* Repo header (avatar, owner/repo, Watch / Star / Fork): top of the content. */
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu)
+  .repo-header {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0 0 12px !important;
+}
+
+/* The original tab row is kept in the DOM but pushed out of the way, at a width
+   where its own tabs never overflow: that is what keeps the anchors readable for
+   `paintGiteaNav`, which rebuilds them as the sidebar below. (Hiding the menu
+   outright would make the `overflow-menu` component detach every tab into a
+   popup held in memory, with nothing left to rebuild from.) */
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu)
+  > .secondary-nav
+  > overflow-menu {
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  top: 0 !important;
+  /* Wide enough that none of Gitea's tabs overflow; anchored right so the
+     off-screen part extends left, where it cannot create a scrollbar. */
+  width: 2000px !important;
+  max-width: none !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+}
+
+/* The rebuilt sidebar: a GitLab-style super-sidebar panel. */
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  list-style: none;
+  width: 100%;
+  max-width: none;
+  margin: 0 !important;
+  padding: 8px !important;
+  background-color: var(--gs-canvas-subtle) !important;
+  border: 1px solid var(--gs-border) !important;
+  border-radius: var(--gs-radius-lg, 8px);
+  /* Stay in view while the (very long) file list scrolls, like GitLab's. */
+  position: sticky;
+  top: 16px;
+}
+
+/* A row: icon and label side by side, like GitLab's super-sidebar item. */
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px !important;
+  border: 0 !important;
+  border-radius: var(--gs-radius-md, 6px) !important;
+  color: var(--gs-fg) !important;
+  text-align: left !important;
+}
+
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a svg {
+  flex: none;
+  color: var(--gs-fg-muted) !important;
+  fill: currentColor;
+}
+
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a:hover {
+  background-color: var(--gs-canvas) !important;
+}
+
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a.active {
+  background-color: var(--gs-accent-subtle) !important;
+  color: var(--gs-accent) !important;
+  font-weight: 600 !important;
+}
+
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a.active svg {
+  color: var(--gs-accent) !important;
+}
+
+/* GitLab's sidebar gathers its items under group headings; GitHub's flat tab row
+   has none, so `UX.repoNav` inserts the headings (Plan, Code, Build, Deploy). */
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group {
+  margin: 10px 0 2px;
+  padding: 0 10px;
+  color: var(--gs-fg-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group:first-child {
+  margin-top: 0;
+}
+
+/* The count becomes a GitLab-style trailing figure, not a raised pill. */
+html.gs-theme-gitlab[data-theme] [data-gs-gitea-nav] a .ui.small.label {
+  margin-left: auto !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: inherit !important;
+  font-weight: 400 !important;
+  padding: 0 !important;
+}
+
+/* The tab row's bottom divider belongs to the horizontal form. */
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu)
+  > .secondary-nav
+  > .ui.tabs.divider {
+  display: none !important;
+}
+
+/* Content: right column, below the header. */
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu)
+  > .ui.container {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* The footer spans both columns, so it does not fall into the sidebar. */
+html.gs-theme-gitlab[data-theme]
+  .page-content.repository:has(> .secondary-nav > overflow-menu)
+  > .page-footer {
+  grid-column: 1 / -1;
+}
+
 /* GitHub only shows this desktop profile navigation at `md` and up; below that
    it keeps its own mobile tab row, so the rail is gated to the same breakpoint
    (Primer's md is 768px). */
