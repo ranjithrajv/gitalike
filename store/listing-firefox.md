@@ -121,20 +121,62 @@ AMO has no fixed screenshot size. Upload, in order:
 2. `store/screenshots/02-as-github.png`
 3. `store/screenshots/03-popup.png`
 
-## Notes for review
+## Describe version (release notes)
 
-- Reviewing needs no account: the skin applies on public pages
-  (`github.com/git/git`, `gitlab.com/gitlab-org/gitlab`) while logged out. Pick a
-  skin under "Show the web with" (GitLab UI, GitHub UI or Bitbucket UI); on a
-  site you have set up, the "Show this site with" picker switches that one host;
-  Alt+Shift+G toggles the current site.
-- The extension rewrites the page's own text, labels and CSS tokens locally. It
-  is not a content blocker, intercepts no requests and makes no network
-  requests; choosing Off reverts every change.
-- This is a listed add-on; `browser_specific_settings.gecko.id` is
-  `gitalike@riseup.net`.
-- `strict_min_version` is `142.0`, the first Firefox (desktop 140, Android 142)
-  that understands `data_collection_permissions`.
-- There is a build step (`build.mjs`), but it only copies `src/` and generates
-  the two per-browser manifests; no bundling, minification or transpilation is
-  involved, so the shipped JavaScript is the source JavaScript.
+Paste into AMO's **Describe Version** field. It appears on the detail page.
+
+```
+0.1.3 — the add-on is now GitAlike — any git platform, preferred UX.
+
+New
+- A third skin: Bitbucket UI. Any site you have set up — GitHub, GitLab,
+  Codeberg/Gitea or Bitbucket — can wear it, beside GitHub UI and GitLab UI.
+- Bitbucket and Gerrit can be the site you are on, shown with the GitHub or
+  GitLab UI, and are added one instance at a time from the popup.
+- Codeberg (Forgejo) and gitea.com (Gitea) are bundled, and can wear any of the
+  three skins.
+- Add a self-hosted instance by pasting its address: GitAlike reads the link and
+  highlights the product it looks like, so one confirmation is enough.
+- A per-site picker gives a single self-hosted instance its own skin (or none)
+  without touching github.com.
+
+Improved
+- Navigation, profile pages and repository metadata now follow the applied
+  product's layout and order, not only its colours.
+- A parity checker now scores each skin against the real target product's
+  interface, so the reskin stays faithful.
+
+Fixed
+- The GitLab UI hides GitHub's signed-in app header, since GitLab has none.
+- The logged-out top bar hides words only the source product uses.
+```
+
+## Notes to reviewer
+
+Paste into AMO's **Notes to Reviewer** field.
+
+```
+No account or special setup is needed. Open a public page while logged out —
+github.com/git/git or gitlab.com/gitlab-org/gitlab — then use the toolbar popup
+to pick a skin under "Show the web with" (GitLab UI, GitHub UI or Bitbucket UI).
+On a host you have set up, "Show this site with" switches that one host;
+Alt+Shift+G toggles the current site. Choosing Off reverts every change.
+
+The add-on only rewrites the page's own text, labels and CSS custom properties,
+locally. It is not a content blocker, intercepts no requests, and makes no
+network requests of its own. It reads no page content into storage and sends
+nothing anywhere.
+
+Build. There is a build step, but it does not bundle, minify or transpile, and
+needs no dependencies: build.mjs uses only Node's standard library.
+node build.mjs firefox copies src/ into dist/firefox/ and writes
+dist/firefox/manifest.json from src/manifest.base.json plus the Firefox-specific
+keys — the event-page background, the Gecko id, strict_min_version, and the
+data_collection_permissions declaration. dist/firefox is the add-on; zipping it
+produces the package. The JavaScript that ships is byte-for-byte the JavaScript
+in src/, so no separate source archive is required.
+
+browser_specific_settings.gecko.id is gitalike@riseup.net.
+strict_min_version is 142.0, the first Firefox whose desktop and Android builds
+both understand data_collection_permissions.
+```
