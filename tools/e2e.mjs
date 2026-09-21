@@ -435,6 +435,32 @@ try {
       ),
     `shown: ${cg.nav.join(', ')} | hidden: ${cg.hidden.join(', ')}`,
   );
+
+  // The same site, told to wear the Bitbucket UI: a flat sidebar of Bitbucket's
+  // own tabs, with none of GitLab's group headings or extra items.
+  await setHostSettings({ 'codeberg.org': 'bitbucket' });
+  await cb
+    .waitForFunction(
+      () =>
+        document.documentElement.classList.contains('gs-theme-bitbucket') &&
+        document.querySelector('[data-gs-gitea-nav]'),
+      null,
+      { timeout: 45000 },
+    )
+    .catch(() => {});
+  const cbB = { nav: await readSidebar() };
+  const bare = (t) => t.replace(/\s*\d[\d,.]*[kKmM]?\+?$/, '');
+  check(
+    'Codeberg (Gitea) Bitbucket UI: only Bitbucket’s own tabs',
+    JSON.stringify(cbB.nav.labels.map(bare)) ===
+      JSON.stringify(['Source', 'Pull requests', 'Pipelines', 'Jira issues']),
+    cbB.nav.labels.join(', '),
+  );
+  check(
+    'Codeberg (Gitea) Bitbucket UI: no group headings',
+    cbB.nav.groups.length === 0,
+    cbB.nav.groups.join(', '),
+  );
   await cb.close();
   // Clear the per-site choice so it does not leak into the revert check.
   await setHostSettings({});

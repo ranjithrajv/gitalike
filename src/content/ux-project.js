@@ -233,7 +233,7 @@
       .filter((item) => item.label);
     if (items.length < 2) return;
     const rule = (UX.NAV_RULES[t] || []).find((r) => r.source === 'gitea');
-    const entries = UX.repoNav(items, t, rule && rule.order, layoutOf(t));
+    const entries = UX.repoNav(items, t, rule && rule.order);
     const signature = `${location.pathname}|${items
       .map((item) => `${item.href}:${item.label}:${item.active ? 1 : 0}`)
       .join('|')}`;
