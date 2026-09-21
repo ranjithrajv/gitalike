@@ -15,6 +15,10 @@ GitAlike — any git platform, preferred UX
 Use any forge, keep your muscle memory. Re-skins GitHub, GitLab™ and Bitbucket as each other, locally: nothing collected.
 ```
 
+The **product name** and **short description** are read from the package's
+manifest (`name` and `description`), so they change only with a new upload; the
+detailed description and every field below are typed into the dashboard.
+
 ## Category
 
 `Developer Tools`
@@ -82,6 +86,15 @@ the United States and other countries and regions. Not affiliated with GitHub
 or GitLab.
 ```
 
+## Additional fields
+
+| Field | Answer |
+| --- | --- |
+| Homepage URL | `https://ranjithrajv.github.io/gitalike/` |
+| Support URL | `https://github.com/ranjithrajv/gitalike/issues` |
+| Official URL | leave empty — only offered to a verified publisher |
+| Mature content | off — an interface theme with no mature content |
+
 ## Privacy practices tab
 
 **Single purpose description**
@@ -101,6 +114,10 @@ alter what the sites do: no requests are intercepted and no data is touched.
 storage — Saves your on/off choices and the instances you add, using the
 browser's own synced storage. Nothing leaves your browser profile.
 
+scripting — Registers the extension's content scripts and stylesheets for the
+hosts you have set up, and injects them into the tab where you add a new
+instance. It never runs on, and never asks for, a host you have not configured.
+
 Host permission (*://github.com/*, *://gitlab.com/*, *://codeberg.org/*,
 *://gitea.com/*, *://bitbucket.org/*) — the five bundled forges, granted at
 install.
@@ -112,9 +129,27 @@ for that one origin; until you do, it has no access to it. On any host you have
 not set up, it does nothing.
 ```
 
-**Data usage** — answer "no" to collecting any category of user data. No remote
-code. No data sold or shared. No use of data for purposes unrelated to the
-single purpose.
+**Remote code**
+
+```
+No, I am not using remote code.
+```
+
+**Data usage** — leave every data-type checkbox **unchecked**. GitAlike collects
+none of: Personally identifiable information, Health, Financial and payment,
+Authentication, Personal communications, Location, Web history, User activity,
+or Website content. The only two things it stores — your on/off choices and the
+instances you add — live in the browser's own synced extension storage and never
+leave it.
+
+**Certify all three statements** (they are true):
+
+- I do not sell or transfer user data to third parties, outside of the approved
+  use cases.
+- I do not use or transfer user data for purposes that are unrelated to my
+  item's single purpose.
+- I do not use or transfer user data to determine creditworthiness or for
+  lending purposes.
 
 **Privacy policy URL**
 
@@ -148,9 +183,26 @@ the page's own text, labels and CSS tokens locally.
 
 | Asset | Requirement | File |
 | --- | --- | --- |
-| Store icon | 128×128 PNG | `src/icons/icon-128.png` |
-| Screenshots | 1280×800 (or 640×400), JPEG or 24-bit PNG (no alpha), 1–5 | `store/screenshots/01-as-gitlab.png`, `02-as-github.png`, `04-popup-1280x800.png` |
+| Store icon | 128×128 PNG (artwork ~96×96, padded) | `src/icons/icon-128.png` |
+| Screenshots (1–5, at least 1 required) | 1280×800 (or 640×400), JPEG or 24-bit PNG (no alpha) | `store/screenshots/01-as-gitlab.png`, `02-as-github.png`, `04-popup-1280x800.png` |
+| Small promo tile (**required**) | 440×280 PNG or JPEG | **not yet produced** — see below |
+| Marquee promo tile (optional) | 1400×560 PNG or JPEG | — |
+| YouTube video (optional) | a video URL | — |
 
 `03-popup.png` is the true 322px-wide popup and does **not** meet the 1280×800
 requirement, so it is not uploaded to Chrome — it is there for AMO and the
 README.
+
+The **440×280 small promo tile is required** by the Chrome Web Store, and is the
+one graphic asset the repository does not yet have. It should be brand-forward
+(the gradient, the mark, and short text), not a screenshot, and must still read
+when shrunk to half size.
+
+## Distribution
+
+| Field | Answer |
+| --- | --- |
+| Visibility | Public |
+| Geographic distribution | All regions |
+| Pricing | Free — no paid features and no in-app purchases |
+| Trader / non-trader | Non-trader — free, unmonetised, and collects nothing |
