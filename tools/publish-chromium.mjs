@@ -29,20 +29,11 @@
  *   --no-publish          upload only; do not submit for review
  *   --dry-run             validate inputs and print the plan, then stop
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { body, defaultSource, has, opt, reporter } from './store-api.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const args = process.argv.slice(2);
-const has = (name) => args.includes(name);
-const opt = (name) => {
-  const i = args.indexOf(name);
-  if (i === -1) return null;
-  const value = args[i + 1];
-  return value === undefined || value.startsWith('--') ? '' : value;
-};
+const { die, check } = reporter('publish-chromium');
 
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const API = 'https://chromewebstore.googleapis.com/v2';
@@ -56,42 +47,7 @@ const itemId =
   opt('--item') || process.env.CWS_ITEM_ID || process.env.CWS_EXTENSION_ID || '';
 const dryRun = has('--dry-run');
 
-// Newest by mtime, not first alphabetically: an artifacts directory can hold a
-// stale package from an earlier build, and uploading the wrong version would be
-// worse than failing.
-async function defaultSource() {
-  const dir = join(root, 'dist', 'artifacts', 'chromium');
-  if (!existsSync(dir)) return '';
-  const zips = (await readdir(dir)).filter((name) => name.endsWith('.zip'));
-  const dated = await Promise.all(
-    zips.map(async (name) => ({ name, time: (await stat(join(dir, name))).mtimeMs })),
-  );
-  dated.sort((a, b) => b.time - a.time);
-  return dated.length ? join(dir, dated[0].name) : '';
-}
-
 const source = opt('--source') || (await defaultSource());
-
-function die(message) {
-  console.error(`publish-chromium: ${message}`);
-  process.exit(1);
-}
-
-async function body(res) {
-  const text = await res.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { raw: text };
-  }
-}
-
-function check(res, json, label) {
-  if (res.ok) return json;
-  console.error(`publish-chromium: ${label} failed (HTTP ${res.status})`);
-  console.error(JSON.stringify(json, null, 2));
-  process.exit(1);
-}
 
 async function accessToken() {
   const res = await fetch(TOKEN_URL, {

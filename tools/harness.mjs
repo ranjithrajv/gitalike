@@ -38,17 +38,13 @@ const CHROME_CANDIDATES = [
 
 function resolveChrome() {
   const chrome = process.env.GS_CHROME ?? CHROME_CANDIDATES.find((p) => existsSync(p));
-  if (!chrome) {
-    console.error('no Chromium found — set GS_CHROME=/path/to/chrome');
-    process.exit(1);
-  }
+  if (!chrome) throw new Error('no Chromium found — set GS_CHROME=/path/to/chrome');
   return chrome;
 }
 
 function requireBuild() {
   if (!existsSync(join(EXT, 'manifest.json'))) {
-    console.error(`no manifest.json in ${EXT} — run "npm run build:chromium" first`);
-    process.exit(1);
+    throw new Error(`no manifest.json in ${EXT} — run "npm run build:chromium" first`);
   }
 }
 

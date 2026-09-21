@@ -7,12 +7,15 @@
  *   node tools/screenshots.mjs profile   # docs/ orientation pairs (profiles)
  *   node tools/screenshots.mjs store     # store/screenshots, 1280x720
  *
- * A *pair* is the same URL captured twice — once with every skin off, once with
- * the named skin on — at the same viewport and scroll, so
- * [`docs/index.html`](../docs/index.html) can lay them over each other as a
- * before/after swipe. A *store shot* is a single frame with the named skin on.
- * One capture loop serves both, so the settle timing is one decision rather than
- * three that drift apart.
+ * A *job* is one URL: the base frame with every skin off, then one frame per skin
+ * with that skin on. Capturing the base once per URL — rather than once per skin
+ * — keeps the pair the same moment, so [`docs/index.html`](../docs/index.html)
+ * can lay them over each other as a before/after swipe. A *store shot* is a
+ * single frame with the named skin on.
+ *
+ * Any failure exits non-zero: the output is committed, and a silent failure
+ * would leave a stale image that looks fine until someone compares it with the
+ * live site.
  *
  * Only `playwright-core` is needed — the browser is the system Chromium, so
  * nothing is downloaded. Point at a different browser with `GS_CHROME=...`, and
@@ -23,7 +26,7 @@
  *   - addons.mozilla.org: screenshots are optional but recommended.
  */
 
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { launch, retry } from './harness.mjs';
@@ -39,91 +42,108 @@ const STORE = { width: 1280, height: 720 };
 // drift into different timing.
 const SETTLE_MS = 2500;
 
-// Project-page orientation pairs. Both pages are public and carry the real
-// chrome (header, token colours, logo) the skins repaint.
-const PROJECT_PAIRS = [
+// Project-page jobs. Both pages are public and carry the real chrome (header,
+// token colours, logo) the skins repaint. `ready` waits for the page's own
+// marker, so the shot is not on a skeleton.
+const PROJECT_JOBS = [
   {
     name: 'GitLab project',
     url: 'https://gitlab.com/gitlab-org/gitlab',
-    setting: { gitlab: 'github' },
-    cls: 'gs-theme-github',
-    // The super-sidebar ships with a loading state; wait for the settled one,
-    // or the project header, so the shot is not on a skeleton.
     ready: '.super-sidebar:not(.super-sidebar-loading), [data-testid="project-header"]',
     base: 'gitlab-default.png',
-    over: 'gitlab-github.png',
+    skins: [
+      {
+        setting: { gitlab: 'github' },
+        cls: 'gs-theme-github',
+        over: 'gitlab-github.png',
+      },
+      {
+        setting: { gitlab: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'gitlab-bitbucket.png',
+      },
+    ],
   },
   {
     name: 'GitHub project',
     url: 'https://github.com/microsoft/vscode',
-    setting: { github: 'gitlab' },
-    cls: 'gs-theme-gitlab',
     ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
     base: 'github-default.png',
-    over: 'github-gitlab.png',
+    skins: [
+      {
+        setting: { github: 'gitlab' },
+        cls: 'gs-theme-gitlab',
+        over: 'github-gitlab.png',
+      },
+      {
+        setting: { github: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'github-bitbucket.png',
+      },
+    ],
   },
   // Codeberg is GitHub-flavoured, so any of the three skins can be captured from
-  // the same base shot. The Gitea project nav is an `overflow-menu`; the GitLab
-  // and Bitbucket skins rebuild it as `[data-gs-gitea-nav]`, so `ready` accepts
+  // the same base. The Gitea project nav is an `overflow-menu`; the GitLab and
+  // Bitbucket skins rebuild it as `[data-gs-gitea-nav]`, so `ready` accepts
   // either.
   {
-    name: 'Codeberg (Gitea) project, GitLab UI',
+    name: 'Codeberg (Gitea) project',
     url: 'https://codeberg.org/forgejo/forgejo',
-    setting: { github: 'gitlab' },
-    cls: 'gs-theme-gitlab',
     ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
     base: 'codeberg-default.png',
-    over: 'codeberg-gitlab.png',
-  },
-  {
-    name: 'Codeberg (Gitea) project, GitHub UI',
-    url: 'https://codeberg.org/forgejo/forgejo',
-    setting: { github: 'github' },
-    cls: 'gs-theme-github',
-    ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
-    base: 'codeberg-default.png',
-    over: 'codeberg-github.png',
-  },
-  {
-    name: 'Codeberg (Gitea) project, Bitbucket UI',
-    url: 'https://codeberg.org/forgejo/forgejo',
-    setting: { github: 'bitbucket' },
-    cls: 'gs-theme-bitbucket',
-    ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
-    base: 'codeberg-default.png',
-    over: 'codeberg-bitbucket.png',
+    skins: [
+      { setting: { github: 'gitlab' }, cls: 'gs-theme-gitlab', over: 'codeberg-gitlab.png' },
+      { setting: { github: 'github' }, cls: 'gs-theme-github', over: 'codeberg-github.png' },
+      { setting: { github: 'bitbucket' }, cls: 'gs-theme-bitbucket', over: 'codeberg-bitbucket.png' },
+    ],
   },
 ];
 
-// Profile-page orientation pairs. The profiles are public and rich enough to
-// show both the navigation and the metadata the skin repaints.
-const PROFILE_PAIRS = [
+// Profile-page jobs. The profiles are public and rich enough to show both the
+// navigation and the metadata the skin repaints.
+const PROFILE_JOBS = [
   {
     name: 'GitLab profile',
     // A profile with bio, location and contact links set, so the card has more
     // than the name to show — sytses (the example in the docs) has neither.
     url: 'https://gitlab.com/dzaporozhets',
-    setting: { gitlab: 'github' },
-    cls: 'gs-theme-github',
-    // The profile page's own markers, so the shot is taken after the sidebar
-    // and the profile header have rendered rather than on a skeleton.
     ready: '.super-sidebar:not(.super-sidebar-loading) .user-profile-header, .user-profile-header',
     base: 'gitlab-profile-default.png',
-    over: 'gitlab-profile-github.png',
+    skins: [
+      {
+        setting: { gitlab: 'github' },
+        cls: 'gs-theme-github',
+        over: 'gitlab-profile-github.png',
+      },
+      {
+        setting: { gitlab: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'gitlab-profile-bitbucket.png',
+      },
+    ],
   },
   {
     name: 'GitHub profile',
     url: 'https://github.com/torvalds',
-    setting: { github: 'gitlab' },
-    cls: 'gs-theme-gitlab',
     ready: 'nav[aria-label="User profile"]',
     base: 'github-profile-default.png',
-    over: 'github-profile-gitlab.png',
+    skins: [
+      {
+        setting: { github: 'gitlab' },
+        cls: 'gs-theme-gitlab',
+        over: 'github-profile-gitlab.png',
+      },
+      {
+        setting: { github: 'bitbucket' },
+        cls: 'gs-theme-bitbucket',
+        over: 'github-profile-bitbucket.png',
+      },
+    ],
   },
 ];
 
 // Store-listing shots: one frame each, with the named skin on. The base shot is
-// per-source, so the setting is per shot too — one skin is active at a time.
+// per source, so the setting is per shot too — one skin is active at a time.
 const STORE_SHOTS = [
   {
     name: 'GitHub project as GitLab',
@@ -144,10 +164,14 @@ const STORE_SHOTS = [
 ];
 
 const MODES = {
-  project: { out: 'docs', viewport: PAGE, pairs: PROJECT_PAIRS },
-  profile: { out: 'docs', viewport: PAGE, pairs: PROFILE_PAIRS },
+  project: { out: 'docs', viewport: PAGE, jobs: PROJECT_JOBS },
+  profile: { out: 'docs', viewport: PAGE, jobs: PROFILE_JOBS },
   store: { out: 'store/screenshots', viewport: STORE, headless: false, shots: STORE_SHOTS, popup: true },
 };
+
+// Any capture that failed. The output is committed, so a silent failure would
+// leave a stale image; a non-zero exit makes it visible.
+let failed = 0;
 
 /** Wait out the page's own marker, then let the skin settle, then top the page. */
 async function settle(page, ready) {
@@ -156,46 +180,52 @@ async function settle(page, ready) {
   await page.evaluate(() => window.scrollTo(0, 0));
 }
 
-async function capturePairs(context, setSettings, out, pairs) {
-  for (const pair of pairs) {
+async function captureJobs(context, setSettings, out, jobs) {
+  for (const job of jobs) {
     const page = await context.newPage();
     try {
-      console.log(`  ${pair.name}`);
+      console.log(`  ${job.name}`);
 
-      // Pass one: the plain site. Give the storage write a moment to reach the
+      // The base: every skin off. Give the storage write a moment to reach the
       // content script, then wait out any cached theme the origin had applied.
       await setSettings(OFF);
       await page.waitForTimeout(600);
       await retry(() =>
-        page.goto(pair.url, { waitUntil: 'domcontentloaded', timeout: 60000 }),
+        page.goto(job.url, { waitUntil: 'domcontentloaded', timeout: 60000 }),
       );
       await page
         .waitForFunction(
-          (c) => !document.documentElement.classList.contains(c),
-          pair.cls,
+          () =>
+            ![...document.documentElement.classList].some((c) =>
+              c.startsWith('gs-theme-'),
+            ),
+          null,
           { timeout: 15000 },
         )
         .catch(() => {});
-      await settle(page, pair.ready);
-      await page.screenshot({ path: join(out, pair.base) });
-      console.log(`    -> ${pair.base}`);
+      await settle(page, job.ready);
+      await page.screenshot({ path: join(out, job.base) });
+      console.log(`    -> ${job.base}`);
 
-      // Pass two: the same page with the skin on. Reload so the skin is applied
-      // from the first paint, exactly as a visitor would get it.
-      await setSettings(pair.setting);
-      await retry(() =>
-        page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }),
-      );
-      await page.waitForFunction(
-        (c) => document.documentElement.classList.contains(c),
-        pair.cls,
-        { timeout: 45000 },
-      );
-      await settle(page, pair.ready);
-      await page.screenshot({ path: join(out, pair.over) });
-      console.log(`    -> ${pair.over}`);
+      // Each skin, from the first paint: reload so the skin is applied the way a
+      // visitor would get it.
+      for (const skin of job.skins) {
+        await setSettings(skin.setting);
+        await retry(() =>
+          page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 }),
+        );
+        await page.waitForFunction(
+          (c) => document.documentElement.classList.contains(c),
+          skin.cls,
+          { timeout: 45000 },
+        );
+        await settle(page, job.ready);
+        await page.screenshot({ path: join(out, skin.over) });
+        console.log(`    -> ${skin.over}`);
+      }
     } catch (error) {
-      console.error(`    FAILED ${pair.name}: ${error.message}`);
+      failed += 1;
+      console.error(`    FAILED ${job.name}: ${error.message}`);
     } finally {
       await page.close();
     }
@@ -220,6 +250,7 @@ async function captureShots(context, setSettings, out, shots) {
       await page.screenshot({ path: join(out, shot.file) });
       console.log(`    -> ${shot.file}`);
     } catch (error) {
+      failed += 1;
       console.error(`    FAILED ${shot.file}: ${error.message}`);
     } finally {
       await page.close();
@@ -236,19 +267,21 @@ async function capturePopup(context, popup, out, viewport) {
   const toggle = popup.locator('#add-toggle');
   if ((await toggle.getAttribute('aria-expanded')) === 'true') await toggle.click();
   await popup.waitForTimeout(300);
-  await popup.locator('body').screenshot({ path: join(out, '03-popup.png') });
+
+  // Keep the PNG bytes in hand rather than writing then re-reading them.
+  const shot = await popup.locator('body').screenshot();
+  await writeFile(join(out, '03-popup.png'), shot);
   const box = await popup.locator('body').boundingBox();
   console.log(`    -> 03-popup.png (${Math.round(box.width)}x${Math.round(box.height)})`);
 
   // A Chrome Web Store shot must be exactly 1280x720, so frame the popup.
-  const shot = (await readFile(join(out, '03-popup.png'))).toString('base64');
   const frame = await context.newPage();
   await frame.setViewportSize(viewport);
   await frame.setContent(
     `<html><body style="margin:0;height:100vh;display:grid;place-items:center;
       background:linear-gradient(135deg,#fca326 0%,#e24329 45%,#7759c2 100%)">
       <img alt="gitalike popup" style="max-height:78vh;border-radius:12px;
-        box-shadow:0 24px 60px rgba(0,0,0,.35)" src="data:image/png;base64,${shot}">
+        box-shadow:0 24px 60px rgba(0,0,0,.35)" src="data:image/png;base64,${shot.toString('base64')}">
     </body></html>`,
   );
   await frame.screenshot({ path: join(out, '04-popup-1280x720.png') });
@@ -272,10 +305,15 @@ const { context, popup, setSettings, close } = await launch({
 });
 
 try {
-  if (config.pairs) await capturePairs(context, setSettings, out, config.pairs);
+  if (config.jobs) await captureJobs(context, setSettings, out, config.jobs);
   if (config.shots) await captureShots(context, setSettings, out, config.shots);
   if (config.popup) await capturePopup(context, popup, out, config.viewport);
   console.log(`\nwrote ${mode} screenshots to ${out}`);
 } finally {
   await close();
+}
+
+if (failed) {
+  console.error(`${failed} capture(s) failed`);
+  process.exitCode = 1;
 }

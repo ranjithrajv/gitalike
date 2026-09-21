@@ -18,7 +18,7 @@
  * says which. Exit code is non-zero if anything failed.
  */
 
-import { launch } from './harness.mjs';
+import { launch, retry } from './harness.mjs';
 
 const results = [];
 const check = (name, ok, detail) => results.push({ name, ok: Boolean(ok), detail });
@@ -34,22 +34,10 @@ check('extension loads', Boolean(extensionId));
 // handshake, a rate-limit page). Retry a couple of times so the run reports what
 // the skin did, not the network's mood; the class waits below already tolerate a
 // slow SPA by waiting on the rewrite rather than a fixed delay.
-async function gotoLive(page, url, options = {}) {
-  let lastError;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      return await page.goto(url, {
-        waitUntil: 'domcontentloaded',
-        timeout: 60000,
-        ...options,
-      });
-    } catch (error) {
-      lastError = error;
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-  }
-  throw lastError;
-}
+const gotoLive = (page, url, options = {}) =>
+  retry(() =>
+    page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000, ...options }),
+  );
 
 try {
   // One skin is active at a time, so the two directions are pinned per host
