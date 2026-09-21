@@ -439,7 +439,7 @@
       metadataPane: '[class*="PageLayoutContent-"]', // css
       profileNav: 'nav[aria-label="User profile"]', // css
       profileMenu: 'nav[aria-label="User profile"]',
-      profileFrame: '[data-turbo-frame="user-profile-frame"]',
+      profileFrame: 'div[data-turbo-frame="user-profile-frame"]', // css
       profileEditable: '.js-profile-editable-replace',
       profileDetail: '.vcard-detail',
       profileOrg: '[itemprop="worksFor"], .p-org',
