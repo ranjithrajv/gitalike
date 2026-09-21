@@ -42,6 +42,13 @@
     PROFILE_MENU,
   } = globalThis.GITALIKE_SKINS;
 
+  // The source markup hooks and the canary pages are declared in sources.js,
+  // one object per source. Loaded first everywhere, like skins.js.
+  if (!globalThis.GITALIKE_SOURCES) {
+    throw new Error('GitAlike: sources.js must be loaded before ux.js');
+  }
+  const { SELECTORS, CANARY_PAGES } = globalThis.GITALIKE_SOURCES;
+
   /* ------------------------------------------------------- terminology -- */
 
   // Bitbucket Cloud's repository bar, by its displayed labels. Its classes are
@@ -110,106 +117,6 @@
   ].join(',');
 
   /* ---------------------------------------------------------- selectors -- */
-
-  // Every forge-specific DOM hook the skin relies on, in one home keyed by the
-  // markup a site is built on (its `source`, see sites.js `sourceFor`) — not by
-  // the skin applied to it, because a Gitea site wears either UI but keeps
-  // Gitea's markup. `src/content/ux.js` reads these instead of carrying
-  // literals, and `tools/compare/selector-canary.mjs` probes the same entries against
-  // the live forges, so a renamed hook is one edit and one failing check,
-  // rather than a literal to hunt through three files.
-  //
-  // The stylesheets still spell their selectors out — CSS cannot read this
-  // table — so an entry a stylesheet owns is marked `// css`; when a rule moves,
-  // update the theme file and the entry together. An entry a stylesheet or the
-  // canary owns but content/ux.js does not is still listed, so the canary has
-  // one table to probe.
-  const SELECTORS = {
-    // GitHub's markup (Primer).
-    github: {
-      repoNavList: 'nav[aria-label="Repository"] ul.UnderlineNav-body', // css
-      appHeader: 'header[role="banner"], .AppHeader', // css
-      metadataSidebar: '[class*="CodeViewSidebar-"]',
-      metadataPane: '[class*="PageLayoutContent-"]', // css
-      profileNav: 'nav[aria-label="User profile"]', // css
-      profileMenu: 'nav[aria-label="User profile"]',
-      profileFrame: 'div[data-turbo-frame="user-profile-frame"]', // css
-      profileEditable: '.js-profile-editable-replace',
-      profileDetail: '.vcard-detail',
-      profileOrg: '[itemprop="worksFor"], .p-org',
-      profileLocation: '[itemprop="homeLocation"], .p-label',
-      profileName: '.h-card .p-name',
-    },
-    // GitLab's markup (Pajamas, plus its older CSS).
-    gitlab: {
-      superSidebar: '.super-sidebar', // css
-      navContainer: '[data-testid="nav-container"]',
-      projectFiles: '.project-show-files',
-      projectSidebarBlock: '.project-page-sidebar-block',
-      projectLayoutSidebar: '.project-page-layout-sidebar',
-      profileHeader: '.user-profile-header', // css
-      profileIdentity: '.user-profile-header > div:last-child',
-      profileSidebar: '.user-profile-sidebar', // css
-      profileName: '.user-profile-header h1',
-      profileMenu: '.super-sidebar .gl-scroll-scrim ul',
-      followersLink: '.super-sidebar a[data-track-label="followers_menu"]',
-      followingLink: '.super-sidebar a[data-track-label="following_menu"]',
-    },
-    // Gitea / Forgejo's markup (Codeberg, gitea.com). Its navigation hooks also
-    // live in NAV_RULES; a test asserts the two stay equal.
-    gitea: {
-      repoNavList: 'overflow-menu .overflow-menu-items',
-      repoMenu: '.page-content.repository > .secondary-nav > overflow-menu',
-      themeMarker: '[data-theme]', // css
-      topBar: '#navbar', // css
-      repoHeader: '.repo-header', // css
-      pullLink: 'a[href*="/pulls/"]',
-    },
-  };
-
-  // The live pages `tools/compare/selector-canary.mjs` fetches and the landmarks each
-  // must still carry. A key names a `SELECTORS[source]` entry; the canary turns
-  // that selector into a loose token match, so the hooks it checks and the
-  // hooks the skin uses can never drift. A page that cannot be fetched is a
-  // warning, never a failure — an outage should not look like a rename.
-  const CANARY_PAGES = [
-    {
-      name: 'GitHub repository page',
-      url: 'https://github.com/git/git',
-      source: 'github',
-      keys: ['repoNavList', 'metadataSidebar', 'metadataPane', 'appHeader'],
-    },
-    {
-      name: 'GitHub profile page',
-      url: 'https://github.com/torvalds',
-      source: 'github',
-      keys: ['profileNav', 'profileFrame'],
-    },
-    {
-      name: 'GitLab project page',
-      url: 'https://gitlab.com/gitlab-org/gitlab',
-      source: 'gitlab',
-      keys: ['superSidebar', 'projectSidebarBlock'],
-    },
-    {
-      name: 'GitLab profile page',
-      url: 'https://gitlab.com/dzaporozhets',
-      source: 'gitlab',
-      keys: ['superSidebar', 'profileHeader', 'profileSidebar'],
-    },
-    {
-      name: 'Codeberg (Forgejo) project page',
-      url: 'https://codeberg.org/forgejo/forgejo',
-      source: 'gitea',
-      keys: ['themeMarker', 'topBar', 'repoHeader', 'repoNavList', 'repoMenu'],
-    },
-    {
-      name: 'Codeberg (Forgejo) pull requests',
-      url: 'https://codeberg.org/forgejo/forgejo/pulls',
-      source: 'gitea',
-      keys: ['themeMarker', 'pullLink'],
-    },
-  ];
 
   /* ------------------------------------------------------ pure helpers -- */
 

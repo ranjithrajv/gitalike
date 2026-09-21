@@ -43,7 +43,13 @@ const TARGETS = {
     // come before background.js. Chromium reaches them via importScripts()
     // (see background.js).
     background: {
-      scripts: ['lib/sites.js', 'lib/skins.js', 'lib/ux.js', 'background.js'],
+      scripts: [
+        'lib/sites.js',
+        'lib/skins.js',
+        'lib/sources.js',
+        'lib/ux.js',
+        'background.js',
+      ],
     },
     browser_specific_settings: {
       gecko: {

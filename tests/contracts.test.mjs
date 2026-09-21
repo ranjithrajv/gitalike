@@ -25,6 +25,7 @@ import { existsSync, readFileSync } from 'node:fs';
 
 import '../src/lib/sites.js';
 import '../src/lib/skins.js';
+import '../src/lib/sources.js';
 import '../src/lib/ux.js';
 
 const SITES = globalThis.GITALIKE;

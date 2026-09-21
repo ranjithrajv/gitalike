@@ -27,6 +27,7 @@
  */
 
 import '../../src/lib/skins.js';
+import '../../src/lib/sources.js';
 import '../../src/lib/ux.js';
 
 const UX = globalThis.GITALIKE_UX;

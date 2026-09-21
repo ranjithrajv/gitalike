@@ -13,6 +13,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 // modules are loaded together here exactly as every runtime context loads them.
 import '../src/lib/sites.js';
 import '../src/lib/skins.js';
+import '../src/lib/sources.js';
 import '../src/lib/ux.js';
 
 const UX = globalThis.GITALIKE_UX;
@@ -1144,7 +1145,7 @@ describe('SELECTORS / CANARY_PAGES', () => {
         return found;
       });
     const source = readFileSync(
-      new URL('../src/lib/ux.js', import.meta.url),
+      new URL('../src/lib/sources.js', import.meta.url),
       'utf8',
     );
     let checked = 0;
