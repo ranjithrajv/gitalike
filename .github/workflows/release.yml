@@ -87,6 +87,16 @@ jobs:
         # release are the bytes the store receives.
         run: node tools/publish-chromium.mjs --source dist/release/gitalike-chromium.zip
 
+      # Edge accepts the same MV3 package as Chrome, so the staged Chromium ZIP
+      # is reused rather than rebuilt. Opt-in via a repository variable, like CWS.
+      - name: Publish to Microsoft Edge Add-ons
+        if: ${{ vars.EDGE_PUBLISH == 'true' }}
+        env:
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+        run: node tools/publish-edge.mjs --source dist/release/gitalike-chromium.zip
+
       - name: Build the release notes
         run: |
           version="${GITHUB_REF_NAME#v}"

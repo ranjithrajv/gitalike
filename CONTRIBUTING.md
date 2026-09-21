@@ -583,7 +583,7 @@ Bump `version` in `package.json` (the only place it is written), add a
 
 ### Publishing to the stores
 
-Both stores are optional and off by default; a release that is not published is
+The stores are optional and off by default; a release that is not published is
 still a normal GitHub release with the ZIPs attached.
 
 **Chrome Web Store** — `npm run publish:chromium` uploads and submits the
@@ -609,14 +609,23 @@ playground with the `https://www.googleapis.com/auth/chromewebstore` scope.
 **Firefox / AMO** — `npm run sign:firefox` builds and signs an unlisted package
 with `web-ext sign`, reading `WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET`.
 
+**Microsoft Edge Add-ons** — `npm run publish:edge` uploads and publishes the
+Chromium package with the Add-ons Update REST API (v1.1), reading
+`EDGE_CLIENT_ID`, `EDGE_API_KEY` and `EDGE_PRODUCT_ID` from the environment. The
+first submission has to be created in Partner Center by hand; the API only
+updates an extension that already exists. Edge takes the same MV3 ZIP as Chrome,
+so the same artefact goes to both.
+
 **In CI**, both are gated on a repository *variable* so the credentials stay
 scoped to the single step that uses them:
 
 - variable `CWS_PUBLISH=true` plus secrets `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`,
   `CWS_REFRESH_TOKEN`, `CWS_PUBLISHER_ID`, `CWS_ITEM_ID`;
-- variable `AMO_SIGN=true` plus secrets `AMO_API_KEY`, `AMO_API_SECRET`.
+- variable `AMO_SIGN=true` plus secrets `AMO_API_KEY`, `AMO_API_SECRET`;
+- variable `EDGE_PUBLISH=true` plus secrets `EDGE_CLIENT_ID`, `EDGE_API_KEY`,
+  `EDGE_PRODUCT_ID`.
 
-With neither set, the release job just builds and attaches the ZIPs.
+With none set, the release job just builds and attaches the ZIPs.
 
 ## Reporting an issue
 
