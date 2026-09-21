@@ -448,23 +448,71 @@
       }
       .multi-reset:hover,
       .multi-open:hover { text-decoration: underline; }
+      .multi-tabs { display: none; }
+      .multi-radio {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
       @media (max-width: 640px) {
-        /* Stack the captures on a phone: side-by-side at 1280px is unreadable,
-           and several handles on a narrow image are fiddly. */
-        .multi-layer:not([data-i="0"]) { position: static; }
-        .multi-handle { display: none; }
-        .multi-label {
+        /* One capture at a time on a phone, chosen by the tabs, rather than
+           stacking every layer into a very tall widget. The switching is pure
+           CSS: :has() reads the checked radio and shows the matching layer. */
+        .multi-layer {
+          position: static;
+          clip-path: none !important;
+          display: none;
+        }
+        .multi:has(.multi-radio[data-i="0"]:checked) .multi-layer[data-i="0"],
+        .multi:has(.multi-radio[data-i="1"]:checked) .multi-layer[data-i="1"],
+        .multi:has(.multi-radio[data-i="2"]:checked) .multi-layer[data-i="2"],
+        .multi:has(.multi-radio[data-i="3"]:checked) .multi-layer[data-i="3"] {
           display: block;
-          font-size: 12px;
+        }
+        .multi-handle,
+        .multi-tag,
+        .multi-label,
+        .multi-hint { display: none; }
+        .multi-tabs {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin: 10px 0 0;
+        }
+        .multi-tab {
+          display: inline-flex;
+          align-items: center;
+          padding: 6px 12px;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          font-size: 13px;
           font-weight: 600;
           color: var(--muted);
-          padding: 8px 2px;
+          cursor: pointer;
         }
-        /* On a phone the legend's keys are redundant next to the stacked
-           labels, but Reset and Open full size stay useful. */
-        .multi-legend .key,
-        .multi-hint,
-        .multi-tag { display: none; }
+        .multi-tab::before {
+          content: "";
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          margin-right: 6px;
+          background: var(--muted);
+        }
+        .multi-tab[data-skin="gitlab"]::before { background: var(--gitlab); }
+        .multi-tab[data-skin="github"]::before { background: var(--github); }
+        .multi-tab[data-skin="bitbucket"]::before { background: var(--bitbucket); }
+        .multi-radio:checked + .multi-tab {
+          color: var(--fg);
+          background: var(--surface);
+          border-color: var(--muted);
+        }
+        .multi-radio:focus-visible + .multi-tab {
+          outline: 2px solid var(--accent);
+          outline-offset: 2px;
+        }
+        .multi-legend .key { display: none; }
         .multi-actions { margin-left: 0; }
       }
 
@@ -783,8 +831,8 @@
           </div>
 
           <div class="swipe swipe--hero">
-            <picture><source srcset="github-default.webp" type="image/webp" /><img class="base" src="github-default.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page, default" /></picture>
-            <picture><source srcset="github-gitlab.webp" type="image/webp" /><img class="over" src="github-gitlab.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page skinned as GitLab" /></picture>
+            <picture><source srcset="github-default-640.webp 640w, github-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="base" src="github-default.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page, default" /></picture>
+            <picture><source srcset="github-gitlab-640.webp 640w, github-gitlab.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="over" src="github-gitlab.png" width="1280" height="900" decoding="async" fetchpriority="high" alt="GitHub project page skinned as GitLab" /></picture>
             <span class="tag left">GitHub default</span>
             <span class="tag right">GitLab skin</span>
             <span class="divider"></span>
@@ -866,14 +914,19 @@
               </p>
               <figure class="multi" aria-label="GitHub project page — compared across its skins">
                 <div class="multi-stage">
-                  <picture><source srcset="github-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-default.png" alt="GitHub project page, default" /></picture>
+                  <picture><source srcset="github-default-640.webp 640w, github-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-default.png" alt="GitHub project page, default" /></picture>
                   <span class="multi-label">Default · GitHub</span>
-                  <picture><source srcset="github-gitlab.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" /></picture>
+                  <picture><source srcset="github-gitlab-640.webp 640w, github-gitlab.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="github-gitlab.png" alt="GitHub project page skinned as GitLab" /></picture>
                   <span class="multi-label">GitLab UI</span>
-                  <picture><source srcset="github-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-bitbucket.png" alt="GitHub project page skinned as Bitbucket" /></picture>
+                  <picture><source srcset="github-bitbucket-640.webp 640w, github-bitbucket.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-bitbucket.png" alt="GitHub project page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
                   <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                   <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <div class="multi-tabs" role="radiogroup" aria-label="Capture shown">
+                  <input type="radio" class="multi-radio" name="mt-0" id="mt-0-0" data-i="0" checked /><label class="multi-tab" for="mt-0-0" data-i="0">Default · GitHub</label>
+                  <input type="radio" class="multi-radio" name="mt-0" id="mt-0-1" data-i="1" /><label class="multi-tab" for="mt-0-1" data-i="1" data-skin="gitlab">GitLab UI</label>
+                  <input type="radio" class="multi-radio" name="mt-0" id="mt-0-2" data-i="2" /><label class="multi-tab" for="mt-0-2" data-i="2" data-skin="bitbucket">Bitbucket UI</label>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitHub</span>
@@ -901,14 +954,19 @@
               </p>
               <figure class="multi" aria-label="GitLab project page — compared across its skins">
                 <div class="multi-stage">
-                  <picture><source srcset="gitlab-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-default.png" alt="GitLab project page, default" /></picture>
+                  <picture><source srcset="gitlab-default-640.webp 640w, gitlab-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-default.png" alt="GitLab project page, default" /></picture>
                   <span class="multi-label">Default · GitLab</span>
-                  <picture><source srcset="gitlab-github.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" /></picture>
+                  <picture><source srcset="gitlab-github-640.webp 640w, gitlab-github.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-github.png" alt="GitLab project page skinned as GitHub" /></picture>
                   <span class="multi-label">GitHub UI</span>
-                  <picture><source srcset="gitlab-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-bitbucket.png" alt="GitLab project page skinned as Bitbucket" /></picture>
+                  <picture><source srcset="gitlab-bitbucket-640.webp 640w, gitlab-bitbucket.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-bitbucket.png" alt="GitLab project page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
                   <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                   <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <div class="multi-tabs" role="radiogroup" aria-label="Capture shown">
+                  <input type="radio" class="multi-radio" name="mt-1" id="mt-1-0" data-i="0" checked /><label class="multi-tab" for="mt-1-0" data-i="0">Default · GitLab</label>
+                  <input type="radio" class="multi-radio" name="mt-1" id="mt-1-1" data-i="1" /><label class="multi-tab" for="mt-1-1" data-i="1" data-skin="github">GitHub UI</label>
+                  <input type="radio" class="multi-radio" name="mt-1" id="mt-1-2" data-i="2" /><label class="multi-tab" for="mt-1-2" data-i="2" data-skin="bitbucket">Bitbucket UI</label>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitLab</span>
@@ -936,17 +994,23 @@
               </p>
               <figure class="multi" aria-label="Codeberg (Gitea) project page — compared across its skins">
                 <div class="multi-stage">
-                  <picture><source srcset="codeberg-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
+                  <picture><source srcset="codeberg-default-640.webp 640w, codeberg-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-default.png" alt="Codeberg (Gitea) project page, default" /></picture>
                   <span class="multi-label">Default · Gitea</span>
-                  <picture><source srcset="codeberg-gitlab.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" /></picture>
+                  <picture><source srcset="codeberg-gitlab-640.webp 640w, codeberg-gitlab.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-gitlab.png" alt="Codeberg (Gitea) project page skinned as GitLab" /></picture>
                   <span class="multi-label">GitLab UI</span>
-                  <picture><source srcset="codeberg-github.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" /></picture>
+                  <picture><source srcset="codeberg-github-640.webp 640w, codeberg-github.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-github.png" alt="Codeberg (Gitea) project page skinned as GitHub" /></picture>
                   <span class="multi-label">GitHub UI</span>
-                  <picture><source srcset="codeberg-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="3" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" /></picture>
+                  <picture><source srcset="codeberg-bitbucket-640.webp 640w, codeberg-bitbucket.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="3" width="1280" height="900" loading="lazy" decoding="async" src="codeberg-bitbucket.png" alt="Codeberg (Gitea) project page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
                   <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                   <span class="multi-handle" data-skin="github" data-i="2" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                   <span class="multi-handle" data-skin="bitbucket" data-i="3" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <div class="multi-tabs" role="radiogroup" aria-label="Capture shown">
+                  <input type="radio" class="multi-radio" name="mt-2" id="mt-2-0" data-i="0" checked /><label class="multi-tab" for="mt-2-0" data-i="0">Default · Gitea</label>
+                  <input type="radio" class="multi-radio" name="mt-2" id="mt-2-1" data-i="1" /><label class="multi-tab" for="mt-2-1" data-i="1" data-skin="gitlab">GitLab UI</label>
+                  <input type="radio" class="multi-radio" name="mt-2" id="mt-2-2" data-i="2" /><label class="multi-tab" for="mt-2-2" data-i="2" data-skin="github">GitHub UI</label>
+                  <input type="radio" class="multi-radio" name="mt-2" id="mt-2-3" data-i="3" /><label class="multi-tab" for="mt-2-3" data-i="3" data-skin="bitbucket">Bitbucket UI</label>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · Gitea</span>
@@ -976,14 +1040,19 @@
               </p>
               <figure class="multi" aria-label="GitHub profile page — compared across its skins">
                 <div class="multi-stage">
-                  <picture><source srcset="github-profile-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-default.png" alt="GitHub profile page, default" /></picture>
+                  <picture><source srcset="github-profile-default-640.webp 640w, github-profile-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-default.png" alt="GitHub profile page, default" /></picture>
                   <span class="multi-label">Default · GitHub</span>
-                  <picture><source srcset="github-profile-gitlab.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" /></picture>
+                  <picture><source srcset="github-profile-gitlab-640.webp 640w, github-profile-gitlab.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-gitlab.png" alt="GitHub profile page skinned as GitLab" /></picture>
                   <span class="multi-label">GitLab UI</span>
-                  <picture><source srcset="github-profile-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-bitbucket.png" alt="GitHub profile page skinned as Bitbucket" /></picture>
+                  <picture><source srcset="github-profile-bitbucket-640.webp 640w, github-profile-bitbucket.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="github-profile-bitbucket.png" alt="GitHub profile page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
                   <span class="multi-handle" data-skin="gitlab" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitLab UI" aria-orientation="horizontal" data-name="GitLab UI" title="GitLab UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                   <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <div class="multi-tabs" role="radiogroup" aria-label="Capture shown">
+                  <input type="radio" class="multi-radio" name="mt-3" id="mt-3-0" data-i="0" checked /><label class="multi-tab" for="mt-3-0" data-i="0">Default · GitHub</label>
+                  <input type="radio" class="multi-radio" name="mt-3" id="mt-3-1" data-i="1" /><label class="multi-tab" for="mt-3-1" data-i="1" data-skin="gitlab">GitLab UI</label>
+                  <input type="radio" class="multi-radio" name="mt-3" id="mt-3-2" data-i="2" /><label class="multi-tab" for="mt-3-2" data-i="2" data-skin="bitbucket">Bitbucket UI</label>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitHub</span>
@@ -1011,14 +1080,19 @@
               </p>
               <figure class="multi" aria-label="GitLab profile page — compared across its skins">
                 <div class="multi-stage">
-                  <picture><source srcset="gitlab-profile-default.webp" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-default.png" alt="GitLab profile page, default" /></picture>
+                  <picture><source srcset="gitlab-profile-default-640.webp 640w, gitlab-profile-default.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="0" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-default.png" alt="GitLab profile page, default" /></picture>
                   <span class="multi-label">Default · GitLab</span>
-                  <picture><source srcset="gitlab-profile-github.webp" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" /></picture>
+                  <picture><source srcset="gitlab-profile-github-640.webp 640w, gitlab-profile-github.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="1" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-github.png" alt="GitLab profile page skinned as GitHub" /></picture>
                   <span class="multi-label">GitHub UI</span>
-                  <picture><source srcset="gitlab-profile-bitbucket.webp" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-bitbucket.png" alt="GitLab profile page skinned as Bitbucket" /></picture>
+                  <picture><source srcset="gitlab-profile-bitbucket-640.webp 640w, gitlab-profile-bitbucket.webp 1280w" sizes="(max-width: 640px) 100vw, 1040px" type="image/webp" /><img class="multi-layer" data-i="2" width="1280" height="900" loading="lazy" decoding="async" src="gitlab-profile-bitbucket.png" alt="GitLab profile page skinned as Bitbucket" /></picture>
                   <span class="multi-label">Bitbucket UI</span>
                   <span class="multi-handle" data-skin="github" data-i="1" role="slider" tabindex="0" aria-label="Reveal GitHub UI" aria-orientation="horizontal" data-name="GitHub UI" title="GitHub UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
                   <span class="multi-handle" data-skin="bitbucket" data-i="2" role="slider" tabindex="0" aria-label="Reveal Bitbucket UI" aria-orientation="horizontal" data-name="Bitbucket UI" title="Bitbucket UI" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+                </div>
+                <div class="multi-tabs" role="radiogroup" aria-label="Capture shown">
+                  <input type="radio" class="multi-radio" name="mt-4" id="mt-4-0" data-i="0" checked /><label class="multi-tab" for="mt-4-0" data-i="0">Default · GitLab</label>
+                  <input type="radio" class="multi-radio" name="mt-4" id="mt-4-1" data-i="1" /><label class="multi-tab" for="mt-4-1" data-i="1" data-skin="github">GitHub UI</label>
+                  <input type="radio" class="multi-radio" name="mt-4" id="mt-4-2" data-i="2" /><label class="multi-tab" for="mt-4-2" data-i="2" data-skin="bitbucket">Bitbucket UI</label>
                 </div>
                 <figcaption class="multi-legend">
                   <span class="key">Default · GitLab</span>
@@ -1531,6 +1605,18 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
         const resetButton = multi.querySelector('.multi-reset');
         if (resetButton) resetButton.addEventListener('click', reset);
         for (const handle of handles) handle.addEventListener('dblclick', reset);
+
+        // "Open full size" follows whichever capture the tabs are showing.
+        const openLink = multi.querySelector('.multi-open');
+        if (openLink) {
+          for (const radio of multi.querySelectorAll('.multi-radio')) {
+            radio.addEventListener('change', () => {
+              const layer = layers[Number(radio.dataset.i)];
+              const src = layer && layer.getAttribute('src');
+              if (src) openLink.setAttribute('href', src);
+            });
+          }
+        }
         apply();
 
         // Signal that the dividers move: a one-time nudge plus a hint pill, on
