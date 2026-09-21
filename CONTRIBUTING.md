@@ -295,9 +295,10 @@ in `themes/ux-nav.css`.
   and clones them into an overflow menu when they stop fitting the bar, so the
   body items are forced `visibility: visible`. `NAV_GROUPS` gathers the items
   under GitLab's group headings, which the content script inserts after the
-  reorder (`paintNavGroups`), and the CSS styles them. GitHub's top bar
-  (`header[role="banner"]`, `.AppHeader`, `.js-header-wrapper`) is restyled to
-  GitLab's light bar, since GitLab has a light top bar above its sidebar too.
+  reorder (`paintNavGroups`), and the CSS styles them. GitHub's logged-out top
+  bar (`header[role="banner"]`, `.js-header-wrapper`) is restyled to GitLab's
+  light bar; the signed-in app header (`.AppHeader`, `header.GlobalNav`) is
+  hidden outright under the GitLab skin, because GitLab has no top menubar.
 - **L→G** makes GitLab's sidebar horizontal, but GitLab's page is a grid
   (`.layout-page.page-with-super-sidebar`), so that grid is collapsed to one
   column first — otherwise the content keeps the narrow column.
@@ -486,10 +487,10 @@ profile, because both sites serve entirely different chrome once you log in:
 Two things had to change as a result:
 
 - **GitHub's signed-in header was not matched at all.** It is
-  `header.GlobalNav`, which none of the header selectors covered, so it was only
-  tinted incidentally through `--bgColor-inset` — ending up *greyer* than the
-  page, the opposite of GitLab. Matching it gives the bar GitLab's colour and
-  hairline border.
+  `header.GlobalNav` (`.AppHeader`), which none of the logged-out header
+  selectors covered. GitLab has no top menubar, so the GitLab skin now hides it
+  rather than tinting it; the logged-out marketing header is still restyled to
+  GitLab's light bar.
 - **Dark-mode detection had a feedback loop.** With GitHub set to "sync with
   system", `data-color-mode` is `auto`, and detection fell through to the
   *computed* `color-scheme` — a property our own palette sets. It was reading

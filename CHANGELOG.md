@@ -4,6 +4,25 @@ All notable changes to gitalike are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A **Bitbucket-source page now repaints** under the GitHub and GitLab UIs.
+  Bitbucket Cloud exposes Atlassian's `--ds-*` design tokens on `<html>`, so the
+  shared token layer re-points the semantic ones — surfaces, text, links,
+  borders, icons, selected/brand backgrounds and radii — at the applied skin's
+  palette, and gives the top bar that skin's header treatment. The markup is
+  still Bitbucket's (no `SELECTORS` entry or `NAV_RULES` rule), so orientation,
+  navigation and metadata stay partial (`src/themes/gs-tokens.css`,
+  `tools/compare/parity-score.mjs`, `docs/UX-PARITY.md`).
+
+### Fixed
+
+- The GitLab skin hides GitHub's **signed-in app header** (`.AppHeader`,
+  `header.GlobalNav`) — GitLab has no top menubar. The logged-out marketing
+  header is still restyled to GitLab's light bar (`src/themes/as-gitlab.css`).
+
 ## [0.1.3] - 2026-09-21
 
 ### Added

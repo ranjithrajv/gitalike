@@ -305,6 +305,22 @@ html.gs-layout-gitlab :is(
   color: var(--gs-fg) !important;
 }
 
+/* GitLab's app has no top menubar, so the GitLab skin hides the one GitHub
+   swaps in once you are signed in. GitHub serves a marketing header
+   (`header[role="banner"]`, `.js-header-wrapper`) when logged out and the
+   `GlobalNav` / `AppHeader` app header once signed in; only the latter is
+   hidden here, and the logged-out header keeps its restyled light bar above.
+   Nothing else in the tree matches these selectors, so GitHub is the only
+   source affected. */
+html.gs-theme-gitlab :is(
+    .AppHeader,
+    .AppHeader-globalBar,
+    header.GlobalNav,
+    header[aria-label="Global navigation menu"]
+  ) {
+  display: none !important;
+}
+
 /* GitHub's signed-in repo nav moved to `prc-components-UnderlineItem`, so the
    old `.UnderlineNav-item` rules below no longer reached it. Both are listed;
    the indicator also still lands via the `--color-primer-border-active` token
