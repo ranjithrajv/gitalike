@@ -1016,9 +1016,9 @@
               Live captures of the real sites at 1280×900. Pick a page kind and
               a source forge, and the capture shows that page wearing every skin
               it can — drag a divider to reveal one, or focus it and use the
-              arrow keys. The Bitbucket and Gerrit sources are client-rendered
-              and verified from their app shells, so they are not among these
-              live captures.
+              arrow keys. All five sources are here: GitHub, GitLab and Codeberg
+              in full, and Bitbucket and Gerrit from their app shells (their
+              pages render client-side).
             </p>
           </div>
 
@@ -1170,7 +1170,10 @@
                 mapped onto the applied palette, so the other UIs change the
                 colours and the <b class="gitlab">words</b> — "Pull requests"
                 becomes "Merge requests", "pull request #207" becomes "merge
-                request #207" — while the layout stays Bitbucket's.
+                request #207" — and reorient the bar: a <b class="gitlab">column</b>
+                alongside a sidebar layout, a <b class="github">row</b> under the
+                GitHub layout, and grouped under the applied skin's
+                <b class="gitlab">headings</b> when that skin groups its menu.
               </p>
               <figure class="multi" aria-label="Bitbucket project page — compared across its skins">
                 <div class="multi-stage">
@@ -1207,7 +1210,7 @@
             <div class="card" id="gerrit-project" data-kind="project" data-forge="gerrit" hidden>
               <h3>Gerrit change list</h3>
               <p class="sub">
-                PolyGerrit is a client-rendered app. Its palette is re-pointed through the root custom properties it reads (<code>--primary-text-color</code>, <code>--link-color</code>, …), which inherit across its shadow boundary, so the skins recolour it without reaching inside.
+                PolyGerrit is a client-rendered app. Its palette is re-pointed through the root custom properties it reads (<code>--primary-text-color</code>, <code>--link-color</code>, …), which inherit across its shadow boundary, so the skins recolour it without reaching inside — and its header navigation is reoriented to the layout, a <b class="gitlab">column</b> or a <b class="github">row</b>, since PolyGerrit's roots are open and the pass can reach the nav.
               </p>
               <figure class="multi" aria-label="Gerrit change list — compared across its skins">
                 <div class="multi-stage">
@@ -1244,7 +1247,7 @@
             <div class="card" id="gerrit-profile" data-kind="profile" data-forge="gerrit" hidden>
               <h3>Gerrit project changes</h3>
               <p class="sub">
-                Gerrit has no public profile; its closest list page is a change list, here scoped to one project. As on its project pages, the skins recolour it through the root properties PolyGerrit reads.
+                Gerrit has no public profile; its closest list page is a change list, here scoped to one project. As on its project pages, the skins recolour it through the root properties PolyGerrit reads and reorient its header navigation to the layout.
               </p>
               <figure class="multi" aria-label="Gerrit project changes — compared across its skins">
                 <div class="multi-stage">

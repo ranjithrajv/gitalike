@@ -442,28 +442,47 @@
     // where the skin groups, and only when the items share one parent to hang
     // the headings on.
     if (repoPage && UX.NAV_GROUPS[t]) {
-      const parent = items[0].parentElement;
-      if (parent && items.every((el) => el.parentElement === parent)) {
-        ledger(parent, 'bitbucket-groups', () => ({
+      // Each item may sit in its own wrapper, so group at the level of the
+      // bar's *direct children*: climb from each item to the child of `nav`
+      // that holds it, and put the heading before that. The item's own label
+      // is what the group is resolved from, not the wrapper's text.
+      const rowOf = (el) => {
+        let node = el;
+        while (node.parentElement && node.parentElement !== nav) {
+          node = node.parentElement;
+        }
+        return node.parentElement === nav ? node : null;
+      };
+      const entries = [];
+      for (const el of items) {
+        if (!nav.contains(el)) continue;
+        const row = rowOf(el);
+        if (row && !entries.some((entry) => entry.row === row)) {
+          entries.push({
+            row,
+            label: (el.textContent || '').replace(/\s+/g, ' ').trim(),
+          });
+        }
+      }
+      if (entries.length >= 2) {
+        ledger(nav, 'bitbucket-groups', () => ({
           restore: () =>
-            parent
+            nav
               .querySelectorAll(':scope > .gs-nav-group')
               .forEach((el) => el.remove()),
         }));
-        for (const el of parent.querySelectorAll(':scope > .gs-nav-group')) {
+        for (const el of nav.querySelectorAll(':scope > .gs-nav-group')) {
           el.remove();
         }
         let last = null;
-        for (const el of items) {
-          if (!nav.contains(el)) continue;
-          const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        for (const { row, label } of entries) {
           const group = UX.navGroupFor(label, t);
           if (group && group !== last) {
             const heading = document.createElement('span');
             heading.className = 'gs-nav-group';
             heading.setAttribute('data-gs-ux-skip', '');
             heading.textContent = group;
-            parent.insertBefore(heading, el);
+            nav.insertBefore(heading, row);
             last = group;
           }
         }
