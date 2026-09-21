@@ -47,6 +47,8 @@ jobs:
           shopt -s nullglob
           for png in *.png; do
             cwebp -quiet -q 82 "$png" -o "${png%.png}.webp"
+            # The narrow variant docs/index.html's srcset offers to phones.
+            cwebp -quiet -q 82 -resize 640 0 "$png" -o "${png%.png}-640.webp"
           done
 
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5

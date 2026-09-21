@@ -50,8 +50,10 @@ describe('capture tables', () => {
     for (const job of docsJobs) {
       for (const file of captureFiles(job)) {
         assert.ok(html.includes(`"${file}"`), `index.html references ${file}`);
+        // The webp is a <source> candidate, so it is followed by a width
+        // descriptor ("X.webp 1280w"), not by the closing quote.
         assert.ok(
-          html.includes(`"${file.replace(/\.png$/, '.webp')}"`),
+          html.includes(`${file.replace(/\.png$/, '.webp')} `),
           `index.html references the webp sibling of ${file}`,
         );
       }
