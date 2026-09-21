@@ -14,16 +14,17 @@
  *
  *   theme   1.0  the skin's class is on <html> (a gate: 0 fails the cell)
  *   layout  2.0  the repo navigation is oriented as the target is
- *   header  2.0  the top bar's colour matches the target's `--gs-header-bg`
- *   body    1.0  the page background matches the target's `--gs-canvas`
- *   link    2.0  a content link uses the target's `--gs-link`
+ *   header  2.0  the top bar's colour matches the target product's real header
+ *   body    1.0  the page background matches the target product's canvas
+ *   link    2.0  a content link uses the target product's link / accent
  *   vocab   2.0  the navigation carries the target's words
  *
  * A colour dimension scores `1 - distance/scale`, so a near-match is near-full
- * credit rather than a fail. The tokens are read from the applied theme's own
- * `--gs-*` variables, so the score measures how completely the skin applied its
- * palette and structure to this source — not whether the palette itself is the
- * right one (that is a property of the theme, held by the unit tests).
+ * credit rather than a fail. The expected colours come from the reviewed
+ * `tests/fixtures/target-chrome.json`, NOT the applied theme's own `--gs-*`
+ * variables, so the score measures fidelity to the product rather than
+ * self-consistency; `tests/compare/target-chrome.test.mjs` pins the skins to the
+ * fixture offline.
  *
  *   node tools/compare/style-parity.mjs            graded table
  *   node tools/compare/style-parity.mjs --checks   the per-dimension detail
@@ -34,7 +35,22 @@
  * session and Gerrit has no bundled host.
  */
 
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { launch, retry, waitForTheme } from './harness.mjs';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
+
+// The reviewed, skin-independent reference: the target products' real chrome
+// colours. Scoring against these — not the applied skin's own `--gs-*`
+// variables — is what makes the score a fidelity measure rather than a
+// self-consistency check. `tests/compare/target-chrome.test.mjs` pins the skins'
+// light palettes to the same fixture offline.
+const TARGET_CHROME = JSON.parse(
+  readFileSync(join(root, 'tests/fixtures/target-chrome.json'), 'utf8'),
+).products;
 
 // Words that mark a container as the repository navigation, whichever product
 // the source or target is, so the right `<ul>` is found without keying on a
@@ -43,6 +59,9 @@ const REPO_WORDS = [
   'Code',
   'Repository',
   'Source',
+  'Commits',
+  'Branches',
+  'Tags',
   'Issues',
   'Work items',
   'Pull requests',
@@ -50,13 +69,16 @@ const REPO_WORDS = [
   'Actions',
   'CI/CD',
   'Pipelines',
+  'Deployments',
+  'Downloads',
   'Projects',
   'Issue boards',
+  'Security',
 ];
 
-// The source pages, and where their chrome lives. Selector lists resolve in
-// order — a rebuilt element wins over a leftover one.
-const SOURCES = [
+// The project source pages, and where their chrome lives. Selector lists
+// resolve in order — a rebuilt element wins over a leftover one.
+const PROJECT_SOURCES = [
   {
     key: 'github',
     host: 'github.com',
@@ -102,33 +124,136 @@ const SOURCES = [
     url: 'https://bitbucket.org/atlassian/atlassian-connect-express/src/master/',
     ready: '[data-testid="ref-selector-trigger"]',
     header: ['header[data-layout-slot="true"]', 'header'],
-    nav: ['nav', '[data-testid="repo-nav"]'],
+    nav: [
+      '[data-gs-bb-nav]',
+      '[data-testid="bb-sidebar"]',
+      '[data-testid="sidebar"]',
+      'nav',
+    ],
     link: ['main a[href]', 'a[href]'],
   },
 ];
 
-// What each target product's chrome looks like: its navigation shape and the
-// words its repository menu carries.
-const TARGETS = {
-  github: {
-    layout: 'row',
-    vocab: ['Code', 'Pull requests', 'Actions', 'Insights', 'Projects'],
-  },
-  gitlab: {
-    layout: 'column',
-    vocab: [
-      'Repository',
-      'Merge requests',
-      'CI/CD',
-      'Analytics',
-      'Issue boards',
+// The profile source pages. A profile's navigation is a different set of
+// destinations, and its markup differs from the project page's, so the
+// selectors and the words that identify the nav are their own.
+const PROFILE_SOURCES = [
+  {
+    key: 'github',
+    host: 'github.com',
+    url: 'https://github.com/torvalds',
+    ready: 'nav[aria-label="User profile"]',
+    header: ['header[role="banner"]', '.AppHeader'],
+    nav: [
+      'main [data-turbo-frame="user-profile-frame"] nav[aria-label="User profile"]',
+      'nav[aria-label="User profile"]',
+    ],
+    link: [
+      '.js-pinned-items-reorder-container a[href]',
+      '.p-note a[href]',
+      '.js-profile-editable-area a[href]',
+      'main article a[href]',
     ],
   },
-  bitbucket: {
-    layout: 'column',
-    vocab: ['Source', 'Pull requests', 'Pipelines'],
+  {
+    key: 'gitlab',
+    host: 'gitlab.com',
+    url: 'https://gitlab.com/dzaporozhets',
+    ready: '.super-sidebar, .user-profile-header',
+    header: ['header', '.header-content'],
+    nav: ['.super-sidebar .gl-scroll-scrim ul', '.super-sidebar ul'],
+    link: [
+      '.user-profile a[href]',
+      '.profile-readme a[href]',
+      'main article a[href]',
+    ],
+  },
+  {
+    key: 'bitbucket',
+    host: 'bitbucket.org',
+    url: 'https://bitbucket.org/tutorials/workspace/repositories/',
+    ready: '[data-testid="profile-repository-row"]',
+    header: ['header[data-layout-slot="true"]', 'header'],
+    nav: [
+      '[data-gs-bb-nav]',
+      '[data-testid="bb-sidebar"]',
+      '[data-testid="sidebar"]',
+      'nav',
+    ],
+    link: ['main a[href]'],
+  },
+];
+
+// Words that mark a container as the profile navigation, so the right `<ul>` is
+// found whichever product the source or target is.
+const PROFILE_WORDS = [
+  'Overview',
+  'Repositories',
+  'Projects',
+  'Packages',
+  'Stars',
+  'Activity',
+  'Groups',
+  'Snippets',
+  'Followers',
+  'Following',
+  'Personal projects',
+  'Contributed projects',
+  'Starred projects',
+];
+
+// What each target product's chrome looks like, per page type: its navigation
+// shape and the words its menu carries.
+const TARGETS = {
+  project: {
+    github: {
+      layout: 'row',
+      vocab: ['Code', 'Pull requests', 'Actions', 'Insights', 'Projects'],
+    },
+    gitlab: {
+      layout: 'column',
+      vocab: [
+        'Repository',
+        'Merge requests',
+        'CI/CD',
+        'Analytics',
+        'Issue boards',
+      ],
+    },
+    bitbucket: {
+      layout: 'column',
+      vocab: ['Source', 'Pull requests', 'Pipelines'],
+    },
+  },
+  profile: {
+    github: {
+      layout: 'row',
+      vocab: ['Overview', 'Repositories', 'Projects', 'Packages', 'Stars'],
+    },
+    gitlab: {
+      layout: 'column',
+      vocab: [
+        'Activity',
+        'Groups',
+        'Contributed projects',
+        'Personal projects',
+        'Starred projects',
+        'Snippets',
+        'Followers',
+        'Following',
+      ],
+    },
+    bitbucket: {
+      layout: 'column',
+      vocab: ['Overview', 'Repositories', 'Projects', 'Snippets'],
+    },
   },
 };
+
+const PAGES = [
+  { type: 'project', sources: PROJECT_SOURCES, navWords: REPO_WORDS },
+  { type: 'profile', sources: PROFILE_SOURCES, navWords: PROFILE_WORDS },
+];
 
 // A source never wears its own UI, so these are the real cells.
 const SKINS = ['gitlab', 'github', 'bitbucket'];
@@ -141,7 +266,6 @@ const WEIGHTS = {
   link: 2,
   vocab: 2,
 };
-const SCORE_WEIGHT = Object.values(WEIGHTS).reduce((a, b) => a + b, 0);
 
 const parseColor = (value) => {
   if (!value) return null;
@@ -168,11 +292,12 @@ const colorDist = (a, b) =>
   Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
 
 // A near-match earns near-full credit; `scale` is the distance at which the
-// dimension is worth nothing.
+// dimension is worth nothing. Returns null when a colour is missing, so the
+// caller can drop the dimension rather than score a false zero.
 const colorFraction = (got, want, scale = 96) => {
   const a = parseColor(got);
   const b = parseColor(want);
-  if (!a || !b) return 0;
+  if (!a || !b) return null;
   return Math.max(0, Math.min(1, 1 - colorDist(a, b) / scale));
 };
 
@@ -190,17 +315,28 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
   };
   const label = (el) => (el.textContent || '').replace(/\s+/g, ' ').trim();
 
+  // A nav item is a link, button, menu item or tab: Bitbucket's repository bar
+  // is buttons, not links.
+  const ITEMS =
+    'a, button, [role="menuitem"], [role="tab"], [role="link"], span';
+  const itemLabels = (root) =>
+    [...root.querySelectorAll(ITEMS)]
+      .filter(visible)
+      .map(label)
+      .filter(Boolean);
+  const knownIn = (root) =>
+    itemLabels(root).filter((text) =>
+      repoWords.some((word) => text.startsWith(word)),
+    ).length;
+
   // The repo nav is the best candidate of the first selector that has one: a
   // rebuilt nav (an earlier selector) wins over a leftover hidden sidebar.
   let nav = null;
   for (const sel of navSels) {
     let candidate = null;
-    let best = -1;
+    let best = 0;
     for (const el of document.querySelectorAll(sel)) {
-      const links = [...el.querySelectorAll('a')].filter(visible);
-      const known = links.filter((a) =>
-        repoWords.some((word) => label(a).startsWith(word)),
-      ).length;
+      const known = knownIn(el);
       if (known > best) {
         best = known;
         candidate = el;
@@ -212,13 +348,44 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
     }
   }
 
+  // Fallback for a source whose markup we cannot select — Bitbucket's classes
+  // are hashed. Take the ancestor that holds the most known repo words.
+  if (!nav) {
+    const counts = new Map();
+    for (const el of document.querySelectorAll(ITEMS)) {
+      const text = label(el);
+      if (!text || !repoWords.some((word) => text.startsWith(word))) continue;
+      if (el.querySelector(ITEMS)) continue;
+      for (
+        let parent = el.parentElement;
+        parent && parent !== document.body;
+        parent = parent.parentElement
+      ) {
+        counts.set(parent, (counts.get(parent) || 0) + 1);
+      }
+    }
+    let best = 1;
+    for (const [el, count] of counts) {
+      if (count > best) {
+        best = count;
+        nav = el;
+      }
+    }
+  }
+
   const header = first(headerSels);
-  const link = first(linkSels, (el) => visible(el) && label(el).length > 1);
+  // Every content link, so the score can take the best match rather than
+  // whichever happens to render first.
+  const links = [];
+  for (const sel of linkSels) {
+    for (const el of document.querySelectorAll(sel)) {
+      if (!visible(el) || label(el).length < 2) continue;
+      links.push(el);
+    }
+  }
   const root = getComputedStyle(document.documentElement);
   const token = (name) => root.getPropertyValue(name).trim();
-  const labels = nav
-    ? [...nav.querySelectorAll('a')].filter(visible).map(label).filter(Boolean)
-    : [];
+  const labels = nav ? itemLabels(nav) : [];
   return {
     theme: [...document.documentElement.classList].find((c) =>
       c.startsWith('gs-theme-'),
@@ -227,12 +394,13 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
     navDirection: nav ? getComputedStyle(nav).flexDirection : null,
     headerBg: header ? getComputedStyle(header).backgroundColor : null,
     bodyBg: getComputedStyle(document.body).backgroundColor,
-    linkColor: link ? getComputedStyle(link).color : null,
+    linkColors: links.slice(0, 16).map((el) => getComputedStyle(el).color),
     labels,
     tokens: {
       header: token('--gs-header-bg'),
       canvas: token('--gs-canvas'),
-      link: token('--gs-link') || token('--gs-accent'),
+      link: token('--gs-link'),
+      accent: token('--gs-accent'),
     },
   };
 };
@@ -253,49 +421,74 @@ const rows = [];
 try {
   await setSettings({ github: 'off', gitlab: 'off' });
 
-  for (const source of SOURCES) {
-    for (const skin of SKINS) {
-      // A source never wears its own UI — `themeFor` returns null there.
-      if (skin === source.key) continue;
-      await setHostSettings({ [source.host]: skin });
-      const page = await context.newPage();
-      await gotoLive(page, source.url);
-      await page
-        .waitForSelector(source.ready, { timeout: 30000 })
-        .catch(() => {});
-      await waitForTheme(page, skin).catch(() => {});
-      await page.waitForTimeout(2500);
-      const chrome = await page.evaluate(readChrome, {
-        headerSels: source.header,
-        navSels: source.nav,
-        linkSels: source.link,
-        repoWords: REPO_WORDS,
-      });
-      await page.close();
+  for (const page of PAGES) {
+    for (const source of page.sources) {
+      for (const skin of SKINS) {
+        // A source never wears its own UI — `themeFor` returns null there.
+        if (skin === source.key) continue;
+        await setHostSettings({ [source.host]: skin });
+        const tab = await context.newPage();
+        await gotoLive(tab, source.url);
+        await tab
+          .waitForSelector(source.ready, { timeout: 30000 })
+          .catch(() => {});
+        await waitForTheme(tab, skin).catch(() => {});
+        await tab.waitForTimeout(2500);
+        const chrome = await tab.evaluate(readChrome, {
+          headerSels: source.header,
+          navSels: source.nav,
+          linkSels: source.link,
+          repoWords: page.navWords,
+        });
+        await tab.close();
 
-      const target = TARGETS[skin];
-      const horizontal =
-        chrome.navDisplay === 'flex' && chrome.navDirection === 'row';
-      const found = chrome.labels.map((l) => l.replace(/\s+/g, ' ').trim());
-      const vocab =
-        target.vocab.filter((word) => found.some((l) => l.startsWith(word)))
-          .length / target.vocab.length;
+        const target = TARGETS[page.type][skin];
+        const horizontal =
+          chrome.navDisplay === 'flex' && chrome.navDirection === 'row';
+        const found = chrome.labels.map((l) => l.replace(/\s+/g, ' ').trim());
+        const vocab =
+          target.vocab.filter((word) => found.some((l) => l.startsWith(word)))
+            .length / target.vocab.length;
 
-      const dims = {
-        theme: chrome.theme === `gs-theme-${skin}` ? 1 : 0,
-        layout: (horizontal ? 'row' : 'column') === target.layout ? 1 : 0,
-        header: colorFraction(chrome.headerBg, chrome.tokens.header),
-        body: colorFraction(chrome.bodyBg, chrome.tokens.canvas),
-        link: colorFraction(chrome.linkColor, chrome.tokens.link),
-        vocab,
-      };
-      const score =
-        Object.entries(WEIGHTS).reduce(
-          (sum, [key, weight]) => sum + weight * dims[key],
-          0,
-        ) / SCORE_WEIGHT;
+        // The reviewed target chrome, not the skin's own tokens — see the
+        // fixture. A link carries the link colour on content and the accent on
+        // a nav item, so either is a match; with no link on the page the
+        // dimension is dropped rather than scored zero.
+        const expect = TARGET_CHROME[skin];
+        const linkFractions = (chrome.linkColors || [])
+          .flatMap((color) => [
+            colorFraction(color, expect.link),
+            colorFraction(color, expect.accent),
+          ])
+          .filter((value) => value !== null);
 
-      rows.push({ cell: `${source.key} → ${skin}`, score, dims, chrome });
+        const dims = {
+          theme: chrome.theme === `gs-theme-${skin}` ? 1 : 0,
+          layout: (horizontal ? 'row' : 'column') === target.layout ? 1 : 0,
+          header: colorFraction(chrome.headerBg, expect.header),
+          body: colorFraction(chrome.bodyBg, expect.canvas),
+          link: linkFractions.length ? Math.max(...linkFractions) : null,
+          vocab,
+        };
+        // Score over the dimensions that apply, so a page without a link is not
+        // penalised for it.
+        const applicable = Object.entries(WEIGHTS).filter(
+          ([key]) => dims[key] !== null && dims[key] !== undefined,
+        );
+        const score =
+          applicable.reduce(
+            (sum, [key, weight]) => sum + weight * dims[key],
+            0,
+          ) / applicable.reduce((sum, [, weight]) => sum + weight, 0);
+
+        rows.push({
+          page: page.type,
+          cell: `${source.key} → ${skin}`,
+          score,
+          dims,
+          chrome,
+        });
+      }
     }
   }
 } catch (error) {
@@ -312,28 +505,48 @@ try {
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(rows, null, 2));
 } else if (process.argv.includes('--checks')) {
-  for (const { cell, dims, chrome } of rows) {
+  const fmt = (v) => (v == null ? '-' : v.toFixed(2));
+  for (const { page, cell, dims, chrome } of rows) {
     console.log(
-      `${cell.padEnd(22)}  theme ${dims.theme} | layout ${dims.layout} | ` +
-        `header ${dims.header?.toFixed(2)} | body ${dims.body?.toFixed(2)} | ` +
-        `link ${dims.link?.toFixed(2)} | vocab ${dims.vocab?.toFixed(2)}  ` +
+      `${page ?? 'run'}  ${cell.padEnd(22)}  theme ${dims.theme} | layout ${dims.layout} | ` +
+        `header ${fmt(dims.header)} | body ${fmt(dims.body)} | ` +
+        `link ${fmt(dims.link)} | vocab ${fmt(dims.vocab)}  ` +
         `[${chrome.labels?.slice(0, 8).join(', ')}]`,
     );
   }
 } else {
   const pad = (n) => String(n).padEnd(22);
-  console.log(
-    `\n${'score'.padStart(5)}  ${pad('source → skin')}  theme layout header body link vocab\n`,
-  );
-  for (const { cell, score, dims } of rows) {
-    const f = (v) => (v === undefined ? '  -  ' : v.toFixed(2).padStart(5));
+  for (const page of PAGES) {
     console.log(
-      `${(score * 10).toFixed(1).padStart(5)}  ${pad(cell)}  ${f(dims.theme)}  ${f(dims.layout)}   ${f(dims.header)} ${f(dims.body)} ${f(dims.link)} ${f(dims.vocab)}`,
+      `\n${page.type === 'project' ? 'Project' : 'Profile'} pages — graded computed-style parity\n`,
     );
+    console.log(
+      `${'score'.padStart(5)}  ${pad('source → skin')}  theme layout header body link vocab\n`,
+    );
+    for (const { page: type, cell, score, dims } of rows) {
+      if (type !== page.type) continue;
+      const f = (v) => (v == null ? '  -  ' : v.toFixed(2).padStart(5));
+      console.log(
+        `${(score * 10).toFixed(1).padStart(5)}  ${pad(cell)}  ${f(dims.theme)}  ${f(dims.layout)}   ${f(dims.header)} ${f(dims.body)} ${f(dims.link)} ${f(dims.vocab)}`,
+      );
+    }
   }
 }
 
-// A clear regression is a real cell where the skin did not apply at all. Low
-// scores are reported but do not fail the run — the Bitbucket source is
-// palette-only by design, and a source may simply lack a tab the target has.
-if (rows.some((row) => row.dims && row.dims.theme === 0)) process.exitCode = 1;
+// The gate: a cell fails when the skin did not apply at all, or when the chrome
+// it applied is the wrong colour — header or canvas below half credit against
+// the reviewed target. Vocabulary and layout are reported but not gated, because
+// a source may legitimately lack a tab or a shape the target has. The Bitbucket
+// source is palette-only, which the colour dimensions still measure.
+const FLOOR = 0.5;
+if (
+  rows.some(
+    (row) =>
+      row.dims &&
+      (row.dims.theme === 0 ||
+        row.dims.header < FLOOR ||
+        row.dims.body < FLOOR),
+  )
+) {
+  process.exitCode = 1;
+}
