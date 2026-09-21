@@ -54,6 +54,11 @@ const {
   BITBUCKET_NAV_WORDS,
 } = UX;
 
+// The skins and sources are shared with sites.js; derive the lists used below
+// from them so adding a skin or source is not a second edit in this file.
+const SITES = globalThis.GITALIKE;
+const THEMES = SITES.THEMES;
+
 describe('module shape', () => {
   test('publishes the shared surface', () => {
     for (const fn of [
@@ -320,8 +325,8 @@ describe('table symmetry', () => {
   });
 
   test('no table maps a label to itself', () => {
-    for (const theme of ['gitlab', 'github', 'bitbucket']) {
-      for (const table of [PHRASES[theme], LABELS[theme]]) {
+    for (const theme of THEMES) {
+      for (const table of [PHRASES[theme] ?? {}, LABELS[theme] ?? {}]) {
         for (const [from, to] of Object.entries(table)) {
           assert.notEqual(from, to, `${theme}: ${from} -> ${to}`);
         }
@@ -657,18 +662,16 @@ describe('UNMAPPED', () => {
   });
 
   test('never marks something it also translates', () => {
-    const targets = {
-      gitlab: 'GitLab',
-      github: 'GitHub',
-      bitbucket: 'Bitbucket',
-    };
-    for (const theme of ['gitlab', 'github', 'bitbucket']) {
+    const targets = Object.fromEntries(
+      THEMES.map((theme) => [theme, SITES.skins[theme].product]),
+    );
+    for (const theme of THEMES) {
       const mapped = new Set([
-        ...Object.keys(PHRASES[theme]),
-        ...Object.keys(NAV[theme]),
-        ...Object.keys(LABELS[theme]),
+        ...Object.keys(PHRASES[theme] ?? {}),
+        ...Object.keys(NAV[theme] ?? {}),
+        ...Object.keys(LABELS[theme] ?? {}),
       ]);
-      for (const [label, product] of Object.entries(UNMAPPED[theme])) {
+      for (const [label, product] of Object.entries(UNMAPPED[theme] ?? {})) {
         assert.equal(product, targets[theme], `${theme}: ${label}`);
         assert.ok(
           !mapped.has(label),
@@ -1104,11 +1107,13 @@ describe('SELECTORS / CANARY_PAGES', () => {
 
   test('every nav rule names the markup source it belongs to', () => {
     // The source is how a caller picks the rule for a known forge without
-    // matching an implementation detail such as its item selector.
+    // matching an implementation detail such as its item selector. The known
+    // sources are SELECTORS' keys, so a new source is not a second edit here.
+    const known = new Set(Object.keys(SELECTORS));
     for (const rules of Object.values(NAV_RULES)) {
       for (const rule of rules) {
         assert.ok(
-          ['github', 'gitlab', 'gitea'].includes(rule.source),
+          known.has(rule.source),
           `${rule.container || rule.scope} names a source`,
         );
       }
@@ -1118,15 +1123,10 @@ describe('SELECTORS / CANARY_PAGES', () => {
   test('every selector a stylesheet owns appears in a stylesheet', () => {
     // `SELECTORS` marks the entries a stylesheet owns with `// css`; CSS cannot
     // read the table, so this is the only thing that proves the two agree.
-    const themes = [
-      'gs-tokens.css',
-      'as-gitlab.css',
-      'as-github.css',
-      'ux-markers.css',
-      'ux-nav.css',
-    ]
-      .map((file) =>
-        readFileSync(new URL(`../src/themes/${file}`, import.meta.url), 'utf8'),
+    const themes = readdirSync(new URL('../src/themes/', import.meta.url))
+      .filter((name) => name.endsWith('.css'))
+      .map((name) =>
+        readFileSync(new URL(`../src/themes/${name}`, import.meta.url), 'utf8'),
       )
       .join('\n');
     // The classes, ids and attribute tests a selector names, so a compound

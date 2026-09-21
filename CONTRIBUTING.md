@@ -312,7 +312,9 @@ with the GitLab UI; Bitbucket is bundled as its own source, shown with the GitHu
 UI. Gerrit is a source with no bundled host, added one instance at a time. **More
 are wanted.** Sourcehut is a genuinely different product that needs its own skin;
 a new *source* forge (one people host) also needs classifying. There are two
-levels, and the easy one is real work, not a consolation prize.
+levels, and the easy one is real work, not a consolation prize. Either way,
+`tests/contracts.test.mjs` is the checklist — it fails with the source or skin
+pieces still missing.
 
 ### A forge that already speaks one of the two dialects
 
@@ -359,11 +361,19 @@ source in its own right as well. Adding a target means:
 
 | # | File | What goes there |
 | - | ---- | --------------- |
-| 1 | `src/themes/as-<target>.css` | the skin — a palette block, a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), and the structural rules |
-| 2 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color`, `layout` — which joins `THEMES` automatically |
-| 3 | `src/lib/ux.js` | the target's `PHRASES`, `NAV`, `LABELS`, `CHROME`, `UNMAPPED`, `NAV_RULES`, `NAV_KEEP`, and its tab set in `PROJECT_TABS` (and `PROFILE_MENU` if the layout rebuilds profiles) |
-| 4 | `src/background.js` | add the stylesheet to `CONTENT_CSS` |
-| 5 | `tests/` | cases for the tables, `projectTabs`, `activeTabFor` and the vocabulary |
+| 1 | `src/lib/sites.js` | a `skins` entry — `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab') — which joins `THEMES` automatically |
+| 2 | `src/themes/as-<target>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
+| 3 | `src/background.js` | add the stylesheet to `CONTENT_CSS` |
+| 4 | `src/lib/ux.js` | the target's `PHRASES`, `NAV`, `LABELS`, `CHROME`, `UNMAPPED`, `NAV_RULES` and `PROFILE_MENU`, plus whichever of `SHORTCUTS`, `TOPBAR_HIDE`, `NAV_GROUPS`, `NAV_KEEP`/`NAV_HIDE` and `PROJECT_TABS` the skin needs |
+| 5 | `tests/` | cases for the tables, `projectTabs`, `activeTabFor` and the vocabulary — the pinned Bitbucket suite is the template |
+| 6 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the skin in `tools/compare/parity-score.mjs` and `style-parity.mjs`, and the regenerated screenshots |
+
+The completeness gate is **`tests/contracts.test.mjs`**: it derives the skin and
+source lists and fails with the parts a new one is still missing, by name. Run
+`npm test` after each edit rather than discovering the gaps at the end.
+`src/themes/ux-markers.css` and the popup need no edit — the no-counterpart
+badge targets any `gs-theme-*` class, and the global radio and per-site picker
+are generated from `THEMES`.
 
 A target's `layout` (`github` = top bar + tab row, `gitlab` = left sidebar) is
 the shape it is built to. Two skins that share a shape share the structural CSS
@@ -395,6 +405,11 @@ Whatever you add has to hold the same line as the existing two: inert when the
 skin is off, no rewriting inside code, inputs or editable regions, and every
 change undone on switch-off. `src/themes/` and the `ux.js` tables are the worked
 example — copy their shape rather than inventing a new one.
+
+GitAlike is licensed GPL-3.0-or-later and is not monetised — there is no paid
+tier and none is planned. By contributing you license your work under the same
+terms, and every skin ships its own original mark rather than a vendor's (see
+the logo note above).
 
 ## Tests
 

@@ -5,8 +5,10 @@
    instead of leaving the feature looking native.
    ===================================================================== */
 
-html.gs-theme-gitlab .gs-no-equiv,
-html.gs-theme-github .gs-no-equiv {
+/* The badge rides whatever skin is active — the class is on <html> only while a
+   theme is painted — so a new skin inherits this with no edit. It used to list
+   the skins by hand and Bitbucket had been left out. */
+html[class*="gs-theme-"] .gs-no-equiv {
   display: inline-block;
   margin-left: 6px;
   padding: 0 5px;
