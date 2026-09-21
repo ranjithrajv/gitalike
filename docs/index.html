@@ -431,7 +431,60 @@
       h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.015em; margin: 0 0 8px; }
       .section-head p { color: var(--muted); margin: 0; font-size: 16px; }
 
+      /* The comparisons sub-nav: sticks under the header so a long gallery
+         stays navigable. */
+      .see-nav {
+        position: sticky;
+        top: 60px;
+        z-index: 5;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 6px;
+        margin: 24px 0 20px;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        font-size: 13px;
+        background: var(--surface-2);
+        background: color-mix(in srgb, var(--surface-2) 92%, transparent);
+        backdrop-filter: blur(6px);
+      }
+      .see-nav__group {
+        margin: 0 2px 0 8px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .see-nav__group:first-child { margin-left: 0; }
+      .see-nav a {
+        padding: 4px 10px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        color: var(--muted);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .see-nav a:hover { color: var(--fg); }
+      .see-nav a.is-active {
+        color: var(--fg);
+        background: var(--surface);
+        border-color: var(--border);
+      }
+      @media (max-width: 620px) {
+        .see-nav { top: 92px; }
+        .card[id] { scroll-margin-top: 168px; }
+      }
+
       .demos { display: grid; gap: 28px; }
+      .demos-group {
+        margin: 8px 0 -10px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .card[id] { scroll-margin-top: 132px; }
       /* Skip rendering the demos until they scroll near the viewport. */
       .card { content-visibility: auto; contain-intrinsic-size: auto 820px; }
       .card h3 { font-size: 16px; margin: 0 0 4px; }
@@ -748,8 +801,19 @@
             </p>
           </div>
 
+          <nav class="see-nav" aria-label="Comparisons">
+            <span class="see-nav__group">Project pages</span>
+            <a href="#github-project">GitHub</a>
+            <a href="#gitlab-project">GitLab</a>
+            <a href="#codeberg-project">Codeberg</a>
+            <span class="see-nav__group">Profile pages</span>
+            <a href="#github-profile">GitHub</a>
+            <a href="#gitlab-profile">GitLab</a>
+          </nav>
+
           <div class="demos">
-            <div class="card">
+            <p class="demos-group">Project pages</p>
+            <div class="card" id="github-project">
               <h3>GitHub project page</h3>
               <p class="sub">
                 A horizontal <b class="github">tab bar</b>, shown as GitLab — a vertical
@@ -776,7 +840,7 @@
               </figure>
             </div>
 
-            <div class="card">
+            <div class="card" id="gitlab-project">
               <h3>GitLab project page</h3>
               <p class="sub">
                 GitLab's scattered sidebar rebuilt as GitHub's flat
@@ -803,7 +867,7 @@
               </figure>
             </div>
 
-            <div class="card">
+            <div class="card" id="codeberg-project">
               <h3>Codeberg (Gitea) project page</h3>
               <p class="sub">
                 GitHub-flavoured, so it can wear all three: GitLab's grouped
@@ -834,7 +898,8 @@
               </figure>
             </div>
 
-            <div class="card">
+            <p class="demos-group">Profile pages</p>
+            <div class="card" id="github-profile">
               <h3>GitHub profile page</h3>
               <p class="sub">
                 A horizontal profile <b class="github">tab row</b>, shown as GitLab's
@@ -861,7 +926,7 @@
               </figure>
             </div>
 
-            <div class="card">
+            <div class="card" id="gitlab-profile">
               <h3>GitLab profile page</h3>
               <p class="sub">
                 A vertical <b class="gitlab">super-sidebar</b>, shown as GitHub's flat
@@ -1414,6 +1479,31 @@ node tools/e2e.mjs       # Playwright end-to-end test against the live sites</pr
       for (const id of linkFor.keys()) {
         const section = document.getElementById(id);
         if (section) spy.observe(section);
+      }
+
+      // …and the comparisons sub-nav for the widget in view.
+      const seeLinks = [...document.querySelectorAll('.see-nav a[href^="#"]')];
+      const seeTargets = seeLinks
+        .map((a) => document.getElementById(a.getAttribute('href').slice(1)))
+        .filter(Boolean);
+      if (seeTargets.length) {
+        const seeSpy = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              const active = seeLinks.find(
+                (a) => a.getAttribute('href') === `#${entry.target.id}`,
+              );
+              if (active) {
+                seeLinks.forEach((a) =>
+                  a.classList.toggle('is-active', a === active),
+                );
+              }
+            }
+          },
+          { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
+        );
+        seeTargets.forEach((target) => seeSpy.observe(target));
       }
 
       // Back-to-top, once the hero is behind you.
