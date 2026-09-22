@@ -74,6 +74,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `gerrit.googlesource.com/<project>/`, which is not PolyGerrit — is recoloured
   from the skin's `--gs-*` variables (header, links, metadata), scoped to the
   `gerrit` source (`themes/gs-tokens.css`, `themes/ux-nav.css`).
+- **Gerrit's GitHub-skin header is proportioned like GitHub's app bar.** Under
+  the GitHub skin the bar is 64px with GitHub's nav type (a 20px wordmark,
+  14px/600 labels) and its text token is flipped so the search field reads
+  light-on-dark instead of dark-on-dark; the search input's own shadow root
+  gets a rounded pill. It is a re-proportioning, not a rebuild: Gerrit has no
+  repository tab row or About rail, so those GitHub surfaces stay unreproduced,
+  and the sidebar layouts are unchanged (`paintGerritNav`).
 - **Layout parity raised across the sources.** Gitea/Forgejo and Bitbucket
   profile navigation is reoriented to the applied layout
   (`themes/ux-nav.css`: Gitea's profile tab menu becomes a sidebar list under a
