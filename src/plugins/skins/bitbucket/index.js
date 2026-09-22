@@ -47,6 +47,9 @@
       'Merge requests': 'Pull requests',
       Issues: 'Jira issues',
       'Work items': 'Jira issues',
+      // Gerrit's own nav words (see GERRIT_NAV_WORDS in content/ux-project.js).
+      Changes: 'Pull requests',
+      Browse: 'Source',
     },
 
     // Bitbucket's merge controls. Every source word maps to Bitbucket's own.

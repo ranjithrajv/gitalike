@@ -654,11 +654,75 @@
     }
   }
 
+  // PolyGerrit renders its chrome inside *open* shadow roots, so a content
+  // script can reach them, but a document stylesheet cannot: the injected CSS
+  // never crosses the boundary, and neither does the page-wide copy pass — it
+  // walks `document.body` and stops at the host element. This pass visits every
+  // open shadow root and runs the *shared* copy rules (`UX.controlLabel` /
+  // `UX.translate`) over its text and attributes, so Gerrit's own strings read
+  // as the applied product's. It skips the header navigation, which
+  // `paintGerritNav` relabels with its own words, and records every change in
+  // the ledger so a revert is exact.
+  function paintGerritCopy(t) {
+    if (document.documentElement.dataset.gsSource !== 'gerrit') return;
+    const ATTRS = ['title', 'aria-label', 'placeholder', 'alt'];
+
+    const roots = [];
+    const collect = (scope, depth) => {
+      if (depth > 8) return;
+      for (const el of scope.querySelectorAll('*')) {
+        if (!el.shadowRoot) continue;
+        roots.push(el.shadowRoot);
+        collect(el.shadowRoot, depth + 1);
+      }
+    };
+    collect(document, 0);
+
+    for (const root of roots) {
+      for (const el of root.querySelectorAll('*')) {
+        if (el.closest('[data-gs-gerrit-nav]')) continue;
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          const parent = node.parentElement;
+          if (!parent || isSkipped(parent)) continue;
+          const raw = node.nodeValue;
+          if (!raw || !raw.trim()) continue;
+          const control = parent.matches(UX.LABEL_SCOPE);
+          const original = rememberText(node).trim();
+          const value = control
+            ? (UX.controlLabel(original, t) ?? UX.translate(raw, t))
+            : UX.translate(raw, t);
+          if (value !== raw) node.nodeValue = value;
+        }
+        for (const attr of ATTRS) {
+          if (!el.hasAttribute(attr)) continue;
+          const entry = ledger(el, 'gerrit-attrs', () => {
+            const values = {};
+            return {
+              values,
+              restore: () => {
+                for (const name of Object.keys(values)) {
+                  el.setAttribute(name, values[name]);
+                }
+              },
+            };
+          });
+          if (!(attr in entry.values))
+            entry.values[attr] = el.getAttribute(attr);
+          const next = UX.translate(entry.values[attr], t);
+          if (next !== el.getAttribute(attr)) el.setAttribute(attr, next);
+        }
+      }
+    }
+  }
+
   rt.once('project', () => {
     rt.globalPasses.push(
       paintGiteaNav,
       paintBitbucketNav,
       paintGerritNav,
+      paintGerritCopy,
       paintMetadata,
       paintAboutExtras,
       paintHeadings,

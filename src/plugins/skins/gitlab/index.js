@@ -46,6 +46,9 @@
       'Pull requests': 'Merge requests',
       Insights: 'Analytics',
       Projects: 'Issue boards',
+      // Gerrit's own nav words (see GERRIT_NAV_WORDS in content/ux-project.js).
+      Changes: 'Merge requests',
+      Browse: 'Repository',
       // A Bitbucket source's repository bar.
       Source: 'Repository',
       Pipelines: 'CI/CD',
