@@ -1127,6 +1127,55 @@
     return null;
   }
 
+  // The repository's branch and tag counts, and the clone schemes the server
+  // advertises (`/config/server/info`), all from Gerrit's REST API on this
+  // origin. Cached; a miss fetches and repaints.
+  const gerritRepoInfo = new Map();
+  const gerritRepoInfoPending = new Set();
+
+  async function fetchGerritRepoInfo(project) {
+    const strip = (text) => (text.startsWith(")]}'") ? text.slice(4) : text);
+    const get = async (url) =>
+      JSON.parse(
+        strip(
+          await (
+            await fetch(url, { headers: { Accept: 'application/json' } })
+          ).text(),
+        ),
+      );
+    const base = `/projects/${encodeURIComponent(project)}`;
+    const branches = await get(`${base}/branches`).catch(() => []);
+    const tags = await get(`${base}/tags`).catch(() => []);
+    const info = await get('/config/server/info').catch(() => ({}));
+    return {
+      branches: Array.isArray(branches) ? branches.length : 0,
+      tags: Array.isArray(tags) ? tags.length : 0,
+      download: info.download || null,
+    };
+  }
+
+  function gerritRepoData(project) {
+    const cached = gerritRepoInfo.get(project);
+    if (cached) return cached;
+    if (!gerritRepoInfoPending.has(project)) {
+      gerritRepoInfoPending.add(project);
+      fetchGerritRepoInfo(project)
+        .then((info) => {
+          gerritRepoInfo.set(project, info);
+          gerritRepoInfoPending.delete(project);
+          repaintGerrit();
+        })
+        .catch(() => gerritRepoInfoPending.delete(project));
+    }
+    return cached || null;
+  }
+
+  function cloneUrl(template, project) {
+    return String(template || '')
+      .replace(/\$\{project\}/g, project)
+      .replace(/\$\{project-base-name\}/g, project.split('/').pop());
+  }
+
   function gerritRepoCss(t) {
     const accent = t === 'github' ? '#fd8c73' : 'var(--gs-accent)';
     return (
@@ -1167,6 +1216,28 @@
       '[data-gs-gerrit-repo] .gs-repo-branch{border:1px solid var(--gs-border) !important;' +
       'border-radius:6px !important;padding:3px 10px !important;color:var(--gs-fg) !important;' +
       'font-weight:600 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-bar a{color:var(--gs-link) !important;' +
+      'text-decoration:none !important;font-size:13px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-code{margin-left:auto !important;' +
+      'background:var(--gs-success) !important;color:#fff !important;border:0 !important;' +
+      'border-radius:6px !important;padding:5px 14px !important;font-size:14px !important;' +
+      'font-weight:600 !important;font-family:var(--gs-font) !important;cursor:pointer !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-code .caret{font-size:10px !important;' +
+      'margin-left:6px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-clone{border:1px solid var(--gs-border) !important;' +
+      'border-radius:6px !important;margin:8px 0 16px !important;padding:12px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-clone-row{display:flex !important;' +
+      'align-items:center !important;gap:12px !important;padding:6px 0 !important;' +
+      'font-size:13px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-clone-row b{min-width:120px !important;' +
+      'font-weight:600 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-clone-row code{font-family:var(--gs-font-mono) !important;' +
+      'background:var(--gs-canvas-subtle) !important;padding:3px 8px !important;' +
+      'border-radius:6px !important;overflow:hidden !important;' +
+      'text-overflow:ellipsis !important;white-space:nowrap !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-clone-row.gs-gerrit-missing{' +
+      'background:var(--gs-attention-subtle) !important;border-radius:6px !important;' +
+      'padding:6px 8px !important;}' +
       '[data-gs-gerrit-repo] .gs-repo-file{display:flex !important;align-items:center !important;' +
       'padding:8px 0 !important;border-top:1px solid var(--gs-border) !important;' +
       'font-size:14px !important;}' +
@@ -1189,7 +1260,10 @@
     );
   }
 
-  function paintGerritRepoPage(t, { root, viewRoot, wrapper, subject, data }) {
+  function paintGerritRepoPage(
+    t,
+    { root, viewRoot, wrapper, subject, data, repoInfo },
+  ) {
     const furniture = GERRIT_REPO_FURNITURE[t];
     if (!furniture || !(viewRoot instanceof ShadowRoot)) return;
     const changes = data ? data.changes : [];
@@ -1268,6 +1342,45 @@
         `Open the file browser</a></div>`;
     }
 
+    // Branch/tag counts and the clone schemes the server advertises.
+    const schemes =
+      (repoInfo && repoInfo.download && repoInfo.download.schemes) || {};
+    const archives =
+      (repoInfo && repoInfo.download && repoInfo.download.archives) || [];
+    const cloneRow = (label, value) =>
+      `<div class="gs-repo-clone-row${value ? '' : ' gs-gerrit-missing'}">` +
+      `<b>${escapeHtml(label)}</b>` +
+      (value ? `<code>${escapeHtml(value)}</code>` : GERRIT_NOEQ) +
+      `</div>`;
+    const cloneRows = [];
+    if (schemes.http) {
+      cloneRows.push(cloneRow('HTTPS', cloneUrl(schemes.http.url, subject)));
+    }
+    if (schemes.ssh) {
+      cloneRows.push(cloneRow('SSH', cloneUrl(schemes.ssh.url, subject)));
+    } else {
+      cloneRows.push(cloneRow('SSH', null));
+    }
+    cloneRows.push(cloneRow('Gerrit CLI', null));
+    if (archives.length) {
+      for (const archive of archives) {
+        cloneRows.push(
+          cloneRow(
+            `Download ${archive.format || 'archive'}`,
+            archive.url || '',
+          ),
+        );
+      }
+    } else {
+      cloneRows.push(cloneRow('Download ZIP', null));
+    }
+    const counts = repoInfo
+      ? `<a href="/q/project:${escapeHtml(subject)}">${repoInfo.branches} ` +
+        `${repoInfo.branches === 1 ? 'branch' : 'branches'}</a>` +
+        `<a href="/q/project:${escapeHtml(subject)}">${repoInfo.tags} ` +
+        `${repoInfo.tags === 1 ? 'tag' : 'tags'}</a>`
+      : '';
+
     box.innerHTML =
       `<div class="gs-repo-head"><div class="gs-repo-title">` +
       `<a href="${escapeHtml(home)}" target="_blank" rel="noopener">${escapeHtml(
@@ -1281,10 +1394,24 @@
       `<nav class="gs-repo-tabs">${tabs}</nav>` +
       `<div class="gs-repo-bar"><span class="gs-repo-branch">${escapeHtml(
         branch,
-      )}</span><span>${changes.length} open ${
+      )}</span>` +
+      counts +
+      `<span>${changes.length} open ${
         changes.length === 1 ? 'change' : 'changes'
-      }</span></div>` +
+      }</span>` +
+      `<button type="button" class="gs-repo-code" aria-expanded="false">Code` +
+      `<span class="caret">\u25be</span></button></div>` +
+      `<div class="gs-repo-clone" hidden>${cloneRows.join('')}</div>` +
       files;
+
+    const codeButton = box.querySelector('.gs-repo-code');
+    const clone = box.querySelector('.gs-repo-clone');
+    if (codeButton && clone) {
+      codeButton.addEventListener('click', () => {
+        clone.hidden = !clone.hidden;
+        codeButton.setAttribute('aria-expanded', String(!clone.hidden));
+      });
+    }
 
     if (wrapper) wrapper.setAttribute('data-gs-gerrit-hidden', '');
     viewRoot.appendChild(box);
@@ -1307,7 +1434,12 @@
     const data = query
       ? gerritData(query, kind === 'project' ? subject : null)
       : null;
-    const signature = `${t}:${kind}:${subject}:${data ? 'data' : 'base'}`;
+    // A project query also needs the repo's branch/tag counts and clone schemes;
+    // they arrive asynchronously, so they are part of the signature too.
+    const repoInfo = kind === 'project' ? gerritRepoData(subject) : null;
+    const signature =
+      `${t}:${kind}:${subject}:${data ? 'data' : 'base'}` +
+      `:${repoInfo ? 'info' : ''}`;
 
     // Re-run when the skin, subject or data changes, or PolyGerrit has replaced
     // the shadow root and dropped what we built with it.
@@ -1359,7 +1491,14 @@
     // A project query is a repository, so it wears the product's repo page; only
     // an account query wears the profile.
     if (kind === 'project') {
-      paintGerritRepoPage(t, { root, viewRoot, wrapper, subject, data });
+      paintGerritRepoPage(t, {
+        root,
+        viewRoot,
+        wrapper,
+        subject,
+        data,
+        repoInfo,
+      });
       return;
     }
 
