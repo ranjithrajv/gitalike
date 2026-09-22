@@ -37,7 +37,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   real branch and tag counts (`/projects/<p>/branches`, `/tags`) and a Code
   button whose panel lists the clone schemes the server advertises
   (`/config/server/info` → `download.schemes`), marking SSH / Gerrit CLI /
-  Download ZIP with `≠` where Gerrit has no equivalent. `paintGerritProfile` in
+  Download ZIP with `≠` where Gerrit has no equivalent. Its right-hand About
+  sidebar shows the real description, parent project, state and browse link, the
+  real contributors, and `≠` on Readme/License/Stars/Watchers/Forks, Releases,
+  Packages and Languages. `paintGerritProfile` in
   `src/content/ux-project.js`; the change list stays Gerrit's, and its profile
   score rises to 2.6–4.1 (from 2.1–3.1).
 - A **skin and source contract** (`tests/contracts.test.mjs`) that derives the
