@@ -995,6 +995,13 @@
       '.gs-gerrit-graph{display:grid !important;grid-auto-flow:column !important;' +
       'grid-template-rows:repeat(7,11px) !important;gap:3px !important;margin:0 0 32px !important;}' +
       '.gs-gerrit-graph span{width:11px !important;height:11px !important;border-radius:2px !important;}' +
+      '.gs-gerrit-changes{display:flex !important;flex-direction:column !important;}' +
+      '.gs-gerrit-change{display:flex !important;justify-content:space-between !important;' +
+      'gap:16px !important;padding:8px 0 !important;' +
+      'border-bottom:1px solid var(--gs-border) !important;font-size:14px !important;}' +
+      '.gs-gerrit-change a{color:var(--gs-link) !important;text-decoration:none !important;' +
+      'overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;}' +
+      '.gs-gerrit-change span{color:var(--gs-fg-muted) !important;flex:none !important;}' +
       '.gs-gerrit-missbox{border:1px dashed var(--gs-attention) !important;' +
       'background:var(--gs-attention-subtle) !important;color:var(--gs-attention) !important;' +
       'border-radius:6px !important;padding:10px 12px !important;font-size:13px !important;' +
@@ -1217,29 +1224,30 @@
         content.appendChild(heading);
 
         if (section.source === 'cards') {
+          // Pinned holds repositories, so the card is the project itself — its
+          // name is the repo, not a change subject.
           const cards = document.createElement('div');
           cards.className = 'gs-gerrit-cards';
-          for (const change of changes
-            .slice()
-            .sort((a, b) => String(b.updated).localeCompare(String(a.updated)))
-            .slice(0, 4)) {
-            const status =
-              change.status === 'NEW'
-                ? 'Open'
-                : change.status === 'MERGED'
-                  ? 'Merged'
-                  : change.status === 'ABANDONED'
-                    ? 'Abandoned'
-                    : change.status;
+          const repos = [
+            ...new Set(changes.map((c) => c.project).filter(Boolean)),
+          ];
+          for (const repo of repos) {
+            const forRepo = changes.filter((c) => c.project === repo);
+            const branch = (forRepo.find((c) => c.branch) || {}).branch;
+            const count = forRepo.length;
+            const description =
+              repo === subject && data && data.description
+                ? data.description
+                : `${count} open ${count === 1 ? 'change' : 'changes'}`;
             const card = document.createElement('div');
             card.className = 'gs-gerrit-card';
             card.innerHTML =
-              `<div class="name"><a href="/c/${escapeHtml(change.project)}/+/${change._number}">` +
-              `${escapeHtml(change.subject)}</a>` +
-              `<span class="gs-gerrit-pill">${escapeHtml(status)}</span></div>` +
-              `<div class="desc">${escapeHtml(change.project)} · ${escapeHtml(change.branch || '')}</div>` +
-              `<div class="foot"><span>${escapeHtml(change.owner && change.owner.name)}</span>` +
-              `<span>+${change.insertions || 0} \u2212${change.deletions || 0}</span></div>`;
+              `<div class="name"><a href="/q/project:${escapeHtml(repo)}">` +
+              `${escapeHtml(repo)}</a>` +
+              `<span class="gs-gerrit-pill">Public</span></div>` +
+              `<div class="desc">${escapeHtml(description)}</div>` +
+              `<div class="foot"><span>${escapeHtml(branch || '')}</span>` +
+              `<span>${count} open ${count === 1 ? 'change' : 'changes'}</span></div>`;
             cards.appendChild(card);
           }
           content.appendChild(cards);
@@ -1280,6 +1288,23 @@
             }
           }
           content.appendChild(graph);
+
+          // The changes themselves, as the profile's activity rows.
+          const list = document.createElement('div');
+          list.className = 'gs-gerrit-changes';
+          for (const change of changes
+            .slice()
+            .sort((a, b) => String(b.updated).localeCompare(String(a.updated)))
+            .slice(0, 8)) {
+            const row = document.createElement('div');
+            row.className = 'gs-gerrit-change';
+            row.innerHTML =
+              `<a href="/c/${escapeHtml(change.project)}/+/${change._number}">` +
+              `${escapeHtml(change.subject)}</a>` +
+              `<span>${escapeHtml(change.owner && change.owner.name)}</span>`;
+            list.appendChild(row);
+          }
+          content.appendChild(list);
         }
       }
 
