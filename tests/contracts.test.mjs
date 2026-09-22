@@ -88,8 +88,8 @@ describe('skin contract', () => {
         missing.push(`${css} must scope its rules to html.gs-theme-${skin}`);
       }
       const cssPath = `plugins/skins/${skin}/as-${skin}.css`;
-      if (!file('src/background.js').includes(cssPath)) {
-        missing.push(`src/background.js CONTENT_CSS must register ${cssPath}`);
+      if (!file('src/plugins/list.js').includes(cssPath)) {
+        missing.push(`src/plugins/list.js must register ${cssPath}`);
       }
 
       assert.deepEqual(
@@ -267,9 +267,10 @@ describe('the plugins folder', () => {
   });
 
   test('every plugin entry is wired into every load list', () => {
-    // Each runtime context loads classic scripts by an explicit list; a folder
-    // that is present but missing from one list silently does nothing there. The
-    // lists are checked together so the fix is one edit each.
+    // The load lists are derived now: Node tools read the folder, and the
+    // browser contexts read the generated `plugins/list.js` (background) or its
+    // generated popup block. `registryProblems` pins both generated files to the
+    // registry, so this only checks the entries are actually present.
     const paths = [
       'plugins/core.js',
       ...pluginNames('skins').map((name) => `plugins/skins/${name}/index.js`),
@@ -277,18 +278,19 @@ describe('the plugins folder', () => {
         (name) => `plugins/sources/${name}/index.js`,
       ),
     ];
-    const lists = {
-      'src/background.js': file('src/background.js'),
-      'src/popup/popup.html': file('src/popup/popup.html'),
-      'tools/plugins.mjs': file('tools/plugins.mjs'),
-    };
+    const list = file('src/plugins/list.js');
+    const popup = file('src/popup/popup.html');
     const missing = [];
     for (const path of paths) {
-      for (const [where, text] of Object.entries(lists)) {
-        if (!text.includes(path)) missing.push(`${path} in ${where}`);
+      if (!list.includes(path)) missing.push(`${path} in src/plugins/list.js`);
+      if (!popup.includes(path)) {
+        missing.push(`${path} in src/popup/popup.html`);
       }
     }
     assert.deepEqual(missing, [], `not wired: ${missing.join(', ')}`);
+    // background.js reads the generated list; the Node loader reads the folder.
+    assert.match(file('src/background.js'), /plugins\/list\.js/);
+    assert.match(file('tools/plugins.mjs'), /readdirSync/);
   });
 
   test('the Firefox manifest list is derived from the folder', () => {
@@ -302,11 +304,13 @@ describe('the published registry', () => {
   test('plugins.json, PLUGINS.md and docs/index.html match the registry', () => {
     // One gate for every public face: a new plugin that is not relisted, or a
     // hand-edit to a generated block, fails here with the fix named.
-    const problems = registryProblems(
-      file('docs/index.html'),
-      file('plugins.json'),
-      file('PLUGINS.md'),
-    );
+    const problems = registryProblems({
+      docs: file('docs/index.html'),
+      json: file('plugins.json'),
+      catalog: file('PLUGINS.md'),
+      list: file('src/plugins/list.js'),
+      popup: file('src/popup/popup.html'),
+    });
     assert.deepEqual(problems, [], problems.join('; '));
   });
 

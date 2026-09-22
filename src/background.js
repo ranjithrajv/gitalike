@@ -8,32 +8,33 @@
  */
 'use strict';
 
-// The plugin files and the libraries that derive from them, in load order. The
-// plugins register themselves with `defineSkin`/`defineSource`; `lib/skins.js`
-// and `lib/sources.js` compose those registrations into the tables the rest of
-// the code reads, `lib/sites.js` derives the host/skin map, and `lib/ux.js`
-// composes the UX tables. Every plugin file lives under `src/plugins/` and
-// `tools/new-plugin.mjs` inserts at the anchor below (the contract test checks
-// this list against the folder).
-const PLUGIN_JS = [
-  'plugins/core.js',
-  'plugins/skins/bitbucket/index.js',
-  'plugins/skins/github/index.js',
-  'plugins/skins/gitlab/index.js',
-  'plugins/sources/bitbucket/index.js',
-  'plugins/sources/gerrit/index.js',
-  'plugins/sources/gitea/index.js',
-  'plugins/sources/github/index.js',
-  'plugins/sources/gitlab/index.js',
-  // plugins:js-anchor — `node tools/new-plugin.mjs` inserts above.
-];
+// The libraries that derive from the plugins, in load order. The plugins
+// themselves register with `defineSkin`/`defineSource`; `lib/skins.js` and
+// `lib/sources.js` compose those registrations into the tables the rest of the
+// code reads, `lib/sites.js` derives the host/skin map, and `lib/ux.js` composes
+// the UX tables.
+//
+// A browser context cannot read `src/plugins/`, so the plugin file list is
+// generated into `plugins/list.js` by `npm run registry`. Chromium's service
+// worker pulls it in first; Firefox has it in the manifest scripts (see
+// build.mjs). Node tools read the folder directly.
 const LIB_JS = ['lib/skins.js', 'lib/sites.js', 'lib/sources.js', 'lib/ux.js'];
 
 // Chromium runs this as a classic service worker, where importScripts() is how
-// you pull in a sibling file. Firefox runs both scripts listed in the manifest
-// in one shared scope, so there it is already defined and importScripts does
-// not exist.
-if (typeof importScripts === 'function') importScripts(...PLUGIN_JS, ...LIB_JS);
+// you pull in a sibling file. Firefox runs every script listed in the manifest
+// in one shared scope, so there `plugins/list.js` is already loaded and
+// importScripts does not exist.
+if (typeof importScripts === 'function') {
+  importScripts('plugins/list.js');
+  importScripts(...globalThis.GITALIKE_PLUGIN_FILES.js, ...LIB_JS);
+}
+
+const PLUGIN_FILES = globalThis.GITALIKE_PLUGIN_FILES;
+if (!PLUGIN_FILES) {
+  throw new Error(
+    'GitAlike: plugins/list.js must be loaded before background.js',
+  );
+}
 
 const api = globalThis.browser ?? globalThis.chrome;
 const SITES = globalThis.GITALIKE;
@@ -100,7 +101,7 @@ async function refreshAllBadges() {
 const SCRIPT_ID = 'gitalike-ux';
 const CSS_ID = 'gitalike-theme';
 const CONTENT_JS = [
-  ...PLUGIN_JS,
+  ...PLUGIN_FILES.js,
   ...LIB_JS,
   'content/theme.js',
   // The UX scripts load in this order: the core builds the runtime, each pass
@@ -114,17 +115,9 @@ const CONTENT_JS = [
   'content/ux-profile.js',
   'content/ux.js',
 ];
-const CONTENT_CSS = [
-  // The token mappings shared by more than one skin, first so a skin's own
-  // rule of equal specificity still wins where it deliberately diverges.
-  'themes/gs-tokens.css',
-  'plugins/skins/gitlab/as-gitlab.css',
-  'plugins/skins/github/as-github.css',
-  'plugins/skins/bitbucket/as-bitbucket.css',
-  // plugins:css-anchor — `node tools/new-plugin.mjs skin <name>` inserts above.
-  'themes/ux-markers.css',
-  'themes/ux-nav.css',
-];
+// The shared token mappings, each skin's own stylesheet, then the shared
+// nav/marker sheets — the order generated into `plugins/list.js`.
+const CONTENT_CSS = PLUGIN_FILES.css;
 
 const hostPattern = (host) => `*://${host}/*`;
 const patternHost = (pattern) =>

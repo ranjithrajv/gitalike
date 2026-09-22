@@ -64,6 +64,8 @@ const TARGETS = {
     // importScripts() (see background.js).
     background: {
       scripts: [
+        // The generated plugin list, first, so background.js can read it.
+        'plugins/list.js',
         ...PLUGIN_JS,
         'lib/skins.js',
         'lib/sites.js',

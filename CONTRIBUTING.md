@@ -387,14 +387,15 @@ no host was classified as it, so it could be worn by any source — and is now a
 source in its own right as well. Adding a target means:
 
 A skin is a self-contained folder. `node tools/new-plugin.mjs skin <name>` writes
-steps 1–4 for you; the rest is the part that needs judgement.
+the folder (steps 1–3) and the parity stubs for you; the rest is the part that
+needs judgement.
 
 | # | File | What goes there |
 | - | ---- | --------------- |
 | 1 | `src/plugins/skins/<name>/index.js` | one `defineSkin('<name>', { … })` call: `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab'), every required table (`phrases`, `nav`, `labels`, `chrome`, `unmapped`, `navRules`, `profileMenu`), and whichever optional capabilities (`repoOrder`, `shortcuts`, `topbarHide`, `groups`, `keep`/`hide`, `projectTabs`) it needs. The name is the key, so it joins `THEMES`, the popup and the badge with no other edit |
 | 2 | `src/plugins/skins/<name>/as-<name>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
 | 3 | `src/plugins/skins/<name>/<name>.test.mjs` | the skin's own tests, beside it. `npm test` discovers them; the cross-skin invariants stay in `tests/ux.test.mjs` |
-| 4 | load lists | the entry is added to `PLUGIN_JS` and `CONTENT_CSS` in `src/background.js`, `src/popup/popup.html` and `tools/plugins.mjs`; the Firefox manifest derives its list from the folder. `tools/new-plugin.mjs` does this for you |
+| 4 | load lists | nothing to edit — they are derived from the folder. `npm run registry` regenerates the browser list (`src/plugins/list.js`), the popup's script block and the published registry; the Firefox manifest and the Node tools read the folder directly. `tools/new-plugin.mjs` runs it for you |
 | 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the target vocabulary in `tools/compare/style-recipes.mjs` (scaffolded as a `TODO`), and a capture variant on every source in `tools/compare/captures.mjs` plus `npm run screenshots`; `npm run registry` relists it in the site, `plugins.json` and `PLUGINS.md`. `tests/compare/recipes.test.mjs` names anything missing |
 
 The completeness gate is **`tests/contracts.test.mjs`**: it derives the skin and

@@ -20,7 +20,10 @@ plugin in isolation and reports all the incomplete ones at once.
 
 Plugins are **bundled, in-tree modules** loaded as classic scripts, in this
 order, by every runtime context (the Chromium service worker's `importScripts`,
-the Firefox `background.scripts`, the content scripts, the popup):
+the Firefox `background.scripts`, the content scripts, the popup). A browser
+cannot read the folder, so `npm run registry` generates the order into
+`src/plugins/list.js`; Node tools (the tests, `build.mjs`, the compare tools)
+read `src/plugins/` directly.
 
 ```
 plugins/core.js            the API (this contract), loaded first

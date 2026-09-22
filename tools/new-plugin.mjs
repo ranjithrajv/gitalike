@@ -4,10 +4,11 @@
  *
  * A plugin is a self-contained folder under `src/plugins/`: its `index.js`, its
  * own test beside it, and — for a skin — its stylesheet. This tool writes all of
- * that and wires the entry into every load list (the background, the popup and
- * the Node loader); the Firefox manifest is generated from the folder, so it
- * needs no edit. What is left is the judgement — the palette and the vocabulary —
- * and `npm test` names that, because the contract test is the checklist.
+ * that; every load list is derived from the folder, so there is nothing to wire
+ * — `npm run registry` regenerates the browser list (`plugins/list.js`), the
+ * popup's script block and the published registry. What is left is the
+ * judgement — the palette and the vocabulary — and `npm test` names that,
+ * because the contract test is the checklist.
  *
  *   node tools/new-plugin.mjs skin sourcehut [--product Sourcehut] [--badge SH]
  *   node tools/new-plugin.mjs source forgejo [--label Forgejo]
@@ -28,9 +29,6 @@ import './plugins.mjs';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SKINS_DIR = join(root, 'src/plugins/skins');
 const SOURCES_DIR = join(root, 'src/plugins/sources');
-const BACKGROUND_FILE = join(root, 'src/background.js');
-const POPUP_FILE = join(root, 'src/popup/popup.html');
-const LOADER_FILE = join(root, 'tools/plugins.mjs');
 const CAPTURES_FILE = join(root, 'tools/compare/captures.mjs');
 const RECIPES_FILE = join(root, 'tools/compare/style-recipes.mjs');
 
@@ -41,12 +39,9 @@ const SITES = globalThis.GITALIKE;
 const skinsFor = (name) =>
   Object.keys(PLUGINS.skins).filter((skin) => skin !== name);
 
-// Distinct markers, because `background.js` has two lists to insert into.
+// The markers the scaffolder inserts into the hand-authored comparison recipes
+// (tools/compare/). The load lists are generated, so they need no marker.
 const ANCHORS = {
-  js: '// plugins:js-anchor',
-  css: '// plugins:css-anchor',
-  html: '<!-- plugins:anchor',
-  loader: '// plugins:anchor',
   capture: '// plugins:capture-anchor',
   project: '// plugins:project-anchor',
   profile: '// plugins:profile-anchor',
@@ -330,18 +325,6 @@ test('${name} registers a complete source', () => {
 `;
 }
 
-// Add the entry to the two background lists, the popup and the Node loader, so a
-// new folder needs no hand edit there.
-async function wire(pluginPath, loaderImport) {
-  await insertBeforeAnchor(BACKGROUND_FILE, ANCHORS.js, `  '${pluginPath}',`);
-  await insertBeforeAnchor(
-    POPUP_FILE,
-    ANCHORS.html,
-    `    <script src="../${pluginPath}"></script>`,
-  );
-  await insertBeforeAnchor(LOADER_FILE, ANCHORS.loader, loaderImport);
-}
-
 async function scaffoldSkin(name, flags) {
   const product = flags.product ?? titleCase(name);
   const badge = (
@@ -358,16 +341,6 @@ async function scaffoldSkin(name, flags) {
   await write(
     join(root, dir, `${name}.test.mjs`),
     skinTest(name, product, badge),
-  );
-
-  await insertBeforeAnchor(
-    BACKGROUND_FILE,
-    ANCHORS.css,
-    `  'plugins/skins/${name}/as-${name}.css',`,
-  );
-  await wire(
-    `plugins/skins/${name}/index.js`,
-    `import '../src/plugins/skins/${name}/index.js';`,
   );
 
   // The target vocabulary style-parity scores against, one per page type.
@@ -393,11 +366,6 @@ async function scaffoldSource(name, flags) {
   const dir = `src/plugins/sources/${name}`;
   await write(join(root, dir, 'index.js'), sourceContent(name, label));
   await write(join(root, dir, `${name}.test.mjs`), sourceTest(name, label));
-
-  await wire(
-    `plugins/sources/${name}/index.js`,
-    `import '../src/plugins/sources/${name}/index.js';`,
-  );
 
   // The comparison recipes: a capture to screenshot and style-parity selectors.
   await insertBeforeAnchor(

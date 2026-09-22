@@ -1,24 +1,33 @@
 /**
  * Loads the whole plugin registry for Node consumers — the tests and
  * `tools/registry.mjs` — in the same order every runtime context uses: the API,
- * every plugin file, then the libraries that derive from them. Importing this
+ * every plugin folder, then the libraries that derive from them. Importing this
  * for its side effects is all a caller needs; the globals are then exactly what
  * a content script sees.
  *
- * Update it when a plugin file is added; `tests/contracts.test.mjs` checks its
- * imports, and the other load lists, against `src/plugins/`.
+ * The folders are read here, not a hand-kept list, so adding a plugin is adding
+ * a folder. (A browser context cannot read a directory, so *it* loads the
+ * generated `src/plugins/list.js` instead; `npm run registry` keeps that in
+ * step with these folders.)
  */
-import '../src/plugins/core.js';
-import '../src/plugins/skins/bitbucket/index.js';
-import '../src/plugins/skins/github/index.js';
-import '../src/plugins/skins/gitlab/index.js';
-import '../src/plugins/sources/bitbucket/index.js';
-import '../src/plugins/sources/gerrit/index.js';
-import '../src/plugins/sources/gitea/index.js';
-import '../src/plugins/sources/github/index.js';
-import '../src/plugins/sources/gitlab/index.js';
-// plugins:anchor — `node tools/new-plugin.mjs` inserts above.
-import '../src/lib/skins.js';
-import '../src/lib/sites.js';
-import '../src/lib/sources.js';
-import '../src/lib/ux.js';
+import { readdirSync } from 'node:fs';
+
+const pluginNames = (group) =>
+  readdirSync(new URL(`../src/plugins/${group}/`, import.meta.url), {
+    withFileTypes: true,
+  })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+
+await import('../src/plugins/core.js');
+for (const name of pluginNames('skins')) {
+  await import(`../src/plugins/skins/${name}/index.js`);
+}
+for (const name of pluginNames('sources')) {
+  await import(`../src/plugins/sources/${name}/index.js`);
+}
+await import('../src/lib/skins.js');
+await import('../src/lib/sites.js');
+await import('../src/lib/sources.js');
+await import('../src/lib/ux.js');
