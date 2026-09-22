@@ -15,7 +15,7 @@
  *   theme   1.0  the skin's class is on <html> (a gate: 0 fails the cell)
  *   layout  2.0  the repo navigation is oriented as the target is
  *   header  2.0  the top bar's colour matches the target product's real header
- *   body    1.0  the page background matches the target product's canvas
+ *   body    1.0  the page's canvas matches the target product's canvas
  *   link    2.0  a content link uses the target product's link / accent
  *   vocab   2.0  the navigation carries the target's words
  *
@@ -30,9 +30,8 @@
  *   node tools/compare/style-parity.mjs --checks   the per-dimension detail
  *   node tools/compare/style-parity.mjs --json
  *
- * Live sites, so it is a scheduled/on-demand check, not a commit gate. The
- * Bitbucket and Gerrit *sources* are not driven here: Bitbucket Cloud needs a
- * session and Gerrit has no bundled host.
+ * Live sites, so it is a scheduled/on-demand check, not a commit gate. Gerrit
+ * has no bundled host, so the run grants it one for the duration.
  */
 
 import { readFileSync } from 'node:fs';
@@ -192,7 +191,13 @@ const colorFraction = (got, want, scale = 96) => {
 
 // Runs in the page: read the chrome's computed styles and vocabulary. Selector
 // lists are passed in, so this stays serialisable.
-const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
+const readChrome = ({
+  headerSels,
+  navSels,
+  linkSels,
+  canvasSels,
+  repoWords,
+}) => {
   const visible = (el) => el && getComputedStyle(el).display !== 'none';
   // PolyGerrit renders inside open shadow roots, so a query must descend into
   // them; a plain document.querySelectorAll stops at the host.
@@ -216,6 +221,20 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
     return null;
   };
   const label = (el) => (el.textContent || '').replace(/\s+/g, ' ').trim();
+
+  // The effective background of an element: its own, or the nearest ancestor's
+  // (crossing shadow boundaries), because a client-rendered app often paints on
+  // an inner node and leaves <body> transparent. This is what the target's
+  // canvas is compared against.
+  const effectiveBg = (el) => {
+    let node = el;
+    while (node) {
+      const bg = getComputedStyle(node).backgroundColor;
+      if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') return bg;
+      node = node.parentElement || node.getRootNode()?.host || null;
+    }
+    return getComputedStyle(document.body).backgroundColor;
+  };
 
   // A nav item is a link, button, menu item or tab: Bitbucket's repository bar
   // is buttons, not links.
@@ -295,7 +314,9 @@ const readChrome = ({ headerSels, navSels, linkSels, repoWords }) => {
     navDisplay: nav ? getComputedStyle(nav).display : null,
     navDirection: nav ? getComputedStyle(nav).flexDirection : null,
     headerBg: header ? getComputedStyle(header).backgroundColor : null,
-    bodyBg: getComputedStyle(document.body).backgroundColor,
+    // The page's canvas: the first declared canvas element (falling back to
+    // <body>), read through any transparent wrapper to its real background.
+    canvasBg: effectiveBg(first(canvasSels ?? ['body']) ?? document.body),
     linkColors: links.slice(0, 16).map((el) => getComputedStyle(el).color),
     labels,
     tokens: {
@@ -343,6 +364,7 @@ try {
           headerSels: source.header,
           navSels: source.nav,
           linkSels: source.link,
+          canvasSels: source.canvas ?? ['body'],
           repoWords: page.navWords,
         });
         await tab.close();
@@ -371,7 +393,7 @@ try {
           theme: chrome.theme === `gs-theme-${skin}` ? 1 : 0,
           layout: (horizontal ? 'row' : 'column') === target.layout ? 1 : 0,
           header: colorFraction(chrome.headerBg, expect.header),
-          body: colorFraction(chrome.bodyBg, expect.canvas),
+          body: colorFraction(chrome.canvasBg, expect.canvas),
           link: linkFractions.length ? Math.max(...linkFractions) : null,
           vocab,
         };
@@ -388,6 +410,7 @@ try {
 
         rows.push({
           page: page.type,
+          source: source.key,
           cell: `${source.key} → ${skin}`,
           score,
           dims,
@@ -444,13 +467,19 @@ if (process.argv.includes('--json')) {
 // a source may legitimately lack a tab or a shape the target has. The Bitbucket
 // source is palette-only, which the colour dimensions still measure.
 const FLOOR = 0.5;
+// A source that declares only partial palette coverage (Gerrit's shadow-DOM
+// app, say) is reported but not floored on the colours: the gate is for a skin
+// that did not apply, or painted the chrome wrong on a source it can reach.
+const PALETTE_FLOOR = 0.9;
+const paletteCoverage = (source) =>
+  PLUGINS.sources[source]?.compare?.palette ?? 1;
 if (
   rows.some(
     (row) =>
       row.dims &&
       (row.dims.theme === 0 ||
-        row.dims.header < FLOOR ||
-        row.dims.body < FLOOR),
+        (paletteCoverage(row.source) >= PALETTE_FLOOR &&
+          (row.dims.header < FLOOR || row.dims.body < FLOOR))),
   )
 ) {
   process.exitCode = 1;

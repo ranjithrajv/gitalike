@@ -67,6 +67,9 @@ export const PROJECT_SELECTORS = {
     header: ['gr-main-header'],
     nav: ['gr-main-header nav', 'nav'],
     link: ['main a[href]', 'a[href]'],
+    // PolyGerrit paints inside its app; <body> stays transparent, so the canvas
+    // is read from the app element (through any transparent wrapper).
+    canvas: ['gr-app#pg-app', 'body'],
   },
   // plugins:project-anchor — tools/new-plugin.mjs inserts above.
 };
@@ -132,6 +135,7 @@ export const PROFILE_SELECTORS = {
     header: ['gr-main-header'],
     nav: ['gr-main-header nav', 'nav'],
     link: ['main a[href]', 'a[href]'],
+    canvas: ['gr-app#pg-app', 'body'],
   },
   // plugins:profile-anchor — tools/new-plugin.mjs inserts above.
 };

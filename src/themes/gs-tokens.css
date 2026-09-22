@@ -254,6 +254,8 @@ html[data-theme]:is(
    applied product rather than Gerrit's own. */
 
 html[data-gs-source="gerrit"][class*="gs-theme-"] {
+  --view-background: var(--gs-canvas) !important;
+  --primary-background-color: var(--gs-canvas) !important;
   --primary-text-color: var(--gs-fg) !important;
   --link-color: var(--gs-link) !important;
   --border-color: var(--gs-border) !important;
@@ -265,4 +267,12 @@ html[data-gs-source="gerrit"][class*="gs-theme-"] {
   --success-background: var(--gs-success-subtle) !important;
   --warning-background: var(--gs-attention-subtle) !important;
   --error-background: var(--gs-danger-subtle) !important;
+}
+
+/* PolyGerrit leaves <body> transparent and paints inside `gr-app`, so give the
+   page the applied skin's canvas directly — the surface the target product
+   would have. The tokens above cover the app's own reads; this covers the page. */
+html[data-gs-source="gerrit"][class*="gs-theme-"] body,
+html[data-gs-source="gerrit"][class*="gs-theme-"] gr-app#pg-app {
+  background-color: var(--gs-canvas) !important;
 }

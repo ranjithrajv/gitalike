@@ -97,6 +97,7 @@ function selectorStub(name, host) {
     header: [],
     nav: [],
     link: ['a[href]'],
+    canvas: ['body'],
   },`;
 }
 
