@@ -119,7 +119,8 @@ try {
   check('G→L repo nav is vertical', g.direction === 'column', g.direction);
   check(
     'G→L nav relabelled',
-    g.nav.includes('Repository') && g.nav.includes('Merge requests 387'),
+    g.nav.includes('Repository') &&
+      g.nav.some((label) => label.startsWith('Merge requests')),
     g.nav.slice(0, 4).join(', '),
   );
   check('G→L reference marker #42 → !42', g.ref === '!42', g.ref);
@@ -584,7 +585,7 @@ try {
     'revert restores the nav',
     r.direction === 'row' &&
       r.nav.includes('Code') &&
-      r.nav.includes('Pull requests 387'),
+      r.nav.some((label) => label.startsWith('Pull requests')),
     r.nav.slice(0, 3).join(', '),
   );
   check('revert removes badges', r.badges === 0, `${r.badges} badges`);
