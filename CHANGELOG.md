@@ -126,6 +126,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Gerrit's header navigation stays reoriented wherever PolyGerrit renders it —
+  the rule was scoped to `gr-main-header`, which the nav is not always inside,
+  so it fell back to a row under the sidebar skins (`paintGerritNav` now marks
+  the nav and targets the marker). The rules injected into Gerrit's shadow roots
+  are also constructed stylesheets (`adoptedStyleSheets`) rather than `<style>`
+  nodes, so one appended into the wrong root can no longer render its CSS as
+  visible text on the page (`src/content/ux-project.js`).
 - The `≠` no-counterpart marker is styled under every skin, not only GitLab and
   GitHub — Bitbucket's badge had been left unstyled. It now targets any active
   `gs-theme-*` class, so a new skin inherits it (`src/themes/ux-markers.css`).

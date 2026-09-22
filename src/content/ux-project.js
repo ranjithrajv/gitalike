@@ -490,10 +490,29 @@
     }
   }
 
-  // The styles `paintGerritNav` injects into Gerrit's shadow roots, so a theme
-  // change or revert can remove them (`document.querySelectorAll` cannot reach
-  // inside a shadow root).
-  const gerritShellStyles = new Set();
+  // The styles `paintGerritNav` injects into Gerrit's shadow roots. A `<style>`
+  // node appended into the wrong root can render as visible text, so the rules
+  // are adopted *constructed* stylesheets (not DOM nodes); they are tracked so a
+  // theme change or revert removes them (a document query cannot reach a shadow
+  // root).
+  const gerritSheets = []; // { root, sheet }
+  function clearGerritSheets() {
+    for (const { root, sheet } of gerritSheets) {
+      if (root.adoptedStyleSheets) {
+        root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
+          (existing) => existing !== sheet,
+        );
+      }
+    }
+    gerritSheets.length = 0;
+  }
+  function adoptGerritSheet(root, css) {
+    if (!root.adoptedStyleSheets || typeof CSSStyleSheet !== 'function') return;
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(css);
+    root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+    gerritSheets.push({ root, sheet });
+  }
 
   // PolyGerrit renders its chrome inside *open* shadow roots, so a content
   // script can reach them, but a document stylesheet cannot: the injected CSS
@@ -525,26 +544,24 @@
     const direction = t === 'github' ? 'row' : 'column';
     ledger(nav, 'gerrit-nav', () => ({
       restore: () => {
-        root.querySelector('style[data-gs-gerrit-nav]')?.remove();
-        for (const style of gerritShellStyles) style.remove();
-        gerritShellStyles.clear();
+        nav.removeAttribute('data-gs-gerrit-nav');
+        clearGerritSheets();
       },
     }));
-    let style = root.querySelector('style[data-gs-gerrit-nav]');
-    if (!style) {
-      style = document.createElement('style');
-      style.setAttribute('data-gs-gerrit-nav', '');
-      root.append(style);
-    }
-    // Scope to the header's own nav, not every `nav` in the root.
-    style.textContent = `gr-main-header nav{display:flex !important;flex-direction:${direction} !important;}`;
+    clearGerritSheets();
+
+    // Mark the nav and target the marker: PolyGerrit does not always render the
+    // nav inside `gr-main-header`, and a bare `nav` would hit its other navs.
+    nav.setAttribute('data-gs-gerrit-nav', '');
+    adoptGerritSheet(
+      root,
+      `[data-gs-gerrit-nav]{display:flex !important;flex-direction:${direction} !important;}`,
+    );
 
     // A sidebar layout turns the header into a fixed left column with the main
     // content beside it — PolyGerrit's own shell is a full-width top bar, so the
     // sidebar is built from the same nodes. Only two roots need the rule: the
     // one holding `gr-main-header` and the one holding `main` (they can differ).
-    for (const style of gerritShellStyles) style.remove();
-    gerritShellStyles.clear();
     if (direction === 'column') {
       const header = deepFirst('gr-main-header');
       const mainEl = deepFirst('main');
@@ -557,12 +574,7 @@
         'width:260px !important;height:100vh !important;overflow:auto !important;}' +
         'main{margin-left:260px !important;}';
       for (const scope of scopes) {
-        if (!(scope instanceof ShadowRoot)) continue;
-        const shell = document.createElement('style');
-        shell.setAttribute('data-gs-gerrit-shell', '');
-        shell.textContent = shellCss;
-        scope.append(shell);
-        gerritShellStyles.add(shell);
+        if (scope instanceof ShadowRoot) adoptGerritSheet(scope, shellCss);
       }
     }
   }
