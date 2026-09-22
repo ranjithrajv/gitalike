@@ -490,29 +490,56 @@
     }
   }
 
-  // The styles `paintGerritNav` injects into Gerrit's shadow roots. A `<style>`
-  // node appended into the wrong root can render as visible text, so the rules
-  // are adopted *constructed* stylesheets (not DOM nodes); they are tracked so a
-  // theme change or revert removes them (a document query cannot reach a shadow
-  // root).
-  const gerritSheets = []; // { root, sheet }
-  function clearGerritSheets() {
-    for (const { root, sheet } of gerritSheets) {
-      if (root.adoptedStyleSheets) {
-        root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
-          (existing) => existing !== sheet,
-        );
+  // PolyGerrit renders its chrome inside *open* shadow roots, so a content
+  // script can reach it, but a document query cannot: `querySelector` stops at
+  // the host element. This descends through the open roots to find one.
+  function deepFirst(selector) {
+    const walk = (scope) => {
+      const hit = scope.querySelector(selector);
+      if (hit) return hit;
+      for (const el of scope.querySelectorAll('*')) {
+        if (el.shadowRoot) {
+          const found = walk(el.shadowRoot);
+          if (found) return found;
+        }
       }
-    }
-    gerritSheets.length = 0;
+      return null;
+    };
+    return walk(document);
   }
-  function adoptGerritSheet(root, css) {
-    if (!root.adoptedStyleSheets || typeof CSSStyleSheet !== 'function') return;
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(css);
-    root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
-    gerritSheets.push({ root, sheet });
+
+  // The styles the Gerrit passes inject into shadow roots. A `<style>` node
+  // appended into the wrong root can render as visible text, so the rules are
+  // adopted *constructed* stylesheets (not DOM nodes); they are tracked so a
+  // theme change or revert removes them (a document query cannot reach a shadow
+  // root). Each pass owns a ledger, so one pass re-running never clears the
+  // other's sheets.
+  function sheetLedger() {
+    const sheets = []; // { root, sheet }
+    return {
+      clear() {
+        for (const { root, sheet } of sheets) {
+          if (root.adoptedStyleSheets) {
+            root.adoptedStyleSheets = root.adoptedStyleSheets.filter(
+              (existing) => existing !== sheet,
+            );
+          }
+        }
+        sheets.length = 0;
+      },
+      adopt(root, css) {
+        if (!root.adoptedStyleSheets || typeof CSSStyleSheet !== 'function') {
+          return;
+        }
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(css);
+        root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+        sheets.push({ root, sheet });
+      },
+    };
   }
+  const gerritNavSheets = sheetLedger();
+  const gerritProfileSheets = sheetLedger();
 
   // Gerrit's own navigation words are not the applied product's. Its "Changes"
   // list is the review queue the target calls Pull/Merge requests, and "Browse"
@@ -542,20 +569,6 @@
   // sidebar, so they need neither.
   function paintGerritNav(t) {
     if (document.documentElement.dataset.gsSource !== 'gerrit') return;
-    const deepFirst = (selector) => {
-      const walk = (scope) => {
-        const hit = scope.querySelector(selector);
-        if (hit) return hit;
-        for (const el of scope.querySelectorAll('*')) {
-          if (el.shadowRoot) {
-            const found = walk(el.shadowRoot);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-      return walk(document);
-    };
     const nav = deepFirst('gr-main-header nav') || deepFirst('nav');
     if (!nav) return;
     const root = nav.getRootNode();
@@ -567,15 +580,15 @@
       restore: () => {
         for (const [el, text] of relabelled) el.textContent = text;
         nav.removeAttribute('data-gs-gerrit-nav');
-        clearGerritSheets();
+        gerritNavSheets.clear();
       },
     }));
-    clearGerritSheets();
+    gerritNavSheets.clear();
 
     // Mark the nav and target the marker: PolyGerrit does not always render the
     // nav inside `gr-main-header`, and a bare `nav` would hit its other navs.
     nav.setAttribute('data-gs-gerrit-nav', '');
-    adoptGerritSheet(
+    gerritNavSheets.adopt(
       root,
       `[data-gs-gerrit-nav]{display:flex !important;flex-direction:${direction} !important;}`,
     );
@@ -592,7 +605,7 @@
     }
 
     if (t === 'github') {
-      adoptGerritSheet(
+      gerritNavSheets.adopt(
         root,
         '[data-gs-gerrit-nav]{min-height:64px !important;align-items:center !important;' +
           'padding:0 16px !important;font-family:var(--gs-font) !important;' +
@@ -623,7 +636,7 @@
       const input = walkInput(root, 0);
       const inputRoot = input && input.getRootNode();
       if (inputRoot instanceof ShadowRoot) {
-        adoptGerritSheet(
+        gerritNavSheets.adopt(
           inputRoot,
           'input{background:transparent !important;color:var(--gs-header-fg) !important;' +
             'border:1px solid color-mix(in srgb, var(--gs-header-fg) 35%, transparent) !important;' +
@@ -649,9 +662,153 @@
         'width:260px !important;height:100vh !important;overflow:auto !important;}' +
         'main{margin-left:260px !important;}';
       for (const scope of scopes) {
-        if (scope instanceof ShadowRoot) adoptGerritSheet(scope, shellCss);
+        if (scope instanceof ShadowRoot) gerritNavSheets.adopt(scope, shellCss);
       }
     }
+  }
+
+  // Gerrit has no account profile route of its own. The closest thing it serves
+  // is an owner query (`/q/owner:<account>`), which PolyGerrit heads with
+  // `gr-user-header` — the account's avatar, display name, email and join date.
+  // The skins reshape that header into the applied product's profile identity
+  // block and give it a profile navigation built from Gerrit's own owner views,
+  // so every tab is a real Gerrit query rather than a dead link to a page Gerrit
+  // does not have. The change list below stays Gerrit's change list.
+  // Read the account from the URL using the marker the source declares for its
+  // profile equivalent (`pages.profile.from`), so the route lives in the plugin
+  // rather than here. The account runs until the next query separator.
+  function gerritOwnerId(from) {
+    const where = `${location.pathname}${location.hash}`;
+    const at = where.indexOf(from);
+    if (at === -1) return null;
+    const rest = where.slice(at + from.length);
+    const end = rest.search(/[,+/]/);
+    return end === -1 ? rest : rest.slice(0, end);
+  }
+
+  // A declared route is one shape or a list, and a shape is either a path or
+  // `{ path, namespace }` (a project lives under a user *or* a group). The
+  // profile tabs need the path only.
+  function routePath(route) {
+    const shape = Array.isArray(route) ? route[0] : route;
+    return typeof shape === 'string' ? shape : (shape?.path ?? null);
+  }
+
+  // The profile navigation, built from Gerrit's own owner views on the route the
+  // source declared (`pages.profile.route`), so every tab is a real query rather
+  // than a dead link.
+  const GERRIT_PROFILE_TABS = (route, owner) => [
+    ['All', `${route}${owner}`],
+    ['Open', `${route}${owner}+status:open`],
+    ['Merged', `${route}${owner}+status:merged`],
+    ['Abandoned', `${route}${owner}+status:abandoned`],
+  ];
+
+  // The applied skin's profile shape, adopted into `gr-user-header`'s shadow
+  // root. GitHub's profile is a large round avatar beside the identity, over a
+  // horizontal tab row with an underlined current tab; GitLab's is the same
+  // identity block with a subtle-background current item. The identity rows are
+  // recoloured with the skin's tokens so the card follows the palette.
+  function gerritProfileCss(t) {
+    const base =
+      ':host{display:grid !important;grid-template-columns:96px 1fr !important;' +
+      'grid-template-areas:"avatar info" "nav nav" !important;align-items:center !important;' +
+      'column-gap:16px !important;background:transparent !important;border:0 !important;' +
+      'border-bottom:1px solid var(--gs-border) !important;padding:24px 0 0 !important;' +
+      'font-family:var(--gs-font) !important;color:var(--gs-fg) !important;}' +
+      'gr-avatar{grid-area:avatar !important;width:96px !important;height:96px !important;' +
+      'margin:0 !important;border-radius:50% !important;background-size:cover !important;' +
+      'background-position:center !important;}' +
+      '.info:first-of-type{grid-area:info !important;padding:0 !important;margin:0 !important;}' +
+      '.info:last-of-type{display:none !important;}' +
+      'hr{display:none !important;}' +
+      'h1.heading-1{font-size:24px !important;font-weight:600 !important;' +
+      'line-height:1.25 !important;margin:0 0 4px !important;color:var(--gs-fg) !important;}' +
+      '.info:first-of-type>div{color:var(--gs-fg-muted) !important;font-size:14px !important;' +
+      'line-height:1.5 !important;margin:2px 0 !important;}' +
+      '.info:first-of-type>div>span{color:var(--gs-fg-muted) !important;}' +
+      '.info:first-of-type a{color:var(--gs-link) !important;}' +
+      'nav[data-gs-gerrit-profile-nav]{grid-area:nav !important;display:flex !important;' +
+      'gap:4px !important;margin-top:16px !important;}';
+    const current =
+      t === 'github'
+        ? 'nav[data-gs-gerrit-profile-nav] a{padding:8px 12px !important;' +
+          'font-size:14px !important;font-weight:500 !important;color:var(--gs-fg) !important;' +
+          'text-decoration:none !important;border-bottom:2px solid transparent !important;}' +
+          'nav[data-gs-gerrit-profile-nav] a[aria-current]{font-weight:600 !important;' +
+          'border-bottom-color:var(--gs-accent) !important;}'
+        : 'nav[data-gs-gerrit-profile-nav] a{padding:6px 12px !important;' +
+          'font-size:14px !important;color:var(--gs-fg-muted) !important;' +
+          'text-decoration:none !important;border-radius:var(--gs-radius-md) !important;}' +
+          'nav[data-gs-gerrit-profile-nav] a[aria-current]{' +
+          'background:var(--gs-accent-subtle) !important;color:var(--gs-accent) !important;' +
+          'font-weight:600 !important;}';
+    return base + current;
+  }
+
+  function paintGerritProfile(t) {
+    if (document.documentElement.dataset.gsSource !== 'gerrit') return;
+    // The source declares which page is its profile equivalent and the route
+    // that serves it (`pages.profile`); the DOM hook stays in `selectors`.
+    const page = UX.PAGES?.gerrit?.profile;
+    if (!page || !page.from) return;
+    // The DOM hook travels with the page declaration when the source carries
+    // one, falling back to the source's `selectors` table.
+    const hook = page.selectors?.header || SELECTORS.gerrit?.userHeader;
+    const route = routePath(page.route);
+    if (!hook || !route) return;
+    const header = deepFirst(hook);
+    const root = header && header.shadowRoot;
+    if (!root) return;
+    const owner = gerritOwnerId(page.from);
+    if (!owner) return;
+
+    const signature = `${t}:${owner}`;
+    // Re-run when the applied skin changes, the account changes, or PolyGerrit
+    // has replaced the shadow root and dropped the navigation with it.
+    if (
+      header.getAttribute('data-gs-gerrit-profile') === signature &&
+      root.querySelector('[data-gs-gerrit-profile-nav]')
+    ) {
+      return;
+    }
+
+    ledger(header, 'gerrit-profile', () => ({
+      restore: () => {
+        header.removeAttribute('data-gs-gerrit-profile');
+        const navs = header.shadowRoot
+          ? header.shadowRoot.querySelectorAll('[data-gs-gerrit-profile-nav]')
+          : [];
+        for (const nav of navs) nav.remove();
+        gerritProfileSheets.clear();
+      },
+    }));
+
+    // Drop the previous navigation and sheets before rebuilding; the ledger
+    // entry reads the DOM at revert time, so it stays exact either way.
+    gerritProfileSheets.clear();
+    for (const nav of root.querySelectorAll('[data-gs-gerrit-profile-nav]')) {
+      nav.remove();
+    }
+    header.setAttribute('data-gs-gerrit-profile', signature);
+
+    const path = `${location.pathname}${location.hash}`;
+    const nav = document.createElement('nav');
+    nav.setAttribute('data-gs-gerrit-profile-nav', '');
+    nav.setAttribute('data-gs-ux-skip', '');
+    for (const [label, href] of GERRIT_PROFILE_TABS(route, owner)) {
+      const anchor = document.createElement('a');
+      anchor.textContent = label;
+      anchor.setAttribute('href', href);
+      const status = href.includes('status:')
+        ? href.slice(href.indexOf('status:'))
+        : null;
+      const isCurrent = status ? path.includes(status) : !/status:/.test(path);
+      if (isCurrent) anchor.setAttribute('aria-current', 'page');
+      nav.appendChild(anchor);
+    }
+    root.appendChild(nav);
+    gerritProfileSheets.adopt(root, gerritProfileCss(t));
   }
 
   // PolyGerrit renders its chrome inside *open* shadow roots, so a content
@@ -680,7 +837,9 @@
 
     for (const root of roots) {
       for (const el of root.querySelectorAll('*')) {
-        if (el.closest('[data-gs-gerrit-nav]')) continue;
+        if (el.closest('[data-gs-gerrit-nav],[data-gs-gerrit-profile-nav]')) {
+          continue;
+        }
         const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
         let node;
         while ((node = walker.nextNode())) {
@@ -722,6 +881,7 @@
       paintGiteaNav,
       paintBitbucketNav,
       paintGerritNav,
+      paintGerritProfile,
       paintGerritCopy,
       paintMetadata,
       paintAboutExtras,

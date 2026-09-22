@@ -127,11 +127,12 @@ export const PROFILE_SELECTORS = {
     ],
     link: ['main a[href]'],
   },
-  // Gerrit has no public profile; its closest list page is a change list scoped
-  // to one project.
+  // Gerrit has no public profile; its closest page is an owner query, which
+  // PolyGerrit heads with `gr-user-header` — the identity block the skins
+  // reshape (`paintGerritProfile`).
   gerrit: {
-    url: 'https://gerrit-review.googlesource.com/q/project:gerrit+status:open',
-    ready: 'gr-app#pg-app',
+    url: 'https://gerrit-review.googlesource.com/q/owner:david.ostrovsky@gmail.com',
+    ready: 'gr-user-header',
     header: ['gr-main-header'],
     nav: ['gr-main-header nav', 'nav'],
     link: ['main a[href]', 'a[href]'],

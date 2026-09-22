@@ -4,9 +4,10 @@
  * The sources themselves are declared one folder per plugin under
  * `src/plugins/sources/`, registering with `defineSource` (`plugins/core.js`).
  * Every source is registered, markup or not; this file derives the shapes the
- * rest of the code reads — `SELECTORS` keyed by *markup* source, and a flat
- * `CANARY_PAGES` list with the source named on each page — and publishes
- * `globalThis.GITALIKE_SOURCES`.
+ * rest of the code reads — `SELECTORS` keyed by *markup* source, a flat
+ * `CANARY_PAGES` list with the source named on each page, and `PAGES`, the
+ * route each source declares for a page kind (`pages.profile` and friends) —
+ * and publishes `globalThis.GITALIKE_SOURCES`.
  *
  * `SELECTORS` are the DOM hooks a skin reads. The stylesheets spell their
  * selectors out — CSS cannot read this table — so a hook a stylesheet owns is
@@ -65,6 +66,13 @@
   const CANARY_PAGES = markupSources.flatMap(([name, source]) =>
     source.canary.map((page) => ({ ...page, source: name })),
   );
+  // The page kinds each source declares (`pages`), keyed by source and kind, so
+  // a pass reads the route that serves a page instead of hardcoding it. Every
+  // source, markup or not: a vocabulary-only source can still name the route
+  // that serves its profile equivalent (Gerrit's owner query).
+  const PAGES = Object.fromEntries(
+    Object.entries(SOURCES).map(([name, source]) => [name, source.pages ?? {}]),
+  );
 
   globalThis.GITALIKE_SOURCES = {
     SOURCE_REQUIRED,
@@ -73,5 +81,6 @@
     SOURCES,
     SELECTORS,
     CANARY_PAGES,
+    PAGES,
   };
 })();

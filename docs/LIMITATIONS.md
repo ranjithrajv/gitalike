@@ -86,11 +86,16 @@ it stops short of a perfect reskin — the detail behind the short list in the
   reorients the header and relabels its words: under the GitHub UI it is a 64px
   top bar with a row nav reading Pull requests / Code, and under the
   GitLab/Bitbucket UI the header becomes a fixed left column (a sidebar) reading
-  Merge requests / Repository, with the change list beside it. The page-wide copy
-  and control-label
-  passes still cannot cross into the shadow roots, and its changes are numbered
-  (`/c/<project>/+/<N>`) with a Change-Id rather than a `#`/`!` pull-request
-  marker, so the reference-marker pass does not apply either.
+  Merge requests / Repository, with the change list beside it. Its copy and
+  control-label passes are run into each open shadow root (`paintGerritCopy`),
+  and an owner query (`/q/owner:<account>`) — the closest page it has to a
+  profile, headed by PolyGerrit's `gr-user-header` with the account's avatar,
+  display name, email and join date — is reshaped into the applied skin's profile
+  identity block with a tab row built from Gerrit's own owner views
+  (`paintGerritProfile`). The content stays Gerrit's change list, though, and
+  Gerrit has no pinned repositories, followers or profile README to reproduce.
+  Its changes are numbered (`/c/<project>/+/<N>`) with a Change-Id rather than a
+  `#`/`!` pull-request marker, so the reference-marker pass does not apply either.
 - **Full parity is unreachable for the non-GitHub/GitLab sources, and that is a
   ceiling, not a backlog.** The parity rubric credits a source for the target's
   keyboard combos only when the source is the *other* forge, so Gerrit, Bitbucket

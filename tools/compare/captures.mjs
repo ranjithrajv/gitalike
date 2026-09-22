@@ -196,11 +196,12 @@ export const SOURCES = [
       ],
     },
     // Gerrit has no public profile. Like Bitbucket's workspace page, its closest
-    // list page is a change list, here scoped to one project.
+    // page is an owner query, which PolyGerrit heads with `gr-user-header` — the
+    // account's avatar, name, email and join date, which the skins reshape.
     profile: {
-      name: 'Gerrit project changes',
-      url: 'https://gerrit-review.googlesource.com/q/project:gerrit+status:open',
-      ready: 'gr-app#pg-app',
+      name: 'Gerrit owner changes',
+      url: 'https://gerrit-review.googlesource.com/q/owner:david.ostrovsky@gmail.com',
+      ready: 'gr-user-header',
       base: 'gerrit-profile-default.png',
       skins: [
         { setting: { gerrit: 'github' }, over: 'gerrit-profile-github.png' },

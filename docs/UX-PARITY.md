@@ -124,7 +124,7 @@ at a time from the popup).
 | Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
 | **Bitbucket** | 10.0 | 5.6 | 5.7 |
-| **Gerrit** | 2.1 | 3.0 | 3.1 |
+| **Gerrit** | 2.6 | 4.0 | 4.1 |
 | **Gitea / Forgejo** | 4.2 | 6.2 | 6.2 |
 | **GitHub** | 6.7 | 10.0 | 9.9 |
 | **GitLab** | 6.7 | 9.5 | 10.0 |
@@ -205,7 +205,7 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   `NAV_RULES` entry, so the nav is not reordered or filtered, no metadata shape,
   and no shortcut table. The diagonal is 10.0
   because a source on its own UI needs no transformation.
-- **Gerrit as a source (5.1–5.4 project, 2.1–3.1 profile)** — its palette is
+- **Gerrit as a source (5.1–5.4 project, 2.6–4.1 profile)** — its palette is
   partial: PolyGerrit reads its colours from root custom properties that inherit
   across its shadow boundary, so the skins re-point text, links, borders and
   feedback, and the header surface and text
@@ -220,11 +220,18 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   relabelled to the applied product's too — "Changes" reads Pull/Merge requests
   and "Browse" reads Code/Repository/Source, with the originals restored on
   revert (`GERRIT_NAV_WORDS`) — so the nav is a partial match of the target's
-  menu rather than the target's full menu. The page-wide copy and
-  label passes still cannot reach inside the shadow roots, and Gerrit numbers a
-  change (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so
-  `refs` is partial too. It has no repository tab row or About rail to rebuild,
-  so those GitHub surfaces stay unreproduced.
+  menu rather than the target's full menu. Its copy and control-label passes are
+  run into each open shadow root now (`paintGerritCopy`), and its closest page to
+  a profile — an owner query (`/q/owner:<account>`), which PolyGerrit heads with
+  `gr-user-header` (avatar, display name, email, join date) — is reshaped into
+  the applied skin's profile identity block with a tab row built from Gerrit's
+  own owner views, All / Open / Merged / Abandoned (`paintGerritProfile`), so
+  every tab is a real Gerrit query. The change list below stays a change list,
+  and Gerrit has no Pinned, Repositories or Followers data to reproduce, so
+  `profile` stays partial. Gerrit numbers a change
+  (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so `refs` is
+  partial too. It has no repository tab row or About rail to rebuild, so those
+  GitHub surfaces stay unreproduced.
 
 The scores are computed by `tools/compare/parity-score.mjs` (`npm run parity`, or
 `npm run parity -- --detail` for the per-dimension breakdown) and

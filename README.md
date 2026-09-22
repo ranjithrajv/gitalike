@@ -281,9 +281,12 @@ short version:
 - **Bitbucket and Gerrit are client-rendered sources.** Their palettes are
   re-pointed through the design tokens each reads (Atlassian `--ds-*` on
   Bitbucket Cloud, PolyGerrit's root properties on Gerrit), Bitbucket's
-  repository bar is handled, and both app shells are canaried — but Gerrit's
-  copy and navigation live inside shadow DOM and are not reached yet. Gerrit has
-  no bundled host; add it by instance.
+  repository bar is handled, and both app shells are canaried. PolyGerrit's roots
+  are open, so Gerrit's header navigation is reoriented and relabelled and its
+  copy passes run inside them, and an owner query (`/q/owner:<account>`) is
+  reshaped into the applied skin's profile identity block with a tab row built
+  from Gerrit's own owner views. The content stays Gerrit's change list. Gerrit
+  has no bundled host; add it by instance.
 - **The skin is cosmetic, and the page can influence it.** It is not a security
   boundary; do not treat it as a trust signal.
 - **Access is bundled hosts at install, one origin at a time after that.** There

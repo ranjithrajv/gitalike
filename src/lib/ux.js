@@ -53,7 +53,7 @@
       'GitAlike: the plugin registry must be loaded before ux.js',
     );
   }
-  const { SELECTORS, CANARY_PAGES } = globalThis.GITALIKE_SOURCES;
+  const { SELECTORS, CANARY_PAGES, PAGES } = globalThis.GITALIKE_SOURCES;
 
   /* ------------------------------------------------------- terminology -- */
 
@@ -640,6 +640,7 @@
     NAV_RULES,
     SELECTORS,
     CANARY_PAGES,
+    PAGES,
     SHORTCUTS,
     SHORTCUT_TARGETS,
     translate,
