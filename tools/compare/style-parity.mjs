@@ -142,8 +142,20 @@ const TARGETS = {
 };
 
 const PAGES = [
-  { type: 'project', sources: PROJECT_SOURCES, navWords: REPO_WORDS },
-  { type: 'profile', sources: PROFILE_SOURCES, navWords: PROFILE_WORDS },
+  // A profile page normally has the profile menu, but a source with no profile
+  // page (Gerrit) serves a change list whose nav is still a *repo* nav, so the
+  // profile pass accepts both vocabularies as a locator.
+  {
+    type: 'project',
+    sources: PROJECT_SOURCES,
+    navWords: REPO_WORDS,
+  },
+  {
+    type: 'profile',
+    sources: PROFILE_SOURCES,
+    navWords: PROFILE_WORDS,
+    locateWords: [...PROFILE_WORDS, ...REPO_WORDS],
+  },
 ];
 
 const WEIGHTS = {
@@ -251,12 +263,15 @@ const readChrome = ({
     ).length;
 
   // The repo nav is the best candidate of the first selector that has one: a
-  // rebuilt nav (an earlier selector) wins over a leftover hidden sidebar.
+  // rebuilt nav (an earlier selector) wins over a leftover hidden sidebar, and a
+  // hidden nav never wins over a visible one — the sub-nav in Gerrit's change
+  // list has more repo words than the header but is `display:none`.
   let nav = null;
   for (const sel of navSels) {
     let candidate = null;
     let best = 0;
     for (const el of deepAll(sel)) {
+      if (!visible(el)) continue;
       const known = knownIn(el);
       if (known > best) {
         best = known;
@@ -361,7 +376,10 @@ try {
           .waitForSelector(source.ready, { timeout: 30000 })
           .catch(() => {});
         await waitForTheme(tab, skin).catch(() => {});
-        await tab.waitForTimeout(2500);
+        // Gerrit's PolyGerrit re-renders its shell in stages; give the layout
+        // pass time to reorient the nav before measuring (a shorter wait read
+        // the pre-reorientation nav on the profile route).
+        await tab.waitForTimeout(3500);
         const chrome = await tab.evaluate(readChrome, {
           headerSels: source.header,
           navSels: source.nav,
@@ -372,7 +390,7 @@ try {
           // is what the dimension intends. Gerrit overrides this with its app
           // element, which paints the canvas inside its shadow root.
           canvasSels: source.canvas ?? ['main', 'body'],
-          repoWords: page.navWords,
+          repoWords: page.locateWords ?? page.navWords,
         });
         await tab.close();
 

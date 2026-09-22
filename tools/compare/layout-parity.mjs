@@ -60,15 +60,24 @@ const readLayout = ({ navSels }) => {
     return out;
   };
   const visible = (el) => el && getComputedStyle(el).display !== 'none';
+  // Prefer the nav the skin's own pass reoriented (marked `data-gs-gerrit-nav`):
+  // a page can carry several navs (Gerrit's change list has its own), and the
+  // first visible one is not necessarily the header the layout pass acts on.
+  // Falling back to document order keeps a source with no marker working.
+  const candidates = (sel) => {
+    const found = deepAll(sel).filter(visible);
+    return [
+      ...found.filter((el) => el.hasAttribute('data-gs-gerrit-nav')),
+      ...found,
+    ];
+  };
   let nav = null;
   for (const sel of navSels) {
-    for (const el of deepAll(sel)) {
-      if (visible(el)) {
-        nav = el;
-        break;
-      }
+    const found = candidates(sel);
+    if (found.length) {
+      nav = found[0];
+      break;
     }
-    if (nav) break;
   }
   const style = nav ? getComputedStyle(nav) : null;
   return {
@@ -124,7 +133,7 @@ try {
           .waitForSelector(source.ready, { timeout: 30000 })
           .catch(() => {});
         await waitForTheme(tab, skin).catch(() => {});
-        await tab.waitForTimeout(2000);
+        await tab.waitForTimeout(3500);
         const got = await tab.evaluate(readLayout, { navSels: source.nav });
         await tab.close();
 
