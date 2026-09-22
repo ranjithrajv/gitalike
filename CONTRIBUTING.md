@@ -339,7 +339,8 @@ definition, a test, and stubs for its `compare` capabilities and its capture and
 style-parity recipes). Classifying a host and adding the vocabulary are the
 parts that still need judgement, and `tests/compare/recipes.test.mjs` is the
 compare-side checklist. [`PLUGINS.md`](PLUGINS.md) is the generated
-author catalog, and `npm run plugins` prints the registry.
+author catalog, [`docs/PLUGIN-API.md`](docs/PLUGIN-API.md) is the API contract,
+and `npm run plugins` prints the registry.
 
 ### A forge that already speaks one of the two dialects
 

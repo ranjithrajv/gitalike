@@ -51,3 +51,10 @@ jobs:
       # non-zero if a skin stops applying to a real cell.
       - name: Computed-style parity
         run: node tools/compare/style-parity.mjs
+
+      # The dedicated layout read: every source × skin carries its skin's
+      # `gs-layout-*` class and its navigation is oriented the way that layout
+      # is. A source's `compare.nav`/`compare.profile` capability decides whether
+      # a pair is gated, so a palette-only source is reported n/a, not failed.
+      - name: Layout parity
+        run: node tools/compare/layout-parity.mjs

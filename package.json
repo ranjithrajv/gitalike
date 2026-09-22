@@ -26,6 +26,7 @@
     "registry": "node tools/registry.mjs --write",
     "registry:check": "node tools/registry.mjs",
     "plugins": "node tools/registry.mjs --list",
+    "plugins:validate": "node tools/validate-plugins.mjs",
     "new-plugin": "node tools/new-plugin.mjs",
     "package": "npm run package:chromium && npm run package:firefox",
     "package:chromium": "npm run build:chromium && web-ext build --source-dir dist/chromium --artifacts-dir dist/artifacts/chromium --overwrite-dest",

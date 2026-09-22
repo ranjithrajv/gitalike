@@ -6,7 +6,8 @@ GitAlike is assembled from two kinds of plugin, and the registry is open. A
 **skin** is a target UI a page is made to look like; a **source** is a forge's
 markup. They are independent — any source can wear any skin — and each is a
 self-contained folder under `src/plugins/`: its `index.js`, its tests, and, for
-a skin, its stylesheet. The plugin API is version 1.
+a skin, its stylesheet. The plugin API is version 1; its
+contract is [docs/PLUGIN-API.md](docs/PLUGIN-API.md).
 
 Run `node tools/new-plugin.mjs skin <name>` (or `source <name>`) to scaffold
 one, and `npm run registry` to relist it here and in `plugins.json`.

@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ranjithrajv.github.io/gitalike/plugins.schema.json",
+  "title": "GitAlike plugin registry",
+  "description": "The machine-readable registry `npm run registry` writes to plugins.json, derived from the plugin folders under src/plugins/. Downstream tooling can validate against this; tests/plugins-schema.test.mjs pins the schema to the registry so the two cannot drift.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "skins", "sources"],
+  "properties": {
+    "apiVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The plugin API the registry was built against (GITALIKE_PLUGINS.API_VERSION)."
+    },
+    "skins": {
+      "type": "array",
+      "description": "The target UIs a page can be made to look like.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "product",
+          "badge",
+          "color",
+          "layout",
+          "description",
+          "capabilities"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "The theme key (gs-theme-<name>) and the storage value."
+          },
+          "product": { "type": "string", "minLength": 1 },
+          "badge": { "type": "string", "minLength": 1 },
+          "color": { "type": "string", "pattern": "^#[0-9a-f]{6}$" },
+          "layout": { "enum": ["github", "gitlab"] },
+          "description": { "type": ["string", "null"] },
+          "capabilities": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true,
+            "description": "The optional skin capabilities the skin declared."
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "description": "The forge markup families a skin can be applied to.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "label",
+          "description",
+          "markup",
+          "hosts",
+          "compare",
+          "selectors",
+          "canary"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "label": { "type": "string", "minLength": 1 },
+          "description": { "type": ["string", "null"] },
+          "markup": {
+            "type": "boolean",
+            "description": "False for a vocabulary-only source (client-rendered, no DOM hooks)."
+          },
+          "hosts": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true,
+            "description": "The bundled hosts that resolve to this source."
+          },
+          "compare": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "palette",
+              "nav",
+              "page",
+              "metadata",
+              "profile",
+              "refs"
+            ],
+            "properties": {
+              "palette": { "type": "number", "minimum": 0, "maximum": 1 },
+              "nav": { "type": "number", "minimum": 0, "maximum": 1 },
+              "page": { "type": "number", "minimum": 0, "maximum": 1 },
+              "metadata": { "type": "number", "minimum": 0, "maximum": 1 },
+              "profile": { "type": "number", "minimum": 0, "maximum": 1 },
+              "refs": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
+          "selectors": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true,
+            "description": "The DOM hook names the source declares."
+          },
+          "canary": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" },
+            "description": "The live pages the selector canary watches."
+          }
+        }
+      }
+    }
+  }
+}

@@ -159,7 +159,7 @@ moves the muscle memory.*
 6. **Re-examine all-sites access.** `optional_host_permissions` trades one
    install prompt for a cleaner store/privacy story; the current design is
    defensible, but it is the most likely review objection.
-7. **Keep the drift moat.** The daily canary and the `src/lib/ux.js` parity
+7. **Keep the drift moat.** The daily canary and the `src/lib/skins.js` parity
    tables are the durable asset; keep them the focus as forges grow.
 8. **Fund it like infrastructure.** GitHub Sponsors / OpenCollective, and a
    ForgeFed-adjacent NLnet NGI Zero application framed as reducing forge lock-in.
