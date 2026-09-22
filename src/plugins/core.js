@@ -130,6 +130,9 @@
     shortcutTargets: {},
     topbarHide: [],
     projectTabs: null,
+    // `{ heading, more }` — the applied product's words for a profile's activity
+    // section, used to relabel the source's own framing on a profile page.
+    activity: null,
   };
 
   // Fresh values, so two skins never share a default array or object.
@@ -419,6 +422,7 @@
       navWords: [],
       metadataHide: [],
       activeTabs: [],
+      activity: null,
       ...partial,
       kind: partial?.kind ?? name,
       product: partial?.product ?? partial?.label,

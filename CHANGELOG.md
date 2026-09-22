@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **A profile's activity section is relabelled to the applied product.** GitHub
+  heads its profile timeline "Contribution activity" (and its summary "Activity
+  overview") with a "Show more activity" control; GitLab and Bitbucket just say
+  "Activity". `paintProfileActivity` swaps the source's framing for the skin's,
+  on a profile page only — a repository's own "Activity" is left alone — and is
+  a no-op if the upstream wording moves, rather than a selector that rots. The
+  source declares the words it uses (`activity.headings`/`more`), the skin the
+  applied product's (`activity.heading`/`more`), and Gerrit — with no profile
+  activity — declares none.
 - **Gerrit's query pages wear the applied skin's profile.** Gerrit has no
   profile route, but PolyGerrit heads an owner query (`/q/owner:<account>`) with
   `gr-user-header` — the account's avatar, display name, email and join date —

@@ -83,6 +83,14 @@
       'Contributors',
       'Languages',
     ],
+    // The words GitHub's own profile activity section uses, so the profile pass
+    // (`paintProfileActivity`) can find it and relabel it to the applied
+    // product's. "Activity overview" is the summary GitHub serves today;
+    // "Contribution activity" is the timeline heading this pass is for.
+    activity: {
+      headings: ['Contribution activity', 'Activity overview'],
+      more: ['Show more activity'],
+    },
     // Every parity dimension applies: palette, navigation, page-wide passes,
     // metadata, profile and reference markers.
     compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 }, // GitHub's own pages, so a pass or the rubric reads the map rather than

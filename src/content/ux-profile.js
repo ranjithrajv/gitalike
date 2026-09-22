@@ -291,12 +291,78 @@
     header.setAttribute('data-gs-profile-rail', '');
   }
 
+  // The profile activity section is worded differently by each product: GitHub
+  // heads its timeline "Contribution activity" (and summarises it as "Activity
+  // overview") with a "Show more activity" control; GitLab and Bitbucket just
+  // say "Activity". The feed's rows and the contribution calendar are handled
+  // elsewhere — the copy tables and the palette — so only the framing is
+  // relabelled, and only on a profile page: a repository's own "Activity" must
+  // not change. The source declares the words it uses (`SOURCE_ACTIVITY`), the
+  // skin the applied product's (`ACTIVITY`), and a source that declares none
+  // (Gerrit) is skipped. If the upstream wording moves, the pass is a no-op
+  // rather than a broken selector.
+  const normalise = (text) => (text || '').replace(/\s+/g, ' ').trim();
+
+  function renameExact(el, from, to) {
+    for (const text of textNodes(el)) {
+      const current = text.nodeValue.trim();
+      if (current !== from) continue;
+      rememberText(text);
+      const next = text.nodeValue.replace(current, to);
+      if (text.nodeValue !== next) text.nodeValue = next;
+      return;
+    }
+  }
+
+  function onProfilePage(source) {
+    if (source === 'github') {
+      return !!document.querySelector(SELECTORS.github.profileNav);
+    }
+    if (source === 'gitlab') {
+      return document.body.dataset.page === 'users:show';
+    }
+    if (source === 'gitea') {
+      return !!document.querySelector(
+        '.page-content.user.profile, .page-content.organization.profile',
+      );
+    }
+    if (source === 'bitbucket') {
+      return /(?:^|\/)(workspace|repositories|projects|snippets|stars|overview|activity)(\/|$)/.test(
+        location.pathname,
+      );
+    }
+    return false;
+  }
+
+  function paintProfileActivity(t) {
+    const target = UX.ACTIVITY[t];
+    const source = document.documentElement.dataset.gsSource;
+    const words = UX.SOURCE_ACTIVITY[source];
+    if (!target || !words || source === t || !onProfilePage(source)) return;
+
+    const headings = words.headings ?? [];
+    for (const heading of document.querySelectorAll('h1, h2, h3, h4')) {
+      if (heading.closest('[data-gs-ux-skip]')) continue;
+      const text = normalise(heading.textContent);
+      if (headings.includes(text)) renameExact(heading, text, target.heading);
+    }
+
+    const more = words.more ?? [];
+    if (!more.length) return;
+    for (const control of document.querySelectorAll('button, a, summary')) {
+      if (control.closest('[data-gs-ux-skip]')) continue;
+      const text = normalise(control.textContent);
+      if (more.includes(text)) renameExact(control, text, target.more);
+    }
+  }
+
   rt.once('profile', () => {
     rt.globalPasses.push(
       paintProfileRail,
       paintProfileStats,
       paintProfileMenu,
       paintGiteaProfile,
+      paintProfileActivity,
     );
   });
 })();

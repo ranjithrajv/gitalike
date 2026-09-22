@@ -82,6 +82,7 @@ publish only what a skin declares):
 | `shortcutTargets` | `{ combo: displayedLabel }` | combos delivered as a click |
 | `topbarHide` | `string[]` | source-only top-bar words to hide |
 | `projectTabs` | `(base, hrefs) => [[label, href]]` | the rebuilt project tab set |
+| `activity` | `{ heading, more }` | the applied product's words for a profile's activity section (GitHub's "Show more activity"); `paintProfileActivity` relabels the source's framing on a profile page |
 
 A skin also needs its palette, `as-<name>.css`, beside its `index.js`, scoped to
 `html.gs-theme-<name>` and carrying its own `--gs-mark` (GitAlike's mark in that
@@ -112,6 +113,7 @@ shipped).
 | `navWords` | the displayed labels a content-hashed nav bar is found by (Bitbucket Cloud) |
 | `metadataHide` | the metadata section labels the target UIs do not list (`METADATA_HIDE[source]`) |
 | `activeTabs` | `[[pattern, label], …]` — the source's page key → the tab label the applied UI marks active |
+| `activity` | `{ headings, more }` — the exact words this source's profile activity section uses, so `paintProfileActivity` can find and relabel its framing (GitHub: "Contribution activity" / "Activity overview", "Show more activity"; the others: "Activity"). Absent for a source with no profile activity |
 
 `compare` is the source's own declaration of how much of each parity dimension a
 skin can reproduce on it; `tools/compare/parity-score.mjs` reads it instead of a

@@ -62,6 +62,9 @@
       '.header-content',
       '.super-topbar',
     ],
+    // GitLab's own profile activity heading, so the pass can relabel it to the
+    // applied product's. (Its "Show more" is too generic to match safely.)
+    activity: { headings: ['Activity'], more: [] },
     // The GitLab page kind (its `body[data-page]`) the applied UI should mark
     // active, mapped to GitHub's tab label and then renamed by the skin's `NAV`.
     activeTabs: [

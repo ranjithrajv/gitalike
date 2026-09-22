@@ -153,5 +153,6 @@
     ACTIVE_TABS: bySource('activeTabs'),
     RESERVED: bySource('reserved'),
     ROUTES: bySource('routes'),
+    SOURCE_ACTIVITY: bySource('activity'),
   };
 })();

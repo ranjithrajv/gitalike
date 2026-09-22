@@ -9,6 +9,7 @@
       "layout": "gitlab",
       "description": "The Bitbucket UI, worn by any configured site.",
       "capabilities": [
+        "activity",
         "keep",
         "projectTabs",
         "repoOrder"
@@ -22,6 +23,7 @@
       "layout": "github",
       "description": "The GitHub UI, worn by a GitLab-flavoured site.",
       "capabilities": [
+        "activity",
         "hide",
         "keep",
         "projectTabs",
@@ -39,6 +41,7 @@
       "layout": "gitlab",
       "description": "The GitLab UI, worn by a GitHub- or Gitea-flavoured site.",
       "capabilities": [
+        "activity",
         "groups",
         "hide",
         "repoOrder",

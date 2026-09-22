@@ -22,6 +22,8 @@
     hosts: ['codeberg.org', 'gitea.com'],
     // Gitea/Forgejo put their repo tabs in an `overflow-menu` element.
     navScope: ['overflow-menu'],
+    // Gitea's own profile activity heading (its generic "Show more" is skipped).
+    activity: { headings: ['Activity'], more: [] },
     // Gitea keeps its own description/topics placement, so metadata is partial;
     // its profile navigation is reoriented to the layout (`themes/ux-nav.css`)
     // but its profile menu/card are not rebuilt, so profile is partial too.

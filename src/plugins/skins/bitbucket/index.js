@@ -103,6 +103,10 @@
       Analytics: 'Bitbucket',
     },
 
+    // The applied product's words for a profile's activity section: Bitbucket's
+    // workspace page heads it "Activity", with a plain "Show more".
+    activity: { heading: 'Activity', more: 'Show more' },
+
     // Verified against an archived Bitbucket repository page's own menu model
     // (Source, Commits, Branches, Pull requests, Pipelines, Deployments, Jira
     // issues, Security, Downloads) — there is no repo Wiki or Settings tab.

@@ -45,6 +45,8 @@ const {
   sectionLabelText,
   METADATA_HIDE,
   NAV_WORDS,
+  ACTIVITY,
+  SOURCE_ACTIVITY,
   projectTabs,
   PROFILE_MENU,
   repoNav,
@@ -92,6 +94,8 @@ describe('module shape', () => {
       SELECTORS,
       PROFILE_MENU,
       TOPBAR_HIDE,
+      ACTIVITY,
+      SOURCE_ACTIVITY,
     ]) {
       assert.equal(typeof table, 'object');
     }
@@ -1406,5 +1410,25 @@ describe('Bitbucket skin, pinned to a capture', () => {
       entries.some((entry) => entry.label === 'Releases'),
       'GitLab keeps Releases',
     );
+  });
+});
+
+describe('ACTIVITY', () => {
+  test('every skin names its profile activity framing', () => {
+    for (const theme of THEMES) {
+      assert.equal(typeof ACTIVITY[theme]?.heading, 'string', theme);
+      assert.equal(typeof ACTIVITY[theme]?.more, 'string', theme);
+    }
+  });
+
+  test('every source with an activity section declares the words it uses', () => {
+    // Gerrit has no profile activity, so it declares none; the four that do
+    // carry the exact words the pass matches. GitHub's is its timeline heading;
+    // the others are the bare "Activity".
+    for (const source of ['github', 'gitlab', 'gitea', 'bitbucket']) {
+      assert.ok(SOURCE_ACTIVITY[source]?.headings?.length, source);
+    }
+    assert.equal(SOURCE_ACTIVITY.gerrit, null);
+    assert.ok(SOURCE_ACTIVITY.github.more.includes('Show more activity'));
   });
 });

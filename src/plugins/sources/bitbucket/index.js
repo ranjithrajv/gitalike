@@ -46,6 +46,9 @@
       'Security',
       'Downloads',
     ],
+    // Bitbucket's workspace page heads its activity with the bare word
+    // "Activity"; its generic "Show more" is skipped.
+    activity: { headings: ['Activity'], more: [] },
     // Palette and the page-wide passes land, and `paintBitbucketNav` reorients
     // the bar (0.9: relabelled and reoriented, not reordered or filtered); it
     // keeps its own metadata, and its workspace navigation is reoriented to the

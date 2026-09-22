@@ -86,6 +86,10 @@
       Marketplace: 'GitLab',
     },
 
+    // The applied product's words for a profile's activity section: GitLab just
+    // says "Activity", with a plain "Show more".
+    activity: { heading: 'Activity', more: 'Show more' },
+
     // Desired order of the app navigation, using the *displayed* labels after
     // translation. Items that are not present are skipped; unrecognised items
     // keep their relative order at the end. Shared by the GitHub tab bar and

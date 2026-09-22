@@ -114,5 +114,6 @@
     NAV_RULES: bySkin('navRules'),
     PROJECT_TABS: bySkin('projectTabs'),
     PROFILE_MENU: bySkin('profileMenu'),
+    ACTIVITY: bySkin('activity'),
   };
 })();

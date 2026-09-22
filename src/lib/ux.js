@@ -43,6 +43,7 @@
     NAV_RULES,
     PROJECT_TABS,
     PROFILE_MENU,
+    ACTIVITY,
   } = globalThis.GITALIKE_SKINS;
 
   // The source markup hooks and the canary pages are declared one file per
@@ -66,6 +67,7 @@
     ACTIVE_TABS,
     RESERVED,
     ROUTES,
+    SOURCE_ACTIVITY,
   } = globalThis.GITALIKE_SOURCES;
 
   /* ------------------------------------------------------- terminology -- */
@@ -540,6 +542,8 @@
     METADATA_HIDE,
     projectTabs,
     PROFILE_MENU,
+    ACTIVITY,
+    SOURCE_ACTIVITY,
     repoNav,
     otherHostUrl,
     hostProduct,

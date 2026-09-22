@@ -84,6 +84,11 @@
       'Value stream analytics': 'GitHub',
     },
 
+    // The applied product's words for a profile's activity section: GitHub's own
+    // timeline heading and its "Show more" control. `paintProfileActivity` swaps
+    // a source's framing for this on a profile page.
+    activity: { heading: 'Contribution activity', more: 'Show more activity' },
+
     // GitHub's repo tab order, shared by GitLab's sidebar (shown as GitHub)
     // and Gitea's tab bar (shown as GitHub), so the two cannot drift.
     repoOrder: [
