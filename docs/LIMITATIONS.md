@@ -66,7 +66,7 @@ it stops short of a perfect reskin — the detail behind the short list in the
   app.** Bitbucket mounts its repository page in `#root`; the server still serves
   `#root` and two `<meta>` tags first, and that shell is what the canary watches.
   The app is light DOM, so `paintBitbucketNav` reorients and relabels the
-  repository bar, and `themes/gs-tokens.css` re-points Atlassian's `--ds-*`
+  repository bar, and the Bitbucket source's `tokens.css` re-points Atlassian's `--ds-*`
   design tokens — which Bitbucket reads from the root — at the applied palette;
   copy, control labels and `/pull-requests/N` markers follow the applied product
   too. A Bitbucket *profile* (the workspace page) keeps its own side navigation,
@@ -82,7 +82,7 @@ it stops short of a perfect reskin — the detail behind the short list in the
   renders inside shadow roots; the canary watches the shell, and because
   PolyGerrit reads its colours from root custom properties
   (`--primary-text-color`, `--link-color`, …), which inherit across the shadow
-  boundary, `themes/gs-tokens.css` recolours the whole app, and `paintGerritNav`
+  boundary, the Gerrit source's `tokens.css` recolours the whole app, and `paintGerritNav`
   reorients the header and relabels its words: under the GitHub UI it is a 64px
   top bar with a row nav reading Pull requests / Code, and under the
   GitLab/Bitbucket UI the header becomes a fixed left column (a sidebar) reading

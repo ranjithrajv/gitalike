@@ -18,6 +18,7 @@
  * so only those are rewritten. The test in `tests/contracts.test.mjs` calls
  * `registryProblems` directly, so drift fails `npm test` without a process.
  */
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -159,8 +160,13 @@ export function pluginPaths(registry) {
  */
 export function renderPluginList(registry) {
   const js = pluginPaths(registry);
+  // A source's token map (when it has one) comes first, so a skin's own rule of
+  // equal specificity still wins where it deliberately diverges; the skin
+  // palettes follow. Which sources declare a `tokens.css` is the folder.
   const css = [
-    'themes/gs-tokens.css',
+    ...registry.sources
+      .map((source) => `plugins/sources/${source.name}/tokens.css`)
+      .filter((path) => existsSync(join(root, 'src', path))),
     ...registry.skins.map(
       (skin) => `plugins/skins/${skin.name}/as-${skin.name}.css`,
     ),
@@ -264,8 +270,8 @@ A source carries the DOM hooks a skin reads (\`selectors\`) and the live page th
 daily canary watches (\`canary\`). A source whose UI is client-rendered is
 recoloured through the custom properties it reads — Bitbucket Cloud's Atlassian
 \`--ds-*\`, PolyGerrit's root properties — not by reaching into its tree; the
-mapping is in \`themes/gs-tokens.css\`. A source with no hooks at all can still
-declare \`markup: false\`.
+mapping is in the source's \`tokens.css\`, beside its \`index.js\`. A source with
+no hooks at all can still declare \`markup: false\`.
 `;
 }
 

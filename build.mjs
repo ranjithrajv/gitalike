@@ -52,7 +52,7 @@ const PLUGIN_JS = [
 // which live beside their plugin under src/plugins/ but are not part of the
 // extension.
 const SHIPPED_JUNK =
-  /(^|\/)\.[^/]+$|\.(map|swp|swo|bak|orig|tmp|log)$|\.(test|spec)\.(c|m)?js$|~$/;
+  /(^|\/)\.[^/]+$|\.(map|swp|swo|bak|orig|tmp|log)$|\.(test|spec)\.(c|m)?js$|(^|\/)parity\.mjs$|~$/;
 
 const TARGETS = {
   chromium: (manifest) => ({

@@ -34,5 +34,5 @@ A source carries the DOM hooks a skin reads (`selectors`) and the live page the
 daily canary watches (`canary`). A source whose UI is client-rendered is
 recoloured through the custom properties it reads — Bitbucket Cloud's Atlassian
 `--ds-*`, PolyGerrit's root properties — not by reaching into its tree; the
-mapping is in `themes/gs-tokens.css`. A source with no hooks at all can still
-declare `markup: false`.
+mapping is in the source's `tokens.css`, beside its `index.js`. A source with
+no hooks at all can still declare `markup: false`.

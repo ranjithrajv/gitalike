@@ -85,7 +85,9 @@ publish only what a skin declares):
 
 A skin also needs its palette, `as-<name>.css`, beside its `index.js`, scoped to
 `html.gs-theme-<name>` and carrying its own `--gs-mark` (GitAlike's mark in that
-palette — never a vendor's logo or path data).
+palette — never a vendor's logo or path data), and a `parity.mjs` with the
+reviewed target vocabulary `style-parity` scores against (Node-only; not
+shipped).
 
 ## Source
 
@@ -122,6 +124,20 @@ client-rendered still declares `kind` and names the product it is
 host's kind, its pairs and routes, the regions its nav lives in — is declared in
 its folder, so `src/lib/sites.js` and the manifest derive from it rather than
 repeating a hand-kept list.
+
+A source folder may also carry two Node-only sidecars:
+
+- `tokens.css` — the source forge's own design tokens (`--ds-*`, `--color-*`,
+  PolyGerrit's root properties) mapped to `--gs-*`, loaded before the skin
+  palettes so a skin's own rule still wins where it diverges. A source with no
+  token layer has none.
+- `parity.mjs` — its capture (a live URL and a readiness selector) and its
+  `style-parity` selectors. `tools/compare/captures.mjs` and `style-recipes.mjs`
+  derive their tables by reading the folders; the capture skins and file names
+  are derived from `prefix`, the source's own skin and the registry.
+
+Neither ships: the browser loads `index.js` through `plugins/list.js`, and
+`build.mjs` drops them from the bundle.
 
 ### Pages
 
@@ -178,5 +194,6 @@ A plugin may pin the API it was written against with `minApiVersion`;
 | `tests/contracts.test.mjs` | an incomplete folder, a plugin not wired into a load list, a plugin folder without its own test, a label no skin translates |
 | `npm test` | a line, branch or function under `src/plugins/` the suite does not exercise (the plugin coverage gate, `tools/plugin-coverage.mjs`) |
 | `tests/plugins-schema.test.mjs` | `plugins.json` drifting from `plugins.schema.json` |
+| `tests/compare/recipes.test.mjs` | a plugin folder without a `parity.mjs`, or a derived capture/selectors/vocabulary table that misses a registry plugin |
 | `npm run registry:check` | a plugin not relisted in `plugins.json`, `PLUGINS.md` or the site |
 | `npm run canary` | a source's live page dropping a hook a skin reads |

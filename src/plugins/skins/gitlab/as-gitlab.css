@@ -417,7 +417,7 @@ html.gs-layout-gitlab nav[aria-label="Repository"] .gs-nav-group:first-child {
 /* Codeberg (Forgejo) and gitea.com are GitHub-flavoured forges, so they are the
    'github' kind and get the GitLab UI. They are not GitHub's markup, though:
    Gitea exposes its own `--color-*` custom properties, mapped to the applied
-   skin's palette by the shared "Gitea tokens" block in themes/gs-tokens.css.
+   skin's palette by the Gitea source's `tokens.css`.
    `[data-theme]` is Gitea's marker on <html> and GitHub never sets it, so those
    rules are inert on github.com. This is a token-level skin — the words,
    reference markers and shortcuts come from the shared tables, the layout does

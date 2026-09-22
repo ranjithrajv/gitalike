@@ -196,7 +196,7 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
 - **Bitbucket as a source (6.5 / 5.9 project, 5.6 / 5.7 profile)** — it gains
   three passes. Its palette: Bitbucket Cloud exposes Atlassian's `--ds-*` design
   tokens on <html>, so the skins re-point them at their own palette, header
-  included (`themes/gs-tokens.css`). Its navigation: `paintBitbucketNav`
+  included (the Bitbucket source's `tokens.css`). Its navigation: `paintBitbucketNav`
   reorients and relabels the repository bar, found inside the declared `#root`
   hook, its bar is grouped into the applied skin's headings where that skin
   groups (`paintBitbucketNav`; GitLab's Plan/Code/Build/…), and the workspace
@@ -210,7 +210,7 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   across its shadow boundary, so the skins re-point text, links, borders and
   feedback, and the header surface and text
   (`--header-background`/`--header-text-color`, which PolyGerrit reads), but not
-  the rest of its surfaces (`themes/gs-tokens.css`). Its header navigation *is*
+  the rest of its surfaces (the Gerrit source's `tokens.css`). Its header navigation *is*
   laid out like the applied skin, though — PolyGerrit's roots are open, so
   `paintGerritNav` reaches the header and injects a style into its shadow root:
   under the GitHub layout the header is a top bar re-proportioned to GitHub's

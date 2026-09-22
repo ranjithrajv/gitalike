@@ -1,0 +1,32 @@
+/* ------------------- PolyGerrit tokens -> GitAlike (Gerrit) -- */
+/* PolyGerrit reads these from the root and they inherit across its shadow
+   boundary, so the palette lands without reaching inside the app. Scoped to
+   the `gerrit` source (set by content/theme.js), because the names are
+   generic and must not touch another site's own variables. Only the names a
+   live Gerrit resolves are listed; the header surface is taken from the skin
+   (`--header-background`, which PolyGerrit reads) so the bar reads as the
+   applied product rather than Gerrit's own. */
+
+html[data-gs-source="gerrit"][class*="gs-theme-"] {
+  --view-background: var(--gs-canvas) !important;
+  --primary-background-color: var(--gs-canvas) !important;
+  --primary-text-color: var(--gs-fg) !important;
+  --link-color: var(--gs-link) !important;
+  --border-color: var(--gs-border) !important;
+  --header-background: var(--gs-header-bg) !important;
+  --header-text-color: var(--gs-header-fg) !important;
+  --selection-background-color: var(--gs-accent-subtle) !important;
+  --hover-background-color: var(--gs-canvas-subtle) !important;
+  --info-background: var(--gs-accent-subtle) !important;
+  --success-background: var(--gs-success-subtle) !important;
+  --warning-background: var(--gs-attention-subtle) !important;
+  --error-background: var(--gs-danger-subtle) !important;
+}
+
+/* PolyGerrit leaves <body> transparent and paints inside `gr-app`, so give the
+   page the applied skin's canvas directly — the surface the target product
+   would have. The tokens above cover the app's own reads; this covers the page. */
+html[data-gs-source="gerrit"][class*="gs-theme-"] body,
+html[data-gs-source="gerrit"][class*="gs-theme-"] gr-app#pg-app {
+  background-color: var(--gs-canvas) !important;
+}

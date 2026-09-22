@@ -3,8 +3,9 @@
  * GitAlike — scaffold a skin or a source.
  *
  * A plugin is a self-contained folder under `src/plugins/`: its `index.js`, its
- * own test beside it, and — for a skin — its stylesheet. This tool writes all of
- * that; every load list is derived from the folder, so there is nothing to wire
+ * own test and its `parity.mjs` compare recipes beside it, and — for a skin —
+ * its stylesheet. This tool writes all of that; every load list is derived from
+ * the folder, so there is nothing to wire
  * — `npm run registry` regenerates the browser list (`plugins/list.js`), the
  * popup's script block and the published registry. What is left is the
  * judgement — the palette and the vocabulary — and `npm test` names that,
@@ -20,7 +21,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,79 +30,8 @@ import './plugins.mjs';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SKINS_DIR = join(root, 'src/plugins/skins');
 const SOURCES_DIR = join(root, 'src/plugins/sources');
-const CAPTURES_FILE = join(root, 'tools/compare/captures.mjs');
-const RECIPES_FILE = join(root, 'tools/compare/style-recipes.mjs');
 
-const PLUGINS = globalThis.GITALIKE_PLUGINS;
 const SITES = globalThis.GITALIKE;
-
-/** The skins a source can wear: every skin except the one it already is. */
-const skinsFor = (name) =>
-  Object.keys(PLUGINS.skins).filter((skin) => skin !== name);
-
-// The markers the scaffolder inserts into the hand-authored comparison recipes
-// (tools/compare/). The load lists are generated, so they need no marker.
-const ANCHORS = {
-  capture: '// plugins:capture-anchor',
-  project: '// plugins:project-anchor',
-  profile: '// plugins:profile-anchor',
-  projectVocab: '// plugins:project-vocab-anchor',
-  profileVocab: '// plugins:profile-vocab-anchor',
-};
-
-// The comparison recipes a plugin must have (tools/compare): a capture to
-// screenshot, style-parity selectors, and — for a skin — the target vocabulary.
-// They are stubs to fill in, but they satisfy the contract (`npm test`), so a
-// new plugin is never silently absent from a parity table.
-function captureStub(name, label, host) {
-  const overlay = (skin, suffix) =>
-    `        { setting: { ${name}: '${skin}' }, over: '${name}${suffix}-${skin}.png' },`;
-  const projectSkins = skinsFor(name)
-    .map((skin) => overlay(skin, ''))
-    .join('\n');
-  const profileSkins = skinsFor(name)
-    .map((skin) => overlay(skin, '-profile'))
-    .join('\n');
-  const instance = SITES.isBuiltin(host)
-    ? ''
-    : `\n    instance: { host: '${host}', kind: '${name}' },`;
-  return `  {
-    key: '${name}',
-    prefix: '${name}',
-    host: '${host}',${instance}
-    project: {
-      name: '${label} project page',
-      url: 'https://${host}/TODO',
-      ready: 'TODO',
-      base: '${name}-default.png',
-      skins: [
-${projectSkins}
-      ],
-    },
-    profile: {
-      name: '${label} profile page',
-      url: 'https://${host}/TODO',
-      ready: 'TODO',
-      base: '${name}-profile-default.png',
-      skins: [
-${profileSkins}
-      ],
-    },
-  },`;
-}
-
-function selectorStub(name, host) {
-  return `  ${name}: {
-    url: 'https://${host}/TODO',
-    ready: 'TODO',
-    header: [],
-    nav: [],
-    link: ['a[href]'],
-    canvas: ['body'],
-  },`;
-}
-
-const vocabStub = (name) => `  ${name}: ['TODO'],`;
 
 // The name is the storage/theme key and the folder name, so it has to be a plain
 // lowercase token. Reserving the same shape for a source keeps the two
@@ -128,21 +58,72 @@ async function write(path, content) {
 
 // Insert `snippet` on its own lines immediately before the anchor line. Text
 // before the anchor line is kept, so an existing entry list is preserved.
-async function insertBeforeAnchor(path, anchor, snippet) {
-  const text = await readFile(path, 'utf8');
-  const index = text.indexOf(anchor);
-  if (index === -1) {
-    throw new Error(`${path} has no "${anchor}" marker`);
-  }
-  if (DRY_RUN) {
-    console.log(`would add to ${relative(root, path)}: ${snippet.trim()}`);
-    return;
-  }
-  const lineStart = text.lastIndexOf('\n', index) + 1;
-  await writeFile(
-    path,
-    `${text.slice(0, lineStart)}${snippet}\n${text.slice(lineStart)}`,
-  );
+// The compare recipes a plugin must have (tools/compare): a capture to
+// screenshot, style-parity selectors, and — for a skin — the target vocabulary.
+// `tools/compare/captures.mjs` and `style-recipes.mjs` derive their tables by
+// reading the folder, so this is the only file a new plugin writes for them.
+function sourceParity(name, label, host) {
+  const instance = SITES.isBuiltin(host)
+    ? ''
+    : `\n    instance: { host: '${host}', kind: '${name}' },`;
+  return `/**
+ * The ${label} source's compare recipes, beside the source.
+ *
+ * Node-only: the browser loads \`index.js\`, never this file. Replace the TODO
+ * urls and ready selectors as the source is captured; the skins and base file
+ * names are derived from \`prefix\` and the registry.
+ */
+export default {
+  capture: {
+    prefix: '${name}',
+    host: '${host}',${instance}
+    project: {
+      name: '${label} project page',
+      url: 'https://${host}/TODO',
+      ready: 'TODO',
+    },
+    profile: {
+      name: '${label} profile page',
+      url: 'https://${host}/TODO',
+      ready: 'TODO',
+    },
+  },
+  selectors: {
+    project: {
+      url: 'https://${host}/TODO',
+      ready: 'TODO',
+      header: [],
+      nav: [],
+      link: ['a[href]'],
+      canvas: ['body'],
+    },
+    profile: {
+      url: 'https://${host}/TODO',
+      ready: 'TODO',
+      header: [],
+      nav: [],
+      link: ['a[href]'],
+      canvas: ['body'],
+    },
+  },
+};
+`;
+}
+
+function skinParity(product) {
+  return `/**
+ * The ${product} skin's reviewed target vocabulary, beside the skin.
+ *
+ * Node-only: the browser loads \`index.js\`, never this file. The navigation
+ * *shape* is not here; it comes from the skin's \`layout\`.
+ */
+export default {
+  vocab: {
+    project: ['TODO'],
+    profile: ['TODO'],
+  },
+};
+`;
 }
 
 const kindDir = (kind) => (kind === 'skin' ? SKINS_DIR : SOURCES_DIR);
@@ -361,10 +342,9 @@ async function scaffoldSkin(name, flags) {
     join(root, dir, `${name}.test.mjs`),
     skinTest(name, product, badge),
   );
-
-  // The target vocabulary style-parity scores against, one per page type.
-  await insertBeforeAnchor(RECIPES_FILE, ANCHORS.projectVocab, vocabStub(name));
-  await insertBeforeAnchor(RECIPES_FILE, ANCHORS.profileVocab, vocabStub(name));
+  // The reviewed target vocabulary `style-parity` scores against. The capture
+  // skins and file names are derived, so a new skin needs no edit elsewhere.
+  await write(join(root, dir, 'parity.mjs'), skinParity(product));
 
   return {
     what: `the ${product} skin (${dir}/)`,
@@ -373,8 +353,8 @@ async function scaffoldSkin(name, flags) {
       'vocabulary: the UX tests name the labels this skin does not translate yet',
       `tests: ${dir}/${name}.test.mjs runs with \`npm test\``,
       'coverage: npm test holds src/plugins/ at 100% — extend that test as the plugin grows',
-      `parity vocab: replace the TODO in PROJECT_VOCAB/PROFILE_VOCAB (${name}) in tools/compare/style-recipes.mjs`,
-      "compare: add the new skin to every source's capture `skins` in tools/compare/captures.mjs and run `npm run screenshots`; `npm test` names each",
+      `parity vocab: replace the TODO in ${dir}/parity.mjs`,
+      'compare: run `npm run screenshots` to capture the new skin; the capture table and file names are derived, so `npm test` names what is missing',
       'parity colours: add a reviewed tests/fixtures/target-chrome.json entry and list the skin in tools/compare',
     ],
   };
@@ -386,23 +366,8 @@ async function scaffoldSource(name, flags) {
   const dir = `src/plugins/sources/${name}`;
   await write(join(root, dir, 'index.js'), sourceContent(name, label));
   await write(join(root, dir, `${name}.test.mjs`), sourceTest(name, label));
-
-  // The comparison recipes: a capture to screenshot and style-parity selectors.
-  await insertBeforeAnchor(
-    CAPTURES_FILE,
-    ANCHORS.capture,
-    captureStub(name, label, host),
-  );
-  await insertBeforeAnchor(
-    RECIPES_FILE,
-    ANCHORS.project,
-    selectorStub(name, host),
-  );
-  await insertBeforeAnchor(
-    RECIPES_FILE,
-    ANCHORS.profile,
-    selectorStub(name, host),
-  );
+  // The capture and style-parity recipes, beside the source they describe.
+  await write(join(root, dir, 'parity.mjs'), sourceParity(name, label, host));
 
   return {
     what: `the ${label} source (${dir}/)`,
@@ -411,7 +376,7 @@ async function scaffoldSource(name, flags) {
       `canary: point the ${label} canary page at a real instance`,
       `hosts: list the hostname(s) in ${dir}/index.js \`hosts\` to bundle this forge (and set \`kind: 'github'\` if it speaks GitHub's dialect)`,
       `scopes: fill in \`navScope\`/\`topbarScope\` in ${dir}/index.js so its nav labels are rewritten`,
-      `compare: fill in the TODO url/ready in tools/compare/style-recipes.mjs and tools/compare/captures.mjs (${name})`,
+      `compare: replace the TODO urls/ready in ${dir}/parity.mjs`,
       `capabilities: set the ${name} \`compare\` values in ${dir}/index.js`,
       `tests: ${dir}/${name}.test.mjs runs with \`npm test\``,
       'coverage: npm test holds src/plugins/ at 100% — extend that test as the plugin grows',

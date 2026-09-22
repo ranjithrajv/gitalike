@@ -7,7 +7,7 @@
  *
  * PolyGerrit reads its colours from named custom properties on the root
  * (`--primary-text-color`, `--link-color`, …). Custom properties inherit across
- * the shadow boundary, so `themes/gs-tokens.css` re-points those at the applied
+ * the shadow boundary, so `tokens.css`, beside this file, re-points those at the applied
  * skin's palette and recolours the whole app without reaching inside it. Copy
  * and navigation *inside* the shadow roots are not reached yet; they need the
  * app's roots opened at `document_start`, which is a separate step.

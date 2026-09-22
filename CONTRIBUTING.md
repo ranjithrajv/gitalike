@@ -120,8 +120,8 @@ src/
 ├── background.js        keyboard shortcuts and per-tab badge
 ├── plugins/             ONE FOLDER PER PLUGIN
 │   ├── core.js          the defineSkin/defineSource API + validation
-│   ├── skins/<name>/    index.js + <name>.test.mjs + as-<name>.css
-│   └── sources/<name>/  index.js + <name>.test.mjs
+│   ├── skins/<name>/    index.js + <name>.test.mjs + as-<name>.css + parity.mjs
+│   └── sources/<name>/  index.js + <name>.test.mjs + parity.mjs (+ tokens.css)
 ├── lib/
 │   ├── skins.js         derives the skin tables from plugins/skins/ — pure
 │   ├── sources.js       derives SELECTORS/CANARY_PAGES/hosts/scopes — pure
@@ -131,9 +131,9 @@ src/
 ├── content/
 │   ├── theme.js         applies the theme classes, tracks light/dark
 │   └── ux.js            performs the text and nav rewrites, undoably
-├── themes/              the CSS shared across skins: gs-tokens.css, the
-│                        ux-markers.css no-counterpart badge and the ux-nav.css
-│                        orientation rules (a skin's own palette is in its folder)
+├── themes/              the CSS shared across skins: the ux-markers.css
+│                        no-counterpart badge and the ux-nav.css orientation
+│                        rules (a source's token map is in its own folder)
 ├── popup/               toolbar UI
 └── icons/
 logos/                   editable logo sources, inlined into the themes
@@ -332,7 +332,7 @@ skins: GitLab, GitHub and Bitbucket. Every source carries the DOM hooks a skin
 keys on and a canary page. A source whose UI is client-rendered is recoloured
 through the custom properties it reads rather than by reaching into its tree —
 Bitbucket Cloud's Atlassian `--ds-*` tokens, PolyGerrit's `--primary-text-color`
-and friends — which is what `themes/gs-tokens.css` maps (`markup: false` is still
+and friends — which is what each source's `tokens.css` maps (`markup: false` is still
 available for a source with no hooks at all). Codeberg (Forgejo) and gitea.com
 (Gitea) are bundled as GitHub-flavoured, shown with the GitLab UI; Bitbucket is
 bundled as its own source, shown with the GitHub UI; Gerrit has no bundled host,
@@ -340,10 +340,10 @@ and is added one instance at a time. **More are wanted.** Sourcehut is a genuine
 new *source* forge (one people host) also needs classifying. Either way,
 `tests/contracts.test.mjs` is the checklist — it fails with the pieces still
 missing — and `node tools/new-plugin.mjs source <name>` writes the folder (its
-definition, a test, and stubs for its `compare` capabilities and its capture and
-style-parity recipes). Classifying a host and adding the vocabulary are the
-parts that still need judgement, and `tests/compare/recipes.test.mjs` is the
-compare-side checklist. [`PLUGINS.md`](PLUGINS.md) is the generated
+definition, a test, and a `parity.mjs` with its `compare` capabilities and its
+capture and style-parity recipes). Classifying a host and adding the vocabulary
+are the parts that still need judgement, and `tests/compare/recipes.test.mjs` is
+the compare-side checklist. [`PLUGINS.md`](PLUGINS.md) is the generated
 author catalog, [`docs/PLUGIN-API.md`](docs/PLUGIN-API.md) is the API contract,
 and `npm run plugins` prints the registry.
 
@@ -393,10 +393,11 @@ needs judgement.
 | # | File | What goes there |
 | - | ---- | --------------- |
 | 1 | `src/plugins/skins/<name>/index.js` | one `defineSkin('<name>', { … })` call: `product`, `badge`, `color` (#rrggbb) and `layout` ('github' or 'gitlab'), every required table (`phrases`, `nav`, `labels`, `chrome`, `unmapped`, `navRules`, `profileMenu`), and whichever optional capabilities (`repoOrder`, `shortcuts`, `topbarHide`, `groups`, `keep`/`hide`, `projectTabs`) it needs. The name is the key, so it joins `THEMES`, the popup and the badge with no other edit |
-| 2 | `src/plugins/skins/<name>/as-<name>.css` | the skin — a palette block (light and `.gs-dark`), a token mapping *per source* (Primer, Pajamas, Gitea's `--color-*`), the structural rules, and the `--gs-mark` |
+| 2 | `src/plugins/skins/<name>/as-<name>.css` | the skin — a palette block (light and `.gs-dark`), any per-skin divergence in the source token mapping (the shared maps are each source's `tokens.css`), the structural rules, and the `--gs-mark` |
 | 3 | `src/plugins/skins/<name>/<name>.test.mjs` | the skin's own tests, beside it. `npm test` discovers them; the cross-skin invariants stay in `tests/ux.test.mjs` |
-| 4 | load lists | nothing to edit — they are derived from the folder. `npm run registry` regenerates the browser list (`src/plugins/list.js`), the popup's script block and the published registry; the Firefox manifest and the Node tools read the folder directly. `tools/new-plugin.mjs` runs it for you |
-| 5 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json`, the target vocabulary in `tools/compare/style-recipes.mjs` (scaffolded as a `TODO`), and a capture variant on every source in `tools/compare/captures.mjs` plus `npm run screenshots`; `npm run registry` relists it in the site, `plugins.json` and `PLUGINS.md`. `tests/compare/recipes.test.mjs` names anything missing |
+| 4 | `src/plugins/skins/<name>/parity.mjs` | the reviewed target vocabulary `style-parity` scores against (scaffolded as a `TODO`). The capture skins and file names are derived, so no compare file elsewhere is edited |
+| 5 | load lists | nothing to edit — they are derived from the folder. `npm run registry` regenerates the browser list (`src/plugins/list.js`), the popup's script block and the published registry; the Firefox manifest and the Node tools read the folder directly. `tools/new-plugin.mjs` runs it for you |
+| 6 | parity/docs | a reviewed colour entry in `tests/fixtures/target-chrome.json` and `npm run screenshots` to capture the new skin; `npm run registry` relists it in the site, `plugins.json` and `PLUGINS.md`. `tests/compare/recipes.test.mjs` names anything missing |
 
 The completeness gate is **`tests/contracts.test.mjs`**: it derives the skin and
 source lists and fails with the parts a new one is still missing, by name. Run

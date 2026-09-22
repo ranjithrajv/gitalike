@@ -96,7 +96,7 @@ html.gs-theme-github.gs-dark {
 }
 
 /* The Pajamas alias list that used to open this section is shared with the
-   Bitbucket skin and now lives in themes/gs-tokens.css. What remains here is
+   Bitbucket skin and now lives in the GitLab source's `tokens.css`. What remains here is
    GitHub-specific: the neutral ramp and brand hues. */
 
 html.gs-theme-github {
@@ -337,7 +337,7 @@ html.gs-theme-github
 
 /* Codeberg (Forgejo) and gitea.com are GitHub-flavoured, so they can also be
    shown with the *GitHub* UI. They do not use GitLab's Pajamas tokens, so the
-   shared "Gitea tokens" block in themes/gs-tokens.css re-points Gitea's own
+   Gitea source's `tokens.css` re-points Gitea's own
    `--color-*` custom properties at the applied skin's palette. `[data-theme]`
    is Gitea's marker on <html> and neither GitHub nor GitLab sets it, so those
    rules are inert elsewhere. Only the top bar is GitHub-specific. */

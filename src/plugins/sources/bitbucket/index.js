@@ -5,7 +5,7 @@
  * server still serves `#root` and two `<meta>` tags before the bundle runs —
  * that shell is what the canary watches — and the app renders in the light DOM,
  * so the passes reach it: `paintBitbucketNav` reorients and relabels the
- * repository bar, and `themes/gs-tokens.css` re-points Atlassian's `--ds-*`
+ * repository bar, and `tokens.css`, beside this file, re-points Atlassian's `--ds-*`
  * design tokens (which Bitbucket reads) at the applied skin's palette.
  *
  * Bitbucket Data Center (`/projects/<key>/repos/<slug>`) is classified as this

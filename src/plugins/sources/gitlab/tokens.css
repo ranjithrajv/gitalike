@@ -1,0 +1,61 @@
+/* ---------------------- Pajamas tokens -> GitAlike (GitHub, Bitbucket) -- */
+/* A GitLab source shown as either of these skins reads the same alias list;
+   `--gs-*` carries the palette. The neutral ramp that follows in each skin
+   file is palette-specific, so it stays there. */
+
+html:is(.gs-theme-github, .gs-theme-bitbucket) {
+  /* text */
+  --gl-text-color-default: var(--gs-fg) !important;
+  --gl-text-color-heading: var(--gs-fg) !important;
+  --gl-text-color-strong: var(--gs-fg) !important;
+  --gl-text-color-subtle: var(--gs-fg-muted) !important;
+  --gl-text-color-disabled: var(--gs-fg-subtle) !important;
+  --gl-text-color-link: var(--gs-link) !important;
+  --gl-text-color-success: var(--gs-success) !important;
+  --gl-text-color-danger: var(--gs-danger) !important;
+  --gl-text-color-warning: var(--gs-attention) !important;
+
+  /* deprecated text aliases still used by older components */
+  --gl-text-color: var(--gs-fg) !important;
+  --gl-text-color-secondary: var(--gs-fg-muted) !important;
+  --gl-text-color-tertiary: var(--gs-fg-subtle) !important;
+
+  /* surfaces */
+  --gl-background-color-default: var(--gs-canvas) !important;
+  --gl-background-color-subtle: var(--gs-canvas-subtle) !important;
+  --gl-background-color-strong: var(--gs-canvas-subtle) !important;
+  --gl-background-color-overlap: var(--gs-canvas-overlay) !important;
+  --gl-background-color-section: var(--gs-canvas) !important;
+  --gl-background-color-disabled: var(--gs-canvas-subtle) !important;
+  --gl-background-color: var(--gs-canvas) !important;
+
+  /* borders */
+  --gl-border-color-default: var(--gs-border) !important;
+  --gl-border-color-subtle: var(--gs-border-muted) !important;
+  --gl-border-color-strong: var(--gs-border) !important;
+  --gl-border-color-section: var(--gs-border) !important;
+  --gl-border-color: var(--gs-border) !important;
+
+  /* feedback */
+  --gl-feedback-info-background-color: var(--gs-accent-subtle) !important;
+  --gl-feedback-success-background-color: var(--gs-success-subtle) !important;
+  --gl-feedback-danger-background-color: var(--gs-danger-subtle) !important;
+  --gl-feedback-warning-background-color: var(--gs-attention-subtle) !important;
+  --gl-status-success-background-color: var(--gs-success-subtle) !important;
+  --gl-status-danger-background-color: var(--gs-danger-subtle) !important;
+  --gl-status-warning-background-color: var(--gs-attention-subtle) !important;
+  --gl-status-brand-background-color: var(--gs-accent-subtle) !important;
+  --gl-highlight-target-background-color: var(--gs-accent-subtle) !important;
+
+  /* controls */
+  --gl-control-background-color-default: var(--gs-canvas) !important;
+  --gl-control-border-color-default: var(--gs-border) !important;
+  --gl-control-border-color-focus: var(--gs-accent) !important;
+  --gl-control-placeholder-color: var(--gs-fg-subtle) !important;
+  --gl-control-border-radius: var(--gs-radius-md) !important;
+
+  /* shape */
+  --gl-border-radius-sm: var(--gs-radius-sm) !important;
+  --gl-border-radius-base: var(--gs-radius-md) !important;
+  --gl-border-radius-lg: var(--gs-radius-lg) !important;
+}

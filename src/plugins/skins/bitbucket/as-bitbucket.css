@@ -156,7 +156,7 @@ html.gs-theme-bitbucket {
 }
 
 /* The Pajamas alias list that used to open this section is shared with the
-   GitHub skin and now lives in themes/gs-tokens.css. What remains here is
+   GitHub skin and now lives in the GitLab source's `tokens.css`. What remains here is
    Atlassian-specific: the neutral ramp and brand hues. */
 
 html.gs-theme-bitbucket {
@@ -317,7 +317,7 @@ html.gs-theme-bitbucket
 
 /* Gitea exposes its own --color-* names and states its nav colours on #navbar.
    `[data-theme]` is Gitea's marker on <html>, so the shared "Gitea tokens"
-   block in themes/gs-tokens.css is inert on GitHub and GitLab. Only the top
+   block in the Gitea source's `tokens.css` is inert on GitHub and GitLab. Only the top
    bar is Bitbucket-specific. */
 
 html.gs-theme-bitbucket[data-theme] #navbar {

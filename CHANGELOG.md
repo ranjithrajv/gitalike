@@ -138,6 +138,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **A plugin's compare recipes and token map live in its folder.** Each source
+  and skin now carries a Node-only `parity.mjs` (the live capture, the
+  style-parity selectors, the reviewed target vocabulary), and each source that
+  maps a forge's design tokens carries `tokens.css`; `tools/compare/captures.mjs`
+  and `style-recipes.mjs` derive their tables by reading the folders, and
+  `themes/gs-tokens.css` is gone. The capture skins and file names are derived
+  from the source's `prefix`, its own skin and the registry, so a new plugin no
+  longer edits two hand-kept tables — `tools/new-plugin.mjs` writes the sidecar
+  and `tests/compare/recipes.test.mjs` is the folder contract.
 - **A source now owns its forge's hosts, routes and scopes.** The bundled hosts
   and their kind, the counterpart host and the route segments the two spell
   differently, the reserved product paths, and the nav/top-bar scopes move out of

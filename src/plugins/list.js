@@ -19,7 +19,10 @@ globalThis.GITALIKE_PLUGIN_FILES = {
     "plugins/sources/gitlab/index.js"
   ],
   "css": [
-    "themes/gs-tokens.css",
+    "plugins/sources/bitbucket/tokens.css",
+    "plugins/sources/gerrit/tokens.css",
+    "plugins/sources/gitea/tokens.css",
+    "plugins/sources/gitlab/tokens.css",
     "plugins/skins/bitbucket/as-bitbucket.css",
     "plugins/skins/github/as-github.css",
     "plugins/skins/gitlab/as-gitlab.css",
