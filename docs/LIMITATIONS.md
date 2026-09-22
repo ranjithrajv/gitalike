@@ -83,12 +83,26 @@ it stops short of a perfect reskin — the detail behind the short list in the
   PolyGerrit reads its colours from root custom properties
   (`--primary-text-color`, `--link-color`, …), which inherit across the shadow
   boundary, `themes/gs-tokens.css` recolours the whole app, and `paintGerritNav`
-  reorients the header: under the GitHub UI it stays a top bar with a row nav,
-  under the GitLab/Bitbucket UI the header becomes a fixed left column (a
-  sidebar) with the change list beside it. The page-wide copy and control-label
+  reorients the header and relabels its words: under the GitHub UI it is a 64px
+  top bar with a row nav reading Pull requests / Code, and under the
+  GitLab/Bitbucket UI the header becomes a fixed left column (a sidebar) reading
+  Merge requests / Repository, with the change list beside it. The page-wide copy
+  and control-label
   passes still cannot cross into the shadow roots, and its changes are numbered
   (`/c/<project>/+/<N>`) with a Change-Id rather than a `#`/`!` pull-request
   marker, so the reference-marker pass does not apply either.
+- **Full parity is unreachable for the non-GitHub/GitLab sources, and that is a
+  ceiling, not a backlog.** The parity rubric credits a source for the target's
+  keyboard combos only when the source is the *other* forge, so Gerrit, Bitbucket
+  and Gitea lose that dimension outright (weight 8 — a project ceiling of 9.2
+  before any other gap). The independent computed-style read has the same shape:
+  its vocabulary dimension is the share of the *target's* nav words present, and a
+  source with a shorter menu (Gerrit's Changes/Documentation/Browse) or a
+  different one (Gitea's profile tabs) cannot carry all of them. Gerrit's
+  shadow-DOM copy/label passes and Bitbucket's hashed profile markup are further
+  honest floors. Reaching 10.0 on these pairs would mean inventing destinations
+  the source does not have, or tuning the metric — neither of which this project
+  does.
 - **The Codeberg and gitea.com skin now re-orients the navigation, but not the
   whole page.** They are GitHub-flavoured, so they can wear either UI. Under the
   **GitLab UI** the repo tabs are rebuilt as a grouped left sidebar (GitLab's
