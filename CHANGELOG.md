@@ -161,6 +161,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **GitAlike is on the Chrome Web Store.** The Chrome listing is live; the
+  Firefox listing is in review on addons.mozilla.org. Both links are in the
+  README and the site's Install section (the Firefox one goes live when it
+  clears review).
 - **A plugin's compare recipes and token map live in its folder.** Each source
   and skin now carries a Node-only `parity.mjs` (the live capture, the
   style-parity selectors, the reviewed target vocabulary), and each source that

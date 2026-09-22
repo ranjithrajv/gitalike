@@ -934,8 +934,8 @@
             <div class="cta">
               <a
                 class="btn"
-                href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"
-                ><img class="blogo" src="browsers/chromium.svg" alt="" width="16" height="16" />Download for Chromium</a
+                href="https://chromewebstore.google.com/detail/gitalike-%E2%80%94-any-git-platfo/gomhflonjeoojpdhmbbmmncmgjaomlla"
+                ><img class="blogo" src="browsers/chrome.svg" alt="" width="16" height="16" />Get it on the Chrome Web Store</a
               >
               <a
                 class="btn secondary"
@@ -944,8 +944,9 @@
               >
               <a class="btn ghost" href="https://github.com/ranjithrajv/gitalike">Source</a>
             </div>
-            <!-- Store badges (Chrome Web Store, Edge Add-ons, AMO, Opera) replace
-                 the two ZIP buttons once the listings are live. -->
+            <!-- The Chrome Web Store button is live. The Firefox listing
+                 (addons.mozilla.org/en-US/firefox/addon/gitalike/) joins it once
+                 it clears review; the Firefox ZIP stays for manual installs. -->
             <p class="trust">
               <span>No account</span>
               <span>No network requests</span>
@@ -1600,10 +1601,12 @@
             <h2>Plugins</h2>
             <p>
               GitAlike is assembled from two kinds of plugin, and the registry
-              is open. A <b>skin</b> is a target UI a page is made to look
-              like; a <b>source</b> is a forge's markup. They are independent —
-              any source can wear any skin — and each is a self-contained folder
-              under <code>src/plugins/</code>: its definition, its tests, and a
+              is open — <b>anyone can add one</b>. A <b>skin</b> is a target UI
+              a page is made to look like; a <b>source</b> is a forge's markup.
+              They are independent — any source can wear any skin — so one new
+              forge or one new UI extends every page the extension already
+              touches. Each is a self-contained folder under
+              <code>src/plugins/</code>: its definition, its tests, and a
               stylesheet for a skin.
             </p>
           </div>
@@ -1651,8 +1654,9 @@
                 their app shells are canaried, and their palettes are re-pointed
                 through the design tokens each reads (Atlassian <code>--ds-*</code>
                 on Bitbucket, PolyGerrit's root properties on Gerrit), so they
-                recolour without reaching into the app. Gerrit's copy and
-                navigation live inside shadow DOM and are not reached yet.
+                recolour without reaching into the app. Gerrit's chrome lives in
+                open shadow roots, so its copy, navigation and query pages are
+                reached from the content scripts too.
               </p>
               <p class="note">
                 <a
@@ -1663,16 +1667,23 @@
             </div>
           </div>
           <p class="chips-note">
-            Adding one is meant to be small: a plugin is one folder — its
-            definition and its tests, plus a stylesheet for a skin and, for a
-            forge people host, a host entry. <code>node tools/new-plugin.mjs
-            skin &lt;name&gt;</code> writes that skeleton for you, and this list
-            is generated from the plugins — so it cannot drift from the code. The rules are the same
-            for everyone — GPL-3.0-or-later, no monetisation, and your own
-            original mark rather than a vendor's.
+            <b>The registry is open — contributions are welcome.</b> Adding one
+            is meant to be small: a plugin is one folder — its definition and its
+            tests, plus a stylesheet for a skin and, for a forge people host, a
+            host entry. <code>node tools/new-plugin.mjs skin &lt;name&gt;</code>
+            (or <code>source &lt;name&gt;</code>) writes that skeleton for you,
+            and this list is generated from the plugins — so it cannot drift
+            from the code. A new <b>source</b> brings another forge (Sourcehut is
+            the next candidate); a new <b>skin</b> brings another target UI. The
+            rules are the same for everyone — GPL-3.0-or-later, no monetisation,
+            and your own original mark rather than a vendor's.
             <a
               href="https://github.com/ranjithrajv/gitalike/issues/new?template=new_plugin.yml"
               >Propose a plugin →</a
+            >
+            <a
+              href="https://github.com/ranjithrajv/gitalike/blob/main/CONTRIBUTING.md"
+              >Contributing guide →</a
             >
           </p>
         </div>
@@ -1817,9 +1828,10 @@
                 <li><b>Load unpacked</b> → choose the unzipped folder.</li>
               </ol>
               <p class="note">
-                Load unpacked takes the folder, not the ZIP. Heading to the
-                Chrome Web Store and Microsoft Edge Add-ons, where most
-                Chromium browsers install from.
+                Load unpacked takes the folder, not the ZIP. Most Chromium
+                browsers install from the
+                <a href="https://chromewebstore.google.com/detail/gitalike-%E2%80%94-any-git-platfo/gomhflonjeoojpdhmbbmmncmgjaomlla">Chrome Web Store</a>,
+                where GitAlike is live.
               </p>
             </div>
             <div class="panel">
@@ -1828,7 +1840,9 @@
                 Needs Firefox 142 or newer, and works in the forks that track
                 it (LibreWolf, Floorp, Zen, …). The ZIP is unsigned, so Firefox
                 loads it temporarily — it is gone when the browser restarts. A
-                permanent install comes from addons.mozilla.org.
+                permanent install comes from
+                <a href="https://addons.mozilla.org/en-US/firefox/addon/gitalike/">addons.mozilla.org</a>,
+                where the listing is in review.
               </p>
               <ol>
                 <li>
@@ -1851,9 +1865,12 @@
               GitAlike targets the two extension platforms, so it runs in the
               Chromium browsers (Chrome, Edge, Brave, Opera, Vivaldi, …) and in
               Firefox and the forks that track it (LibreWolf, Floorp, Zen, …).
-              It is in review on the Chrome Web Store and addons.mozilla.org,
-              with Microsoft Edge Add-ons and Opera to follow. Until those
-              listings go live, the ZIP above installs it today.
+              It is live on the
+              <a href="https://chromewebstore.google.com/detail/gitalike-%E2%80%94-any-git-platfo/gomhflonjeoojpdhmbbmmncmgjaomlla">Chrome Web Store</a>,
+              and in review on
+              <a href="https://addons.mozilla.org/en-US/firefox/addon/gitalike/">addons.mozilla.org</a>,
+              with Microsoft Edge Add-ons and Opera to follow. Until those are
+              listed, the ZIPs above install it today.
             </p>
             <ul class="browsers" aria-label="Browsers GitAlike runs in">
               <li><img src="browsers/chromium.svg" alt="" width="18" height="18" />Chromium</li>

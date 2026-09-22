@@ -6,6 +6,8 @@ Use any forge, keep your muscle memory.
 [![Release](https://img.shields.io/github/v/release/ranjithrajv/gitalike)](https://github.com/ranjithrajv/gitalike/releases/latest)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 [![Telemetry: none](https://img.shields.io/badge/telemetry-none-success)](https://ranjithrajv.github.io/gitalike/privacy.html)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Get%20GitAlike-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/gitalike-%E2%80%94-any-git-platfo/gomhflonjeoojpdhmbbmmncmgjaomlla)
+[![Firefox Add-ons](https://img.shields.io/badge/Firefox%20Add--ons-Get%20GitAlike-FF7139?logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/gitalike/)
 
 **Nothing else makes GitHub read like GitLab — and back.** GitAlike re-skins the
 forge in front of you as the product you know best — GitHub, GitLab or Bitbucket
@@ -104,9 +106,13 @@ off.
 
 ## Install
 
-> **In review on the Chrome Web Store and addons.mozilla.org.** While those
-> listings are pending, download the ZIP for your browser below and follow the
-> steps to load it yourself.
+<a href="https://chromewebstore.google.com/detail/gitalike-%E2%80%94-any-git-platfo/gomhflonjeoojpdhmbbmmncmgjaomlla"><img alt="Get GitAlike on the Chrome Web Store" src="https://img.shields.io/badge/Chrome%20Web%20Store-Get%20GitAlike-4285F4?logo=googlechrome&amp;logoColor=white"></a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/gitalike/"><img alt="Get GitAlike on addons.mozilla.org" src="https://img.shields.io/badge/Firefox%20Add--ons-Get%20GitAlike-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
+
+GitAlike is live on the **Chrome Web Store**. The Firefox listing is **in review
+on addons.mozilla.org** — the link above goes live once it clears review. Until
+then (or for a manual install), download the ZIP for your browser below and
+follow the steps to load it yourself.
 
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download GitAlike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"><img alt="Download GitAlike for Firefox" src="https://img.shields.io/badge/Download-Firefox-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
@@ -131,7 +137,9 @@ wherever that folder lives — so do not move or delete it afterwards.
 `gitalike-firefox.zip` needs Firefox **142 or newer**, and works in the forks
 that track it (LibreWolf, Floorp, Zen, …). It is unsigned, so Firefox will only
 load it **temporarily** — it is gone when the browser restarts. A permanent
-install comes from addons.mozilla.org.
+install comes from
+[addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/gitalike/)
+(where the listing is in review).
 
 1. Go to `about:debugging#/runtime/this-firefox`
 2. **Load Temporary Add-on…** → choose `gitalike-firefox.zip` itself; it does not
