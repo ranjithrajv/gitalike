@@ -181,11 +181,14 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   GitHub's and GitLab's profile markup (`SELECTORS.github.profile*`,
   `SELECTORS.gitlab.profile*`), so a Gitea/Forgejo profile gets the shared
   palette, copy, account-chrome and reference-marker work, and its profile
-  navigation is reoriented to the layout (`themes/ux-nav.css`: the tab menu
-  becomes a column under a sidebar layout), but its menu, rail and card are not
-  rebuilt. This is the largest remaining scoring gap; the `codeberg-profile-*.png`
-  captures show the shared palette, copy and reoriented nav, not a rebuilt Gitea
-  profile.
+  layout follows the skin: under a sidebar layout the header (avatar, name, bio,
+  website) becomes a **left rail** with the tabs and content beside it
+  (`paintGiteaProfile` + `themes/ux-nav.css`), and under the GitHub layout the
+  tab menu is a row. Its menu and card are still not rebuilt, so the dimensions
+  that need a container (`SELECTORS.gitea.profileMenu`) stay partial; the
+  `codeberg-profile-*.png` captures show the rail. Bitbucket's workspace profile
+  is the one that keeps its own side navigation without a rebuilt rail — its
+  classes are hashed (see `docs/LIMITATIONS.md`).
 - **Bitbucket as a source (6.5 / 5.9 project, 5.6 / 5.7 profile)** — it gains
   three passes. Its palette: Bitbucket Cloud exposes Atlassian's `--ds-*` design
   tokens on <html>, so the skins re-point them at their own palette, header

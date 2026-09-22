@@ -270,7 +270,33 @@
     }
   }
 
+  // Gitea/Forgejo profiles put the avatar, name, bio and website in a header row
+  // at the top. Under a sidebar layout that header becomes the left rail, with
+  // the tab menu and content beside it — the GitLab profile shape, built from
+  // Gitea's own (semantic) classes. GitHub's row layout is left as Gitea's.
+  function paintGiteaProfile(t) {
+    if (document.documentElement.dataset.gsSource !== 'gitea') return;
+    if (t !== 'gitlab' && t !== 'bitbucket') return;
+    const root = document.querySelector(
+      '.page-content.user.profile, .page-content.organization.profile',
+    );
+    if (!root) return;
+    const header = [...root.querySelectorAll(':scope > .ui.container')].find(
+      (el) => el.querySelector('.org-header, .user-header, .flex-item-header'),
+    );
+    if (!header) return;
+    rt.ledger(header, 'gitea-profile-rail', () => ({
+      restore: () => header.removeAttribute('data-gs-profile-rail'),
+    }));
+    header.setAttribute('data-gs-profile-rail', '');
+  }
+
   rt.once('profile', () => {
-    rt.globalPasses.push(paintProfileRail, paintProfileStats, paintProfileMenu);
+    rt.globalPasses.push(
+      paintProfileRail,
+      paintProfileStats,
+      paintProfileMenu,
+      paintGiteaProfile,
+    );
   });
 })();

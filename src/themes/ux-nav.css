@@ -1203,3 +1203,28 @@ html.gs-layout-gitlab [data-gs-bb-nav] .gs-nav-group {
   text-transform: uppercase;
   color: var(--gs-fg-subtle);
 }
+
+/* Gitea/Forgejo profile: the header (avatar, name, bio, website) becomes the
+   left rail under a sidebar layout, with the tabs and content beside it — the
+   GitLab profile shape. `paintGiteaProfile` marks the header. */
+html[data-gs-source='gitea'].gs-layout-gitlab .page-content.profile {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  column-gap: 28px;
+  align-items: start;
+}
+
+html[data-gs-source='gitea'].gs-layout-gitlab
+  .page-content.profile
+  > [data-gs-profile-rail] {
+  grid-column: 1;
+  grid-row: 1 / span 4;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+html[data-gs-source='gitea'].gs-layout-gitlab
+  .page-content.profile
+  > :not([data-gs-profile-rail]) {
+  grid-column: 2;
+}

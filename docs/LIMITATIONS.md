@@ -69,18 +69,24 @@ it stops short of a perfect reskin — the detail behind the short list in the
   repository bar, and `themes/gs-tokens.css` re-points Atlassian's `--ds-*`
   design tokens — which Bitbucket reads from the root — at the applied palette;
   copy, control labels and `/pull-requests/N` markers follow the applied product
-  too. Bitbucket Data Center (`/projects/<key>/repos/<slug>`) is classified as
-  the same source but is a different, server-rendered markup family, and has no
-  public instance to canary.
+  too. A Bitbucket *profile* (the workspace page) keeps its own side navigation,
+  which `paintBitbucketNav` reorients to the layout, but it is not rebuilt as a
+  GitHub/GitLab-style profile rail: Bitbucket's classes are hashed and
+  client-rendered, so there are no stable hooks to build one from. Bitbucket Data
+  Center (`/projects/<key>/repos/<slug>`) is classified as the same source but is
+  a different, server-rendered markup family, and has no public instance to
+  canary.
 - **Gerrit is canaried and palette-mapped, but its content lives in shadow DOM.**
   A Gerrit instance is added one origin at a time from the popup and can be shown
   with the GitHub or GitLab UI. PolyGerrit serves a shell (`gr-app#pg-app`) and
   renders inside shadow roots; the canary watches the shell, and because
   PolyGerrit reads its colours from root custom properties
   (`--primary-text-color`, `--link-color`, …), which inherit across the shadow
-  boundary, `themes/gs-tokens.css` recolours the whole app. Copy and navigation
-  *inside* the shadow roots are not reached yet — that needs the app's roots
-  opened at `document_start` — and its changes are numbered
+  boundary, `themes/gs-tokens.css` recolours the whole app, and `paintGerritNav`
+  reorients the header: under the GitHub UI it stays a top bar with a row nav,
+  under the GitLab/Bitbucket UI the header becomes a fixed left column (a
+  sidebar) with the change list beside it. The page-wide copy and control-label
+  passes still cannot cross into the shadow roots, and its changes are numbered
   (`/c/<project>/+/<N>`) with a Change-Id rather than a `#`/`!` pull-request
   marker, so the reference-marker pass does not apply either.
 - **The Codeberg and gitea.com skin now re-orients the navigation, but not the
