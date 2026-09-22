@@ -17,9 +17,11 @@ test('gerrit registers its PolyGerrit app-shell hooks', () => {
   assert.equal(SOURCE.markup, true);
   assert.equal(SOURCE.label, 'Gerrit');
   assert.equal(SELECTORS.gerrit.app, 'gr-app#pg-app');
-  // The profile pass reshapes the owner query's user header, so the hook it
-  // keys on is declared here rather than only as a literal in the pass.
+  // The profile pass reshapes an owner query's user header and a project
+  // query's repo header, so the hooks it keys on are declared here rather than
+  // only as literals in the pass.
   assert.equal(SELECTORS.gerrit.userHeader, 'gr-user-header');
+  assert.equal(SELECTORS.gerrit.repoHeader, 'gr-repo-header');
 });
 
 test('every gerrit canary page pins a hook that exists', () => {

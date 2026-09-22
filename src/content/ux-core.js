@@ -349,7 +349,8 @@
     for (const el of document.querySelectorAll(
       '.gs-nav-group,[data-gs-profile-stats],[data-gs-profile-menu],' +
         '[data-gs-profile-rail],[data-gs-project-tabs],[data-gs-gitea-nav],' +
-        '[data-gs-gitea-added],[data-gs-gerrit-profile-nav]',
+        '[data-gs-gitea-added],[data-gs-gerrit-profile-nav],' +
+        '[data-gs-gerrit-profile-avatar]',
     )) {
       el.remove();
     }

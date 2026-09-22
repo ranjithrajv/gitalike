@@ -124,7 +124,8 @@
       "selectors": [
         "app",
         "body",
-        "userHeader"
+        "userHeader",
+        "repoHeader"
       ],
       "canary": [
         "https://gerrit-review.googlesource.com/"

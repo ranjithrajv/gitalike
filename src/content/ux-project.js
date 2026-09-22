@@ -672,19 +672,21 @@
   // Gerrit has no account profile route of its own. The closest thing it serves
   // is an owner query (`/q/owner:<account>`), which PolyGerrit heads with
   // `gr-user-header` — the account's avatar, display name, email and join date.
-  // The skins reshape that header into the applied product's profile identity
-  // block and give it a profile navigation built from Gerrit's own owner views,
-  // so every tab is a real Gerrit query rather than a dead link to a page Gerrit
-  // does not have. The change list below stays Gerrit's change list.
-  // Read the account from the URL using the marker the source declares for its
-  // profile equivalent (`pages.profile.from`), so the route lives in the plugin
-  // rather than here. The account runs until the next query separator.
-  function gerritOwnerId(from) {
+  // A project query (`/q/project:<project>`) is headed with `gr-repo-header` —
+  // the project's name and its Detail/Browse links. The skins reshape either
+  // header into the applied product's profile identity block and give it a
+  // profile navigation built from Gerrit's own queries, so every tab is a real
+  // Gerrit query rather than a dead link. The change list below stays Gerrit's.
+  //
+  // Read the subject from the URL using the marker the source declares
+  // (`pages.<kind>.from`), so the route lives in the plugin rather than here.
+  // An account id has no slash; a project path does.
+  function gerritSubject(from, keepSlash) {
     const where = `${location.pathname}${location.hash}`;
     const at = where.indexOf(from);
     if (at === -1) return null;
     const rest = where.slice(at + from.length);
-    const end = rest.search(/[,+/]/);
+    const end = rest.search(keepSlash ? /[,+]/ : /[,+/]/);
     return end === -1 ? rest : rest.slice(0, end);
   }
 
@@ -699,18 +701,19 @@
   // The profile navigation, built from Gerrit's own owner views on the route the
   // source declared (`pages.profile.route`), so every tab is a real query rather
   // than a dead link.
-  const GERRIT_PROFILE_TABS = (route, owner) => [
-    ['All', `${route}${owner}`],
-    ['Open', `${route}${owner}+status:open`],
-    ['Merged', `${route}${owner}+status:merged`],
-    ['Abandoned', `${route}${owner}+status:abandoned`],
+  const GERRIT_PROFILE_TABS = (route, subject) => [
+    ['All', `${route}${subject}`],
+    ['Open', `${route}${subject}+status:open`],
+    ['Merged', `${route}${subject}+status:merged`],
+    ['Abandoned', `${route}${subject}+status:abandoned`],
   ];
 
-  // The applied skin's profile shape, adopted into `gr-user-header`'s shadow
-  // root. GitHub's profile is a large round avatar beside the identity, over a
+  // The applied skin's profile shape, adopted into the header's shadow root.
+  // GitHub's profile is a large round avatar beside the identity, over a
   // horizontal tab row with an underlined current tab; GitLab's is the same
-  // identity block with a subtle-background current item. The identity rows are
-  // recoloured with the skin's tokens so the card follows the palette.
+  // identity block with a subtle-background current item. A project header has
+  // no avatar, so a monogram stands in. Everything is recoloured with the skin's
+  // tokens so the card follows the palette.
   function gerritProfileCss(t) {
     const base =
       ':host{display:grid !important;grid-template-columns:96px 1fr !important;' +
@@ -718,11 +721,15 @@
       'column-gap:16px !important;background:transparent !important;border:0 !important;' +
       'border-bottom:1px solid var(--gs-border) !important;padding:24px 0 0 !important;' +
       'font-family:var(--gs-font) !important;color:var(--gs-fg) !important;}' +
-      'gr-avatar{grid-area:avatar !important;width:96px !important;height:96px !important;' +
-      'margin:0 !important;border-radius:50% !important;background-size:cover !important;' +
+      'gr-avatar,[data-gs-gerrit-profile-avatar]{grid-area:avatar !important;' +
+      'width:96px !important;height:96px !important;margin:0 !important;' +
+      'border-radius:50% !important;background-size:cover !important;' +
       'background-position:center !important;}' +
+      '[data-gs-gerrit-profile-avatar]{display:flex !important;align-items:center !important;' +
+      'justify-content:center !important;background:var(--gs-accent-subtle) !important;' +
+      'color:var(--gs-accent) !important;font-size:40px !important;font-weight:600 !important;}' +
       '.info:first-of-type{grid-area:info !important;padding:0 !important;margin:0 !important;}' +
-      '.info:last-of-type{display:none !important;}' +
+      '.info:not(:first-of-type){display:none !important;}' +
       'hr{display:none !important;}' +
       'h1.heading-1{font-size:24px !important;font-weight:600 !important;' +
       'line-height:1.25 !important;margin:0 0 4px !important;color:var(--gs-fg) !important;}' +
@@ -748,25 +755,17 @@
     return base + current;
   }
 
-  function paintGerritProfile(t) {
-    if (document.documentElement.dataset.gsSource !== 'gerrit') return;
-    // The source declares which page is its profile equivalent and the route
-    // that serves it (`pages.profile`); the DOM hook stays in `selectors`.
-    const page = UX.PAGES?.gerrit?.profile;
-    if (!page || !page.from) return;
-    // The DOM hook travels with the page declaration when the source carries
-    // one, falling back to the source's `selectors` table.
-    const hook = page.selectors?.header || SELECTORS.gerrit?.userHeader;
-    const route = routePath(page.route);
-    if (!hook || !route) return;
-    const header = deepFirst(hook);
-    const root = header && header.shadowRoot;
-    if (!root) return;
-    const owner = gerritOwnerId(page.from);
-    if (!owner) return;
+  // The page kinds whose header wears the profile chrome, in the order they are
+  // tried: the account's nearest page first, then the project's. `hook` names the
+  // fallback selector in the source's `selectors` table.
+  const GERRIT_PROFILE_KINDS = [
+    { kind: 'profile', hook: 'userHeader', keepSlash: false },
+    { kind: 'project', hook: 'repoHeader', keepSlash: true },
+  ];
 
-    const signature = `${t}:${owner}`;
-    // Re-run when the applied skin changes, the account changes, or PolyGerrit
+  function paintGerritSubjectHeader(t, { header, root, kind, route, subject }) {
+    const signature = `${t}:${kind}:${subject}`;
+    // Re-run when the applied skin changes, the subject changes, or PolyGerrit
     // has replaced the shadow root and dropped the navigation with it.
     if (
       header.getAttribute('data-gs-gerrit-profile') === signature &&
@@ -778,27 +777,42 @@
     ledger(header, 'gerrit-profile', () => ({
       restore: () => {
         header.removeAttribute('data-gs-gerrit-profile');
-        const navs = header.shadowRoot
-          ? header.shadowRoot.querySelectorAll('[data-gs-gerrit-profile-nav]')
+        const made = header.shadowRoot
+          ? header.shadowRoot.querySelectorAll(
+              '[data-gs-gerrit-profile-nav],[data-gs-gerrit-profile-avatar]',
+            )
           : [];
-        for (const nav of navs) nav.remove();
+        for (const el of made) el.remove();
         gerritProfileSheets.clear();
       },
     }));
 
-    // Drop the previous navigation and sheets before rebuilding; the ledger
-    // entry reads the DOM at revert time, so it stays exact either way.
+    // Drop the previous navigation, monogram and sheets before rebuilding; the
+    // ledger entry reads the DOM at revert time, so it stays exact either way.
     gerritProfileSheets.clear();
-    for (const nav of root.querySelectorAll('[data-gs-gerrit-profile-nav]')) {
-      nav.remove();
+    for (const el of root.querySelectorAll(
+      '[data-gs-gerrit-profile-nav],[data-gs-gerrit-profile-avatar]',
+    )) {
+      el.remove();
     }
     header.setAttribute('data-gs-gerrit-profile', signature);
+
+    // A project header has no image, so a monogram stands in — the same
+    // convention GitHub uses for an organisation without a logo.
+    if (!root.querySelector('gr-avatar')) {
+      const name = (root.querySelector('h1')?.textContent || '').trim();
+      const avatar = document.createElement('span');
+      avatar.setAttribute('data-gs-gerrit-profile-avatar', '');
+      avatar.setAttribute('data-gs-ux-skip', '');
+      avatar.textContent = (name.match(/[a-z0-9]/i) || ['?'])[0].toUpperCase();
+      root.insertBefore(avatar, root.firstChild);
+    }
 
     const path = `${location.pathname}${location.hash}`;
     const nav = document.createElement('nav');
     nav.setAttribute('data-gs-gerrit-profile-nav', '');
     nav.setAttribute('data-gs-ux-skip', '');
-    for (const [label, href] of GERRIT_PROFILE_TABS(route, owner)) {
+    for (const [label, href] of GERRIT_PROFILE_TABS(route, subject)) {
       const anchor = document.createElement('a');
       anchor.textContent = label;
       anchor.setAttribute('href', href);
@@ -811,6 +825,30 @@
     }
     root.appendChild(nav);
     gerritProfileSheets.adopt(root, gerritProfileCss(t));
+  }
+
+  // Reshape the header of whichever declared page kind this URL is, if any. A
+  // page carries one header, so the first kind that matches wins.
+  function paintGerritProfile(t) {
+    if (document.documentElement.dataset.gsSource !== 'gerrit') return;
+    const pages = UX.PAGES?.gerrit;
+    if (!pages) return;
+    for (const { kind, hook, keepSlash } of GERRIT_PROFILE_KINDS) {
+      const page = pages[kind];
+      if (!page || !page.from) continue;
+      const route = routePath(page.route);
+      // The DOM hook travels with the page declaration when the source carries
+      // one, falling back to the source's `selectors` table.
+      const selector = page.selectors?.header || SELECTORS.gerrit?.[hook];
+      if (!route || !selector) continue;
+      const header = deepFirst(selector);
+      const root = header && header.shadowRoot;
+      if (!root) continue;
+      const subject = gerritSubject(page.from, keepSlash);
+      if (!subject) continue;
+      paintGerritSubjectHeader(t, { header, root, kind, route, subject });
+      return;
+    }
   }
 
   // PolyGerrit renders its chrome inside *open* shadow roots, so a content

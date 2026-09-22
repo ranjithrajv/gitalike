@@ -49,6 +49,10 @@
       // thing Gerrit has to a profile page; `paintGerritProfile` reshapes it for
       // the applied skin.
       userHeader: 'gr-user-header',
+      // A project query (`/q/project:<project>`) is headed with the project's
+      // name and its Detail/Browse links. `paintGerritProfile` reshapes it like
+      // the account header, with a monogram standing in for the missing avatar.
+      repoHeader: 'gr-repo-header',
     },
     pages: {
       // Gerrit addresses a project by name in a query, not a path.

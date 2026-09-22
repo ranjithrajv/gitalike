@@ -8,16 +8,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Gerrit's owner query wears the applied skin's profile.** Gerrit has no
+- **Gerrit's query pages wear the applied skin's profile.** Gerrit has no
   profile route, but PolyGerrit heads an owner query (`/q/owner:<account>`) with
-  `gr-user-header` — the account's avatar, display name, email and join date.
-  The skins reshape that header into the applied product's profile identity
-  block and give it a tab row built from Gerrit's own owner views (All / Open /
-  Merged / Abandoned), so every tab is a real Gerrit query rather than a dead
-  link to a page Gerrit does not have (`paintGerritProfile`,
-  `src/content/ux-project.js`). The change list below stays Gerrit's. Gerrit's
-  profile score rises to 2.6–4.1 (from 2.1–3.1), and the `docs/gerrit-profile-*`
-  frames are recaptured from the owner query.
+  `gr-user-header` — the account's avatar, display name, email and join date —
+  and a project query (`/q/project:<project>`) with `gr-repo-header`. The skins
+  reshape either header into the applied product's profile identity block and
+  give it a tab row built from Gerrit's own queries (All / Open / Merged /
+  Abandoned), so every tab is a real Gerrit query rather than a dead link to a
+  page Gerrit does not have (`paintGerritProfile`, `src/content/ux-project.js`).
+  A project has no image, so a monogram stands in — the same convention GitHub
+  uses for an organisation without a logo. The change list below stays Gerrit's.
+  Gerrit's profile score rises to 2.6–4.1 (from 2.1–3.1), and the
+  `docs/gerrit-profile-*` frames are recaptured from the owner query.
 - A **skin and source contract** (`tests/contracts.test.mjs`) that derives the
   skin list from `THEMES` and the source list from `SELECTORS` and names every
   part a new skin or source must supply, so a contributor gets a checklist

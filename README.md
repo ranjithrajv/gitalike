@@ -283,10 +283,11 @@ short version:
   Bitbucket Cloud, PolyGerrit's root properties on Gerrit), Bitbucket's
   repository bar is handled, and both app shells are canaried. PolyGerrit's roots
   are open, so Gerrit's header navigation is reoriented and relabelled and its
-  copy passes run inside them, and an owner query (`/q/owner:<account>`) is
-  reshaped into the applied skin's profile identity block with a tab row built
-  from Gerrit's own owner views. The content stays Gerrit's change list. Gerrit
-  has no bundled host; add it by instance.
+  copy passes run inside them, and an owner query (`/q/owner:<account>`) or a
+  project query (`/q/project:<project>`) is reshaped into the applied skin's
+  profile identity block with a tab row built from Gerrit's own queries (a
+  project gets a monogram where an account has an avatar). The content stays
+  Gerrit's change list. Gerrit has no bundled host; add it by instance.
 - **The skin is cosmetic, and the page can influence it.** It is not a security
   boundary; do not treat it as a trust signal.
 - **Access is bundled hosts at install, one origin at a time after that.** There

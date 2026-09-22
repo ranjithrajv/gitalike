@@ -88,12 +88,14 @@ it stops short of a perfect reskin — the detail behind the short list in the
   GitLab/Bitbucket UI the header becomes a fixed left column (a sidebar) reading
   Merge requests / Repository, with the change list beside it. Its copy and
   control-label passes are run into each open shadow root (`paintGerritCopy`),
-  and an owner query (`/q/owner:<account>`) — the closest page it has to a
-  profile, headed by PolyGerrit's `gr-user-header` with the account's avatar,
-  display name, email and join date — is reshaped into the applied skin's profile
-  identity block with a tab row built from Gerrit's own owner views
-  (`paintGerritProfile`). The content stays Gerrit's change list, though, and
-  Gerrit has no pinned repositories, followers or profile README to reproduce.
+  and the query pages that come closest to a profile — an owner query
+  (`/q/owner:<account>`), headed by PolyGerrit's `gr-user-header` with the
+  account's avatar, display name, email and join date, and a project query
+  (`/q/project:<project>`), headed by `gr-repo-header` — are reshaped into the
+  applied skin's profile identity block with a tab row built from Gerrit's own
+  queries (`paintGerritProfile`). A project has no image, so a monogram stands
+  in. The content stays Gerrit's change list, though, and Gerrit has no pinned
+  repositories, followers or profile README to reproduce.
   Its changes are numbered (`/c/<project>/+/<N>`) with a Change-Id rather than a
   `#`/`!` pull-request marker, so the reference-marker pass does not apply either.
 - **Full parity is unreachable for the non-GitHub/GitLab sources, and that is a

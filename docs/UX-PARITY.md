@@ -223,10 +223,12 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   menu rather than the target's full menu. Its copy and control-label passes are
   run into each open shadow root now (`paintGerritCopy`), and its closest page to
   a profile — an owner query (`/q/owner:<account>`), which PolyGerrit heads with
-  `gr-user-header` (avatar, display name, email, join date) — is reshaped into
-  the applied skin's profile identity block with a tab row built from Gerrit's
-  own owner views, All / Open / Merged / Abandoned (`paintGerritProfile`), so
-  every tab is a real Gerrit query. The change list below stays a change list,
+  `gr-user-header` (avatar, display name, email, join date), and a project query
+  (`/q/project:<project>`), headed with `gr-repo-header` — is reshaped into the
+  applied skin's profile identity block with a tab row built from Gerrit's own
+  queries, All / Open / Merged / Abandoned (`paintGerritProfile`), so every tab
+  is a real Gerrit query (a project gets a monogram where an account has an
+  avatar). The change list below stays a change list,
   and Gerrit has no Pinned, Repositories or Followers data to reproduce, so
   `profile` stays partial. Gerrit numbers a change
   (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so `refs` is
