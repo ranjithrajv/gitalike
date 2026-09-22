@@ -20,6 +20,12 @@
  * client-rendered, so there is nothing to key a hook on, and only the
  * copy/label passes reach it.
  *
+ * A source also owns its forge's vocabulary: the bundled `hosts` and the `kind`
+ * they are classified as, the `counterpart` and `routes` used to open the same
+ * page on the other host, the `reserved` product paths, and the `navScope` /
+ * `topbarScope` / `navWords` / `metadataHide` / `activeTabs` its passes read.
+ * `lib/sources.js` composes those, so a new forge is one folder.
+ *
  * A plugin may name the API it was written against with `minApiVersion`;
  * `assertCompatible` fails when this GitAlike is older.
  *
@@ -45,12 +51,14 @@
    * `tools/registry.mjs` carries it into `plugins.json` and each plugin may pin
    * the version it needs with `minApiVersion`.
    */
-  const API_VERSION = 1;
+  const API_VERSION = 2;
 
   const isString = (value) => typeof value === 'string' && value.length > 0;
   const isObject = (value) =>
     Boolean(value) && typeof value === 'object' && !Array.isArray(value);
   const isHex = (value) => /^#[0-9a-f]{6}$/i.test(value ?? '');
+  const isStringArray = (value) =>
+    Array.isArray(value) && value.every((item) => isString(item));
 
   /**
    * Every table a skin must carry, with the shape it must take. A missing or
@@ -245,6 +253,65 @@
   }
 
   /**
+   * The per-forge vocabulary a source may declare beyond its DOM hooks: the
+   * bundled hosts it is, the routes and scopes its navigation lives in, and the
+   * labels its own markup uses. These are optional, so a fixture that omits them
+   * is not judged incomplete; `defineSource` fills the defaults, and a field
+   * that *is* present must have the right shape.
+   */
+  const SOURCE_LIST_FIELDS = {
+    hosts: 'an array of hostnames',
+    reserved: 'an array of path segments',
+    navScope: 'an array of selector strings',
+    topbarScope: 'an array of selector strings',
+    navWords: 'an array of displayed labels',
+    metadataHide: 'an array of section labels',
+  };
+
+  const isActiveTabs = (value) =>
+    Array.isArray(value) &&
+    value.every(
+      (entry) =>
+        Array.isArray(entry) &&
+        entry.length === 2 &&
+        entry[0] instanceof RegExp &&
+        isString(entry[1]),
+    );
+
+  function sourceFieldProblems(source) {
+    const problems = [];
+    for (const [key, want] of Object.entries(SOURCE_LIST_FIELDS)) {
+      if (source[key] !== undefined && !isStringArray(source[key])) {
+        problems.push(`${key} — ${want}`);
+      }
+    }
+    if (source.kind !== undefined && !isString(source.kind)) {
+      problems.push('kind — a non-empty string');
+    }
+    if (source.product !== undefined && !isString(source.product)) {
+      problems.push('product — a display name, a string');
+    }
+    if (
+      source.counterpart !== undefined &&
+      source.counterpart !== null &&
+      !isString(source.counterpart)
+    ) {
+      problems.push('counterpart — a source name, or null');
+    }
+    if (
+      source.routes !== undefined &&
+      (!isObject(source.routes) ||
+        Object.values(source.routes).some((to) => !isString(to)))
+    ) {
+      problems.push('routes — an object of segment -> segment');
+    }
+    if (source.activeTabs !== undefined && !isActiveTabs(source.activeTabs)) {
+      problems.push('activeTabs — an array of [pattern, label]');
+    }
+    return problems;
+  }
+
+  /**
    * The required parts a source is missing, named. A markup source needs its
    * hooks and a canary page; a vocabulary-only source must not carry either, so
    * a half-declared one is caught rather than silently skipped.
@@ -258,6 +325,7 @@
       }
     }
     problems.push(...pagesProblems(source));
+    problems.push(...sourceFieldProblems(source));
     if (source.markup === false) {
       if (isObject(source.selectors) && Object.keys(source.selectors).length) {
         problems.push('selectors — a vocabulary-only source has none');
@@ -329,9 +397,11 @@
   }
 
   /**
-   * Register a source: its display label and, for a markup source, its DOM hooks
-   * and canary pages. Throws with the whole missing list if it is incomplete,
-   * and for a duplicate name or an unmet `minApiVersion`.
+   * Register a source: its display label, the forge vocabulary it owns (its
+   * bundled hosts and kind, its counterpart and routes, its scopes), and, for a
+   * markup source, its DOM hooks and canary pages. Throws with the whole missing
+   * list if it is incomplete, and for a duplicate name or an unmet
+   * `minApiVersion`.
    */
   function defineSource(name, partial) {
     assertNew('source', sources, name);
@@ -340,7 +410,18 @@
       markup: true,
       selectors: {},
       canary: [],
+      hosts: [],
+      counterpart: null,
+      routes: {},
+      reserved: [],
+      navScope: [],
+      topbarScope: [],
+      navWords: [],
+      metadataHide: [],
+      activeTabs: [],
       ...partial,
+      kind: partial?.kind ?? name,
+      product: partial?.product ?? partial?.label,
       compare: { ...compareDefaults(), ...partial?.compare },
     };
     const problems = sourceProblems(source);

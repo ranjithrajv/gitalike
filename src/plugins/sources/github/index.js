@@ -15,6 +15,74 @@
     description: 'GitHub’s Primer markup.',
     // A display name for the registry, the site's chip and the docs.
     label: 'GitHub — Primer',
+    // The short product name the "open on the other host" action uses.
+    product: 'GitHub',
+    // The bundled host, the forge it pairs with, and the route segments the two
+    // spell differently. `lib/sources.js` checks GitLab's map is its inverse.
+    hosts: ['github.com'],
+    counterpart: 'gitlab',
+    routes: {
+      pull: 'merge_requests',
+      issues: 'issues',
+      tree: 'tree',
+      blob: 'blob',
+      commits: 'commits',
+      releases: 'releases',
+      wiki: 'wikis',
+      actions: 'pipelines',
+    },
+    // First path segments that name a product-wide page, not an owner/repo pair.
+    reserved: [
+      'settings',
+      'notifications',
+      'explore',
+      'marketplace',
+      'orgs',
+      'users',
+      'login',
+      'logout',
+      'signup',
+      'features',
+      'about',
+      'pricing',
+      'topics',
+      'collections',
+      'sponsors',
+      'apps',
+      'codespaces',
+      'issues',
+      'pulls',
+      'search',
+      'new',
+      'dashboard',
+      'account',
+      'organizations',
+      'enterprise',
+      'security',
+      'customer-stories',
+      'readme',
+    ],
+    // Regions whose labels the nav/copy passes may touch: GitHub's repo tabs and
+    // its global top bar (the logged-out marketing header and the signed-in app
+    // bars). `lib/sources.js` unions every source's list into `NAV_SCOPE` /
+    // `TOPBAR_SCOPE`.
+    navScope: ['nav[aria-label="Repository"]', '.js-repo-nav'],
+    topbarScope: [
+      'header[role="banner"]',
+      '.js-header-wrapper',
+      'header.navigation',
+      'header.GlobalNav',
+      'header[aria-label="Global navigation menu"]',
+      '.AppHeader',
+    ],
+    // GitHub's About sections the target UIs do not list (see `paintMetadata`).
+    metadataHide: [
+      'Releases',
+      'Packages',
+      'Used by',
+      'Contributors',
+      'Languages',
+    ],
     // Every parity dimension applies: palette, navigation, page-wide passes,
     // metadata, profile and reference markers.
     compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 }, // GitHub's own pages, so a pass or the rubric reads the map rather than

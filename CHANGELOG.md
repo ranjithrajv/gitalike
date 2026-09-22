@@ -136,6 +136,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **A source now owns its forge's hosts, routes and scopes.** The bundled hosts
+  and their kind, the counterpart host and the route segments the two spell
+  differently, the reserved product paths, and the nav/top-bar scopes move out of
+  `src/lib/ux.js` / `src/lib/sites.js` and into each source's `index.js`
+  (`hosts`, `kind`, `counterpart`, `routes`, `reserved`, `navScope`,
+  `topbarScope`, `navWords`, `metadataHide`, `activeTabs`). `lib/sources.js`
+  derives the flat tables and validates cross-references (a host bundled twice, a
+  `counterpart` that is not registered, a route with no inverse), `lib/sites.js`
+  derives the picker's `builtin`/`SOURCES`, and `build.mjs` writes the manifest's
+  `host_permissions` from the same declaration — so a bundled forge is one edit
+  in its plugin folder rather than three lists that can drift. The plugin API is
+  now **version 2** (`plugins.json`).
 - **The computed-style parity read now measures the content canvas.** Its `body`
   dimension read `<body>`, but the reviewed target fixture records each product's
   *content* canvas (canvas-default), which is not the same surface: real GitLab

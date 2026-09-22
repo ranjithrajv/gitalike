@@ -1,7 +1,8 @@
 /**
  * The GitLab (Pajamas) source's own tests, beside its definition.
  *
- * Loads the plugin API and this source alone, then the derivation. Node's test
+ * Loads the plugin API and the sources it cross-references, then the
+ * derivation. Node's test
  * runner discovers it.
  */
 import { test } from 'node:test';

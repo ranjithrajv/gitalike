@@ -13,8 +13,10 @@ They are independent: any source can wear any skin. The generated
 plugin is written against.
 
 Scaffold one with `node tools/new-plugin.mjs skin <name>` (or `source <name>`),
-then `npm test` names what is left. `npm run plugins:validate` checks every
-plugin in isolation and reports all the incomplete ones at once.
+then `npm test` names what is left — it also enforces 100% coverage of
+`src/plugins/**`, so a branch the suite does not exercise fails. `npm run
+plugins:validate` checks every plugin in isolation and reports all the incomplete
+ones at once.
 
 ## Loading
 
@@ -97,14 +99,29 @@ palette — never a vendor's logo or path data).
 | `compare` | `{ palette, nav, page, metadata, profile, refs }`, each a fraction in `[0, 1]` |
 | `pages` | the page kinds the source declares: `project`, `profile`, `dashboard`, `settings`, `signIn`, `signOut` — each `{ route, from }`, or `null` for a kind the forge has none of |
 | `description` | one line for the catalog |
+| `product` | the short product name ("GitHub", "GitLab") the "open on the other host" action uses |
+| `hosts` | the hostnames this source ships for, bundled at install; `build.mjs` derives the manifest's `host_permissions` from them and `lib/sites.js` derives the picker's tables |
+| `kind` | the product kind a bundled host is classified as (default: the source name). A GitHub-flavoured forge sets `'github'` |
+| `counterpart` | the source this one pairs with for "open on the other host", or `null` |
+| `routes` | `{ ownSegment: counterpartSegment }` — the route segments the pair spell differently. `lib/sources.js` requires the counterpart's map to be the exact inverse |
+| `reserved` | first path segments that name a product-wide page, never an owner/repo |
+| `navScope` | selectors for the regions whose nav labels may be rewritten; `lib/sources.js` unions every source's into `NAV_SCOPE` |
+| `topbarScope` | the same, for the global top bar (`TOPBAR_SCOPE`) |
+| `navWords` | the displayed labels a content-hashed nav bar is found by (Bitbucket Cloud) |
+| `metadataHide` | the metadata section labels the target UIs do not list (`METADATA_HIDE[source]`) |
+| `activeTabs` | `[[pattern, label], …]` — the source's page key → the tab label the applied UI marks active |
 
 `compare` is the source's own declaration of how much of each parity dimension a
 skin can reproduce on it; `tools/compare/parity-score.mjs` reads it instead of a
 hardcoded set. A hook a stylesheet owns is marked `// css` in `selectors`, and
 the contract test checks the two agree.
 
-A source that is a forge people host also gets a `builtin`/`SOURCES` entry in
-`src/lib/sites.js` so it is classified and (optionally) bundled.
+The vocabulary fields are optional and default to empty; a source whose UI is
+client-rendered still declares `kind` and names the product it is
+(`bitbucket`, `gerrit`). Everything a *bundled* forge needs — its hosts, the
+host's kind, its pairs and routes, the regions its nav lives in — is declared in
+its folder, so `src/lib/sites.js` and the manifest derive from it rather than
+repeating a hand-kept list.
 
 ### Pages
 
@@ -155,9 +172,11 @@ A plugin may pin the API it was written against with `minApiVersion`;
 
 | Gate | Catches |
 | --- | --- |
-| `defineSkin` / `defineSource` | a missing or malformed required field, a duplicate name, an unmet `minApiVersion` |
+| `defineSkin` / `defineSource` | a missing or malformed required field, a duplicate name, an unmet `minApiVersion`, a per-source field (`hosts`, `routes`, `navScope`, …) with the wrong shape |
 | `lib/skins.js` | a `navRules` rule that names no registered source or has no container/item/order |
-| `tests/contracts.test.mjs` | an incomplete folder, a plugin not wired into a load list, a label no skin translates |
+| `lib/sources.js` | a host bundled by two sources, a `counterpart` that is not registered, a route with no inverse on the counterpart |
+| `tests/contracts.test.mjs` | an incomplete folder, a plugin not wired into a load list, a plugin folder without its own test, a label no skin translates |
+| `npm test` | a line, branch or function under `src/plugins/` the suite does not exercise (the plugin coverage gate, `tools/plugin-coverage.mjs`) |
 | `tests/plugins-schema.test.mjs` | `plugins.json` drifting from `plugins.schema.json` |
 | `npm run registry:check` | a plugin not relisted in `plugins.json`, `PLUGINS.md` or the site |
 | `npm run canary` | a source's live page dropping a hook a skin reads |

@@ -48,6 +48,18 @@ function bundledHosts() {
 }
 
 /**
+ * The bundled hosts as manifest `host_permissions` match patterns. The same
+ * declaration the picker reads (`GITALIKE.builtin`, derived from each source
+ * plugin's `hosts`) also feeds the built manifest, so a bundled forge is one
+ * edit in its plugin folder rather than two lists that can drift.
+ */
+export function hostPermissions() {
+  return Object.keys(globalThis.GITALIKE.builtin)
+    .sort()
+    .map((host) => `*://${host}/*`);
+}
+
+/**
  * The registry as data, derived from the loaded modules. The order is the
  * declaration order in source (the plugin folders, sorted), so the site, the
  * catalog and the JSON list plugins the way the code does.

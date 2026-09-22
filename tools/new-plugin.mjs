@@ -205,6 +205,18 @@ function sourceContent(name, label) {
   globalThis.GITALIKE_PLUGINS.defineSource('${name}', {
     description: 'TODO: one line on this forge’s markup.',
     label: '${label}',
+    // The short product name the "open on the other host" action uses.
+    product: '${label}',
+
+    // TODO: bundle this forge by listing the hostnames it ships for. A bundled
+    // host is granted at install and classified by \`kind\`; a GitHub-flavoured
+    // forge sets \`kind: 'github'\`. Leave empty for a self-hosted-only forge.
+    hosts: [],
+
+    // TODO: the regions whose nav and top-bar labels may be rewritten. The
+    // derived \`NAV_SCOPE\`/\`TOPBAR_SCOPE\` are the union across every source.
+    navScope: [],
+    topbarScope: [],
 
     // TODO: the DOM hooks the skins read on this forge's pages. Mark a hook a
     // stylesheet owns with \`// css\` so tests/ux.test.mjs can check the two agree.
@@ -289,6 +301,12 @@ test('${name} registers a complete skin', () => {
   assert.ok(['github', 'gitlab'].includes(SKIN.layout));
 });
 
+test('${name} builds a profile menu', () => {
+  // Calling the skin's own functions is what the 100%-plugin-coverage gate
+  // measures; fill this in as the menu grows.
+  assert.ok(Array.isArray(SKIN.profileMenu('user', 'User')));
+});
+
 test('${name}’s stylesheet is beside it and scoped to the skin', () => {
   const css = readFileSync(new URL('./as-${name}.css', import.meta.url), 'utf8');
   assert.match(css, /html\\.gs-theme-${name}\\s*\\{/);
@@ -354,6 +372,7 @@ async function scaffoldSkin(name, flags) {
       `palette: fill in ${dir}/as-${name}.css (light and .gs-dark) and its --gs-mark`,
       'vocabulary: the UX tests name the labels this skin does not translate yet',
       `tests: ${dir}/${name}.test.mjs runs with \`npm test\``,
+      'coverage: npm test holds src/plugins/ at 100% — extend that test as the plugin grows',
       `parity vocab: replace the TODO in PROJECT_VOCAB/PROFILE_VOCAB (${name}) in tools/compare/style-recipes.mjs`,
       "compare: add the new skin to every source's capture `skins` in tools/compare/captures.mjs and run `npm run screenshots`; `npm test` names each",
       'parity colours: add a reviewed tests/fixtures/target-chrome.json entry and list the skin in tools/compare',
@@ -390,11 +409,13 @@ async function scaffoldSource(name, flags) {
     notes: [
       `hooks: replace the TODO selectors in ${dir}/index.js`,
       `canary: point the ${label} canary page at a real instance`,
+      `hosts: list the hostname(s) in ${dir}/index.js \`hosts\` to bundle this forge (and set \`kind: 'github'\` if it speaks GitHub's dialect)`,
+      `scopes: fill in \`navScope\`/\`topbarScope\` in ${dir}/index.js so its nav labels are rewritten`,
       `compare: fill in the TODO url/ready in tools/compare/style-recipes.mjs and tools/compare/captures.mjs (${name})`,
       `capabilities: set the ${name} \`compare\` values in ${dir}/index.js`,
       `tests: ${dir}/${name}.test.mjs runs with \`npm test\``,
+      'coverage: npm test holds src/plugins/ at 100% — extend that test as the plugin grows',
       'nav: add a navRules entry to each skin that should reorder this source',
-      'host: for a forge people host, add a builtin entry in src/lib/sites.js',
     ],
   };
 }

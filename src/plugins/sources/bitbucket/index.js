@@ -22,6 +22,30 @@
   globalThis.GITALIKE_PLUGINS.defineSource('bitbucket', {
     description: 'Bitbucket Cloud’s repository app, mounted in #root.',
     label: 'Bitbucket',
+    hosts: ['bitbucket.org'],
+    // Bitbucket Cloud's repository bar, by its displayed labels. Its classes are
+    // hashed, so `paintBitbucketNav` finds the bar by content — the ancestor
+    // holding the most of these — rather than by a selector that would rot. Both
+    // the source's own words and the applied product's are listed: the copy pass
+    // relabels some of them before the bar is found.
+    navWords: [
+      'Source',
+      'Repository',
+      'Code',
+      'Commits',
+      'Branches',
+      'Pull requests',
+      'Merge requests',
+      'Pipelines',
+      'CI/CD',
+      'Actions',
+      'Deployments',
+      'Jira issues',
+      'Issues',
+      'Work items',
+      'Security',
+      'Downloads',
+    ],
     // Palette and the page-wide passes land, and `paintBitbucketNav` reorients
     // the bar (0.9: relabelled and reoriented, not reordered or filtered); it
     // keeps its own metadata, and its workspace navigation is reoriented to the

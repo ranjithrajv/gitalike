@@ -14,6 +14,69 @@
   globalThis.GITALIKE_PLUGINS.defineSource('gitlab', {
     description: 'GitLab’s Pajamas markup.',
     label: 'GitLab — Pajamas',
+    // The short product name the "open on the other host" action uses.
+    product: 'GitLab',
+    // The bundled host, the forge it pairs with, and the route segments the two
+    // spell differently (the inverse of GitHub's map, checked by `lib/sources.js`).
+    hosts: ['gitlab.com'],
+    counterpart: 'github',
+    routes: {
+      merge_requests: 'pull',
+      issues: 'issues',
+      tree: 'tree',
+      blob: 'blob',
+      commits: 'commits',
+      releases: 'releases',
+      wikis: 'wiki',
+      pipelines: 'actions',
+    },
+    // First path segments that name a product-wide page, not an owner/repo pair.
+    reserved: [
+      'dashboard',
+      'explore',
+      'users',
+      'admin',
+      'projects',
+      'groups',
+      'help',
+      'search',
+      'profile',
+      'public',
+      'sign_in',
+      'oauth',
+      'import',
+      'invites',
+    ],
+    // GitLab's project navigation (the current super sidebar and its older
+    // `.nav-sidebar`) and its top bars. `lib/sources.js` unions these into
+    // `NAV_SCOPE` / `TOPBAR_SCOPE`.
+    navScope: [
+      '.super-sidebar',
+      '[data-testid="super-sidebar"]',
+      '.nav-sidebar',
+      'nav[aria-label="Project navigation"]',
+    ],
+    topbarScope: [
+      'header.super-topbar',
+      '.navbar-gitlab',
+      '.header-content',
+      '.super-topbar',
+    ],
+    // The GitLab page kind (its `body[data-page]`) the applied UI should mark
+    // active, mapped to GitHub's tab label and then renamed by the skin's `NAV`.
+    activeTabs: [
+      [
+        /^projects:(show|tree|blob|commits|compare|branches|tags|forks|network)\b/,
+        'Code',
+      ],
+      [/^projects:work_items\b/, 'Issues'],
+      [/^projects:merge_requests\b/, 'Pull requests'],
+      [/^projects:(pipelines|jobs|builds|ci)\b/, 'Actions'],
+      [/^projects:boards\b/, 'Projects'],
+      [/^projects:(security|vulnerabilities)\b/, 'Security and quality'],
+      [/^projects:wikis\b/, 'Wiki'],
+      [/^projects:(insights|analytics)\b/, 'Insights'],
+    ],
     compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 },
     pages: {
       // GitLab serves a project under a user namespace (`/dzaporozhets/x`) *or*

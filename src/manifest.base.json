@@ -4,13 +4,6 @@
   "short_name": "GitAlike",
   "description": "Use any forge, keep your muscle memory. Re-skins GitHub, GitLab™ and Bitbucket as each other, locally; nothing collected.",
   "permissions": ["storage", "scripting"],
-  "host_permissions": [
-    "*://github.com/*",
-    "*://gitlab.com/*",
-    "*://codeberg.org/*",
-    "*://gitea.com/*",
-    "*://bitbucket.org/*"
-  ],
   "optional_host_permissions": ["*://*/*"],
   "action": {
     "default_title": "GitAlike",

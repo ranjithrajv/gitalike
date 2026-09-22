@@ -17,21 +17,30 @@
 (() => {
   'use strict';
 
-  /** Hosts bundled with the extension. These cannot be removed. */
-  const builtin = {
-    'github.com': 'github',
-    'gitlab.com': 'gitlab',
-    // GitHub-flavoured forges: they speak GitHub's dialect, so they are the
-    // 'github' kind and are shown with the GitLab UI. Codeberg runs Forgejo and
-    // gitea.com runs Gitea; both are Gitea's markup, so the GitLab skin's
-    // as-gitlab.css carries a token block for them (see "Gitea / Forgejo").
-    'codeberg.org': 'github',
-    'gitea.com': 'github',
-    // Bitbucket is a source product as well as a target: a Bitbucket host can
-    // wear the GitHub or GitLab UI. Its markup is its own, so a Bitbucket site
-    // wearing the Bitbucket UI is its own UI (a no-op), the same way GitHub is.
-    'bitbucket.org': 'bitbucket',
-  };
+  /**
+   * The bundled hosts and the markup family each belongs to, derived from the
+   * source plugins: a source declares `hosts` (the hostnames it ships for) and
+   * `kind` (the product it is classified as — Gitea is a GitHub-flavoured forge,
+   * so its hosts are the 'github' kind). The same declaration feeds the built
+   * manifest's `host_permissions` (`tools/registry.mjs`), so a bundled forge is
+   * one edit in its plugin folder rather than three lists.
+   *
+   * `builtin` maps a host to its *kind*, `SOURCES` to its *markup source*; they
+   * differ only for the GitHub-flavoured forges (Codeberg, gitea.com).
+   */
+  if (!globalThis.GITALIKE_PLUGINS) {
+    throw new Error('GitAlike: plugins/core.js must be loaded before sites.js');
+  }
+  const builtin = {};
+  const SOURCES = {};
+  for (const [name, source] of Object.entries(
+    globalThis.GITALIKE_PLUGINS.sources,
+  )) {
+    for (const host of source.hosts) {
+      builtin[host] = source.kind;
+      SOURCES[host] = name;
+    }
+  }
 
   /**
    * Every skin the extension can paint, keyed by the product whose UI it is.
@@ -156,13 +165,9 @@
    * but a GitHub-flavoured forge (Gitea/Forgejo) does not use GitHub's markup or
    * Primer tokens, so showing it with the GitHub UI is a real skin rather than a
    * no-op. Only the bundled forges differ this way; a user-added self-hosted
-   * instance is assumed to be built on its product's markup.
+   * instance is assumed to be built on its product's markup. The bundled table
+   * is derived from the source plugins above.
    */
-  const SOURCES = {
-    'codeberg.org': 'gitea',
-    'gitea.com': 'gitea',
-  };
-
   function sourceFor(host, added) {
     if (Object.prototype.hasOwnProperty.call(SOURCES, host))
       return SOURCES[host];

@@ -18,6 +18,8 @@ import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { hostPermissions } from './tools/registry.mjs';
+
 const root = dirname(fileURLToPath(import.meta.url));
 const SRC = join(root, 'src');
 const DIST = join(root, 'dist');
@@ -121,7 +123,13 @@ for (const target of targets) {
   });
 
   const base = JSON.parse(await readFile(join(SRC, BASE_MANIFEST), 'utf8'));
-  const manifest = decorate({ ...base, version });
+  // The bundled hosts are derived from the source plugins, so the manifest and
+  // the picker cannot disagree about which sites ship.
+  const manifest = decorate({
+    ...base,
+    host_permissions: hostPermissions(),
+    version,
+  });
   await writeFile(
     join(out, 'manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`,

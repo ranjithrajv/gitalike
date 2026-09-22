@@ -57,7 +57,8 @@ another permission needs a very good argument.
 ```sh
 npm install          # dev-only deps; also installs the git hooks
 npm run build        # -> dist/chromium and dist/firefox
-npm test             # unit tests, no browser needed
+npm test             # unit tests + the 100%-plugin-coverage gate, no browser
+npm run test:unit    # the same tests, without the coverage report
 node tools/compare/e2e.mjs   # Playwright end-to-end test against the live sites
 npm run lint         # web-ext lint over the Firefox build
 npm run lint:js      # oxlint (Vite+ / Oxc) over src, tools and tests
@@ -123,9 +124,10 @@ src/
 │   └── sources/<name>/  index.js + <name>.test.mjs
 ├── lib/
 │   ├── skins.js         derives the skin tables from plugins/skins/ — pure
-│   ├── sources.js       derives SELECTORS/CANARY_PAGES — pure
-│   ├── sites.js         hosts, kinds, parseHost, schema — pure, no DOM
-│   └── ux.js            vocabulary/nav/shortcut/path/selector tables — pure, no DOM
+│   ├── sources.js       derives SELECTORS/CANARY_PAGES/hosts/scopes — pure
+│   ├── sites.js         the host/kind map (from the sources), parseHost, schema — pure, no DOM
+│   └── ux.js            the shared translation helpers and the GitHub↔GitLab
+│                        path map — pure, no DOM
 ├── content/
 │   ├── theme.js         applies the theme classes, tracks light/dark
 │   └── ux.js            performs the text and nav rewrites, undoably
@@ -137,9 +139,9 @@ src/
 logos/                   editable logo sources, inlined into the themes
 docs/                    the GitHub Pages preview + UX-PARITY.md — the parity matrix
 tests/                   node:test, covers src/lib/ and the plugin contract
-tools/                   the plugin registry + scaffold, the store and docs
-                         screenshots, the Playwright end-to-end test, and the
-                         live selector canary
+tools/                   the plugin registry + scaffold, the plugin coverage
+                         gate, the store and docs screenshots, the Playwright
+                         end-to-end test, and the live selector canary
 store/                   submission copy and screenshots
 ```
 
@@ -206,8 +208,9 @@ permission for* — the bundled ones plus whatever the user added — and
 re-registers when the set changes (a storage change or a permission grant). An
 unconfigured page therefore never parses the content scripts or the stylesheets.
 
-The test in `tests/sites.test.mjs` keeps `manifest.base.json`'s static host list
-in step with the `builtin` table, since the manifest cannot read `sites.js`.
+The test in `tests/sites.test.mjs` keeps the manifest's `host_permissions` in
+step with the bundled host list: `build.mjs` writes them from the registry, so
+there is no static list to drift.
 
 The extension is inert everywhere it has not been set up: the scripts are only
 registered on classified, granted hosts, and every stylesheet is scoped to
@@ -251,8 +254,9 @@ Each theme file has three parts:
    other product's palette — GitLab's red→orange→yellow in the GitHub→GitLab
    skin, Primer's ink and accent blue in the GitLab→GitHub one.
 
-Hosts, products and the bundled host list live in `src/lib/sites.js` — one
-source of truth shared by the content script, the popup and the background.
+Hosts, products and their kinds are declared by each source plugin
+(`hosts`, `kind`); `src/lib/sites.js` derives the tables the content script, the
+popup and the background share, so the declaration is one place.
 
 ### Support another Git instance
 
@@ -260,10 +264,11 @@ Usually you should not add it to the source at all — that is what the popup's
 **Add a site** flow is for, which asks for that one origin when you click. Only
 add a *built-in* host for something we want to work out of the box:
 
-1. `src/lib/sites.js` — add it to the `builtin` table.
-2. `src/manifest.base.json` — add `*://<host>/*` to `host_permissions`, so it is
-   granted at install rather than requested per origin.
-3. `tests/sites.test.mjs` — the manifest-permissions test covers it.
+1. The source's `index.js` under `src/plugins/sources/<name>/` — add the host to
+   its `hosts` list. (`build.mjs` derives the manifest's `host_permissions` from
+   that list and `src/lib/sites.js` derives the picker's `builtin` table, so
+   there is no second list to keep in step.)
+2. `tests/sites.test.mjs` — the manifest-permissions test covers it.
 
 A self-hosted instance needs no source or manifest change: the popup requests its
 origin at runtime — see
@@ -349,34 +354,29 @@ same shape of repository page. They do not need a new vocabulary — they need t
 be classified as the `github` kind, so the existing GitLab skin applies:
 
 ```js
-// src/lib/sites.js
-const builtin = {
-  'github.com': 'github',
-  'gitlab.com': 'gitlab',
-  'codeberg.org': 'github', // Forgejo
-  'gitea.com': 'github',    // Gitea
-};
+// src/plugins/sources/gitea/index.js
+kind: 'github',                       // a GitHub-flavoured forge
+hosts: ['codeberg.org', 'gitea.com'], // Forgejo, then Gitea
 ```
 
 Add the host to `tests/sites.test.mjs`. If the forge is Gitea-family it does not
 use GitHub's Primer tokens, so the classification alone only changes the words —
 `src/plugins/skins/gitlab/as-gitlab.css` and `src/plugins/skins/github/as-github.css` each have a
 **Gitea / Forgejo** block that re-points its `--color-*` custom properties at that
-skin's palette, `src/plugins/sources/gitea.js` adds its markup hooks to
-`SELECTORS.gitea` so the canary can watch them, and each skin's plugin file adds
-its repo tab list to `navRules` (with the shared `NAV_SCOPE` in `ux.js` covering its
-region) so its tabs are relabelled and reordered. The GitLab skin also rebuilds
-those tabs as a grouped sidebar:
+skin's palette, the source's `selectors` carry its markup hooks so the canary can
+watch them, and each skin's plugin file adds its repo tab list to `navRules`
+(with the source's own `navScope` covering its region) so its tabs are relabelled
+and reordered. The GitLab skin also rebuilds those tabs as a grouped sidebar:
 `content/ux-project.js` `paintGiteaNav` and the `UX.repoNav` model, keyed off Gitea's
-`[data-theme]` marker, apply to any Gitea-family instance. Record the host in
-`SOURCES` in `src/lib/sites.js` too, so the picker knows
-the site is *not* the product it is classified as (making the other UI a real
-skin) and the `g`-combo remap is skipped on it. Copy those shapes for another
-token system or another tab bar. Only add vocabulary if the forge uses a
-different word — Forgejo says "Pull request", so there is nothing to do there.
+`[data-theme]` marker, apply to any Gitea-family instance. The `kind` and `hosts`
+on the source are what tell the picker the site is *not* the product it is
+classified as (making the other UI a real skin) and skip the `g`-combo remap.
+Copy those shapes for another token system or another tab bar. Only add
+vocabulary if the forge uses a different word — Forgejo says "Pull request", so
+there is nothing to do there.
 
 You can already point GitAlike at any instance without touching the source: the
-popup's **Add a site** flow exists for exactly that. A `builtin` entry just means
+popup's **Add a site** flow exists for exactly that. A `hosts` entry just means
 it works out of the box.
 
 ### Adding a skin
@@ -444,9 +444,11 @@ the logo note above).
 
 ## Tests
 
-`npm test` runs `node:test` over `src/lib/` only. That is deliberate: the pure
-modules are where the logic that can silently break lives (address parsing, host
-classification, vocabulary tables), and they need no browser.
+`npm test` runs `node:test` over the pure modules in `src/lib/`, each plugin's
+own tests under `src/plugins/`, and the cross-plugin suites in `tests/`. It needs
+no browser. The pure modules are where the logic that can silently break lives
+(address parsing, host classification, vocabulary tables). `npm run test:unit` is
+the same suite without the coverage gate below.
 
 **Add a case for every change to `src/lib/`.** The suite is the safety net for
 exactly the kind of edge case that is easy to miss — a bare host versus a URL, a
@@ -478,6 +480,16 @@ are discovered by `npm test`. They load just that plugin through
 `tools/plugin-test.mjs` (`loadSkin` / `loadSource`), so run under `npm test` with
 no extra wiring; the cross-plugin invariants stay in `tests/*.test.mjs`. The
 plugin API's own rejection cases are in `src/plugins/core.test.mjs`.
+
+**A plugin ships fully tested: 100% coverage is the policy.** `npm test` is the
+coverage gate — it runs the suite with Node's coverage scoped to
+`src/plugins/**` and fails unless every line, branch and function there is
+covered (`tools/plugin-coverage.mjs`). A folder must carry its own
+`<name>.test.mjs` — `tests/contracts.test.mjs` fails one without — and while the
+shared behaviour belongs in the cross-plugin suites, the plugin file itself has
+nothing to hide: a half-added branch is a red gate, not a follow-up. `npm run
+test:unit` runs the tests without the coverage report when you only want the
+result.
 
 The **plugin registry** is generated, not hand-maintained: `npm run registry`
 rewrites `plugins.json`, the author catalog `PLUGINS.md` and the site's Plugins

@@ -44,13 +44,13 @@ const {
   activeTabFor,
   sectionLabelText,
   METADATA_HIDE,
+  NAV_WORDS,
   projectTabs,
   PROFILE_MENU,
   repoNav,
   otherHostUrl,
   hostProduct,
   guessForge,
-  BITBUCKET_NAV_WORDS,
 } = UX;
 
 // The skins and sources are shared with sites.js; derive the lists used below
@@ -97,7 +97,8 @@ describe('module shape', () => {
     }
     assert.equal(typeof LABEL_SCOPE, 'string');
     assert.equal(typeof TOPBAR_SCOPE, 'string');
-    assert.ok(Array.isArray(METADATA_HIDE));
+    assert.equal(typeof METADATA_HIDE, 'object');
+    assert.ok(Array.isArray(NAV_WORDS.bitbucket));
     assert.ok(Array.isArray(CANARY_PAGES));
   });
 
@@ -162,9 +163,9 @@ describe('NAV tables', () => {
 
   test('relabel a Bitbucket source’s repository bar', () => {
     // The bar is found by content, so these words double as its locator.
-    assert.ok(BITBUCKET_NAV_WORDS.includes('Source'));
-    assert.ok(BITBUCKET_NAV_WORDS.includes('Pipelines'));
-    assert.ok(BITBUCKET_NAV_WORDS.includes('Jira issues'));
+    assert.ok(NAV_WORDS.bitbucket.includes('Source'));
+    assert.ok(NAV_WORDS.bitbucket.includes('Pipelines'));
+    assert.ok(NAV_WORDS.bitbucket.includes('Jira issues'));
     assert.equal(NAV.gitlab.Source, 'Repository');
     assert.equal(NAV.gitlab.Pipelines, 'CI/CD');
     assert.equal(NAV.gitlab['Jira issues'], 'Work items');

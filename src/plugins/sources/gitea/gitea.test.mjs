@@ -1,7 +1,8 @@
 /**
  * The Gitea / Forgejo source's own tests, beside its definition.
  *
- * Loads the plugin API and this source alone, then the derivation. Gitea and
+ * Loads the plugin API and the sources it cross-references, then the
+ * derivation. Gitea and
  * Forgejo share one markup family across two hosts, so both are canaried. Node's
  * test runner discovers it.
  */

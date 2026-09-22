@@ -15,6 +15,13 @@
     description:
       'Gitea and Forgejo’s shared markup, on gitea.com and Codeberg.',
     label: 'Gitea / Forgejo',
+    // GitHub-flavoured markup, so its hosts are classified as the GitHub kind
+    // (a GitHub UI on them is a real skin, not a no-op).
+    kind: 'github',
+    // The two hosts this one markup family ships for.
+    hosts: ['codeberg.org', 'gitea.com'],
+    // Gitea/Forgejo put their repo tabs in an `overflow-menu` element.
+    navScope: ['overflow-menu'],
     // Gitea keeps its own description/topics placement, so metadata is partial;
     // its profile navigation is reoriented to the layout (`themes/ux-nav.css`)
     // but its profile menu/card are not rebuilt, so profile is partial too.

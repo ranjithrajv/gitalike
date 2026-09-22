@@ -53,33 +53,22 @@
       'GitAlike: the plugin registry must be loaded before ux.js',
     );
   }
-  const { SELECTORS, CANARY_PAGES, PAGES } = globalThis.GITALIKE_SOURCES;
+  const {
+    SELECTORS,
+    CANARY_PAGES,
+    PAGES,
+    SOURCE_KINDS,
+    HOST_PAIRS,
+    NAV_SCOPE,
+    TOPBAR_SCOPE,
+    NAV_WORDS,
+    METADATA_HIDE,
+    ACTIVE_TABS,
+    RESERVED,
+    ROUTES,
+  } = globalThis.GITALIKE_SOURCES;
 
   /* ------------------------------------------------------- terminology -- */
-
-  // Bitbucket Cloud's repository bar, by its displayed labels. Its classes are
-  // hashed, so a pass finds the bar by content — the ancestor holding the most
-  // of these — rather than by a selector that would rot. Both the source's own
-  // words and the applied product's are listed: the copy pass relabels some of
-  // them before this runs.
-  const BITBUCKET_NAV_WORDS = [
-    'Source',
-    'Repository',
-    'Code',
-    'Commits',
-    'Branches',
-    'Pull requests',
-    'Merge requests',
-    'Pipelines',
-    'CI/CD',
-    'Actions',
-    'Deployments',
-    'Jira issues',
-    'Issues',
-    'Work items',
-    'Security',
-    'Downloads',
-  ];
 
   // Elements whose whole label the LABELS table may replace.
   const LABEL_SCOPE = [
@@ -92,35 +81,10 @@
     '[role="menuitem"]',
   ].join(',');
 
-  // Regions whose labels the NAV table is allowed to touch. Verified against
-  // the live sites: GitHub's repo tabs live in `nav[aria-label="Repository"]`;
-  // GitLab's project navigation is the `.super-sidebar`; Gitea/Forgejo (Codeberg,
-  // gitea.com) put their repo tabs in an `overflow-menu` custom element.
-  const NAV_SCOPE = [
-    'nav[aria-label="Repository"]',
-    '.js-repo-nav',
-    '.super-sidebar',
-    '[data-testid="super-sidebar"]',
-    '.nav-sidebar',
-    'nav[aria-label="Project navigation"]',
-    'overflow-menu',
-  ].join(',');
-
-  // The global top bar, both products' logged-out marketing header and the
-  // signed-in app bars. A separate scope from NAV_SCOPE because the top bar's
-  // words are handled differently (see TOPBAR_HIDE).
-  const TOPBAR_SCOPE = [
-    'header[role="banner"]',
-    '.js-header-wrapper',
-    'header.navigation',
-    'header.super-topbar',
-    'header.GlobalNav',
-    'header[aria-label="Global navigation menu"]',
-    '.navbar-gitlab',
-    '.header-content',
-    '.super-topbar',
-    '.AppHeader',
-  ].join(',');
+  // Regions whose labels the NAV table is allowed to touch, and the global top
+  // bar. Each source declares its own (`navScope` / `topbarScope`); the derived
+  // `NAV_SCOPE` and `TOPBAR_SCOPE` are the union. A separate top-bar scope
+  // because the top bar's words are handled differently (see TOPBAR_HIDE).
 
   /* ---------------------------------------------------------- selectors -- */
 
@@ -277,30 +241,17 @@
 
   /* ---------------------------------------------- pure view decisions -- */
 
-  // The GitLab pages that map onto a GitHub repo tab, keyed by GitLab's
-  // `body[data-page]`, so the tab the applied UI would underline can be picked
-  // without a page. Pure, so it is unit-tested rather than only seen live.
-  const ACTIVE_TABS = [
-    [
-      /^projects:(show|tree|blob|commits|compare|branches|tags|forks|network)\b/,
-      'Code',
-    ],
-    [/^projects:work_items\b/, 'Issues'],
-    [/^projects:merge_requests\b/, 'Pull requests'],
-    [/^projects:(pipelines|jobs|builds|ci)\b/, 'Actions'],
-    [/^projects:boards\b/, 'Projects'],
-    [/^projects:(security|vulnerabilities)\b/, 'Security and quality'],
-    [/^projects:wikis\b/, 'Wiki'],
-    [/^projects:(insights|analytics)\b/, 'Insights'],
-  ];
-
   /**
-   * The repo tab a GitLab page should mark active, in the *applied* product's
-   * words: the table maps to GitHub's label, then `NAV` renames it for the skin
-   * (Code → Source, Actions → Pipelines for Bitbucket).
+   * The repo tab a source's page should mark active, in the *applied* product's
+   * words: the source's `activeTabs` maps its page key to GitHub's label, then
+   * `NAV` renames it for the skin (Code → Source, Actions → Pipelines for
+   * Bitbucket). Today only GitLab declares the rules, so the source defaults to
+   * it; a pass that reads another source's page passes the source name.
    */
-  function activeTabFor(page, target = 'github') {
-    const rule = ACTIVE_TABS.find(([re]) => re.test(String(page || '')));
+  function activeTabFor(page, target = 'github', source = 'gitlab') {
+    const rule = (ACTIVE_TABS[source] ?? []).find(([re]) =>
+      re.test(String(page || '')),
+    );
     if (!rule) return null;
     const label = rule[1];
     return (NAV[target] && NAV[target][label]) || label;
@@ -316,14 +267,8 @@
       .trim();
 
   // GitHub's About sections that GitLab's "Project information" block does not
-  // list, matched by `sectionLabelText`.
-  const METADATA_HIDE = [
-    'Releases',
-    'Packages',
-    'Used by',
-    'Contributors',
-    'Languages',
-  ];
+  // list, matched by `sectionLabelText`. Declared per source (`metadataHide`);
+  // the pass reads `METADATA_HIDE[source]`.
 
   /** The repo tabs `target` shows on a GitLab project page. */
   function projectTabs(base, hrefs = {}, target = 'github') {
@@ -374,14 +319,11 @@
 
   /* ------------------------------------------------------ other host -- */
 
-  // Only the two public forges have a known counterpart. A self-hosted instance
-  // gives no way to guess its pair, so there the action is simply absent. Each
-  // entry carries everything that is known about the host in one place: which
-  // product it is (`from`), its counterpart (`host`) and how to name it.
-  const HOST_PAIRS = {
-    'github.com': { from: 'github', host: 'gitlab.com', product: 'GitHub' },
-    'gitlab.com': { from: 'gitlab', host: 'github.com', product: 'GitLab' },
-  };
+  // The bundled hosts that have a counterpart, and everything known about the
+  // pair: which source it is (`from`), the counterpart host (`host`) and the
+  // product to name it (`product`). Derived from each source's `hosts` and
+  // `counterpart` (`lib/sources.js`); a self-hosted instance has no pair, so the
+  // action is simply absent.
 
   /** Parse a URL, or null when the string is not one. */
   function parseUrl(raw) {
@@ -392,80 +334,19 @@
     }
   }
 
-  // First path segments that name a product-wide page, not a repository, so
-  // they are never mistaken for an owner/repo pair.
-  const GITHUB_RESERVED = new Set([
-    'settings',
-    'notifications',
-    'explore',
-    'marketplace',
-    'orgs',
-    'users',
-    'login',
-    'logout',
-    'signup',
-    'features',
-    'about',
-    'pricing',
-    'topics',
-    'collections',
-    'sponsors',
-    'apps',
-    'codespaces',
-    'issues',
-    'pulls',
-    'search',
-    'new',
-    'dashboard',
-    'account',
-    'organizations',
-    'enterprise',
-    'security',
-    'customer-stories',
-    'readme',
-    'sponsors',
-  ]);
-  const GITLAB_RESERVED = new Set([
-    'dashboard',
-    'explore',
-    'users',
-    'admin',
-    'projects',
-    'groups',
-    'help',
-    'search',
-    'profile',
-    'public',
-    'sign_in',
-    'oauth',
-    'import',
-    'invites',
-  ]);
-
-  // The route segment each forge uses for the same page. Only the GitHub side
-  // is written down; the GitLab side is derived as its inverse, so a route can
-  // never be added to one direction and forgotten in the other.
-  const GITHUB_ROUTES = {
-    pull: 'merge_requests',
-    issues: 'issues',
-    tree: 'tree',
-    blob: 'blob',
-    commits: 'commits',
-    releases: 'releases',
-    wiki: 'wikis',
-    actions: 'pipelines',
-  };
-  const GITLAB_ROUTES = Object.fromEntries(
-    Object.entries(GITHUB_ROUTES).map(([github, gitlab]) => [gitlab, github]),
-  );
-
   // Map one product's path onto the other's. Returns null when the path is not
   // a repository (or is a GitLab group nested too deep for GitHub's owner/repo).
+  // The two forges' path grammars differ — GitLab marks the route off with
+  // `/-/`, GitHub does not — so the parse stays here; the route segments each
+  // forge uses are its own (`ROUTES`) and `reserved` names the first segments
+  // that are a product-wide page rather than an owner/repo.
   function translatePath(pathname, from) {
     const seg = String(pathname || '')
       .split('/')
       .filter(Boolean);
     const gitlab = from !== 'github';
+    const reserved = RESERVED[from] ?? [];
+    const routes = ROUTES[from] ?? {};
 
     // GitLab marks the project path off from the route with `/-/`; GitHub has
     // no marker, so the route begins at the third segment.
@@ -474,11 +355,11 @@
     if (gitlab) {
       const marker = seg.indexOf('-');
       const project = marker > 0 ? seg.slice(0, marker) : seg.slice(0, 2);
-      if (project.length !== 2 || GITLAB_RESERVED.has(project[0])) return null;
+      if (project.length !== 2 || reserved.includes(project[0])) return null;
       base = `/${project[0]}/${project[1]}`;
       route = marker > 0 ? seg.slice(marker + 1) : seg.slice(2);
     } else {
-      if (seg.length < 2 || GITHUB_RESERVED.has(seg[0])) return null;
+      if (seg.length < 2 || reserved.includes(seg[0])) return null;
       base = `/${seg[0]}/${seg[1]}`;
       route = seg.slice(2);
     }
@@ -492,7 +373,7 @@
     if (gitlab && head === 'merge_requests' && !tail.length)
       return `${base}/pulls`;
 
-    const to = gitlab ? GITLAB_ROUTES[head] : GITHUB_ROUTES[head];
+    const to = routes[head];
     if (!to) return base;
     const rest = tail.length ? `/${tail.join('/')}` : '';
     return gitlab ? `${base}/${to}${rest}` : `${base}/-/${to}${rest}`;
@@ -572,9 +453,10 @@
     [/(?:^|\/)tree\/[^/]+/, 'github'],
   ];
 
-  // A Gitea/Forgejo instance is classified as the GitHub-flavoured kind, so its
-  // *product* button is GitHub even though its markup is its own.
-  const kindForSource = (source) => (source === 'gitea' ? 'github' : source);
+  // A source declares the kind it is classified as (`SOURCE_KINDS`); Gitea is a
+  // GitHub-flavoured forge, so its product button is GitHub even though its
+  // markup is its own.
+  const kindForSource = (source) => SOURCE_KINDS[source] ?? source;
 
   /**
    * The forge a link looks like, or null when it says nothing useful. Returns
@@ -629,7 +511,7 @@
     NAV_GROUPS,
     NAV_HIDE,
     NAV_KEEP,
-    BITBUCKET_NAV_WORDS,
+    NAV_WORDS,
     LABELS,
     CHROME,
     UNMAPPED,

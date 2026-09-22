@@ -166,6 +166,18 @@ describe('source contract', () => {
     }
   });
 
+  test('every source is classified as a known kind', () => {
+    // The reverse: a source declares the `kind` its bundled hosts are, and that
+    // kind has to be one a site can be, or the picker would list a host under no
+    // product at all.
+    for (const name of ALL_SOURCES) {
+      assert.ok(
+        SITES.isKind(SOURCE_LIB.SOURCES[name].kind),
+        `source '${name}' declares kind '${SOURCE_LIB.SOURCES[name].kind}'`,
+      );
+    }
+  });
+
   test('every source declares its pages, and each is a known kind', () => {
     // A source's `pages` map is what a page pass or the parity rubric reads
     // instead of assuming every forge has a profile, a dashboard or a sign-in

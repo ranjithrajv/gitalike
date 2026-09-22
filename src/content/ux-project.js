@@ -29,10 +29,12 @@
     if (layoutOf(t) !== 'gitlab') return;
     const grid = document.querySelector(SELECTORS.github.metadataSidebar);
     if (!grid) return;
+    const source = document.documentElement.dataset.gsSource;
+    const hidden = UX.METADATA_HIDE[source] ?? [];
     for (const section of grid.children) {
       const heading = section.querySelector('h2, h3');
       const label = UX.sectionLabelText(heading && heading.textContent);
-      if (!UX.METADATA_HIDE.includes(label)) continue;
+      if (!hidden.includes(label)) continue;
       hide(section);
     }
   }
@@ -377,7 +379,7 @@
       );
     if (!repoPage && !accountPage) return;
     const words = repoPage
-      ? UX.BITBUCKET_NAV_WORDS || []
+      ? UX.NAV_WORDS.bitbucket || []
       : BITBUCKET_PROFILE_WORDS;
     const itemText = (el) => (el.textContent || '').replace(/\s+/g, ' ').trim();
     // Bitbucket's app mounts in the source's declared root; scoping the search
