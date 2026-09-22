@@ -110,8 +110,10 @@ it stops short of a perfect reskin — the detail behind the short list in the
   GitHub-style underlined tab row; colours, words, reference markers and the
   active tab follow the applied product either way. Gitea's description and
   topics stay where Gitea puts them (they are not moved into a GitLab "Project
-  information" block or a GitHub "About" rail), and Gitea's own keyboard
-  shortcuts are left alone (the GitHub/GitLab `g`-combo remap does not run on it).
+  information" block or a GitHub "About" rail). Its keyboard combos follow the
+  applied product instead: Gitea implements no `g`-combos of its own, so the ones
+  with a repository-navigation link (pull/merge requests, projects) are delivered
+  as a trusted click on that link, and the linkless one is not delivered.
 - **The shortcut cannot set up a new host**, only toggle one already classified,
   because classifying requires choosing which product it is.
 - **The in-page mark is GitAlike's own, in the other product's palette.** The

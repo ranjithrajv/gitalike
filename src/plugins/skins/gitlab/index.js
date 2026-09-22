@@ -175,8 +175,10 @@
     // the combo the underlying site implements. Only unambiguous pairs.
     shortcuts: { gm: 'gp', gp: 'gb', gt: 'gn' },
     // Where the destination has a real navigation link, deliver the shortcut
-    // as a click on it (some sites ignore synthetic key events).
-    shortcutTargets: {},
+    // as a click on it (GitLab ignores synthetic key events). The todo list has
+    // no repo-navigation link, so it is the one combo GitLab's own `g n` cannot
+    // reach either.
+    shortcutTargets: { gm: 'Merge requests', gp: 'Projects' },
 
     // Source-only words in the global top bar with no counterpart in the
     // applied product: hidden rather than relabelled. The words both products

@@ -87,6 +87,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with the originals restored on revert (`GERRIT_NAV_WORDS`, `paintGerritNav`).
   The `id`s Gerrit's handlers use are untouched; `compare.nav` rises from 0.5 to
   0.8 and Gerrit's project score to 5.1–5.4.
+- **Gitea/Forgejo now honours the applied product's `g`-combos.** Gitea
+  implements no combos of its own and GitLab ignores synthetic keys, so delivery
+  is a **trusted click** on the repository-navigation link: `g p` / `g b` under
+  the GitHub UI and `g m` / `g p` under the GitLab UI navigate (verified live on
+  Codeberg), while the linkless combo is left undelivered and the Bitbucket UI
+  defines no combos. `shortcutTargets` gains GitLab's labels, `ux-core` admits
+  the `gitea` source (and never replays a combo into it), and `compare` credits
+  Gitea's reachable share — its project score moves 7.9–8.1 → 8.5–8.6 and its
+  profile score 5.6–5.7 → 6.2.
 - **Layout parity raised across the sources.** Gitea/Forgejo and Bitbucket
   profile navigation is reoriented to the applied layout
   (`themes/ux-nav.css`: Gitea's profile tab menu becomes a sidebar list under a

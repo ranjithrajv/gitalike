@@ -505,8 +505,14 @@
     // back to replaying the site's own combo for destinations with no link.
     const label = (UX.SHORTCUT_TARGETS[theme] || {})[combo];
     const link = label ? findNavLink(label) : null;
-    if (link) link.click();
-    else sendKey(target.slice(1));
+    if (link) {
+      link.click();
+      return;
+    }
+    // A source with no combos of its own (Gitea) would only receive a stray key
+    // from a replay, so deliver nothing rather than that.
+    if (root.dataset.gsSource === 'gitea') return;
+    sendKey(target.slice(1));
   }
 
   function installKeys() {
@@ -537,13 +543,13 @@
       if (!combo) return;
       const target = (UX.SHORTCUTS[theme] || {})[combo];
       if (!target) return;
-      // The remap translates *between* GitHub's and GitLab's combos. On a forge
-      // that is neither (Gitea), replaying the other product's combo would break
-      // the key the site actually implements, so its own shortcuts are left
-      // alone. `source` is set by content/theme.js from the shared tables.
+      // The remap translates *between* GitHub's and GitLab's combos. A
+      // GitHub-flavoured third source (Gitea) implements neither, so only the
+      // combos with a navigation link are delivered — always as a click.
+      // `source` is set by content/theme.js from the shared tables.
+      const source = root.dataset.gsSource;
       const expectedSource = theme === 'github' ? 'gitlab' : 'github';
-      if (root.dataset.gsSource && root.dataset.gsSource !== expectedSource)
-        return;
+      if (source && source !== expectedSource && source !== 'gitea') return;
       // The real `g` already reached the site; swallow this second key and
       // deliver the destination the site's own product would have used.
       event.preventDefault();

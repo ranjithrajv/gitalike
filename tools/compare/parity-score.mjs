@@ -78,9 +78,13 @@ function shortcutsShare(source, skin, native = false) {
   if (native) return 1;
   const combos = Object.keys(UX.SHORTCUTS[skin] || {});
   if (!combos.length) return 0;
-  const expected = skin === 'github' ? 'gitlab' : 'github';
-  if (source !== expected) return 0;
+  // GitHub honours synthetic key events, so replaying its own combos always
+  // lands. Every other source can only deliver a combo that has a navigation
+  // link to click: GitLab ignores synthetic keys, and Gitea implements no combos
+  // of its own, so its own shortcuts are left alone.
   if (source === 'github') return 1;
+  const expected = skin === 'github' ? 'gitlab' : 'github';
+  if (source !== expected && source !== 'gitea') return 0;
   const reachable = combos.filter(
     (combo) => UX.SHORTCUT_TARGETS[skin]?.[combo],
   ).length;

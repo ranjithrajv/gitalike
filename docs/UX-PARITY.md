@@ -115,7 +115,7 @@ at a time from the popup).
 | --- | :--: | :--: | :--: |
 | **Bitbucket** | 10.0 | 6.5 | 5.9 |
 | **Gerrit** | 5.3 | 5.4 | 5.1 |
-| **Gitea / Forgejo** | 8.0 | 8.1 | 7.9 |
+| **Gitea / Forgejo** | 8.0 | 8.6 | 8.5 |
 | **GitHub** | 8.4 | 10.0 | 9.7 |
 | **GitLab** | 8.4 | 9.7 | 10.0 |
 
@@ -125,7 +125,7 @@ at a time from the popup).
 | --- | :--: | :--: | :--: |
 | **Bitbucket** | 10.0 | 5.6 | 5.7 |
 | **Gerrit** | 2.1 | 3.0 | 3.1 |
-| **Gitea / Forgejo** | 4.2 | 5.6 | 5.7 |
+| **Gitea / Forgejo** | 4.2 | 6.2 | 6.2 |
 | **GitHub** | 6.7 | 10.0 | 9.9 |
 | **GitLab** | 6.7 | 9.5 | 10.0 |
 
@@ -161,11 +161,14 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
 - **GitLab → Bitbucket, project (8.4)** — the sidebar, tab words, order and
   keep-list map, with Bitbucket's flat menu. The metadata, reference and shortcut
   dimensions are partial for Bitbucket.
-- **Gitea → GitHub (8.1) / GitLab (7.9)** — the repo nav is rebuilt or restyled
-  and reordered, but Gitea's description and topics keep Gitea's placement and
-  its own `g`-combos are left alone, costing the metadata and shortcut
-  dimensions. The GitHub UI edges it because Gitea is GitHub-flavoured and
-  GitHub's whitelist matches its menu more closely than GitLab's hide-list.
+- **Gitea → GitHub (8.6) / GitLab (8.5)** — the repo nav is rebuilt or restyled
+  and reordered, and the applied product's shortcuts work: Gitea implements no
+  combos of its own, so the combos with a repository-navigation link (pull/merge
+  requests, projects) are delivered as a trusted click, and the one without a
+  link is left undelivered. Gitea's description and topics keep Gitea's
+  placement, which costs the metadata dimension. The GitHub UI edges it because
+  Gitea is GitHub-flavoured and GitHub's whitelist matches its menu more closely
+  than GitLab's hide-list.
 - **Gitea → Bitbucket, project (8.0)** — Bitbucket's flat sidebar is the closest
   fit to Gitea's rebuilt nav, so the structure tracks the target best of the
   three; metadata, references and shortcuts are again the losses.
@@ -178,7 +181,7 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   Bitbucket's own destinations, but Bitbucket has no public profile of its own,
   so the identity card is not re-shaped (the rail and stats passes are
   GitLab/GitHub only) and shortcuts are unmapped.
-- **Gitea → any skin, profile (4.2–5.7)** — the profile passes are keyed to
+- **Gitea → any skin, profile (4.2–6.2)** — the profile passes are keyed to
   GitHub's and GitLab's profile markup (`SELECTORS.github.profile*`,
   `SELECTORS.gitlab.profile*`), so a Gitea/Forgejo profile gets the shared
   palette, copy, account-chrome and reference-marker work, and its profile
@@ -438,6 +441,13 @@ instead. The one combo with no link — `g n` (notifications ⇄ todos) — stil
 falls back to a synthetic key and therefore does not work on GitLab; it is the
 one shortcut that is G→L only.
 
+A GitHub-flavoured third source (Gitea / Forgejo) implements **no combos of its
+own**. Since only a trusted click lands, for a Gitea source *every* delivered
+combo is a click on a repository-navigation link: the applied product's pull/merge
+requests and projects work (`g p` / `g m`, `g b` / `g p`), and the linkless one
+does not. The Bitbucket skin defines no `g`-combos at all, so a Gitea source under
+it gets none.
+
 Deliberately unmapped, in both directions: `g c`, `g i`, `g a`, `g w`, `g s`,
 `g d`, `g g`, and every single key (`t`, `/`, `.`, `?`, `s`). The single keys
 mostly already agree between the products, and the `g`-combos above are the only
@@ -471,8 +481,9 @@ their navigation:
   counter pills, and a single hairline under the row. It is not rebuilt.
 
 Gitea's description and topics keep Gitea's own placement — they are not moved
-into a GitLab "Project information" block or a GitHub "About" rail — and Gitea's
-own `g`-combos are left alone.
+into a GitLab "Project information" block or a GitHub "About" rail — and the
+applied product's `g`-combos are delivered as clicks on Gitea's own navigation
+links (see [Shortcuts](#shortcuts)).
 
 ## Not built
 

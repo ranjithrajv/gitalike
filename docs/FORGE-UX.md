@@ -423,7 +423,8 @@ hosts issue different usernames, so there is no path to map between them.
 UI their repo tabs are rebuilt as a grouped left sidebar, and under the GitHub
 UI as GitHub's underlined tab row. Gitea's description and topics keep Gitea's
 own placement — they are not moved into a GitLab "Project information" block or
-a GitHub "About" rail — and Gitea's own `g`-combos are left alone.
+a GitHub "About" rail — but the applied product's `g`-combos are delivered as
+clicks on Gitea's own navigation links (Gitea implements none of its own).
 
 **Bitbucket** is both a skin and a source. As a *skin* it is chosen from the
 popup for any source: its layout is GitLab's (Bitbucket's repo nav is a left
