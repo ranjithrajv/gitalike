@@ -32,6 +32,7 @@ import { pathToFileURL } from 'node:url';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 import '../plugins.mjs';
+import { comparableKinds, kindLabel, missingRecipes } from './page-kinds.mjs';
 
 const SITES = globalThis.GITALIKE;
 const UX = globalThis.GITALIKE_UX;
@@ -309,6 +310,19 @@ const PROFILE = [
 
 export const RUBRICS = { project: PROJECT, profile: PROFILE };
 
+/** The page kinds a rubric exists for — the framework's scoreable kinds. */
+export const RECIPE_KINDS = Object.keys(RUBRICS);
+
+/**
+ * The kinds actually compared: declared by every source *and* given a rubric.
+ * Read from the plugin registry, so a kind no source has (or the framework
+ * cannot score) is reported as not-compared rather than silently omitted.
+ */
+export const COMPARED = comparableKinds(RECIPE_KINDS);
+
+/** The declared kinds the framework has no rubric for yet. */
+export const NOT_COMPARED = missingRecipes(RECIPE_KINDS);
+
 /** The weight total a rubric is expected to add up to. */
 export const RUBRIC_TOTAL = 100;
 
@@ -423,7 +437,7 @@ function main(args) {
   if (args.has('--json')) {
     console.log(
       JSON.stringify(
-        { project: table('project'), profile: table('profile') },
+        Object.fromEntries(COMPARED.map((kind) => [kind, table(kind)])),
         null,
         2,
       ),
@@ -431,7 +445,7 @@ function main(args) {
     return;
   }
   if (args.has('--detail')) {
-    for (const pageType of ['project', 'profile']) {
+    for (const pageType of COMPARED) {
       for (const { key: source } of SOURCES) {
         for (const { key: skin } of SKINS) {
           if (!isReal(source, skin)) continue;
@@ -448,13 +462,18 @@ function main(args) {
   }
   const header = `| Source ↓ / Skin → | ${SKINS.map((s) => s.label).join(' | ')} |`;
   const rule = `| --- | ${SKINS.map(() => ':--:').join(' | ')} |`;
-  for (const pageType of ['project', 'profile']) {
-    console.log(`\n${pageType === 'project' ? 'Project' : 'Profile'} pages\n`);
+  for (const pageType of COMPARED) {
+    console.log(`\n${kindLabel(pageType)} pages\n`);
     console.log(header);
     console.log(rule);
     for (const row of table(pageType)) {
       console.log(`| **${row.label}** | ${row.scores.map(cell).join(' | ')} |`);
     }
+  }
+  if (NOT_COMPARED.length) {
+    console.log(
+      `\nDeclared but not compared (no rubric yet): ${NOT_COMPARED.join(', ')}`,
+    );
   }
 }
 
