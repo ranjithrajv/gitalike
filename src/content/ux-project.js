@@ -901,6 +901,8 @@
       'color:var(--gs-accent) !important;font-size:96px !important;font-weight:600 !important;}' +
       'h1.heading-1{font-size:24px !important;font-weight:600 !important;' +
       'line-height:1.25 !important;margin:0 0 4px !important;color:var(--gs-fg) !important;}' +
+      '.gs-gerrit-name{font-size:24px !important;font-weight:600 !important;' +
+      'line-height:1.25 !important;margin:0 0 4px !important;color:var(--gs-fg) !important;}' +
       'hr{display:none !important;}' +
       '.info:first-of-type{padding:0 !important;margin:0 !important;}' +
       '.info:not(:first-of-type){display:none !important;}' +
@@ -1076,28 +1078,55 @@
     clear();
     header.setAttribute('data-gs-gerrit-profile', signature);
 
-    // The avatar: the account's own image, or a monogram for a project.
+    const changes = data ? data.changes : [];
+
+    // The identity is the *author* of the changes, not the project path: a
+    // Gerrit query page is the closest thing to that author's profile. Pick the
+    // most frequent owner; fall back to the header's own name.
+    const owners = new Map();
+    for (const change of changes) {
+      const owner = change.owner;
+      if (!owner) continue;
+      const key = owner._account_id || owner.name || owner.email;
+      const entry = owners.get(key) || { owner, count: 0 };
+      entry.count += 1;
+      owners.set(key, entry);
+    }
+    const dominant = [...owners.values()].sort((a, b) => b.count - a.count)[0];
+    const heading = root.querySelector('h1');
+    const displayName =
+      (dominant && dominant.owner.name) ||
+      (heading && heading.textContent.trim()) ||
+      subject;
+    const account =
+      dominant && (dominant.owner.username || dominant.owner.email);
+
+    // The avatar: the account's own image, or a monogram for the author.
     if (!root.querySelector('gr-avatar')) {
       const avatar = document.createElement('span');
       avatar.setAttribute('data-gs-gerrit-profile-avatar', '');
       avatar.setAttribute('data-gs-ux-skip', '');
-      avatar.textContent = (subject.match(/[a-z0-9]/i) || [
+      avatar.textContent = (displayName.match(/[a-z0-9]/i) || [
         '?',
       ])[0].toUpperCase();
       root.insertBefore(avatar, root.firstChild);
     }
 
-    const changes = data ? data.changes : [];
-
-    // The rail: the header's own identity, plus the product's extra blocks.
+    // The rail: the author's identity, plus the product's extra blocks.
     const rail = document.createElement('div');
     rail.setAttribute('data-gs-gerrit-rail', '');
     rail.setAttribute('data-gs-ux-skip', '');
+    const nameEl = document.createElement('div');
+    nameEl.className = 'gs-gerrit-name';
+    nameEl.textContent = displayName;
+    rail.appendChild(nameEl);
+    if (heading) hide(heading, true);
     for (const item of furniture.rail) {
       if (item.kind === 'handle') {
         const el = document.createElement('div');
         el.className = 'gs-gerrit-handle';
-        el.textContent = '@' + subject;
+        const id = account || subject;
+        el.textContent = id.includes('@') ? id : '@' + id;
         rail.appendChild(markNoEquiv(el, 'No @handle on Gerrit'));
       } else if (item.kind === 'bio') {
         if (data && data.description) {
@@ -1121,7 +1150,7 @@
         el.className = 'gs-gerrit-stats';
         el.innerHTML =
           `<span><b>${changes.length}</b> changes</span>` +
-          `<span><b>${authors}</b> authors</span>`;
+          `<span><b>${authors}</b> ${authors === 1 ? 'author' : 'authors'}</span>`;
         rail.appendChild(el);
       } else if (item.kind === 'achievements') {
         const head = document.createElement('div');
@@ -1137,8 +1166,7 @@
         rail.appendChild(missingBox('No equivalent on Gerrit.'));
       }
     }
-    const h1 = root.querySelector('h1');
-    if (h1) h1.after(rail);
+    if (heading) heading.after(rail);
 
     // The content column: the product's profile tabs and sections.
     if (wrapper && viewRoot instanceof ShadowRoot) {
