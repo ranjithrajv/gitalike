@@ -144,6 +144,11 @@
       actions: findHref(['Actions', 'Pipelines', 'CI/CD']),
       projects: findHref(['Projects', 'Issue boards']),
       insights: findHref(['Insights', 'Analytics']),
+      // GitLab serves Wiki and Security only when the project has them
+      // enabled, so the source's own link is the authority; absent, the tab is
+      // marked unavailable rather than pointing at a page that is not there.
+      wiki: findHref(['Wiki']),
+      security: findHref(['Security and quality', 'Security']),
     };
     const base = [hrefs.code, hrefs.issues, hrefs.actions]
       .filter(Boolean)
@@ -162,14 +167,35 @@
     list.setAttribute('data-gs-project-tabs', '');
     list.setAttribute('data-gs-ux-skip', '');
     list.setAttribute('data-gs-signature', signature);
+    // The source product the tabs are built on, named in an "unavailable"
+    // marker ("≠ GitLab"). A GitHub tab GitLab does not serve stays in the row
+    // so the user is told, instead of a link that leads nowhere.
+    const source = document.documentElement.dataset.gsSource || 'gitlab';
+    const sourceName = UX.sourceProduct(source);
     for (const [label, href] of tabs) {
       const item = document.createElement('li');
-      const anchor = document.createElement('a');
-      anchor.className = 'super-sidebar-nav-item';
-      anchor.setAttribute('data-gs-project-tab', '');
-      anchor.setAttribute('href', href);
-      anchor.textContent = label;
-      item.appendChild(anchor);
+      if (href) {
+        const anchor = document.createElement('a');
+        anchor.className = 'super-sidebar-nav-item';
+        anchor.setAttribute('data-gs-project-tab', '');
+        anchor.setAttribute('href', href);
+        anchor.textContent = label;
+        item.appendChild(anchor);
+      } else {
+        const note = document.createElement('span');
+        note.className = 'super-sidebar-nav-item gs-project-tab-unavailable';
+        note.setAttribute('data-gs-project-tab', '');
+        note.setAttribute('data-gs-unavailable', sourceName);
+        note.setAttribute('aria-disabled', 'true');
+        note.title = `Not available on ${sourceName}`;
+        note.textContent = label;
+        const badge = document.createElement('span');
+        badge.className = 'gs-no-equiv';
+        badge.setAttribute('data-gs-ux-skip', '');
+        badge.textContent = `≠ ${sourceName}`;
+        note.appendChild(badge);
+        item.appendChild(note);
+      }
       list.appendChild(item);
     }
     // GitHub puts the tab row under the repository header, not at the very top

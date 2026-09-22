@@ -43,7 +43,7 @@ test('gitlab rewrites GitHub vocabulary the GitLab way', () => {
   assert.equal(UNMAPPED.gitlab.Discussions, 'GitLab');
 });
 
-test('gitlab groups its sidebar and hides what it has no page for', () => {
+test('gitlab groups its sidebar and marks what it has no page for', () => {
   assert.equal(NAV_GROUPS.gitlab['Merge requests'], 'Code');
   assert.equal(NAV_GROUPS.gitlab['Work items'], 'Plan');
   assert.deepEqual([...NAV_HIDE.gitlab].sort(), [
@@ -51,6 +51,12 @@ test('gitlab groups its sidebar and hides what it has no page for', () => {
     'Marketplace',
     'Sponsors',
   ]);
+  // Every hidden label is also marked: `paintNavHide` skips a label that
+  // `noEquivalentFor` names, so the pass marks it instead of hiding it. A
+  // `hide` entry with no `unmapped` counterpart would be hidden outright.
+  for (const label of NAV_HIDE.gitlab) {
+    assert.equal(UNMAPPED.gitlab[label], 'GitLab', label);
+  }
 });
 
 test('gitlab maps its two-key combos onto the source site’s', () => {

@@ -262,6 +262,7 @@ product's *vocabulary and habits*:
 | Shortcuts  | the other product's `g`-combos work: on GitHub shown as GitLab, `g m` opens merge requests                        |
 | Other host | open the same page on the other forge, from the popup or `Alt` + `Shift` + `O`                                     |
 | No counterpart | a feature the other product lacks is marked `≠ GitLab` / `≠ GitHub` instead of pretending it exists             |
+| Not available here | a destination the applied product has but the source site does not serve is marked `≠ GitLab` / `≠ GitHub` and left inert, never a dead link |
 | Account chrome | "Your repositories" ⇄ "Your projects", "Your gists" ⇄ "Your snippets", "Your stars" ⇄ "Starred projects", "Your organizations" ⇄ "Your groups" |
 
 It is deliberately conservative. Copy is rewritten only in ordinary page text —

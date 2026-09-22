@@ -81,8 +81,9 @@ publish only what a skin declares):
 | `shortcuts` | `{ seenCombo: siteCombo }` | `g`-combo remap |
 | `shortcutTargets` | `{ combo: displayedLabel }` | combos delivered as a click |
 | `topbarHide` | `string[]` | source-only top-bar words to hide |
-| `projectTabs` | `(base, hrefs) => [[label, href]]` | the rebuilt project tab set |
+| `projectTabs` | `(base, hrefs) => [[label, href]]` | the rebuilt project tab set; an `href` of `null` marks the tab "not available" on the source |
 | `activity` | `{ heading, more }` | the applied product's words for a profile's activity section (GitHub's "Show more activity"); `paintProfileActivity` relabels the source's framing on a profile page |
+| `unavailable` | `{ source: { label: lackingProduct } }` | the applied product's destinations a source has no page for; a synthesised item is marked "not available on `<source>`" rather than linked |
 
 A skin also needs its palette, `as-<name>.css`, beside its `index.js`, scoped to
 `html.gs-theme-<name>` and carrying its own `--gs-mark` (GitAlike's mark in that

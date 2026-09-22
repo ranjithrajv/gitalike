@@ -688,6 +688,17 @@ html.gs-layout-github .super-sidebar a {
   white-space: nowrap !important;
 }
 
+/* A rebuilt profile-menu destination the source does not serve (GitHub's
+   Packages on a GitLab profile): it keeps the menu's row slot but is inert and
+   muted, so it never reads as a working tab. */
+html.gs-layout-github .super-sidebar [data-gs-unavailable] {
+  display: inline-block !important;
+  padding: 4px 8px !important;
+  color: var(--gs-fg-subtle, #8b8a91) !important;
+  white-space: nowrap !important;
+  cursor: default !important;
+}
+
 /* The collapse control only makes sense on a vertical sidebar. */
 html.gs-layout-github .super-sidebar :is(
     [data-testid*="collapse" i],
@@ -1017,6 +1028,22 @@ html.gs-layout-github [data-gs-project-tabs] > li > a {
 html.gs-layout-github [data-gs-project-tabs] > li > a[data-gs-active] {
   font-weight: 600 !important;
   border-bottom-color: #fd8c73 !important;
+}
+
+/* A rebuilt tab the source does not serve (GitLab's Wiki/Security when the
+   project has them off): it keeps the tab row's slot but is inert and muted, so
+   it reads as "not available here" rather than a link. */
+html.gs-layout-github
+  [data-gs-project-tabs]
+  > li
+  > [data-gs-unavailable] {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 8px 8px 6px !important;
+  color: var(--gs-fg-subtle, #8b8a91) !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+  cursor: default !important;
 }
 
 /* Hosted under the repository header, the row spans the content and the sidebar

@@ -51,6 +51,11 @@
     const seenHref = new Set();
     for (const el of navControls(node)) {
       const label = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      // A feature the applied product has no counterpart for is marked, not
+      // hidden: leave it for paintUnmapped so the page says the feature is not
+      // available here instead of dropping it silently. Everything else that
+      // has no slot in the applied product's menu is still hidden.
+      if (UX.noEquivalentFor(label, t)) continue;
       // A whitelist means "show only the applied product's own options";
       // otherwise hide the ones it has no page for.
       let drop = keep ? !UX.navKeep(label, t) : UX.navHidden(label, t);

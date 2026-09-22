@@ -158,9 +158,12 @@
       Security: 'Secure',
     },
 
-    // Menu items the applied product has no page for, by displayed label.
-    // Hidden rather than marked, so the navigation is the applied product's
-    // menu and not a mix of both.
+    // Menu items the applied product has no page for, by displayed label. A
+    // label that is also declared in `unmapped` (all three below are) is
+    // *marked* `≠ GitLab` rather than hidden — `paintNavHide` leaves it for
+    // `paintUnmapped` — so the page says the feature does not exist in GitLab
+    // instead of dropping it silently. A label with no `unmapped` entry here
+    // would still be hidden.
     hide: ['Discussions', 'Sponsors', 'Marketplace'],
 
     // GitLab's profile destinations, in the applied product's order. The

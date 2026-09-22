@@ -105,6 +105,7 @@
     LABELS: bySkin('labels'),
     CHROME: bySkin('chrome'),
     UNMAPPED: bySkin('unmapped'),
+    UNAVAILABLE: bySkin('unavailable'),
     TOPBAR_HIDE: bySkin('topbarHide'),
     SHORTCUTS: bySkin('shortcuts'),
     SHORTCUT_TARGETS: bySkin('shortcutTargets'),

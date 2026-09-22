@@ -50,6 +50,7 @@ Bitbucket's are in `src/plugins/skins/bitbucket.js` and are covered by
 | Control labels — `LABELS` | ✅ 4 | ✅ 4 | `plugins/skins/` |
 | Account/menu chrome — `CHROME` | ✅ 4 | ✅ 4 | `plugins/skins/` |
 | No-counterpart markers — `UNMAPPED` | ✅ 3 | ✅ 15 | `plugins/skins/` |
+| Unavailable target features — `UNAVAILABLE` | — | ✅ 1 source | `plugins/skins/` + `content/ux-*.js` |
 | Nav labels — `NAV` | ✅ 5 | ✅ 5 | `plugins/skins/` |
 | Top-bar source words | ✅ hidden | ✅ hidden | `plugins/skins/` + `content/ux-nav.js` |
 | Nav reorder — `NAV_RULES` | ✅ 1 rule | ✅ 1 rule | `plugins/skins/` |
@@ -316,7 +317,20 @@ or control whose whole label names such a feature. Examples: GitLab's Epics,
 Iterations, Requirements, Service Desk, Merge trains, Feature flags, Terraform
 modules, Model registry, Model experiments, Test cases, Incidents, Error
 tracking, On-call schedules, Alert management and Value stream analytics;
-GitHub's Discussions and Sponsors.
+GitHub's Discussions and Sponsors. The marker takes precedence over the hide
+list and the `keep` whitelist — `paintNavHide` never hides a label
+`noEquivalentFor` names — so a labelled feature is *shown with the badge*, not
+silently dropped. A label carrying the site's counter (`Iterations 3`) matches
+too.
+
+The reverse is marked as well. Where a skin synthesises one of the applied
+product's own destinations and the source site has no page for it, the item is
+shown as unavailable rather than linked: `UNAVAILABLE` names the source product,
+and `paintProfileMenu` / `paintProjectTabs` render the item inert with a
+`≠ <source>` badge and a `data-gs-unavailable` attribute. A GitLab profile has
+no user-level Packages page, so GitHub's Packages reads `≠ GitLab`; and a GitLab
+project that has Wiki or Security disabled gets GitHub's Wiki and "Security and
+quality" tabs marked `≠ GitLab` instead of links to a 404.
 
 A feature with a real counterpart is never marked — the two tables are disjoint,
 and a test enforces it — and every badge is removed when the skin is switched
@@ -503,7 +517,9 @@ links (see [Shortcuts](#shortcuts)).
 
 Add to `PHRASES` for prose, `LABELS` for a control label, `CHROME` for account
 chrome, `NAV` for a nav label, `SELECTORS` for a DOM hook, `SHORTCUTS` for a
-`g`-combo. Keep control words in `LABELS`/`CHROME`, not `PHRASES` — the control
+`g`-combo, `UNMAPPED` for a feature the applied product lacks, `UNAVAILABLE` for
+one the source lacks, and `PROJECT_TABS`/`PROFILE_MENU` for a synthesised
+destination. Keep control words in `LABELS`/`CHROME`, not `PHRASES` — the control
 scope is what makes an ordinary word safe. The tests enforce that every `LABELS`
 and `CHROME` entry round-trips and that `PHRASES` stays the same size in both
 directions.

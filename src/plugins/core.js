@@ -133,6 +133,12 @@
     // `{ heading, more }` — the applied product's words for a profile's activity
     // section, used to relabel the source's own framing on a profile page.
     activity: null,
+    // `{ <source>: { <label>: <product> } }` — the applied product's own
+    // destinations a source has no page for, named by the product that lacks
+    // them. Used where a skin synthesises an item (the profile menu, a rebuilt
+    // project tab) so it is marked "not available on <source>" instead of
+    // linked to a page the source does not serve.
+    unavailable: {},
   };
 
   // Fresh values, so two skins never share a default array or object.

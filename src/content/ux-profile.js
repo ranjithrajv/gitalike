@@ -220,19 +220,22 @@
 
       const anchors = [...container.querySelectorAll('a')];
       const used = new Set();
-      items.forEach(([label, href, source], index) => {
+      // `reuse` is the source item to repaint (a label, or `@first`), not the
+      // source forge — `source` (the forge name) is kept for the unavailability
+      // lookup below.
+      items.forEach(([label, href, reuse], index) => {
         let anchor = null;
-        if (source === '@first') {
+        if (reuse === '@first') {
           anchor = anchors[0] || null;
-        } else if (source) {
+        } else if (reuse) {
           anchor =
             anchors.find(
-              (a) => !used.has(a) && UX.labelMatches(profileLabelOf(a), source),
+              (a) => !used.has(a) && UX.labelMatches(profileLabelOf(a), reuse),
             ) || null;
         }
         if (anchor) {
           used.add(anchor);
-          const key = source === '@first' ? profileLabelOf(anchor) : source;
+          const key = reuse === '@first' ? profileLabelOf(anchor) : reuse;
           setProfileLabel(anchor, key, label);
           anchor.setAttribute('href', href);
           const holder = sourceIsGitlab
@@ -242,6 +245,34 @@
           // rebuilt; it belongs to the applied product's menu, so show it again.
           holder.style.removeProperty('display');
           setOrder(holder, String(index));
+          return;
+        }
+        // The applied product has this destination but the source has no page
+        // for it (GitHub's Packages on a GitLab profile): show it as
+        // unavailable instead of a link the source cannot serve.
+        const missing = UX.unavailableFor(label, t, source);
+        if (missing) {
+          const note = document.createElement('span');
+          note.className = 'gs-profile-menu-unavailable';
+          note.setAttribute('data-gs-unavailable', missing);
+          note.setAttribute('aria-disabled', 'true');
+          note.title = `Not available on ${missing}`;
+          note.textContent = label;
+          const badge = document.createElement('span');
+          badge.className = 'gs-no-equiv';
+          badge.setAttribute('data-gs-ux-skip', '');
+          badge.textContent = `≠ ${missing}`;
+          note.appendChild(badge);
+          let holder = note;
+          if (sourceIsGitlab) {
+            holder = document.createElement('li');
+            holder.setAttribute('data-gs-profile-menu', '');
+            holder.appendChild(note);
+          } else {
+            note.setAttribute('data-gs-profile-menu', '');
+          }
+          setOrder(holder, String(index));
+          container.appendChild(holder);
           return;
         }
         const anchorNew = document.createElement('a');

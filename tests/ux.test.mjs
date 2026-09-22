@@ -26,6 +26,7 @@ const {
   LABELS,
   CHROME,
   UNMAPPED,
+  UNAVAILABLE,
   LABEL_SCOPE,
   NAV_RULES,
   SELECTORS,
@@ -35,6 +36,8 @@ const {
   translateControl,
   controlLabel,
   noEquivalentFor,
+  unavailableFor,
+  sourceProduct,
   refMarker,
   labelMatches,
   navGroupFor,
@@ -686,6 +689,31 @@ describe('UNMAPPED', () => {
   });
 });
 
+describe('UNAVAILABLE', () => {
+  test('names the source that lacks an applied-product destination', () => {
+    // GitHub has a user Packages tab; GitLab has no user-level page for it, so
+    // the synthesised item is marked unavailable for GitLab.
+    assert.equal(unavailableFor('Packages', 'github', 'gitlab'), 'GitLab');
+    assert.equal(unavailableFor('Packages', 'github', 'gitea'), null);
+    assert.equal(unavailableFor('Code', 'github', 'gitlab'), null);
+  });
+
+  test('names each source product', () => {
+    assert.equal(sourceProduct('gitlab'), 'GitLab');
+    assert.equal(sourceProduct('github'), 'GitHub');
+  });
+
+  test('the named product is the source that lacks it', () => {
+    for (const [theme, bySource] of Object.entries(UNAVAILABLE ?? {})) {
+      for (const [source, labels] of Object.entries(bySource)) {
+        for (const product of Object.values(labels)) {
+          assert.equal(product, sourceProduct(source), `${theme}: ${source}`);
+        }
+      }
+    }
+  });
+});
+
 describe('NAV_GROUPS', () => {
   test('gathers repo tabs under GitLab group headings', () => {
     assert.equal(navGroupFor('Merge requests', 'gitlab'), 'Code');
@@ -726,11 +754,20 @@ describe('NAV_GROUPS', () => {
 });
 
 describe('NAV_HIDE', () => {
-  test('hides the items the applied product has no page for', () => {
+  test('hides the items the applied product has no slot for', () => {
     assert.equal(navHidden('Feature catalog', 'github'), true);
     assert.equal(navHidden('Iterations', 'github'), true);
     assert.equal(navHidden('Discussions', 'gitlab'), true);
     assert.equal(navHidden('Sponsors', 'gitlab'), true);
+  });
+
+  test('a marked item takes precedence over the hide list', () => {
+    // `paintNavHide` leaves a label for `paintUnmapped` when it has no
+    // counterpart, so a label in both `hide` and `unmapped` is marked, not
+    // hidden. The counter is stripped, so a counted nav item matches too.
+    assert.equal(noEquivalentFor('Discussions', 'gitlab'), 'GitLab');
+    assert.equal(noEquivalentFor('Sponsors 2', 'gitlab'), 'GitLab');
+    assert.equal(noEquivalentFor('Iterations 3', 'github'), 'GitHub');
   });
 
   test('keeps items the applied product does have', () => {
@@ -951,12 +988,28 @@ describe('sectionLabelText', () => {
 
 describe('projectTabs', () => {
   test('uses the links GitLab renders and synthesises the rest', () => {
-    const tabs = projectTabs('/a/b', { issues: '/a/b/-/issues' });
+    const tabs = projectTabs('/a/b', {
+      issues: '/a/b/-/issues',
+      wiki: '/a/b/-/wikis/home',
+      security: '/a/b/-/security/dashboard',
+    });
     assert.deepEqual(tabs[0], ['Code', '/a/b']);
     assert.deepEqual(tabs[1], ['Issues', '/a/b/-/issues']);
     assert.deepEqual(tabs[2], ['Pull requests', '/a/b/-/merge_requests']);
     assert.deepEqual(tabs[5], ['Wiki', '/a/b/-/wikis/home']);
+    assert.deepEqual(tabs[6], [
+      'Security and quality',
+      '/a/b/-/security/dashboard',
+    ]);
     assert.equal(tabs.length, 8);
+  });
+
+  test('marks Wiki and Security unavailable when GitLab does not serve them', () => {
+    // GitLab only renders Wiki and Security when the project has them enabled,
+    // so an absent link is `null` — a marker, not a route to guess at.
+    const tabs = projectTabs('/a/b', {});
+    assert.deepEqual(tabs[5], ['Wiki', null]);
+    assert.deepEqual(tabs[6], ['Security and quality', null]);
   });
 
   test('keeps GitHub’s tab order', () => {

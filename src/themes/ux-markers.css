@@ -24,3 +24,12 @@ html[class*="gs-theme-"] .gs-no-equiv {
   pointer-events: none;
   user-select: none;
 }
+
+/* A destination the applied product has but the source does not serve (GitHub's
+   Wiki/Security tabs or user Packages on a GitLab page). Its badge says so and
+   it is inert, so it is never a dead link. */
+html[class*="gs-theme-"]
+  :is(.gs-project-tab-unavailable, .gs-profile-menu-unavailable) {
+  cursor: default;
+  opacity: 0.65;
+}

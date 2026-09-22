@@ -17,7 +17,7 @@ one, and `npm run registry` to relist it here and in `plugins.json`.
 | Product | Skin | Layout | Capabilities | Folder | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Bitbucket | bitbucket | gitlab | activity, keep, projectTabs, repoOrder | `src/plugins/skins/bitbucket/` | The Bitbucket UI, worn by any configured site. |
-| GitHub | github | github | activity, hide, keep, projectTabs, repoOrder, shortcutTargets, shortcuts, topbarHide | `src/plugins/skins/github/` | The GitHub UI, worn by a GitLab-flavoured site. |
+| GitHub | github | github | activity, hide, keep, projectTabs, repoOrder, shortcutTargets, shortcuts, topbarHide, unavailable | `src/plugins/skins/github/` | The GitHub UI, worn by a GitLab-flavoured site. |
 | GitLab | gitlab | gitlab | activity, groups, hide, repoOrder, shortcutTargets, shortcuts, topbarHide | `src/plugins/skins/gitlab/` | The GitLab UI, worn by a GitHub- or Gitea-flavoured site. |
 
 ## Sources

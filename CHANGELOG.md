@@ -161,6 +161,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **A feature with no counterpart is marked on the page, not hidden.** The
+  `≠ GitLab` / `≠ GitHub` badge now takes precedence over the skin's `hide` list
+  and `keep` whitelist — `paintNavHide` leaves any label `noEquivalentFor` names
+  for `paintUnmapped` — so a labelled feature is shown with the badge instead of
+  being dropped silently, which is what the README and docs already promised.
+  The badge also matches a label carrying the site's counter (`Iterations 3`).
+  The reverse is marked as well: a new skin capability, `unavailable`, names the
+  applied-product destinations a source has no page for, and a synthesised item
+  is rendered inert with a `≠ <source>` badge rather than linked to a page that
+  is not there — GitHub's user Packages on a GitLab profile, and Wiki/Security on
+  a GitLab project that has them disabled.
 - **GitAlike is on the Chrome Web Store.** The Chrome listing is live; the
   Firefox listing is in review on addons.mozilla.org. Both links are in the
   README and the site's Install section (the Firefox one goes live when it

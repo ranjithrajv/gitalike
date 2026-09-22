@@ -30,7 +30,8 @@
         "repoOrder",
         "shortcutTargets",
         "shortcuts",
-        "topbarHide"
+        "topbarHide",
+        "unavailable"
       ]
     },
     {

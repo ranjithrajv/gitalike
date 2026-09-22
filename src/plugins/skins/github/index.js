@@ -64,6 +64,15 @@
       'Your groups': 'Your organizations',
     },
 
+    // The applied product's own destinations a *source* has no page for. A
+    // GitLab profile has no user-level Packages page, so the synthesised
+    // GitHub profile item is shown as unavailable for GitLab rather than
+    // linked into nothing. (GitLab-only features are the mirror image, below
+    // in `unmapped`.)
+    unavailable: {
+      gitlab: { Packages: 'GitLab' },
+    },
+
     unmapped: {
       'Feature catalog': 'GitHub',
       Activity: 'GitHub',
@@ -160,16 +169,18 @@
 
     // The repo tabs GitHub shows on a *GitLab* project page, emitted as
     // [label, href]. `hrefs` carries the links GitLab actually renders; a tab
-    // GitLab omits is synthesised from `base`. Pure, so the tab set is
-    // testable without a page.
+    // GitLab omits is synthesised from `base`, or — for Wiki and Security,
+    // which GitLab only serves when the project has them enabled — emitted as
+    // `null`, so `paintProjectTabs` marks it "not available" instead of
+    // linking to a 404. Pure, so the tab set is testable without a page.
     projectTabs: (base, hrefs) => [
       ['Code', hrefs.code || base],
       ['Issues', hrefs.issues || `${base}/-/work_items`],
       ['Pull requests', hrefs.pullRequests || `${base}/-/merge_requests`],
       ['Actions', hrefs.actions || `${base}/-/pipelines`],
       ['Projects', hrefs.projects || `${base}/-/boards`],
-      ['Wiki', `${base}/-/wikis/home`],
-      ['Security and quality', `${base}/-/security/dashboard`],
+      ['Wiki', hrefs.wiki || null],
+      ['Security and quality', hrefs.security || null],
       ['Insights', hrefs.insights || `${base}/-/analytics`],
     ],
 

@@ -330,13 +330,28 @@ try {
             document.querySelector('[data-testid="user-local-time"]'),
           ).display
         : null,
+      // A destination the source has no page for is an inert marked span, not
+      // an anchor (`<li><span data-gs-unavailable>`), so include those too.
       nav: nav
-        ? [...nav.querySelectorAll('a')]
+        ? [...nav.querySelectorAll('a, [data-gs-unavailable]')]
             .filter(
-              (a) => getComputedStyle(a.closest('li') || a).display !== 'none',
+              (el) =>
+                getComputedStyle(el.closest('li') || el).display !== 'none',
             )
-            .map((a) => (a.textContent || '').replace(/\s+/g, ' ').trim())
+            .map((el) => (el.textContent || '').replace(/\s+/g, ' ').trim())
         : [],
+      // GitHub's user Packages tab has no GitLab page, so the marker must be a
+      // non-link ("≠ GitLab") rather than a fabricated href.
+      packagesUnavailable: (() => {
+        const el = nav?.querySelector('[data-gs-unavailable]');
+        if (!el) return null;
+        return {
+          product: el.getAttribute('data-gs-unavailable'),
+          tag: el.tagName.toLowerCase(),
+          href: el.getAttribute('href'),
+          label: (el.textContent || '').replace(/\s+/g, ' ').trim(),
+        };
+      })(),
     };
   });
   await glp.close();
@@ -361,6 +376,14 @@ try {
       (label) => lp.nav.some((t) => t.startsWith(label)),
     ) && !lp.nav.some((t) => t.startsWith('Personal projects')),
     lp.nav.join(', '),
+  );
+  check(
+    'L→G marks Packages unavailable, not linked',
+    lp.packagesUnavailable?.product === 'GitLab' &&
+      lp.packagesUnavailable.tag === 'span' &&
+      lp.packagesUnavailable.href === null &&
+      lp.packagesUnavailable.label.startsWith('Packages'),
+    JSON.stringify(lp.packagesUnavailable),
   );
 
   await gl.keyboard.press('g');
@@ -465,6 +488,7 @@ try {
     return {
       nav: items.filter(shown).map(label),
       hidden: items.filter((a) => !shown(a)).map(label),
+      marked: items.filter((a) => a.querySelector('.gs-no-equiv')).map(label),
       sidebar: Boolean(document.querySelector('[data-gs-gitea-nav]')),
     };
   });
@@ -474,11 +498,15 @@ try {
       cg.nav.findIndex((t) => t.startsWith('Issues')) === 1 &&
       cg.nav.findIndex((t) => t.startsWith('Pull requests')) === 2 &&
       !cg.sidebar &&
-      // GitHub has no repo tab for these, so the whitelist hides them.
-      ['Releases', 'Packages', 'Activity'].every((t) =>
+      // GitHub has no repo tab for these, so the whitelist hides them…
+      ['Releases', 'Packages'].every((t) =>
         cg.hidden.some((h) => h.startsWith(t)),
-      ),
-    `shown: ${cg.nav.join(', ')} | hidden: ${cg.hidden.join(', ')}`,
+      ) &&
+      // …while Gitea's Activity has no GitHub counterpart, so it is marked
+      // (`≠ GitHub`) rather than hidden.
+      cg.nav.some((t) => t.startsWith('Activity')) &&
+      cg.marked.some((t) => t.startsWith('Activity')),
+    `shown: ${cg.nav.join(', ')} | hidden: ${cg.hidden.join(', ')} | marked: ${cg.marked.join(', ')}`,
   );
 
   // The same site, told to wear the Bitbucket UI: a flat sidebar of Bitbucket's

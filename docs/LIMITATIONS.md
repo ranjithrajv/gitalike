@@ -18,13 +18,25 @@ it stops short of a perfect reskin — the detail behind the short list in the
 - **A feature with no counterpart is marked, not hidden.** GitLab-only features
   (Epics, Iterations, Requirements, Service Desk, …) get a `≠ GitHub` badge on a
   GitHub-skinned site, and GitHub-only ones (Discussions, Sponsors) get `≠ GitLab`
-  on a GitLab-skinned site.
+  on a GitLab-skinned site. The badge takes precedence over the skin's hide list
+  and `keep` whitelist, so the feature is shown with the badge rather than
+  silently dropped, and a label carrying the site's counter (`Iterations 3`)
+  matches too. The reverse is marked as well: an applied-product destination the
+  source does not serve — GitHub's user Packages on a GitLab profile, or Wiki and
+  Security on a GitLab project that has them disabled — is rendered inert with a
+  `≠ GitLab` badge instead of a link to a page that is not there (`UNAVAILABLE`).
+  Where the source's own navigation is hidden wholesale by the skin (GitLab's
+  sidebar on a repository root shown as GitHub), the marker is present in the DOM
+  but not on screen; the feature appears marked on the pages that keep the source
+  nav visible.
 - **The GitHub-skin strip is rebuilt, not just reordered.** GitLab scatters the
   same project destinations across a pinned block and collapsible groups, some of
   which (Wiki, Security) it may not render at all, so the tab row is rebuilt from
   GitHub's own tabs, in GitHub's order, and hosted under the repository header
-  where GitHub puts it. Under the GitLab skin, GitHub's flat tabs are gathered
-  under GitLab's group headings instead.
+  where GitHub puts it. A rebuilt tab GitLab does not serve (Wiki or Security on
+  a project that has it disabled) is marked `≠ GitLab` and left inert rather than
+  linked to a 404. Under the GitLab skin, GitHub's flat tabs are gathered under
+  GitLab's group headings instead.
 - **"Open on the other host" covers the two public forges only.** A self-hosted
   instance has no pair to guess, so the action is absent there.
 - **Access is bundled hosts at install, one origin at a time after that.** The

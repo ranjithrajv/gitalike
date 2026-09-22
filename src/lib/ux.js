@@ -44,6 +44,7 @@
     PROJECT_TABS,
     PROFILE_MENU,
     ACTIVITY,
+    UNAVAILABLE,
   } = globalThis.GITALIKE_SKINS;
 
   // The source markup hooks and the canary pages are declared one file per
@@ -58,6 +59,7 @@
     SELECTORS,
     CANARY_PAGES,
     PAGES,
+    SOURCES,
     SOURCE_KINDS,
     HOST_PAIRS,
     NAV_SCOPE,
@@ -152,9 +154,34 @@
     return controlLabel(label, theme) ?? translate(label, theme);
   }
 
-  /** The product that lacks this feature, or null if it has a counterpart. */
+  /**
+   * The product that lacks this feature, or null if it has a counterpart. The
+   * label may carry the site's trailing counter ("Iterations 3"), which
+   * `labelMatches` strips, so a counted nav item is marked like the bare one.
+   */
   function noEquivalentFor(label, theme) {
-    return lookup(UNMAPPED[theme], label);
+    const map = UNMAPPED[theme];
+    if (!map) return null;
+    for (const [key, product] of Object.entries(map)) {
+      if (labelMatches(label, key)) return product;
+    }
+    return null;
+  }
+
+  /**
+   * The product a *source* lacks a page for on an item the skin synthesised.
+   * The applied product's own menu may name a destination the source cannot
+   * serve (GitHub's user Packages tab on a GitLab profile), so the item is shown
+   * as unavailable for that source rather than linked to a page it does not
+   * have. Keyed by source, because the same target is worn by several.
+   */
+  function unavailableFor(label, theme, source) {
+    return lookup(UNAVAILABLE[theme]?.[source], label);
+  }
+
+  /** The display name of a source product ("gitlab" -> "GitLab"). */
+  function sourceProduct(source) {
+    return SOURCES[source]?.product ?? source;
   }
 
   /**
@@ -517,6 +544,7 @@
     LABELS,
     CHROME,
     UNMAPPED,
+    UNAVAILABLE,
     NAV_SCOPE,
     TOPBAR_SCOPE,
     TOPBAR_HIDE,
@@ -531,6 +559,8 @@
     translateControl,
     controlLabel,
     noEquivalentFor,
+    unavailableFor,
+    sourceProduct,
     refMarker,
     labelMatches,
     navGroupFor,
