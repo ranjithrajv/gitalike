@@ -1025,6 +1025,272 @@
     { kind: 'project', hook: 'repoHeader', keepSlash: true },
   ];
 
+  // ---- a project query wears the product's *repository* page ----
+  //
+  // A project query is a repository, so it gets the repo page — the owner/repo
+  // header, its tabs, and on the Code tab the file tree. The tree comes from the
+  // Gitiles browser the repo header links to; Gitiles is often a *different
+  // origin*, which the page cannot read, so the fetch is attempted only when it
+  // shares this origin. Otherwise the Code tab links out to the real browser
+  // rather than inventing a file list.
+  const GERRIT_REPO_FURNITURE = {
+    github: {
+      actions: ['Watch', 'Fork', 'Star'],
+      tabs: [
+        { label: 'Code', source: 'files', current: true },
+        { label: 'Issues' },
+        { label: 'Pull requests', source: 'changes' },
+        { label: 'Actions' },
+        { label: 'Projects' },
+        { label: 'Wiki' },
+        { label: 'Security' },
+        { label: 'Insights' },
+      ],
+    },
+    gitlab: {
+      actions: ['Star', 'Fork'],
+      tabs: [
+        { label: 'Repository', source: 'files', current: true },
+        { label: 'Issues' },
+        { label: 'Merge requests', source: 'changes' },
+        { label: 'CI/CD' },
+        { label: 'Deployments' },
+        { label: 'Packages' },
+        { label: 'Analytics' },
+        { label: 'Wiki' },
+      ],
+    },
+    bitbucket: {
+      actions: ['Watch', 'Fork'],
+      tabs: [
+        { label: 'Source', source: 'files', current: true },
+        { label: 'Commits' },
+        { label: 'Branches' },
+        { label: 'Pull requests', source: 'changes' },
+        { label: 'Pipelines' },
+        { label: 'Deployments' },
+        { label: 'Downloads' },
+      ],
+    },
+  };
+
+  const GERRIT_NOEQ = '<span class="gs-gerrit-noeq">\u2260</span>';
+
+  // The Gitiles browser the repo header links to, if it links to one.
+  function gerritBrowseUrl(root) {
+    const weblink = root.querySelector('gr-weblink');
+    const anchor =
+      weblink && (weblink.shadowRoot || weblink).querySelector('a[href]');
+    return anchor ? anchor.getAttribute('href') : null;
+  }
+
+  // The file tree behind a Gitiles browse URL, fetched only when it shares this
+  // origin. Cached; a miss fetches and repaints. `null` means "not available —
+  // link out".
+  const gerritTrees = new Map();
+  const gerritTreesPending = new Set();
+
+  async function fetchGerritTree(browseUrl, branch) {
+    const url = `${browseUrl.replace(/\/$/, '')}/+/refs/heads/${branch}/?format=JSON`;
+    const text = await (
+      await fetch(url, { headers: { Accept: 'application/json' } })
+    ).text();
+    const json = JSON.parse(text.startsWith(")]}'") ? text.slice(4) : text);
+    return Array.isArray(json.entries) ? json.entries : [];
+  }
+
+  function gerritTree(browseUrl, branch) {
+    if (!browseUrl) return null;
+    let sameOrigin = false;
+    try {
+      sameOrigin = new URL(browseUrl, location.href).origin === location.origin;
+    } catch {
+      sameOrigin = false;
+    }
+    if (!sameOrigin) return null;
+    const key = `${browseUrl}#${branch}`;
+    if (gerritTrees.has(key)) return gerritTrees.get(key);
+    if (!gerritTreesPending.has(key)) {
+      gerritTreesPending.add(key);
+      fetchGerritTree(browseUrl, branch)
+        .then((entries) => {
+          gerritTrees.set(key, entries);
+          gerritTreesPending.delete(key);
+          repaintGerrit();
+        })
+        .catch(() => {
+          gerritTrees.set(key, []);
+          gerritTreesPending.delete(key);
+          repaintGerrit();
+        });
+    }
+    return null;
+  }
+
+  function gerritRepoCss(t) {
+    const accent = t === 'github' ? '#fd8c73' : 'var(--gs-accent)';
+    return (
+      '[data-gs-gerrit-hidden]{display:none !important;}' +
+      '[data-gs-gerrit-repo]{display:block !important;padding:0 32px !important;' +
+      'max-width:1280px !important;margin:0 auto !important;box-sizing:border-box !important;' +
+      'font-family:var(--gs-font) !important;color:var(--gs-fg) !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-head{display:flex !important;align-items:center !important;' +
+      'justify-content:space-between !important;gap:16px !important;padding:16px 0 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-title{font-size:20px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-title a{text-decoration:none !important;' +
+      'color:var(--gs-link) !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-title .repo{font-weight:600 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-pill{border:1px solid var(--gs-border) !important;' +
+      'border-radius:20px !important;padding:0 7px !important;font-size:12px !important;' +
+      'color:var(--gs-fg-muted) !important;margin-left:8px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-actions{display:flex !important;gap:8px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-actions button{font-size:12px !important;' +
+      'font-weight:600 !important;padding:4px 12px !important;' +
+      'border:1px solid var(--gs-attention) !important;border-radius:6px !important;' +
+      'background:var(--gs-attention-subtle) !important;color:var(--gs-attention) !important;' +
+      'font-family:var(--gs-font) !important;cursor:not-allowed !important;' +
+      'pointer-events:none !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-tabs{display:flex !important;flex-wrap:wrap !important;' +
+      'gap:4px !important;border-bottom:1px solid var(--gs-border) !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-tabs a,' +
+      '[data-gs-gerrit-repo] .gs-repo-tabs span.tab{display:flex !important;' +
+      'align-items:center !important;gap:8px !important;padding:8px 12px !important;' +
+      'font-size:14px !important;color:var(--gs-fg) !important;text-decoration:none !important;' +
+      'border-bottom:2px solid transparent !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-tabs a[aria-current]{font-weight:600 !important;' +
+      `border-bottom-color:${accent} !important;}` +
+      '[data-gs-gerrit-repo] .gs-repo-tabs .count{background:var(--gs-canvas-subtle) !important;' +
+      'border-radius:20px !important;padding:0 6px !important;font-size:12px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-bar{display:flex !important;align-items:center !important;' +
+      'gap:12px !important;padding:12px 0 !important;font-size:14px !important;' +
+      'color:var(--gs-fg-muted) !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-branch{border:1px solid var(--gs-border) !important;' +
+      'border-radius:6px !important;padding:3px 10px !important;color:var(--gs-fg) !important;' +
+      'font-weight:600 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-file{display:flex !important;align-items:center !important;' +
+      'padding:8px 0 !important;border-top:1px solid var(--gs-border) !important;' +
+      'font-size:14px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-file a{color:var(--gs-link) !important;' +
+      'text-decoration:none !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-note{border:1px dashed var(--gs-attention) !important;' +
+      'background:var(--gs-attention-subtle) !important;color:var(--gs-attention) !important;' +
+      'border-radius:6px !important;padding:12px !important;font-size:13px !important;' +
+      'margin:12px 0 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-note a{color:inherit !important;font-weight:600 !important;}' +
+      '[data-gs-gerrit-repo] .gs-gerrit-noeq{display:inline-block !important;' +
+      'margin-left:6px !important;padding:0 5px !important;font-size:10px !important;' +
+      'font-weight:600 !important;line-height:15px !important;' +
+      'border:1px solid currentColor !important;border-radius:999px !important;' +
+      'vertical-align:middle !important;color:var(--gs-attention) !important;}' +
+      '[data-gs-gerrit-repo] .gs-gerrit-missing{color:var(--gs-attention) !important;' +
+      'background:var(--gs-attention-subtle) !important;border-radius:6px !important;' +
+      'cursor:not-allowed !important;pointer-events:none !important;' +
+      'text-decoration:none !important;}'
+    );
+  }
+
+  function paintGerritRepoPage(t, { root, viewRoot, wrapper, subject, data }) {
+    const furniture = GERRIT_REPO_FURNITURE[t];
+    if (!furniture || !(viewRoot instanceof ShadowRoot)) return;
+    const changes = data ? data.changes : [];
+    const [owner, ...rest] = subject.split('/');
+    const repo = rest.join('/') || owner;
+    const branch = (changes.find((c) => c.branch) || {}).branch || 'master';
+    const browseUrl = gerritBrowseUrl(root);
+    const tree = gerritTree(browseUrl, branch);
+    const home = browseUrl || `/q/project:${subject}`;
+
+    const box = document.createElement('div');
+    box.setAttribute('data-gs-gerrit-repo', '');
+    box.setAttribute('data-gs-ux-skip', '');
+
+    const actions = furniture.actions
+      .map(
+        (label) =>
+          `<button disabled>${escapeHtml(label)}` +
+          `<span class="gs-gerrit-noeq" title="Gerrit has no ${escapeHtml(
+            label.toLowerCase(),
+          )}">\u2260</span></button>`,
+      )
+      .join('');
+
+    const tabs = furniture.tabs
+      .map((tab) => {
+        if (tab.source) {
+          const count = tab.source === 'changes' ? changes.length : '';
+          return (
+            `<a href="/q/project:${escapeHtml(subject)}"` +
+            (tab.current ? ' aria-current="page"' : '') +
+            `><span>${escapeHtml(tab.label)}</span>` +
+            (count ? `<span class="count">${count}</span>` : '') +
+            `</a>`
+          );
+        }
+        return (
+          `<span class="tab gs-gerrit-missing" aria-disabled="true" ` +
+          `title="No equivalent on Gerrit"><span>${escapeHtml(
+            tab.label,
+          )}</span>${GERRIT_NOEQ}</span>`
+        );
+      })
+      .join('');
+
+    let files;
+    if (tree && tree.length) {
+      const sorted = tree
+        .slice()
+        .sort((a, b) =>
+          a.type === b.type
+            ? a.name.localeCompare(b.name)
+            : a.type === 'tree'
+              ? -1
+              : 1,
+        );
+      files = sorted
+        .map((entry) => {
+          const dir = entry.type === 'tree';
+          const href =
+            `${(browseUrl || '').replace(/\/$/, '')}/+/refs/heads/${branch}/` +
+            `${entry.name}${dir ? '/' : ''}`;
+          return (
+            `<div class="gs-repo-file"><a href="${escapeHtml(
+              href,
+            )}" target="_blank" rel="noopener">${escapeHtml(entry.name)}` +
+            `${dir ? '/' : ''}</a></div>`
+          );
+        })
+        .join('');
+    } else {
+      files =
+        `<div class="gs-repo-note">The file tree lives in Gitiles` +
+        (browseUrl ? '' : ' (not linked on this instance)') +
+        `. <a href="${escapeHtml(home)}" target="_blank" rel="noopener">` +
+        `Open the file browser</a></div>`;
+    }
+
+    box.innerHTML =
+      `<div class="gs-repo-head"><div class="gs-repo-title">` +
+      `<a href="${escapeHtml(home)}" target="_blank" rel="noopener">${escapeHtml(
+        owner,
+      )}</a> / ` +
+      `<a class="repo" href="${escapeHtml(
+        home,
+      )}" target="_blank" rel="noopener">${escapeHtml(repo)}</a>` +
+      `<span class="gs-repo-pill">Public</span></div>` +
+      `<div class="gs-repo-actions">${actions}</div></div>` +
+      `<nav class="gs-repo-tabs">${tabs}</nav>` +
+      `<div class="gs-repo-bar"><span class="gs-repo-branch">${escapeHtml(
+        branch,
+      )}</span><span>${changes.length} open ${
+        changes.length === 1 ? 'change' : 'changes'
+      }</span></div>` +
+      files;
+
+    if (wrapper) wrapper.setAttribute('data-gs-gerrit-hidden', '');
+    viewRoot.appendChild(box);
+    gerritViewSheets.adopt(viewRoot, gerritRepoCss(t));
+  }
+
   function paintGerritSubjectHeader(t, { header, root, kind, route, subject }) {
     const furniture = GERRIT_PROFILE_FURNITURE[t];
     if (!furniture) return;
@@ -1045,10 +1311,11 @@
 
     // Re-run when the skin, subject or data changes, or PolyGerrit has replaced
     // the shadow root and dropped what we built with it.
-    if (
-      header.getAttribute('data-gs-gerrit-profile') === signature &&
-      root.querySelector('[data-gs-gerrit-profile-avatar]')
-    ) {
+    const built =
+      root.querySelector('[data-gs-gerrit-profile-avatar]') ||
+      (viewRoot instanceof ShadowRoot &&
+        viewRoot.querySelector('[data-gs-gerrit-repo]'));
+    if (header.getAttribute('data-gs-gerrit-profile') === signature && built) {
       return;
     }
 
@@ -1063,13 +1330,17 @@
       }
       const view = header.getRootNode();
       if (view instanceof ShadowRoot) {
-        for (const el of view.querySelectorAll('[data-gs-gerrit-content]')) {
+        for (const el of view.querySelectorAll(
+          '[data-gs-gerrit-content],[data-gs-gerrit-repo]',
+        )) {
           el.remove();
         }
-        const w = [...view.children].find(
-          (c) => c.tagName === 'DIV' && c.className !== 'loading',
-        );
-        if (w) w.removeAttribute('data-gs-gerrit-view');
+        for (const w of view.querySelectorAll(
+          '[data-gs-gerrit-view],[data-gs-gerrit-hidden]',
+        )) {
+          w.removeAttribute('data-gs-gerrit-view');
+          w.removeAttribute('data-gs-gerrit-hidden');
+        }
       }
       gerritProfileSheets.clear();
       gerritViewSheets.clear();
@@ -1084,6 +1355,13 @@
 
     clear();
     header.setAttribute('data-gs-gerrit-profile', signature);
+
+    // A project query is a repository, so it wears the product's repo page; only
+    // an account query wears the profile.
+    if (kind === 'project') {
+      paintGerritRepoPage(t, { root, viewRoot, wrapper, subject, data });
+      return;
+    }
 
     const changes = data ? data.changes : [];
 
@@ -1369,7 +1647,8 @@
         if (
           el.closest(
             '[data-gs-gerrit-nav],[data-gs-gerrit-profile-nav],' +
-              '[data-gs-gerrit-rail],[data-gs-gerrit-content]',
+              '[data-gs-gerrit-rail],[data-gs-gerrit-content],' +
+              '[data-gs-gerrit-repo]',
           )
         ) {
           continue;

@@ -17,20 +17,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   source declares the words it uses (`activity.headings`/`more`), the skin the
   applied product's (`activity.heading`/`more`), and Gerrit — with no profile
   activity — declares none.
-- **Gerrit's query pages wear the applied skin's profile — for every skin.**
-  Gerrit has no profile route, so its owner and project queries are rebuilt into
-  each product's profile shape (a rail beside a content column) from Gerrit's own
-  data: the query's changes come from Gerrit's REST API (`/changes/`), the
-  project's description from `/projects/`, and the identity from PolyGerrit's
-  `gr-user-header`/`gr-repo-header`. Each product's profile tabs, rail blocks and
-  sections are declared per skin (`GERRIT_PROFILE_FURNITURE`), and every
-  component the product shows that Gerrit has no equivalent for — `@handle`,
-  Follow, Achievements, followers/following, Pinned, Projects/Packages/Stars/
-  Snippets, … — is marked with the pale `≠` treatment rather than faked, the
-  profile analogue of the source-feature markers. A project has no image, so a
-  monogram stands in. `paintGerritProfile` in `src/content/ux-project.js`; the
-  change list stays Gerrit's, and its profile score rises to 2.6–4.1 (from
-  2.1–3.1).
+- **Gerrit's query pages wear the applied skin's page — profile for an account,
+  repository for a project.** Gerrit has no profile or repository route, so its
+  owner and project queries are rebuilt into each product's shape from Gerrit's
+  own data: the changes come from Gerrit's REST API (`/changes/`), the project's
+  description from `/projects/`, and the identity from PolyGerrit's
+  `gr-user-header`/`gr-repo-header`. An owner query is the author's profile (a
+  rail beside a content column); a project query is the repository page (the
+  owner/repo header, the repo tabs, and the Code tab's file tree). Each product's
+  tabs, rail blocks and sections are declared per skin
+  (`GERRIT_PROFILE_FURNITURE` / `GERRIT_REPO_FURNITURE`), and every component the
+  product shows that Gerrit has no equivalent for — `@handle`, Follow,
+  Achievements, followers/following, Pinned, Watch/Fork/Star, Issues/Actions/
+  Wiki/… — is marked with the pale `≠` treatment rather than faked. The file
+  tree comes from the Gitiles browser the repo header links to, fetched only when
+  it shares this origin (Gitiles is often a different origin the page cannot
+  read); otherwise the Code tab links out rather than inventing a file list. A
+  project has no image, so a monogram stands in. `paintGerritProfile` in
+  `src/content/ux-project.js`; the change list stays Gerrit's, and its profile
+  score rises to 2.6–4.1 (from 2.1–3.1).
 - A **skin and source contract** (`tests/contracts.test.mjs`) that derives the
   skin list from `THEMES` and the source list from `SELECTORS` and names every
   part a new skin or source must supply, so a contributor gets a checklist
