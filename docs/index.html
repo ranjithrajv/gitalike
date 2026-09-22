@@ -598,7 +598,7 @@
       h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.015em; margin: 0 0 8px; }
       .section-head p { color: var(--muted); margin: 0; font-size: 16px; }
 
-      /* The comparison picker: one page kind × one source forge. Switching the
+      /* The comparison picker: one source forge × one page kind. Switching the
          pair swaps the one visible card, so the section stays a single capture
          tall instead of seven stacked captures. */
       .see-tabs {
@@ -1013,8 +1013,8 @@
           <div class="section-head">
             <h2>See it</h2>
             <p>
-              Live captures of the real sites at 1280×900. Pick a page kind and
-              a source forge, and the capture shows that page wearing every skin
+              Live captures of the real sites at 1280×900. Pick a source forge
+              and a page kind, and the capture shows that page wearing every skin
               it can — drag a divider to reveal one, or focus it and use the
               arrow keys. All five sources are here: GitHub, GitLab and Codeberg
               in full, and Bitbucket and Gerrit from their app shells (their
@@ -1023,16 +1023,16 @@
           </div>
 
           <div class="see-tabs">
-            <div class="see-tabs__row" role="group" aria-label="Page kind">
-              <button type="button" class="see-tab" data-kind="project" aria-pressed="true">Project pages</button>
-              <button type="button" class="see-tab" data-kind="profile" aria-pressed="false">Profile pages</button>
-            </div>
             <div class="see-tabs__row" role="group" aria-label="Source forge">
               <button type="button" class="see-tab" data-forge="github" aria-pressed="true">GitHub</button>
               <button type="button" class="see-tab" data-forge="gitlab" aria-pressed="false">GitLab</button>
               <button type="button" class="see-tab" data-forge="codeberg" aria-pressed="false">Codeberg</button>
               <button type="button" class="see-tab" data-forge="bitbucket" aria-pressed="false">Bitbucket</button>
               <button type="button" class="see-tab" data-forge="gerrit" aria-pressed="false">Gerrit</button>
+            </div>
+            <div class="see-tabs__row" role="group" aria-label="Page kind">
+              <button type="button" class="see-tab" data-kind="project" aria-pressed="true">Project pages</button>
+              <button type="button" class="see-tab" data-kind="profile" aria-pressed="false">Profile pages</button>
             </div>
           </div>
 
@@ -2146,8 +2146,8 @@ node tools/compare/e2e.mjs       # Playwright end-to-end test against the live s
         if (section) spy.observe(section);
       }
 
-      // One comparison at a time: the two tab rows pick a page kind and a
-      // source forge, and only the matching card is shown. Every forge has a
+      // One comparison at a time: the two tab rows pick a source forge and a
+      // page kind, and only the matching card is shown. Every forge has a
       // card for both kinds; a deep link (#gitlab-profile) still opens the card
       // it names.
       const seeDemos = document.getElementById('see-demos');
