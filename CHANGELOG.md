@@ -126,6 +126,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The computed-style parity read now measures the content canvas.** Its `body`
+  dimension read `<body>`, but the reviewed target fixture records each product's
+  *content* canvas (canvas-default), which is not the same surface: real GitLab
+  paints `<body>` an inset grey and its content panels white. The read now takes
+  the content region (`main`) and falls back to `<body>`, so the dimension
+  measures what its name says (`tools/compare/style-parity.mjs`). This is a
+  measurement correction, not a skin change; a page whose content canvas really
+  differs from the target's still scores below 1.
 - The comparison framework reads its skins and sources from the plugin registry:
   `tools/compare/parity-score.mjs`, `tools/compare/style-parity.mjs` and
   `tests/compare/target-chrome.test.mjs` no longer hand-list them. Each source

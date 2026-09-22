@@ -314,8 +314,10 @@ const readChrome = ({
     navDisplay: nav ? getComputedStyle(nav).display : null,
     navDirection: nav ? getComputedStyle(nav).flexDirection : null,
     headerBg: header ? getComputedStyle(header).backgroundColor : null,
-    // The page's canvas: the first declared canvas element (falling back to
-    // <body>), read through any transparent wrapper to its real background.
+    // The page's canvas: the content region's real background, read through any
+    // transparent wrapper. This is the target fixture's *canvas-default*, not
+    // the product's page (a product may paint <body> an inset grey and its
+    // content panels white — GitLab does).
     canvasBg: effectiveBg(first(canvasSels ?? ['body']) ?? document.body),
     linkColors: links.slice(0, 16).map((el) => getComputedStyle(el).color),
     labels,
@@ -364,7 +366,12 @@ try {
           headerSels: source.header,
           navSels: source.nav,
           linkSels: source.link,
-          canvasSels: source.canvas ?? ['body'],
+          // The content region, falling back to <body>. The reviewed target
+          // fixture records each product's *content* canvas (canvas-default),
+          // so measuring the content region — not the product's page surface —
+          // is what the dimension intends. Gerrit overrides this with its app
+          // element, which paints the canvas inside its shadow root.
+          canvasSels: source.canvas ?? ['main', 'body'],
           repoWords: page.navWords,
         });
         await tab.close();
