@@ -33,7 +33,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   tree comes from the Gitiles browser the repo header links to, fetched only when
   it shares this origin (Gitiles is often a different origin the page cannot
   read); otherwise the Code tab links out rather than inventing a file list. A
-  project has no image, so a monogram stands in. `paintGerritProfile` in
+  project has no image, so a monogram stands in. The repo page also carries the
+  real branch and tag counts (`/projects/<p>/branches`, `/tags`) and a Code
+  button whose panel lists the clone schemes the server advertises
+  (`/config/server/info` → `download.schemes`), marking SSH / Gerrit CLI /
+  Download ZIP with `≠` where Gerrit has no equivalent. `paintGerritProfile` in
   `src/content/ux-project.js`; the change list stays Gerrit's, and its profile
   score rises to 2.6–4.1 (from 2.1–3.1).
 - A **skin and source contract** (`tests/contracts.test.mjs`) that derives the
