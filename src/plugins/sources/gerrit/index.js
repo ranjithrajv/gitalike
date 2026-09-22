@@ -23,14 +23,16 @@
     description:
       'Gerrit’s PolyGerrit app; recoloured through its root custom properties.',
     label: 'Gerrit',
-    // Only the palette reaches Gerrit, and only partially (no surfaces/header);
-    // the page-wide copy/label passes cannot reach its shadow roots, and its
-    // changes carry a Change-Id rather than a `#`/`!` reference marker. Its
-    // header navigation is reoriented to the applied layout (`paintGerritNav`),
-    // so nav and profile are partial.
+    // The palette reaches Gerrit through its root custom properties, including
+    // the header surface, but not every surface. Its header navigation is
+    // reoriented to the applied layout *and* relabelled to the applied
+    // product's words (`paintGerritNav`), so it is a real but partial match of
+    // the target's nav rather than the target's full menu. The page-wide
+    // copy/label passes cannot reach its shadow-DOM text, and a change carries a
+    // Change-Id rather than a `#`/`!` reference marker.
     compare: {
       palette: 0.6,
-      nav: 0.5,
+      nav: 0.8,
       page: 0,
       metadata: 0,
       profile: 0.5,

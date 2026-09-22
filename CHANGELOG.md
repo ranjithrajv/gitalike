@@ -81,6 +81,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   gets a rounded pill. It is a re-proportioning, not a rebuild: Gerrit has no
   repository tab row or About rail, so those GitHub surfaces stay unreproduced,
   and the sidebar layouts are unchanged (`paintGerritNav`).
+- **Gerrit's nav words are the applied product's.** Its "Changes" list reads
+  *Pull requests* (GitHub) / *Merge requests* (GitLab) and its "Browse" reads
+  *Code* / *Repository* / *Source*, relabelled inside the header's shadow root
+  with the originals restored on revert (`GERRIT_NAV_WORDS`, `paintGerritNav`).
+  The `id`s Gerrit's handlers use are untouched; `compare.nav` rises from 0.5 to
+  0.8 and Gerrit's project score to 5.1–5.4.
 - **Layout parity raised across the sources.** Gitea/Forgejo and Bitbucket
   profile navigation is reoriented to the applied layout
   (`themes/ux-nav.css`: Gitea's profile tab menu becomes a sidebar list under a

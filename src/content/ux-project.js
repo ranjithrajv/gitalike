@@ -514,6 +514,19 @@
     gerritSheets.push({ root, sheet });
   }
 
+  // Gerrit's own navigation words are not the applied product's. Its "Changes"
+  // list is the review queue the target calls Pull/Merge requests, and "Browse"
+  // opens the repository the target calls Code/Repository/Source. The page-wide
+  // label pass cannot reach them (they live in the header's shadow root), so
+  // they are relabelled here, where the shadow root is already open — and the
+  // originals are remembered for revert. "Documentation" is the same word in
+  // every product, so it is left alone.
+  const GERRIT_NAV_WORDS = {
+    github: { Changes: 'Pull requests', Browse: 'Code' },
+    gitlab: { Changes: 'Merge requests', Browse: 'Repository' },
+    bitbucket: { Changes: 'Pull requests', Browse: 'Source' },
+  };
+
   // PolyGerrit renders its chrome inside *open* shadow roots, so a content
   // script can reach them, but a document stylesheet cannot: the injected CSS
   // never crosses the boundary. Reorient the header navigation to the applied
@@ -549,8 +562,10 @@
     if (!(root instanceof ShadowRoot)) return;
 
     const direction = t === 'github' ? 'row' : 'column';
+    const relabelled = [];
     ledger(nav, 'gerrit-nav', () => ({
       restore: () => {
+        for (const [el, text] of relabelled) el.textContent = text;
         nav.removeAttribute('data-gs-gerrit-nav');
         clearGerritSheets();
       },
@@ -564,6 +579,17 @@
       root,
       `[data-gs-gerrit-nav]{display:flex !important;flex-direction:${direction} !important;}`,
     );
+
+    // Relabel Gerrit's own nav words (Changes/Browse) to the applied product's.
+    const words = GERRIT_NAV_WORDS[t];
+    if (words) {
+      for (const span of root.querySelectorAll('span.linksTitle')) {
+        const current = (span.textContent || '').trim();
+        if (!words[current]) continue;
+        relabelled.push([span, span.textContent]);
+        span.textContent = words[current];
+      }
+    }
 
     if (t === 'github') {
       adoptGerritSheet(

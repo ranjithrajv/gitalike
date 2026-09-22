@@ -114,7 +114,7 @@ at a time from the popup).
 | Source ↓ / Skin → | Bitbucket UI | GitHub UI | GitLab UI |
 | --- | :--: | :--: | :--: |
 | **Bitbucket** | 10.0 | 6.5 | 5.9 |
-| **Gerrit** | 4.8 | 4.8 | 4.5 |
+| **Gerrit** | 5.3 | 5.4 | 5.1 |
 | **Gitea / Forgejo** | 8.0 | 8.1 | 7.9 |
 | **GitHub** | 8.4 | 10.0 | 9.7 |
 | **GitLab** | 8.4 | 9.7 | 10.0 |
@@ -202,7 +202,7 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   `NAV_RULES` entry, so the nav is not reordered or filtered, no metadata shape,
   and no shortcut table. The diagonal is 10.0
   because a source on its own UI needs no transformation.
-- **Gerrit as a source (4.5–4.8 project, 2.1–3.1 profile)** — its palette is
+- **Gerrit as a source (5.1–5.4 project, 2.1–3.1 profile)** — its palette is
   partial: PolyGerrit reads its colours from root custom properties that inherit
   across its shadow boundary, so the skins re-point text, links, borders and
   feedback, and the header surface and text
@@ -213,7 +213,11 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   under the GitHub layout the header is a top bar re-proportioned to GitHub's
   app header (64px tall, GitHub's nav type, a rounded light-on-dark search
   field), and under the GitLab/Bitbucket layout it becomes a fixed **left
-  column** (a sidebar) with the change list beside it. The page-wide copy and
+  column** (a sidebar) with the change list beside it. Its own nav words are
+  relabelled to the applied product's too — "Changes" reads Pull/Merge requests
+  and "Browse" reads Code/Repository/Source, with the originals restored on
+  revert (`GERRIT_NAV_WORDS`) — so the nav is a partial match of the target's
+  menu rather than the target's full menu. The page-wide copy and
   label passes still cannot reach inside the shadow roots, and Gerrit numbers a
   change (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so
   `refs` is partial too. It has no repository tab row or About rail to rebuild,
