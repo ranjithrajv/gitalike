@@ -599,6 +599,7 @@
     textNodes,
     rememberText,
     cloneClean,
+    isSkipped,
     watchBody,
     unwatchBody,
     watching,

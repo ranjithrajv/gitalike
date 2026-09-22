@@ -19,6 +19,7 @@
     textNodes,
     rememberText,
     cloneClean,
+    isSkipped,
   } = rt;
 
   // GitLab's "Project information" lists a fixed set of items; GitHub's "About"
@@ -542,6 +543,7 @@
   }
   const gerritNavSheets = sheetLedger();
   const gerritProfileSheets = sheetLedger();
+  const gerritViewSheets = sheetLedger();
 
   // Gerrit's own navigation words are not the applied product's. Its "Changes"
   // list is the review queue the target calls Pull/Merge requests, and "Browse"
@@ -698,61 +700,312 @@
     return typeof shape === 'string' ? shape : (shape?.path ?? null);
   }
 
-  // The profile navigation, built from Gerrit's own owner views on the route the
-  // source declared (`pages.profile.route`), so every tab is a real query rather
-  // than a dead link.
-  const GERRIT_PROFILE_TABS = (route, subject) => [
-    ['All', `${route}${subject}`],
-    ['Open', `${route}${subject}+status:open`],
-    ['Merged', `${route}${subject}+status:merged`],
-    ['Abandoned', `${route}${subject}+status:abandoned`],
-  ];
+  // The query this page runs, e.g. `project:plugins/oauth status:open`. The page
+  // kind's route is not enough: the changes shown are the query's, and the
+  // profile's content is built from them.
+  function gerritQuery() {
+    const where = `${location.pathname}${location.hash}`;
+    const at = where.indexOf('/q/');
+    if (at === -1) return null;
+    const rest = where.slice(at + 3);
+    const end = rest.search(/,/);
+    return (end === -1 ? rest : rest.slice(0, end)).replace(/\+/g, ' ');
+  }
 
-  // The applied skin's profile shape, adopted into the header's shadow root.
-  // GitHub's profile is a large round avatar beside the identity, over a
-  // horizontal tab row with an underlined current tab; GitLab's is the same
-  // identity block with a subtle-background current item. A project header has
-  // no avatar, so a monogram stands in. Everything is recoloured with the skin's
-  // tokens so the card follows the palette.
-  function gerritProfileCss(t) {
-    const base =
-      ':host{display:grid !important;grid-template-columns:96px 1fr !important;' +
-      'grid-template-areas:"avatar info" "nav nav" !important;align-items:center !important;' +
-      'column-gap:16px !important;background:transparent !important;border:0 !important;' +
-      'border-bottom:1px solid var(--gs-border) !important;padding:24px 0 0 !important;' +
-      'font-family:var(--gs-font) !important;color:var(--gs-fg) !important;}' +
-      'gr-avatar,[data-gs-gerrit-profile-avatar]{grid-area:avatar !important;' +
-      'width:96px !important;height:96px !important;margin:0 !important;' +
-      'border-radius:50% !important;background-size:cover !important;' +
-      'background-position:center !important;}' +
+  // The changes behind the query, from Gerrit's own REST API, and the project's
+  // description when the query names one. Cached briefly so a re-render does not
+  // refetch; the first miss kicks a fetch and repaints when it lands.
+  const gerritCache = new Map();
+  const gerritPending = new Set();
+  const GERRIT_TTL = 60000;
+
+  async function fetchGerrit(query, project) {
+    const strip = (text) => (text.startsWith(")]}'") ? text.slice(4) : text);
+    const get = async (url) =>
+      JSON.parse(
+        strip(
+          await (
+            await fetch(url, { headers: { Accept: 'application/json' } })
+          ).text(),
+        ),
+      );
+    const changes = await get(
+      `/changes/?q=${encodeURIComponent(query)}&n=25&o=DETAILED_ACCOUNTS`,
+    ).catch(() => []);
+    const info = project
+      ? await get(`/projects/${encodeURIComponent(project)}`).catch(() => ({}))
+      : {};
+    return {
+      changes: Array.isArray(changes) ? changes : [],
+      description: info.description || null,
+      at: Date.now(),
+    };
+  }
+
+  function repaintGerrit() {
+    const cls = [...document.documentElement.classList].find((c) =>
+      c.startsWith('gs-theme-'),
+    );
+    if (cls) paintGerritProfile(cls.slice('gs-theme-'.length));
+  }
+
+  function gerritData(query, project) {
+    const cached = gerritCache.get(query);
+    if (cached && Date.now() - cached.at < GERRIT_TTL) return cached;
+    if (!gerritPending.has(query)) {
+      gerritPending.add(query);
+      fetchGerrit(query, project)
+        .then((data) => {
+          gerritCache.set(query, data);
+          gerritPending.delete(query);
+          repaintGerrit();
+        })
+        .catch(() => gerritPending.delete(query));
+    }
+    return cached || null;
+  }
+
+  // Gerrit timestamps are UTC without a zone and with nanoseconds.
+  function gerritDate(value) {
+    const m = String(value || '').match(
+      /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/,
+    );
+    return m
+      ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]))
+      : null;
+  }
+
+  const escapeHtml = (value) =>
+    String(value == null ? '' : value).replace(
+      /[&<>"]/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
+    );
+
+  // What each product's profile page shows, and which part Gerrit can supply.
+  // `source` names the Gerrit data that stands in; an entry without one has no
+  // Gerrit equivalent and is marked, not faked — the profile analogue of the
+  // source-feature markers in `themes/ux-markers.css`.
+  const GERRIT_PROFILE_FURNITURE = {
+    github: {
+      tabs: [
+        { label: 'Overview', source: 'changes' },
+        { label: 'Repositories', source: 'repos' },
+        { label: 'Projects' },
+        { label: 'Packages' },
+        { label: 'Stars' },
+      ],
+      rail: [
+        { kind: 'handle' },
+        { kind: 'bio' },
+        { kind: 'follow' },
+        { kind: 'stats' },
+        { kind: 'achievements' },
+        { kind: 'social' },
+      ],
+      sections: [
+        {
+          heading: 'Pinned',
+          source: 'cards',
+          note: 'Gerrit has no pinned repositories — showing recent changes',
+        },
+        { heading: 'Activity', source: 'graph' },
+      ],
+    },
+    gitlab: {
+      tabs: [
+        { label: 'Activity', source: 'changes' },
+        { label: 'Groups' },
+        { label: 'Contributed projects' },
+        { label: 'Personal projects' },
+        { label: 'Starred projects' },
+        { label: 'Snippets' },
+        { label: 'Followers' },
+        { label: 'Following' },
+      ],
+      rail: [
+        { kind: 'handle' },
+        { kind: 'bio' },
+        { kind: 'follow' },
+        { kind: 'stats' },
+        { kind: 'achievements' },
+        { kind: 'social' },
+      ],
+      sections: [
+        { heading: 'Activity', source: 'graph' },
+        { heading: 'Personal projects' },
+      ],
+    },
+    bitbucket: {
+      tabs: [
+        { label: 'Overview', source: 'changes' },
+        { label: 'Repositories', source: 'repos' },
+        { label: 'Projects' },
+        { label: 'Snippets' },
+      ],
+      rail: [
+        { kind: 'handle' },
+        { kind: 'bio' },
+        { kind: 'follow' },
+        { kind: 'stats' },
+        { kind: 'social' },
+      ],
+      sections: [
+        {
+          heading: 'Repositories',
+          source: 'cards',
+          note: 'Gerrit has no pinned repositories — showing recent changes',
+        },
+        { heading: 'Activity', source: 'graph' },
+      ],
+    },
+  };
+
+  // The pale "no equivalent" marker: a `≠` pill on the element, and a dashed box
+  // for a whole missing block.
+  function noEquiv(note) {
+    const pill = document.createElement('span');
+    pill.className = 'gs-gerrit-noeq';
+    pill.setAttribute('data-gs-ux-skip', '');
+    pill.textContent = '\u2260';
+    if (note) pill.title = note;
+    return pill;
+  }
+
+  function markNoEquiv(el, note) {
+    el.classList.add('gs-gerrit-missing');
+    el.setAttribute('aria-disabled', 'true');
+    if (note) el.title = note;
+    el.appendChild(noEquiv(note));
+    return el;
+  }
+
+  function missingBox(text) {
+    const box = document.createElement('div');
+    box.className = 'gs-gerrit-missbox';
+    box.setAttribute('data-gs-ux-skip', '');
+    box.textContent = text;
+    return box;
+  }
+
+  // The rail (the header restyled): a large avatar over the identity, with the
+  // product's extra blocks appended after the name.
+  function gerritRailCss() {
+    return (
+      ':host{display:block !important;background:transparent !important;border:0 !important;' +
+      'padding:0 !important;font-family:var(--gs-font) !important;color:var(--gs-fg) !important;}' +
+      'gr-avatar,[data-gs-gerrit-profile-avatar]{display:block !important;width:100% !important;' +
+      'aspect-ratio:1/1 !important;border-radius:50% !important;background-size:cover !important;' +
+      'background-position:center !important;margin:0 0 16px !important;}' +
       '[data-gs-gerrit-profile-avatar]{display:flex !important;align-items:center !important;' +
       'justify-content:center !important;background:var(--gs-accent-subtle) !important;' +
-      'color:var(--gs-accent) !important;font-size:40px !important;font-weight:600 !important;}' +
-      '.info:first-of-type{grid-area:info !important;padding:0 !important;margin:0 !important;}' +
-      '.info:not(:first-of-type){display:none !important;}' +
-      'hr{display:none !important;}' +
+      'color:var(--gs-accent) !important;font-size:96px !important;font-weight:600 !important;}' +
       'h1.heading-1{font-size:24px !important;font-weight:600 !important;' +
       'line-height:1.25 !important;margin:0 0 4px !important;color:var(--gs-fg) !important;}' +
+      'hr{display:none !important;}' +
+      '.info:first-of-type{padding:0 !important;margin:0 !important;}' +
+      '.info:not(:first-of-type){display:none !important;}' +
       '.info:first-of-type>div{color:var(--gs-fg-muted) !important;font-size:14px !important;' +
       'line-height:1.5 !important;margin:2px 0 !important;}' +
       '.info:first-of-type>div>span{color:var(--gs-fg-muted) !important;}' +
       '.info:first-of-type a{color:var(--gs-link) !important;}' +
-      'nav[data-gs-gerrit-profile-nav]{grid-area:nav !important;display:flex !important;' +
-      'gap:4px !important;margin-top:16px !important;}';
-    const current =
+      '.gs-gerrit-handle{font-size:20px !important;font-weight:300 !important;' +
+      'color:var(--gs-attention) !important;margin:0 0 16px !important;}' +
+      '.gs-gerrit-follow{display:block !important;width:100% !important;box-sizing:border-box !important;' +
+      'text-align:center !important;padding:5px 16px !important;font-size:14px !important;' +
+      'font-weight:600 !important;background:var(--gs-attention-subtle) !important;' +
+      'border:1px solid var(--gs-attention) !important;border-radius:6px !important;' +
+      'margin:0 0 16px !important;color:var(--gs-attention) !important;cursor:not-allowed !important;' +
+      'pointer-events:none !important;font-family:var(--gs-font) !important;}' +
+      '.gs-gerrit-stats{display:flex !important;gap:16px !important;font-size:14px !important;' +
+      'color:var(--gs-fg-muted) !important;margin:0 0 16px !important;}' +
+      '.gs-gerrit-stats b{color:var(--gs-fg) !important;}' +
+      '.gs-gerrit-bio{font-size:14px !important;color:var(--gs-fg) !important;margin:0 0 12px !important;}' +
+      '.gs-gerrit-misshead{font-size:16px !important;font-weight:600 !important;' +
+      'color:var(--gs-attention) !important;margin:20px 0 8px !important;}' +
+      '.gs-gerrit-missbox{border:1px dashed var(--gs-attention) !important;' +
+      'background:var(--gs-attention-subtle) !important;color:var(--gs-attention) !important;' +
+      'border-radius:6px !important;padding:10px 12px !important;font-size:13px !important;' +
+      'margin:4px 0 !important;}' +
+      '.gs-gerrit-noeq{display:inline-block !important;margin-left:6px !important;' +
+      'padding:0 5px !important;font-size:10px !important;font-weight:600 !important;' +
+      'line-height:15px !important;border:1px solid currentColor !important;' +
+      'border-radius:999px !important;vertical-align:middle !important;' +
+      'color:var(--gs-attention) !important;}' +
+      '.gs-gerrit-missing{color:var(--gs-attention) !important;' +
+      'background:var(--gs-attention-subtle) !important;border-radius:6px !important;' +
+      'cursor:not-allowed !important;pointer-events:none !important;text-decoration:none !important;}'
+    );
+  }
+
+  // The content column: the product's profile tabs and sections, laid out beside
+  // the rail on a two-column grid.
+  function gerritViewCss(t) {
+    const tabs =
       t === 'github'
-        ? 'nav[data-gs-gerrit-profile-nav] a{padding:8px 12px !important;' +
-          'font-size:14px !important;font-weight:500 !important;color:var(--gs-fg) !important;' +
-          'text-decoration:none !important;border-bottom:2px solid transparent !important;}' +
-          'nav[data-gs-gerrit-profile-nav] a[aria-current]{font-weight:600 !important;' +
-          'border-bottom-color:var(--gs-accent) !important;}'
-        : 'nav[data-gs-gerrit-profile-nav] a{padding:6px 12px !important;' +
-          'font-size:14px !important;color:var(--gs-fg-muted) !important;' +
-          'text-decoration:none !important;border-radius:var(--gs-radius-md) !important;}' +
-          'nav[data-gs-gerrit-profile-nav] a[aria-current]{' +
-          'background:var(--gs-accent-subtle) !important;color:var(--gs-accent) !important;' +
-          'font-weight:600 !important;}';
-    return base + current;
+        ? 'a{padding:8px 12px !important;font-size:14px !important;font-weight:500 !important;' +
+          'color:var(--gs-fg) !important;text-decoration:none !important;' +
+          'border-bottom:2px solid transparent !important;}' +
+          'a[aria-current]{font-weight:600 !important;border-bottom-color:var(--gs-accent) !important;}'
+        : 'a{padding:6px 12px !important;font-size:14px !important;' +
+          'color:var(--gs-fg-muted) !important;text-decoration:none !important;' +
+          'border-radius:var(--gs-radius-md) !important;}' +
+          'a[aria-current]{background:var(--gs-accent-subtle) !important;' +
+          'color:var(--gs-accent) !important;font-weight:600 !important;}';
+    return (
+      '[data-gs-gerrit-view]{display:grid !important;' +
+      'grid-template-columns:296px minmax(0,1fr) !important;' +
+      'grid-template-areas:"rail content" !important;column-gap:32px !important;' +
+      'align-items:start !important;padding:0 32px !important;max-width:1280px !important;' +
+      'margin:0 auto !important;box-sizing:border-box !important;}' +
+      '[data-gs-gerrit-view]>gr-repo-header,[data-gs-gerrit-view]>gr-user-header{' +
+      'grid-area:rail !important;}' +
+      '[data-gs-gerrit-view]>[data-gs-gerrit-content]{grid-area:content !important;' +
+      'min-width:0 !important;}' +
+      '[data-gs-gerrit-view]>gr-change-list,' +
+      '[data-gs-gerrit-view]>nav:not([data-gs-gerrit-profile-nav]){display:none !important;}' +
+      '[data-gs-gerrit-content]>nav[data-gs-gerrit-profile-nav]{display:flex !important;' +
+      'flex-wrap:wrap !important;gap:4px !important;' +
+      'border-bottom:1px solid var(--gs-border) !important;margin:0 0 24px !important;}' +
+      `[data-gs-gerrit-content]>nav[data-gs-gerrit-profile-nav] ${tabs}` +
+      '.gs-gerrit-tab{display:inline-flex !important;align-items:center !important;}' +
+      '.gs-gerrit-count{background:var(--gs-canvas-subtle) !important;' +
+      'border-radius:20px !important;padding:0 6px !important;font-size:12px !important;' +
+      'color:var(--gs-fg) !important;margin-left:8px !important;}' +
+      '.gs-gerrit-h2{font-size:16px !important;font-weight:600 !important;' +
+      'margin:0 0 8px !important;color:var(--gs-fg) !important;}' +
+      '.gs-gerrit-h2.gs-gerrit-missing{background:transparent !important;}' +
+      '.gs-gerrit-cards{display:grid !important;grid-template-columns:1fr 1fr !important;' +
+      'gap:16px !important;margin:0 0 32px !important;}' +
+      '.gs-gerrit-card{border:1px solid var(--gs-border) !important;border-radius:6px !important;' +
+      'padding:16px !important;min-width:0 !important;}' +
+      '.gs-gerrit-card .name{display:flex !important;align-items:center !important;' +
+      'gap:8px !important;font-weight:600 !important;font-size:14px !important;min-width:0 !important;}' +
+      '.gs-gerrit-card .name a{color:var(--gs-link) !important;text-decoration:none !important;' +
+      'overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;}' +
+      '.gs-gerrit-pill{border:1px solid var(--gs-border) !important;border-radius:20px !important;' +
+      'padding:0 7px !important;font-size:12px !important;color:var(--gs-fg-muted) !important;' +
+      'font-weight:500 !important;flex:none !important;}' +
+      '.gs-gerrit-card .desc{font-size:12px !important;color:var(--gs-fg-muted) !important;' +
+      'margin:8px 0 !important;overflow:hidden !important;text-overflow:ellipsis !important;' +
+      'white-space:nowrap !important;}' +
+      '.gs-gerrit-card .foot{display:flex !important;gap:16px !important;font-size:12px !important;' +
+      'color:var(--gs-fg-muted) !important;}' +
+      '.gs-gerrit-graph{display:grid !important;grid-auto-flow:column !important;' +
+      'grid-template-rows:repeat(7,11px) !important;gap:3px !important;margin:0 0 32px !important;}' +
+      '.gs-gerrit-graph span{width:11px !important;height:11px !important;border-radius:2px !important;}' +
+      '.gs-gerrit-missbox{border:1px dashed var(--gs-attention) !important;' +
+      'background:var(--gs-attention-subtle) !important;color:var(--gs-attention) !important;' +
+      'border-radius:6px !important;padding:10px 12px !important;font-size:13px !important;' +
+      'margin:0 0 24px !important;}' +
+      '.gs-gerrit-noeq{display:inline-block !important;margin-left:6px !important;' +
+      'padding:0 5px !important;font-size:10px !important;font-weight:600 !important;' +
+      'line-height:15px !important;border:1px solid currentColor !important;' +
+      'border-radius:999px !important;vertical-align:middle !important;' +
+      'color:var(--gs-attention) !important;}' +
+      '.gs-gerrit-missing{color:var(--gs-attention) !important;' +
+      'background:var(--gs-attention-subtle) !important;border-radius:6px !important;' +
+      'cursor:not-allowed !important;pointer-events:none !important;text-decoration:none !important;}'
+    );
   }
 
   // The page kinds whose header wears the profile chrome, in the order they are
@@ -764,67 +1017,250 @@
   ];
 
   function paintGerritSubjectHeader(t, { header, root, kind, route, subject }) {
-    const signature = `${t}:${kind}:${subject}`;
-    // Re-run when the applied skin changes, the subject changes, or PolyGerrit
-    // has replaced the shadow root and dropped the navigation with it.
+    const furniture = GERRIT_PROFILE_FURNITURE[t];
+    if (!furniture) return;
+    // The wrapper that holds the header, the change list and the pagination lives
+    // in the *view's* shadow root, which is the tree the header sits in.
+    const viewRoot = header.getRootNode();
+    const wrapper =
+      viewRoot instanceof ShadowRoot
+        ? [...viewRoot.children].find(
+            (c) => c.tagName === 'DIV' && c.className !== 'loading',
+          )
+        : null;
+    const query = gerritQuery();
+    const data = query
+      ? gerritData(query, kind === 'project' ? subject : null)
+      : null;
+    const signature = `${t}:${kind}:${subject}:${data ? 'data' : 'base'}`;
+
+    // Re-run when the skin, subject or data changes, or PolyGerrit has replaced
+    // the shadow root and dropped what we built with it.
     if (
       header.getAttribute('data-gs-gerrit-profile') === signature &&
-      root.querySelector('[data-gs-gerrit-profile-nav]')
+      root.querySelector('[data-gs-gerrit-profile-avatar]')
     ) {
       return;
     }
 
+    const clear = () => {
+      const live = header.shadowRoot;
+      if (live) {
+        for (const el of live.querySelectorAll(
+          '[data-gs-gerrit-rail],[data-gs-gerrit-profile-avatar]',
+        )) {
+          el.remove();
+        }
+      }
+      const view = header.getRootNode();
+      if (view instanceof ShadowRoot) {
+        for (const el of view.querySelectorAll('[data-gs-gerrit-content]')) {
+          el.remove();
+        }
+        const w = [...view.children].find(
+          (c) => c.tagName === 'DIV' && c.className !== 'loading',
+        );
+        if (w) w.removeAttribute('data-gs-gerrit-view');
+      }
+      gerritProfileSheets.clear();
+      gerritViewSheets.clear();
+    };
+
     ledger(header, 'gerrit-profile', () => ({
       restore: () => {
         header.removeAttribute('data-gs-gerrit-profile');
-        const made = header.shadowRoot
-          ? header.shadowRoot.querySelectorAll(
-              '[data-gs-gerrit-profile-nav],[data-gs-gerrit-profile-avatar]',
-            )
-          : [];
-        for (const el of made) el.remove();
-        gerritProfileSheets.clear();
+        clear();
       },
     }));
 
-    // Drop the previous navigation, monogram and sheets before rebuilding; the
-    // ledger entry reads the DOM at revert time, so it stays exact either way.
-    gerritProfileSheets.clear();
-    for (const el of root.querySelectorAll(
-      '[data-gs-gerrit-profile-nav],[data-gs-gerrit-profile-avatar]',
-    )) {
-      el.remove();
-    }
+    clear();
     header.setAttribute('data-gs-gerrit-profile', signature);
 
-    // A project header has no image, so a monogram stands in — the same
-    // convention GitHub uses for an organisation without a logo.
+    // The avatar: the account's own image, or a monogram for a project.
     if (!root.querySelector('gr-avatar')) {
-      const name = (root.querySelector('h1')?.textContent || '').trim();
       const avatar = document.createElement('span');
       avatar.setAttribute('data-gs-gerrit-profile-avatar', '');
       avatar.setAttribute('data-gs-ux-skip', '');
-      avatar.textContent = (name.match(/[a-z0-9]/i) || ['?'])[0].toUpperCase();
+      avatar.textContent = (subject.match(/[a-z0-9]/i) || [
+        '?',
+      ])[0].toUpperCase();
       root.insertBefore(avatar, root.firstChild);
     }
 
-    const path = `${location.pathname}${location.hash}`;
-    const nav = document.createElement('nav');
-    nav.setAttribute('data-gs-gerrit-profile-nav', '');
-    nav.setAttribute('data-gs-ux-skip', '');
-    for (const [label, href] of GERRIT_PROFILE_TABS(route, subject)) {
-      const anchor = document.createElement('a');
-      anchor.textContent = label;
-      anchor.setAttribute('href', href);
-      const status = href.includes('status:')
-        ? href.slice(href.indexOf('status:'))
-        : null;
-      const isCurrent = status ? path.includes(status) : !/status:/.test(path);
-      if (isCurrent) anchor.setAttribute('aria-current', 'page');
-      nav.appendChild(anchor);
+    const changes = data ? data.changes : [];
+
+    // The rail: the header's own identity, plus the product's extra blocks.
+    const rail = document.createElement('div');
+    rail.setAttribute('data-gs-gerrit-rail', '');
+    rail.setAttribute('data-gs-ux-skip', '');
+    for (const item of furniture.rail) {
+      if (item.kind === 'handle') {
+        const el = document.createElement('div');
+        el.className = 'gs-gerrit-handle';
+        el.textContent = '@' + subject;
+        rail.appendChild(markNoEquiv(el, 'No @handle on Gerrit'));
+      } else if (item.kind === 'bio') {
+        if (data && data.description) {
+          const el = document.createElement('div');
+          el.className = 'gs-gerrit-bio';
+          el.textContent = data.description;
+          rail.appendChild(el);
+        }
+      } else if (item.kind === 'follow') {
+        const el = document.createElement('button');
+        el.type = 'button';
+        el.disabled = true;
+        el.className = 'gs-gerrit-follow';
+        el.textContent = 'Follow';
+        rail.appendChild(markNoEquiv(el, 'Gerrit has no follow'));
+      } else if (item.kind === 'stats') {
+        const authors = new Set(
+          changes.map((c) => c.owner && c.owner.name).filter(Boolean),
+        ).size;
+        const el = document.createElement('div');
+        el.className = 'gs-gerrit-stats';
+        el.innerHTML =
+          `<span><b>${changes.length}</b> changes</span>` +
+          `<span><b>${authors}</b> authors</span>`;
+        rail.appendChild(el);
+      } else if (item.kind === 'achievements') {
+        const head = document.createElement('div');
+        head.className = 'gs-gerrit-misshead';
+        head.textContent = 'Achievements';
+        rail.appendChild(markNoEquiv(head, 'Gerrit has no achievements'));
+        rail.appendChild(missingBox('No equivalent on Gerrit.'));
+      } else if (item.kind === 'social') {
+        const head = document.createElement('div');
+        head.className = 'gs-gerrit-misshead';
+        head.textContent = 'Followers / Following';
+        rail.appendChild(markNoEquiv(head, 'Gerrit has no social graph'));
+        rail.appendChild(missingBox('No equivalent on Gerrit.'));
+      }
     }
-    root.appendChild(nav);
-    gerritProfileSheets.adopt(root, gerritProfileCss(t));
+    const h1 = root.querySelector('h1');
+    if (h1) h1.after(rail);
+
+    // The content column: the product's profile tabs and sections.
+    if (wrapper && viewRoot instanceof ShadowRoot) {
+      const content = document.createElement('div');
+      content.setAttribute('data-gs-gerrit-content', '');
+      content.setAttribute('data-gs-ux-skip', '');
+
+      const counts = {
+        changes: changes.length,
+        repos: new Set(changes.map((c) => c.project).filter(Boolean)).size,
+      };
+      const nav = document.createElement('nav');
+      nav.setAttribute('data-gs-gerrit-profile-nav', '');
+      nav.setAttribute('data-gs-ux-skip', '');
+      furniture.tabs.forEach((tab, index) => {
+        if (tab.source) {
+          const anchor = document.createElement('a');
+          anchor.setAttribute('href', route + subject);
+          anchor.textContent = tab.label;
+          if (index === 0) anchor.setAttribute('aria-current', 'page');
+          const count = counts[tab.source];
+          if (count) {
+            const pill = document.createElement('span');
+            pill.className = 'gs-gerrit-count';
+            pill.textContent = String(count);
+            anchor.appendChild(pill);
+          }
+          nav.appendChild(anchor);
+        } else {
+          const span = document.createElement('span');
+          span.className = 'gs-gerrit-tab';
+          span.textContent = tab.label;
+          nav.appendChild(markNoEquiv(span, 'No equivalent on Gerrit'));
+        }
+      });
+      content.appendChild(nav);
+
+      for (const section of furniture.sections) {
+        const heading = document.createElement('h2');
+        heading.className = 'gs-gerrit-h2';
+        heading.textContent = section.heading;
+        if (!section.source) {
+          content.appendChild(markNoEquiv(heading, 'No equivalent on Gerrit'));
+          content.appendChild(missingBox('No equivalent on Gerrit.'));
+          continue;
+        }
+        if (section.note) markNoEquiv(heading, section.note);
+        content.appendChild(heading);
+
+        if (section.source === 'cards') {
+          const cards = document.createElement('div');
+          cards.className = 'gs-gerrit-cards';
+          for (const change of changes
+            .slice()
+            .sort((a, b) => String(b.updated).localeCompare(String(a.updated)))
+            .slice(0, 4)) {
+            const status =
+              change.status === 'NEW'
+                ? 'Open'
+                : change.status === 'MERGED'
+                  ? 'Merged'
+                  : change.status === 'ABANDONED'
+                    ? 'Abandoned'
+                    : change.status;
+            const card = document.createElement('div');
+            card.className = 'gs-gerrit-card';
+            card.innerHTML =
+              `<div class="name"><a href="/c/${escapeHtml(change.project)}/+/${change._number}">` +
+              `${escapeHtml(change.subject)}</a>` +
+              `<span class="gs-gerrit-pill">${escapeHtml(status)}</span></div>` +
+              `<div class="desc">${escapeHtml(change.project)} · ${escapeHtml(change.branch || '')}</div>` +
+              `<div class="foot"><span>${escapeHtml(change.owner && change.owner.name)}</span>` +
+              `<span>+${change.insertions || 0} \u2212${change.deletions || 0}</span></div>`;
+            cards.appendChild(card);
+          }
+          content.appendChild(cards);
+        } else if (section.source === 'graph') {
+          const byDay = {};
+          for (const change of changes) {
+            const day = gerritDate(change.updated);
+            if (!day) continue;
+            const key = day.toISOString().slice(0, 10);
+            byDay[key] = (byDay[key] || 0) + 1;
+          }
+          const graph = document.createElement('div');
+          graph.className = 'gs-gerrit-graph';
+          const levels = [
+            '#ebedf0',
+            '#9be9a8',
+            '#40c463',
+            '#30a14e',
+            '#216e39',
+          ];
+          const today = new Date();
+          today.setUTCHours(0, 0, 0, 0);
+          const start = new Date(today);
+          start.setUTCDate(start.getUTCDate() - 52 * 7);
+          start.setUTCDate(start.getUTCDate() - start.getUTCDay());
+          for (let w = 0; w < 53; w += 1) {
+            for (let d = 0; d < 7; d += 1) {
+              const day = new Date(start);
+              day.setUTCDate(start.getUTCDate() + w * 7 + d);
+              const key = day.toISOString().slice(0, 10);
+              const n = byDay[key] || 0;
+              const level =
+                n === 0 ? 0 : n === 1 ? 1 : n === 2 ? 2 : n <= 4 ? 3 : 4;
+              const cell = document.createElement('span');
+              cell.style.background = levels[level];
+              cell.title = `${key}: ${n}`;
+              graph.appendChild(cell);
+            }
+          }
+          content.appendChild(graph);
+        }
+      }
+
+      wrapper.setAttribute('data-gs-gerrit-view', '');
+      wrapper.insertBefore(content, wrapper.querySelector('gr-change-list'));
+      gerritViewSheets.adopt(viewRoot, gerritViewCss(t));
+    }
+
+    gerritProfileSheets.adopt(root, gerritRailCss());
   }
 
   // Reshape the header of whichever declared page kind this URL is, if any. A
@@ -877,7 +1313,12 @@
 
     for (const root of roots) {
       for (const el of root.querySelectorAll('*')) {
-        if (el.closest('[data-gs-gerrit-nav],[data-gs-gerrit-profile-nav]')) {
+        if (
+          el.closest(
+            '[data-gs-gerrit-nav],[data-gs-gerrit-profile-nav],' +
+              '[data-gs-gerrit-rail],[data-gs-gerrit-content]',
+          )
+        ) {
           continue;
         }
         const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
