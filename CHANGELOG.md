@@ -77,7 +77,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `compare.profile` (and Gerrit `compare.nav`), and the rubric now uses
   `compare.profile` as a fraction, so partial profile coverage scores partially.
   `layout-parity` is now 24/24 gated and passing, and an independent jev pass
-  over the same signals grades every pair 9.3–9.9 (was 2.8–9.9). Bitbucket's
+  over the same signals grades every pair 9.3–9.9 (was 2.8–9.9). Gerrit's header
+  is turned into a fixed **left column** (a sidebar) under the sidebar layouts,
+  with the change list beside it, and left as a top bar under the GitHub layout
+  (`paintGerritNav`, injecting into the two shadow roots that hold the header and
+  `main`). Bitbucket's
   repository bar is also grouped into the applied skin's headings (GitLab's
   Plan/Code/Build/…) by `paintBitbucketNav` where that skin groups, closing the
   flat-menu gap the corrected rubric exposed.

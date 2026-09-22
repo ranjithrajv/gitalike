@@ -202,9 +202,11 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
   partial: PolyGerrit reads its colours from root custom properties that inherit
   across its shadow boundary, so the skins re-point text, links, borders and
   feedback (`themes/gs-tokens.css`) but not its surfaces or header. Its header
-  navigation *is* reoriented to the layout, though — PolyGerrit's roots are open,
-  so `paintGerritNav` reaches the nav and injects a style into its shadow root
-  (`row` for the GitHub layout, `column` for the others). The page-wide copy and
+  navigation *is* laid out like the applied skin, though — PolyGerrit's roots
+  are open, so `paintGerritNav` reaches the header and injects a style into its
+  shadow root: under the GitHub layout the header stays a top bar with a row
+  nav, and under the GitLab/Bitbucket layout it becomes a fixed **left column**
+  (a sidebar) with the change list beside it. The page-wide copy and
   label passes still cannot reach inside the shadow roots, and Gerrit numbers a
   change (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so
   `refs` is partial too.

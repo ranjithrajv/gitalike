@@ -490,12 +490,17 @@
     }
   }
 
+  // The styles `paintGerritNav` injects into Gerrit's shadow roots, so a theme
+  // change or revert can remove them (`document.querySelectorAll` cannot reach
+  // inside a shadow root).
+  const gerritShellStyles = new Set();
+
   // PolyGerrit renders its chrome inside *open* shadow roots, so a content
   // script can reach them, but a document stylesheet cannot: the injected CSS
   // never crosses the boundary. Reorient the header navigation to the applied
   // layout by injecting a small style into the shadow root that owns it — a row
-  // for the GitHub layout, a column (sidebar) for the GitLab/Bitbucket layout.
-  // It is a reorientation of the nav, not a rebuild of PolyGerrit's page.
+  // for the GitHub layout, a column (sidebar) for the GitLab/Bitbucket layout,
+  // where the header becomes a fixed left column with the content beside it.
   function paintGerritNav(t) {
     if (document.documentElement.dataset.gsSource !== 'gerrit') return;
     const deepFirst = (selector) => {
@@ -519,7 +524,11 @@
 
     const direction = t === 'github' ? 'row' : 'column';
     ledger(nav, 'gerrit-nav', () => ({
-      restore: () => root.querySelector('style[data-gs-gerrit-nav]')?.remove(),
+      restore: () => {
+        root.querySelector('style[data-gs-gerrit-nav]')?.remove();
+        for (const style of gerritShellStyles) style.remove();
+        gerritShellStyles.clear();
+      },
     }));
     let style = root.querySelector('style[data-gs-gerrit-nav]');
     if (!style) {
@@ -527,7 +536,35 @@
       style.setAttribute('data-gs-gerrit-nav', '');
       root.append(style);
     }
-    style.textContent = `nav{display:flex !important;flex-direction:${direction} !important;}`;
+    // Scope to the header's own nav, not every `nav` in the root.
+    style.textContent = `gr-main-header nav{display:flex !important;flex-direction:${direction} !important;}`;
+
+    // A sidebar layout turns the header into a fixed left column with the main
+    // content beside it — PolyGerrit's own shell is a full-width top bar, so the
+    // sidebar is built from the same nodes. Only two roots need the rule: the
+    // one holding `gr-main-header` and the one holding `main` (they can differ).
+    for (const style of gerritShellStyles) style.remove();
+    gerritShellStyles.clear();
+    if (direction === 'column') {
+      const header = deepFirst('gr-main-header');
+      const mainEl = deepFirst('main');
+      const scopes = new Set([
+        header ? header.getRootNode() : root,
+        mainEl ? mainEl.getRootNode() : null,
+      ]);
+      const shellCss =
+        'gr-main-header{position:fixed !important;inset:0 auto 0 0 !important;' +
+        'width:260px !important;height:100vh !important;overflow:auto !important;}' +
+        'main{margin-left:260px !important;}';
+      for (const scope of scopes) {
+        if (!(scope instanceof ShadowRoot)) continue;
+        const shell = document.createElement('style');
+        shell.setAttribute('data-gs-gerrit-shell', '');
+        shell.textContent = shellCss;
+        scope.append(shell);
+        gerritShellStyles.add(shell);
+      }
+    }
   }
 
   rt.once('project', () => {
