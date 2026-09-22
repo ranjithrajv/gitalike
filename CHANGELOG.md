@@ -67,6 +67,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   navigation or profile capability is reported `n/a` rather than failed; every
   source declares one now. Unlike the other parity reads it exits non-zero on a
   mismatch, so a layout regression fails a run instead of lowering a score.
+- **Gerrit is skinned more fully.** PolyGerrit's header surface now takes the
+  applied skin's bar (`--header-background`/`--header-text-color` mapped from the
+  skin), so the top bar reads as the product rather than Gerrit's own; and
+  **Gitiles** — the server-rendered code browser Gerrit serves at
+  `gerrit.googlesource.com/<project>/`, which is not PolyGerrit — is recoloured
+  from the skin's `--gs-*` variables (header, links, metadata), scoped to the
+  `gerrit` source (`themes/gs-tokens.css`, `themes/ux-nav.css`).
 - **Layout parity raised across the sources.** Gitea/Forgejo and Bitbucket
   profile navigation is reoriented to the applied layout
   (`themes/ux-nav.css`: Gitea's profile tab menu becomes a sidebar list under a

@@ -1228,3 +1228,41 @@ html[data-gs-source='gitea'].gs-layout-gitlab
   > :not([data-gs-profile-rail]) {
   grid-column: 2;
 }
+
+/* ============================================================================
+   Gitiles — the server-rendered code browser Gerrit also serves
+   (gerrit.googlesource.com/<project>/). It is not PolyGerrit and has no token
+   layer, so its chrome is recoloured from the applied skin's `--gs-*`
+   variables. Scoped to the `gerrit` source, so it never touches another site.
+   ========================================================================= */
+html[data-gs-source='gerrit'][class*='gs-theme-'] body.Site {
+  background: var(--gs-canvas);
+  color: var(--gs-fg);
+}
+
+html[data-gs-source='gerrit'][class*='gs-theme-'] .Site-header,
+html[data-gs-source='gerrit'][class*='gs-theme-'] .Site-header .Header {
+  background: var(--gs-header-bg);
+}
+
+html[data-gs-source='gerrit'][class*='gs-theme-'] .Header-menuItem,
+html[data-gs-source='gerrit'][class*='gs-theme-'] .Header-themeLabel {
+  color: var(--gs-header-fg);
+}
+
+html[data-gs-source='gerrit'][class*='gs-theme-'] a {
+  color: var(--gs-link);
+}
+
+html[data-gs-source='gerrit'][class*='gs-theme-'] .RefList-title,
+html[data-gs-source='gerrit'][class*='gs-theme-'] .CommitLog-author,
+html[data-gs-source='gerrit'][class*='gs-theme-'] .CommitLog-time,
+html[data-gs-source='gerrit'][class*='gs-theme-'] .Breadcrumbs-sep {
+  color: var(--gs-fg-muted);
+}
+
+html[data-gs-source='gerrit'][class*='gs-theme-'] .CloneRepo-command {
+  background: var(--gs-canvas-subtle);
+  color: var(--gs-fg);
+  border-color: var(--gs-border);
+}
