@@ -738,6 +738,8 @@
     return {
       changes: Array.isArray(changes) ? changes : [],
       description: info.description || null,
+      parent: info.parent || null,
+      state: info.state || null,
       at: Date.now(),
     };
   }
@@ -1238,6 +1240,32 @@
       '[data-gs-gerrit-repo] .gs-repo-clone-row.gs-gerrit-missing{' +
       'background:var(--gs-attention-subtle) !important;border-radius:6px !important;' +
       'padding:6px 8px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-body{display:grid !important;' +
+      'grid-template-columns:minmax(0,1fr) 296px !important;gap:32px !important;' +
+      'align-items:start !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-side{display:flex !important;' +
+      'flex-direction:column !important;gap:20px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-about{border-bottom:1px solid var(--gs-border) !important;' +
+      'padding-bottom:16px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-about h2{font-size:16px !important;' +
+      'font-weight:600 !important;margin:0 0 8px !important;color:var(--gs-fg) !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-about p{font-size:14px !important;' +
+      'color:var(--gs-fg) !important;margin:0 0 12px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-about-row{display:flex !important;' +
+      'align-items:center !important;gap:6px !important;font-size:12px !important;' +
+      'color:var(--gs-fg-muted) !important;padding:2px 0 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-about-row b{color:var(--gs-fg) !important;' +
+      'font-weight:600 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-about-row a{color:var(--gs-link) !important;' +
+      'text-decoration:none !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-about-row.gs-gerrit-missing{' +
+      'background:var(--gs-attention-subtle) !important;color:var(--gs-attention) !important;' +
+      'border-radius:6px !important;padding:3px 8px !important;margin:2px 0 !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-contribs{display:flex !important;' +
+      'flex-wrap:wrap !important;gap:8px !important;}' +
+      '[data-gs-gerrit-repo] .gs-repo-contrib{font-size:12px !important;' +
+      'color:var(--gs-fg) !important;background:var(--gs-canvas-subtle) !important;' +
+      'border-radius:20px !important;padding:2px 10px !important;}' +
       '[data-gs-gerrit-repo] .gs-repo-file{display:flex !important;align-items:center !important;' +
       'padding:8px 0 !important;border-top:1px solid var(--gs-border) !important;' +
       'font-size:14px !important;}' +
@@ -1381,6 +1409,59 @@
         `${repoInfo.tags === 1 ? 'tag' : 'tags'}</a>`
       : '';
 
+    // The right-hand About sidebar: the real project metadata Gerrit exposes,
+    // plus the sections GitHub shows that Gerrit has no equivalent for, marked.
+    const contributors = [
+      ...new Set(changes.map((c) => c.owner && c.owner.name).filter(Boolean)),
+    ];
+    const missingRow = (label) =>
+      `<div class="gs-repo-about-row gs-gerrit-missing">${escapeHtml(
+        label,
+      )}${GERRIT_NOEQ}</div>`;
+    const aboutRows =
+      (data && data.parent
+        ? `<div class="gs-repo-about-row">Parent <b>${escapeHtml(
+            data.parent,
+          )}</b></div>`
+        : '') +
+      (data && data.state
+        ? `<div class="gs-repo-about-row">State <b>${escapeHtml(
+            data.state,
+          )}</b></div>`
+        : '') +
+      (browseUrl
+        ? `<div class="gs-repo-about-row">Browse <a href="${escapeHtml(
+            browseUrl,
+          )}" target="_blank" rel="noopener">Gitiles</a></div>`
+        : '') +
+      ['Readme', 'License', 'Stars', 'Watchers', 'Forks']
+        .map(missingRow)
+        .join('');
+    const contributorsHtml = contributors.length
+      ? contributors
+          .map(
+            (name) =>
+              `<span class="gs-repo-contrib">${escapeHtml(name)}</span>`,
+          )
+          .join('')
+      : missingRow('Contributors');
+    const side =
+      `<aside class="gs-repo-side">` +
+      `<div class="gs-repo-about"><h2>About</h2>` +
+      (data && data.description
+        ? `<p>${escapeHtml(data.description)}</p>`
+        : '') +
+      aboutRows +
+      `</div>` +
+      `<div class="gs-repo-about"><h2>Contributors</h2>` +
+      `<div class="gs-repo-contribs">${contributorsHtml}</div></div>` +
+      `<div class="gs-repo-about"><h2>Releases${GERRIT_NOEQ}</h2>` +
+      `<div class="gs-repo-about-row gs-gerrit-missing">Gerrit has tags, not ` +
+      `releases${GERRIT_NOEQ}</div></div>` +
+      `<div class="gs-repo-about"><h2>Packages${GERRIT_NOEQ}</h2></div>` +
+      `<div class="gs-repo-about"><h2>Languages${GERRIT_NOEQ}</h2></div>` +
+      `</aside>`;
+
     box.innerHTML =
       `<div class="gs-repo-head"><div class="gs-repo-title">` +
       `<a href="${escapeHtml(home)}" target="_blank" rel="noopener">${escapeHtml(
@@ -1392,6 +1473,7 @@
       `<span class="gs-repo-pill">Public</span></div>` +
       `<div class="gs-repo-actions">${actions}</div></div>` +
       `<nav class="gs-repo-tabs">${tabs}</nav>` +
+      `<div class="gs-repo-body"><div class="gs-repo-main">` +
       `<div class="gs-repo-bar"><span class="gs-repo-branch">${escapeHtml(
         branch,
       )}</span>` +
@@ -1402,7 +1484,10 @@
       `<button type="button" class="gs-repo-code" aria-expanded="false">Code` +
       `<span class="caret">\u25be</span></button></div>` +
       `<div class="gs-repo-clone" hidden>${cloneRows.join('')}</div>` +
-      files;
+      files +
+      `</div>` +
+      side +
+      `</div>`;
 
     const codeButton = box.querySelector('.gs-repo-code');
     const clone = box.querySelector('.gs-repo-clone');
