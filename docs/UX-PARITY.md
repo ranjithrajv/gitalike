@@ -34,9 +34,10 @@ Bitbucket's are in `src/plugins/skins/bitbucket.js` and are covered by
   the palette is mapped from its Atlassian `--ds-*` tokens, and the
   source-agnostic passes — copy, control labels and reference markers — run on
   top.
-- **Ger→G / Ger→L** — a Gerrit source shown with the GitHub or GitLab UI. Same
-  vocabulary-only treatment as Bitbucket, and without even the reference-marker
-  support: Gerrit identifies a change by number/Change-Id, not a `#`/`!` marker.
+- **Ger→G / Ger→L** — a Gerrit source shown with the GitHub or GitLab UI. It
+  gets the palette, the header surface and the header orientation (below), but
+  not the shadow-DOM page passes; and without the reference-marker support:
+  Gerrit identifies a change by number/Change-Id, not a `#`/`!` marker.
 
 ## Status
 
@@ -204,15 +205,19 @@ nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout pari
 - **Gerrit as a source (4.5–4.8 project, 2.1–3.1 profile)** — its palette is
   partial: PolyGerrit reads its colours from root custom properties that inherit
   across its shadow boundary, so the skins re-point text, links, borders and
-  feedback (`themes/gs-tokens.css`) but not its surfaces or header. Its header
-  navigation *is* laid out like the applied skin, though — PolyGerrit's roots
-  are open, so `paintGerritNav` reaches the header and injects a style into its
-  shadow root: under the GitHub layout the header stays a top bar with a row
-  nav, and under the GitLab/Bitbucket layout it becomes a fixed **left column**
-  (a sidebar) with the change list beside it. The page-wide copy and
+  feedback, and the header surface and text
+  (`--header-background`/`--header-text-color`, which PolyGerrit reads), but not
+  the rest of its surfaces (`themes/gs-tokens.css`). Its header navigation *is*
+  laid out like the applied skin, though — PolyGerrit's roots are open, so
+  `paintGerritNav` reaches the header and injects a style into its shadow root:
+  under the GitHub layout the header is a top bar re-proportioned to GitHub's
+  app header (64px tall, GitHub's nav type, a rounded light-on-dark search
+  field), and under the GitLab/Bitbucket layout it becomes a fixed **left
+  column** (a sidebar) with the change list beside it. The page-wide copy and
   label passes still cannot reach inside the shadow roots, and Gerrit numbers a
   change (`/c/<project>/+/<N>`) by Change-Id rather than a `#`/`!` marker, so
-  `refs` is partial too.
+  `refs` is partial too. It has no repository tab row or About rail to rebuild,
+  so those GitHub surfaces stay unreproduced.
 
 The scores are computed by `tools/compare/parity-score.mjs` (`npm run parity`, or
 `npm run parity -- --detail` for the per-dimension breakdown) and

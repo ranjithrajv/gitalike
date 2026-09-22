@@ -520,6 +520,13 @@
   // layout by injecting a small style into the shadow root that owns it — a row
   // for the GitHub layout, a column (sidebar) for the GitLab/Bitbucket layout,
   // where the header becomes a fixed left column with the content beside it.
+  //
+  // The GitHub layout keeps a top bar, so it additionally re-proportions the
+  // bar to GitHub's app header (64px, GitHub's nav type) and flips the bar's
+  // text token: the page-level `--primary-text-color` is the *page* colour
+  // (dark), and it inherits into the bar's search field, which otherwise renders
+  // dark-on-dark. The GitLab/Bitbucket layouts move the bar off-screen as a
+  // sidebar, so they need neither.
   function paintGerritNav(t) {
     if (document.documentElement.dataset.gsSource !== 'gerrit') return;
     const deepFirst = (selector) => {
@@ -557,6 +564,48 @@
       root,
       `[data-gs-gerrit-nav]{display:flex !important;flex-direction:${direction} !important;}`,
     );
+
+    if (t === 'github') {
+      adoptGerritSheet(
+        root,
+        '[data-gs-gerrit-nav]{min-height:64px !important;align-items:center !important;' +
+          'padding:0 16px !important;font-family:var(--gs-font) !important;' +
+          '--primary-text-color:var(--gs-header-fg) !important;' +
+          'color:var(--gs-header-fg) !important;}' +
+          '[data-gs-gerrit-nav] a.bigTitle{font-size:20px !important;' +
+          'font-weight:600 !important;letter-spacing:-.2px !important;}' +
+          '[data-gs-gerrit-nav] ul.links{gap:8px !important;margin:0 0 0 12px !important;}' +
+          '[data-gs-gerrit-nav] span.linksTitle{font-size:14px !important;' +
+          'font-weight:600 !important;color:var(--gs-header-fg) !important;}' +
+          '[data-gs-gerrit-nav] div.rightItems{gap:8px !important;margin-left:auto !important;}',
+      );
+      // The search field sits several shadow roots deep; find it from the header
+      // and adopt the pill rules into the root that actually holds it — a rule
+      // in an ancestor root cannot reach an input in a nested one.
+      const walkInput = (scope, depth) => {
+        if (depth > 8) return null;
+        const hit = scope.querySelector('input');
+        if (hit) return hit;
+        for (const el of scope.querySelectorAll('*')) {
+          if (el.shadowRoot) {
+            const found = walkInput(el.shadowRoot, depth + 1);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      const input = walkInput(root, 0);
+      const inputRoot = input && input.getRootNode();
+      if (inputRoot instanceof ShadowRoot) {
+        adoptGerritSheet(
+          inputRoot,
+          'input{background:transparent !important;color:var(--gs-header-fg) !important;' +
+            'border:1px solid color-mix(in srgb, var(--gs-header-fg) 35%, transparent) !important;' +
+            'border-radius:6px !important;height:32px !important;padding:0 8px !important;}' +
+            'input::placeholder{color:var(--gs-header-fg) !important;opacity:.7 !important;}',
+        );
+      }
+    }
 
     // A sidebar layout turns the header into a fixed left column with the main
     // content beside it — PolyGerrit's own shell is a full-width top bar, so the
