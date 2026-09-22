@@ -16,7 +16,18 @@
     label: 'GitLab — Pajamas',
     compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 },
     pages: {
-      project: { route: '/<group>/<project>', from: 'path' },
+      // GitLab serves a project under a user namespace (`/dzaporozhets/x`) *or*
+      // a group, which may itself be **nested** (`/gitlab-org/security/x`) — the
+      // `/-/` marker is what separates the project path from the route, so the
+      // namespace can be any number of segments.
+      project: {
+        route: [
+          { path: '/<owner>/<project>', namespace: 'user' },
+          { path: '/<group>/<project>', namespace: 'group' },
+          { path: '/<group>/<subgroup>/<project>', namespace: 'subgroup' },
+        ],
+        from: 'path',
+      },
       profile: { route: '/<user>', from: 'pathname' },
       dashboard: { route: '/dashboard', from: null },
       settings: { route: '/-/profile', from: null },

@@ -123,12 +123,19 @@
                   "required": ["route", "from"],
                   "properties": {
                     "route": {
-                      "type": "string",
-                      "description": "The pathname (or pattern) that serves this page."
+                      "oneOf": [
+                        { "$ref": "#/$defs/route" },
+                        { "type": "array", "items": { "$ref": "#/$defs/route" }, "minItems": 1 }
+                      ],
+                      "description": "The path shape(s) that serve this page — a project lives under a user or an organisation/group namespace."
                     },
                     "from": {
                       "type": ["string", "null"],
                       "description": "How the page's subject is read from the URL, or null for a fixed page."
+                    },
+                    "namespace": {
+                      "type": "string",
+                      "description": "The owner segment's kind when a page has more than one shape (user, organization, group, subgroup, workspace)."
                     },
                     "equivalent": {
                       "type": "string",
@@ -146,6 +153,23 @@
           }
         }
       }
+    }
+  },
+  "$defs": {
+    "route": {
+      "description": "One path shape, with {placeholders} for the segments that vary.",
+      "oneOf": [
+        { "type": "string", "pattern": "^/" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path"],
+          "properties": {
+            "path": { "type": "string", "pattern": "^/" },
+            "namespace": { "type": "string" }
+          }
+        }
+      ]
     }
   }
 }

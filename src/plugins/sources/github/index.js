@@ -20,7 +20,16 @@
     compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 }, // GitHub's own pages, so a pass or the rubric reads the map rather than
     // assuming. `from` names how the page's subject is read from the URL.
     pages: {
-      project: { route: '/<owner>/<repo>', from: 'path' },
+      // A repository lives under a user (`/torvalds/linux`) *or* an
+      // organisation (`/microsoft/vscode`) — the same shape, a different owner
+      // kind. GitHub does not nest namespaces (no `/a/b/c` repository).
+      project: {
+        route: [
+          { path: '/<owner>/<repo>', namespace: 'user' },
+          { path: '/<org>/<repo>', namespace: 'organization' },
+        ],
+        from: 'path',
+      },
       profile: { route: '/<user>', from: 'pathname' },
       dashboard: { route: '/dashboard', from: null },
       settings: { route: '/settings', from: null },

@@ -138,7 +138,7 @@
     if (!pages.length) {
       return 'canary — an array of pages, each with a name, a url and keys';
     }
-    const bad = pages.find(
+    const bad = pages.some(
       (page) =>
         !isString(page?.name) ||
         !isString(page?.url) ||
@@ -186,6 +186,26 @@
     signOut: 'the sign-out action',
   };
 
+  /**
+   * A route is one path shape, or a list of them when a page is served at more
+   * than one — a project lives under a user *or* an organisation/group
+   * namespace. A shape may be a plain string, or `{ path, namespace }` when the
+   * owner segment has a name worth recording.
+   */
+  function routeProblems(where, route) {
+    const routes = Array.isArray(route) ? route : [route];
+    if (!routes.length) return [`${where}.route — one path shape, or a list`];
+    const problems = [];
+    routes.forEach((entry, index) => {
+      const at = `${where}.route${Array.isArray(route) ? `[${index}]` : ''}`;
+      const path = typeof entry === 'string' ? entry : entry?.path;
+      if (!isString(path) || !path.startsWith('/')) {
+        problems.push(`${at} — a path shape starting with '/'`);
+      }
+    });
+    return problems;
+  }
+
   function pagesProblems(source) {
     const pages = source.pages;
     if (pages === undefined) return [];
@@ -203,12 +223,21 @@
         problems.push(`pages.${kind} — an object, or null for “has none”`);
         continue;
       }
-      if (page.route === undefined) {
-        problems.push(`pages.${kind}.route — the pathname that serves it`);
-      }
+      problems.push(...routeProblems(`pages.${kind}`, page.route));
       if (page.from === undefined) {
         problems.push(
           `pages.${kind}.from — how the subject is read from the URL`,
+        );
+      }
+      // `namespace` names the owner segment when a page has more than one shape
+      // (a user namespace vs a group/organisation one), so a consumer can tell
+      // the forms apart without re-parsing the pattern.
+      if (
+        page.namespace !== undefined &&
+        !['path', 'pathname'].includes(page.from)
+      ) {
+        problems.push(
+          `pages.${kind}.namespace — only meaningful when \`from\` reads the path`,
         );
       }
     }

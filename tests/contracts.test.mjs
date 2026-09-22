@@ -192,13 +192,33 @@ describe('source contract', () => {
         SOURCE_LIB.SOURCES[name].pages ?? {},
       )) {
         if (page === null) continue; // the forge has no such page
-        assert.ok(
-          typeof page.route === 'string' && page.route.length,
-          `${name}.pages.${kind} needs a route`,
-        );
+        const routes = Array.isArray(page.route) ? page.route : [page.route];
+        assert.ok(routes.length, `${name}.pages.${kind} needs a route`);
+        for (const entry of routes) {
+          const path = typeof entry === 'string' ? entry : entry?.path;
+          assert.ok(
+            typeof path === 'string' && path.startsWith('/'),
+            `${name}.pages.${kind} route is a path`,
+          );
+        }
         assert.ok('from' in page, `${name}.pages.${kind} needs a \`from\``);
       }
     }
+  });
+
+  test('a project page names the namespaces it can live under', () => {
+    // The same shape serves a user's repo and an organisation's — GitHub and
+    // Gitea say so explicitly; GitLab adds a nested group. This is what stops a
+    // consumer assuming a single namespace form.
+    const namespaces = (source) => {
+      const routes = SOURCE_LIB.SOURCES[source].pages.project.route;
+      return (Array.isArray(routes) ? routes : [routes])
+        .map((entry) => (typeof entry === 'string' ? null : entry.namespace))
+        .filter(Boolean);
+    };
+    assert.deepEqual(namespaces('github'), ['user', 'organization']);
+    assert.deepEqual(namespaces('gitea'), ['user', 'organization']);
+    assert.deepEqual(namespaces('gitlab'), ['user', 'group', 'subgroup']);
   });
 
   test('a page that is really another page says so with `equivalent`', () => {

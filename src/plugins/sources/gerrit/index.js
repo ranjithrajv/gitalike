@@ -51,9 +51,13 @@
       userHeader: 'gr-user-header',
     },
     pages: {
-      project: { route: '/q/project:', from: 'project:' },
+      // Gerrit addresses a project by name in a query, not a path.
+      project: {
+        route: { path: '/q/project:', namespace: 'project' },
+        from: 'project:',
+      },
       profile: {
-        route: '/q/owner:',
+        route: { path: '/q/owner:', namespace: 'owner' },
         from: 'owner:',
         equivalent: 'owner-query',
         selectors: { header: 'gr-user-header' },

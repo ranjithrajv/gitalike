@@ -35,9 +35,15 @@
       refs: 1,
     },
     pages: {
-      project: { route: '/<workspace>/<repo>/src', from: 'path' },
+      project: {
+        route: { path: '/<workspace>/<repo>/src', namespace: 'workspace' },
+        from: 'path',
+      },
       profile: {
-        route: '/<workspace>/workspace/repositories/',
+        route: {
+          path: '/<workspace>/workspace/repositories/',
+          namespace: 'workspace',
+        },
         from: 'pathname',
         equivalent: 'workspace',
       },

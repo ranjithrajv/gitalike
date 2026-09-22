@@ -72,7 +72,40 @@
       ],
       "canary": [
         "https://bitbucket.org/tutorials/markdowndemo"
-      ]
+      ],
+      "pages": {
+        "project": {
+          "route": {
+            "path": "/<workspace>/<repo>/src",
+            "namespace": "workspace"
+          },
+          "from": "path"
+        },
+        "profile": {
+          "route": {
+            "path": "/<workspace>/workspace/repositories/",
+            "namespace": "workspace"
+          },
+          "from": "pathname",
+          "equivalent": "workspace"
+        },
+        "dashboard": {
+          "route": "/dashboard",
+          "from": null
+        },
+        "settings": {
+          "route": "/account/settings",
+          "from": null
+        },
+        "signIn": {
+          "route": "/account/signin",
+          "from": null
+        },
+        "signOut": {
+          "route": "/account/signout",
+          "from": null
+        }
+      }
     },
     {
       "name": "gerrit",
@@ -85,16 +118,44 @@
         "nav": 0.8,
         "page": 0,
         "metadata": 0,
-        "profile": 0.5,
+        "profile": 0.8,
         "refs": 0.3
       },
       "selectors": [
         "app",
-        "body"
+        "body",
+        "userHeader"
       ],
       "canary": [
         "https://gerrit-review.googlesource.com/"
-      ]
+      ],
+      "pages": {
+        "project": {
+          "route": {
+            "path": "/q/project:",
+            "namespace": "project"
+          },
+          "from": "project:"
+        },
+        "profile": {
+          "route": {
+            "path": "/q/owner:",
+            "namespace": "owner"
+          },
+          "from": "owner:",
+          "equivalent": "owner-query",
+          "selectors": {
+            "header": "gr-user-header"
+          }
+        },
+        "dashboard": null,
+        "settings": {
+          "route": "/settings/",
+          "from": null
+        },
+        "signIn": null,
+        "signOut": null
+      }
     },
     {
       "name": "gitea",
@@ -125,7 +186,42 @@
         "https://codeberg.org/forgejo/forgejo",
         "https://codeberg.org/forgejo/forgejo/pulls",
         "https://gitea.com/gitea/act"
-      ]
+      ],
+      "pages": {
+        "project": {
+          "route": [
+            {
+              "path": "/<owner>/<repo>",
+              "namespace": "user"
+            },
+            {
+              "path": "/<org>/<repo>",
+              "namespace": "organization"
+            }
+          ],
+          "from": "path"
+        },
+        "profile": {
+          "route": "/<user>",
+          "from": "pathname"
+        },
+        "dashboard": {
+          "route": "/",
+          "from": null
+        },
+        "settings": {
+          "route": "/user/settings",
+          "from": null
+        },
+        "signIn": {
+          "route": "/user/login",
+          "from": null
+        },
+        "signOut": {
+          "route": "/user/logout",
+          "from": null
+        }
+      }
     },
     {
       "name": "github",
@@ -160,7 +256,42 @@
       "canary": [
         "https://github.com/git/git",
         "https://github.com/torvalds"
-      ]
+      ],
+      "pages": {
+        "project": {
+          "route": [
+            {
+              "path": "/<owner>/<repo>",
+              "namespace": "user"
+            },
+            {
+              "path": "/<org>/<repo>",
+              "namespace": "organization"
+            }
+          ],
+          "from": "path"
+        },
+        "profile": {
+          "route": "/<user>",
+          "from": "pathname"
+        },
+        "dashboard": {
+          "route": "/dashboard",
+          "from": null
+        },
+        "settings": {
+          "route": "/settings",
+          "from": null
+        },
+        "signIn": {
+          "route": "/login",
+          "from": null
+        },
+        "signOut": {
+          "route": "/logout",
+          "from": null
+        }
+      }
     },
     {
       "name": "gitlab",
@@ -195,7 +326,46 @@
       "canary": [
         "https://gitlab.com/gitlab-org/gitlab",
         "https://gitlab.com/dzaporozhets"
-      ]
+      ],
+      "pages": {
+        "project": {
+          "route": [
+            {
+              "path": "/<owner>/<project>",
+              "namespace": "user"
+            },
+            {
+              "path": "/<group>/<project>",
+              "namespace": "group"
+            },
+            {
+              "path": "/<group>/<subgroup>/<project>",
+              "namespace": "subgroup"
+            }
+          ],
+          "from": "path"
+        },
+        "profile": {
+          "route": "/<user>",
+          "from": "pathname"
+        },
+        "dashboard": {
+          "route": "/dashboard",
+          "from": null
+        },
+        "settings": {
+          "route": "/-/profile",
+          "from": null
+        },
+        "signIn": {
+          "route": "/users/sign_in",
+          "from": null
+        },
+        "signOut": {
+          "route": "/users/sign_out",
+          "from": null
+        }
+      }
     }
   ]
 }

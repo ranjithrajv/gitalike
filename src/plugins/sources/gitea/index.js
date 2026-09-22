@@ -27,7 +27,14 @@
       refs: 1,
     },
     pages: {
-      project: { route: '/<owner>/<repo>', from: 'path' },
+      // A repository lives under a user *or* an organisation, same shape.
+      project: {
+        route: [
+          { path: '/<owner>/<repo>', namespace: 'user' },
+          { path: '/<org>/<repo>', namespace: 'organization' },
+        ],
+        from: 'path',
+      },
       profile: { route: '/<user>', from: 'pathname' },
       dashboard: { route: '/', from: null },
       settings: { route: '/user/settings', from: null },
