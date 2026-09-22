@@ -198,9 +198,13 @@ if (process.argv.includes('--json')) {
       );
     }
   }
+  const passing = rows.length - failures.length;
+  const rate = rows.length ? Math.round((passing / rows.length) * 100) : 0;
   console.log(
-    `\n${rows.length} pairs, ${failures.length} failing` +
-      (failures.length ? `: ${failures.map((r) => r.cell).join(', ')}` : ''),
+    `\n${passing}/${rows.length} pairs passing — layout parity ${rate}%` +
+      (failures.length
+        ? ` (failing: ${failures.map((r) => r.cell).join(', ')})`
+        : ''),
   );
 }
 

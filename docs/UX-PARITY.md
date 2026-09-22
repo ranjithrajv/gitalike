@@ -142,7 +142,8 @@ page carries its skin's `gs-layout-*` class and its navigation is oriented the
 way that layout is — row for `github`, column for `gitlab`. Every source now
 declares a navigation and profile capability, so every pair is gated; a future
 source that declares none is reported `n/a` rather than failed, since there is
-nothing to reorient.
+nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout parity
+100%`) and exits non-zero on any failure.
 
 ### Where the points are lost
 
