@@ -27,20 +27,43 @@
     // the header surface, but not every surface. Its header navigation is
     // reoriented to the applied layout *and* relabelled to the applied
     // product's words (`paintGerritNav`), so it is a real but partial match of
-    // the target's nav rather than the target's full menu. The page-wide
-    // copy/label passes cannot reach its shadow-DOM text, and a change carries a
-    // Change-Id rather than a `#`/`!` reference marker.
+    // the target's nav rather than the target's full menu. An owner query's
+    // `gr-user-header` is reshaped into the applied product's profile identity
+    // block with a profile navigation built from Gerrit's own owner views
+    // (`paintGerritProfile`), so `profile` is a real but partial match too. The
+    // page-wide copy/label passes cannot reach its shadow-DOM text, and a change
+    // carries a Change-Id rather than a `#`/`!` reference marker.
     compare: {
       palette: 0.6,
       nav: 0.8,
       page: 0,
       metadata: 0,
-      profile: 0.5,
+      profile: 0.8,
       refs: 0.3,
     },
     selectors: {
       app: 'gr-app#pg-app',
       body: 'body[unresolved]',
+      // PolyGerrit heads an owner query (`/q/owner:<account>`) with the
+      // account's avatar, display name, email and join date. It is the closest
+      // thing Gerrit has to a profile page; `paintGerritProfile` reshapes it for
+      // the applied skin.
+      userHeader: 'gr-user-header',
+    },
+    pages: {
+      project: { route: '/q/project:', from: 'project:' },
+      profile: {
+        route: '/q/owner:',
+        from: 'owner:',
+        equivalent: 'owner-query',
+        selectors: { header: 'gr-user-header' },
+      },
+      // Gerrit has no dashboard, settings page or sign-in form of its own; its
+      // settings live in the account menu, and auth is external (OpenID/OAuth).
+      dashboard: null,
+      settings: { route: '/settings/', from: null },
+      signIn: null,
+      signOut: null,
     },
     canary: [
       {

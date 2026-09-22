@@ -58,8 +58,7 @@
    * so a contributor sees everything that is missing rather than the first
    * symptom. `tests/contracts.test.mjs` is the same checklist from the outside.
    * @type {[string, string, (value: unknown) => boolean][]}
-   */
-  const SKIN_REQUIRED = [
+   */ const SKIN_REQUIRED = [
     ['product', 'the product name, a string', isString],
     ['badge', 'the toolbar badge, a string', isString],
     ['color', 'a #rrggbb string', isHex],
@@ -159,6 +158,64 @@
   }
 
   /**
+   * The page kinds a source can declare, with what each means. A source's
+   * `pages` map names, for each kind it *has*, the route that serves it and how
+   * a pass reads the page's subject from the URL — or `null` for "this forge has
+   * no such page". This is the contract the page-type passes and the parity
+   * rubric read, instead of each assuming every forge has a profile, a
+   * dashboard, a sign-in form, and so on.
+   *
+   *   project    a repository's landing page
+   *   profile    a user/account page (Gerrit: an owner *query*; Bitbucket: a workspace)
+   *   dashboard  the signed-in landing / activity feed
+   *   settings   account or repository settings
+   *   signIn     the sign-in form
+   *   signOut    the sign-out action
+   *
+   * A kind absent from `pages` means the source says nothing about it (a pass
+   * must treat it as unknown); `null` means it declares the forge has none.
+   * @type {Record<string, string>}
+   */
+  const PAGE_KINDS = {
+    project: 'a repository’s landing page',
+    profile:
+      'a user/account page (its nearest equivalent if it has no profile)',
+    dashboard: 'the signed-in landing / activity feed',
+    settings: 'account or repository settings',
+    signIn: 'the sign-in form',
+    signOut: 'the sign-out action',
+  };
+
+  function pagesProblems(source) {
+    const pages = source.pages;
+    if (pages === undefined) return [];
+    if (!isObject(pages)) return ['pages — an object keyed by page kind'];
+    const problems = [];
+    for (const [kind, page] of Object.entries(pages)) {
+      if (!Object.hasOwn(PAGE_KINDS, kind)) {
+        problems.push(
+          `pages.${kind} — not a page kind (${Object.keys(PAGE_KINDS).join(', ')})`,
+        );
+        continue;
+      }
+      if (page === null) continue;
+      if (!isObject(page)) {
+        problems.push(`pages.${kind} — an object, or null for “has none”`);
+        continue;
+      }
+      if (page.route === undefined) {
+        problems.push(`pages.${kind}.route — the pathname that serves it`);
+      }
+      if (page.from === undefined) {
+        problems.push(
+          `pages.${kind}.from — how the subject is read from the URL`,
+        );
+      }
+    }
+    return problems;
+  }
+
+  /**
    * The required parts a source is missing, named. A markup source needs its
    * hooks and a canary page; a vocabulary-only source must not carry either, so
    * a half-declared one is caught rather than silently skipped.
@@ -171,6 +228,7 @@
         problems.push(`compare.${key} — a number in [0, 1]`);
       }
     }
+    problems.push(...pagesProblems(source));
     if (source.markup === false) {
       if (isObject(source.selectors) && Object.keys(source.selectors).length) {
         problems.push('selectors — a vocabulary-only source has none');
@@ -271,6 +329,7 @@
     SKIN_REQUIRED,
     SKIN_CAPABILITIES,
     COMPARE_KEYS,
+    PAGE_KINDS,
     defineSkin,
     defineSource,
     skinProblems,

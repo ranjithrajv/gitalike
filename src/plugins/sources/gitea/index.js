@@ -26,6 +26,14 @@
       profile: 0.5,
       refs: 1,
     },
+    pages: {
+      project: { route: '/<owner>/<repo>', from: 'path' },
+      profile: { route: '/<user>', from: 'pathname' },
+      dashboard: { route: '/', from: null },
+      settings: { route: '/user/settings', from: null },
+      signIn: { route: '/user/login', from: null },
+      signOut: { route: '/user/logout', from: null },
+    },
     // Gitea and Forgejo share one markup family, so one source covers both
     // hosts: gitea.com (Gitea) and codeberg.org (Forgejo). Each host has its
     // own canary page below, so if the 2024 hard fork's UI ever diverges the

@@ -15,6 +15,14 @@
     description: 'GitLab’s Pajamas markup.',
     label: 'GitLab — Pajamas',
     compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 },
+    pages: {
+      project: { route: '/<group>/<project>', from: 'path' },
+      profile: { route: '/<user>', from: 'pathname' },
+      dashboard: { route: '/dashboard', from: null },
+      settings: { route: '/-/profile', from: null },
+      signIn: { route: '/users/sign_in', from: null },
+      signOut: { route: '/users/sign_out', from: null },
+    },
     // GitLab's markup (Pajamas, plus its older CSS).
     selectors: {
       superSidebar: '.super-sidebar', // css

@@ -34,6 +34,18 @@
       profile: 0.5,
       refs: 1,
     },
+    pages: {
+      project: { route: '/<workspace>/<repo>/src', from: 'path' },
+      profile: {
+        route: '/<workspace>/workspace/repositories/',
+        from: 'pathname',
+        equivalent: 'workspace',
+      },
+      dashboard: { route: '/dashboard', from: null },
+      settings: { route: '/account/settings', from: null },
+      signIn: { route: '/account/signin', from: null },
+      signOut: { route: '/account/signout', from: null },
+    },
     selectors: {
       app: '#root',
       bootstrap: 'meta#bb-bootstrap',

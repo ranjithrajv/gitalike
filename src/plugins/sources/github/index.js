@@ -17,7 +17,16 @@
     label: 'GitHub — Primer',
     // Every parity dimension applies: palette, navigation, page-wide passes,
     // metadata, profile and reference markers.
-    compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 },
+    compare: { palette: 1, nav: 1, page: 1, metadata: 1, profile: 1, refs: 1 }, // GitHub's own pages, so a pass or the rubric reads the map rather than
+    // assuming. `from` names how the page's subject is read from the URL.
+    pages: {
+      project: { route: '/<owner>/<repo>', from: 'path' },
+      profile: { route: '/<user>', from: 'pathname' },
+      dashboard: { route: '/dashboard', from: null },
+      settings: { route: '/settings', from: null },
+      signIn: { route: '/login', from: null },
+      signOut: { route: '/logout', from: null },
+    },
     // GitHub's markup (Primer).
     selectors: {
       repoNavList: 'nav[aria-label="Repository"] ul.UnderlineNav-body', // css

@@ -110,6 +110,39 @@
             "type": "array",
             "items": { "type": "string", "format": "uri" },
             "description": "The live pages the selector canary watches."
+          },
+          "pages": {
+            "type": "object",
+            "description": "The page kinds the source declares: route plus how the subject is read from the URL, or null for a kind the forge has none of. Keys are PAGE_KINDS.",
+            "additionalProperties": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": ["route", "from"],
+                  "properties": {
+                    "route": {
+                      "type": "string",
+                      "description": "The pathname (or pattern) that serves this page."
+                    },
+                    "from": {
+                      "type": ["string", "null"],
+                      "description": "How the page's subject is read from the URL, or null for a fixed page."
+                    },
+                    "equivalent": {
+                      "type": "string",
+                      "description": "Set when the page is a forge's nearest equivalent of the kind, not the kind itself (Gerrit's owner query, Bitbucket's workspace)."
+                    },
+                    "selectors": {
+                      "type": "object",
+                      "description": "DOM hooks the page type is keyed on.",
+                      "additionalProperties": { "type": "string" }
+                    }
+                  }
+                }
+              ]
+            }
           }
         }
       }

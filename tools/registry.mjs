@@ -78,6 +78,12 @@ export function registryObject() {
       compare: source.compare,
       selectors: Object.keys(source.selectors),
       canary: source.canary.map((page) => page.url),
+      // The page kinds it declares: route + how the subject is read from the
+      // URL, or null for a kind it has none of. Absent kind = unspecified. This
+      // is how a consumer (a page pass, the parity rubric, the docs) knows what
+      // a source has instead of assuming every forge has a profile, a
+      // dashboard or a sign-in form.
+      pages: source.pages ?? {},
     })),
   };
 }

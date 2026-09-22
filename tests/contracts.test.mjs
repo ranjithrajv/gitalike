@@ -30,6 +30,7 @@ const SITES = globalThis.GITALIKE;
 const UX = globalThis.GITALIKE_UX;
 const SKINS = globalThis.GITALIKE_SKINS;
 const SOURCE_LIB = globalThis.GITALIKE_SOURCES;
+const PLUGINS = globalThis.GITALIKE_PLUGINS;
 
 const file = (rel) =>
   readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
@@ -163,6 +164,51 @@ describe('source contract', () => {
         `kind '${kind}' has no source plugin`,
       );
     }
+  });
+
+  test('every source declares its pages, and each is a known kind', () => {
+    // A source's `pages` map is what a page pass or the parity rubric reads
+    // instead of assuming every forge has a profile, a dashboard or a sign-in
+    // form. Every source must declare all of them — an object, or null for a
+    // kind it has none of — so "not specified" cannot be mistaken for "has none".
+    const kinds = Object.keys(PLUGINS.PAGE_KINDS);
+    const missing = [];
+    for (const name of ALL_SOURCES) {
+      const pages = SOURCE_LIB.SOURCES[name].pages;
+      if (!pages) {
+        missing.push(`${name} declares no pages`);
+        continue;
+      }
+      for (const kind of kinds) {
+        if (!Object.hasOwn(pages, kind)) missing.push(`${name}.pages.${kind}`);
+      }
+    }
+    assert.deepEqual(missing, [], `undeclared pages: ${missing.join(', ')}`);
+  });
+
+  test('a page entry names a route, a subject source, or is null', () => {
+    for (const name of ALL_SOURCES) {
+      for (const [kind, page] of Object.entries(
+        SOURCE_LIB.SOURCES[name].pages ?? {},
+      )) {
+        if (page === null) continue; // the forge has no such page
+        assert.ok(
+          typeof page.route === 'string' && page.route.length,
+          `${name}.pages.${kind} needs a route`,
+        );
+        assert.ok('from' in page, `${name}.pages.${kind} needs a \`from\``);
+      }
+    }
+  });
+
+  test('a page that is really another page says so with `equivalent`', () => {
+    // Gerrit's profile is an owner *query*, Bitbucket's a workspace page. Marking
+    // the equivalence is what keeps "profile" from claiming a person page the
+    // forge does not have.
+    const gerrit = SOURCE_LIB.SOURCES.gerrit.pages.profile;
+    assert.equal(gerrit.equivalent, 'owner-query');
+    const bitbucket = SOURCE_LIB.SOURCES.bitbucket.pages.profile;
+    assert.equal(bitbucket.equivalent, 'workspace');
   });
 
   test('every nav rule names a known markup source', () => {

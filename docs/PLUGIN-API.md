@@ -95,6 +95,7 @@ palette — never a vendor's logo or path data).
 | `selectors` | `{ hookName: 'css selector' }` — required for a markup source, forbidden for a vocabulary-only one |
 | `canary` | `[{ name, url, keys: [hookName] }]` — required for a markup source, forbidden for a vocabulary-only one |
 | `compare` | `{ palette, nav, page, metadata, profile, refs }`, each a fraction in `[0, 1]` |
+| `pages` | the page kinds the source declares: `project`, `profile`, `dashboard`, `settings`, `signIn`, `signOut` — each `{ route, from }`, or `null` for a kind the forge has none of |
 | `description` | one line for the catalog |
 
 `compare` is the source's own declaration of how much of each parity dimension a
@@ -104,6 +105,42 @@ the contract test checks the two agree.
 
 A source that is a forge people host also gets a `builtin`/`SOURCES` entry in
 `src/lib/sites.js` so it is classified and (optionally) bundled.
+
+### Pages
+
+`pages` declares, for each page kind, the route that serves it and how a pass
+reads the page's subject from the URL — or `null` for a kind the forge has none
+of. Every source declares all six kinds, so "not specified" can never be
+mistaken for "has none":
+
+```js
+pages: {
+  project:   { route: '/<group>/<project>', from: 'path' },
+  profile:   { route: '/<user>',            from: 'pathname' },
+  dashboard: { route: '/dashboard',         from: null },
+  settings:  { route: '/-/profile',         from: null },
+  signIn:    { route: '/users/sign_in',     from: null },
+  signOut:   { route: '/users/sign_out',    from: null },
+}
+```
+
+A page that is a forge's *nearest equivalent* rather than the kind itself says so
+with `equivalent`, so nothing claims a page the forge does not have:
+
+```js
+// Gerrit has no account page; an owner query is its equivalent.
+profile: {
+  route: '/q/owner:',
+  from: 'owner:',
+  equivalent: 'owner-query',
+  selectors: { header: 'gr-user-header' },
+}
+```
+
+This is what a page pass, the parity rubric and the docs read instead of each
+assuming a forge has a profile, a dashboard or a sign-in form. `PAGE_KINDS` in
+`plugins/core.js` is the list; `tests/contracts.test.mjs` fails a source that
+omits a kind or declares one without a `route`/`from`.
 
 ## Versioning
 
