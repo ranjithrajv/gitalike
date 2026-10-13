@@ -67,6 +67,57 @@ Bitbucket's are in `src/plugins/skins/bitbucket.js` and are covered by
 
 Legend: ✅ done · ❌ not built
 
+The table above names the two original directions, because that pair is the one
+every row describes in detail. Every other direction the plugins implement —
+Bitbucket as a target, Gitea/Forgejo and Gerrit as sources — is the same
+question asked of different tables, so here it is in one matrix. Twelve non-native
+directions, five sources × three skins less the three a source shares with its
+own product.
+
+Each cell is read off something checkable rather than judged: a **skin's declared
+table** (`navRules`, `groups`, `keep`, `topbarHide`, `shortcuts`, `projectTabs`,
+`unavailable` in `src/plugins/skins/<name>/index.js`) or the **source's own
+`compare` capability** — `palette`, `nav`, `page`, `metadata`, `profile`, `refs`,
+each a fraction in [0, 1], published in `plugins.json`. A skin table the source
+cannot reach is ❌; a table the source reaches only partially is ⚠️; the fraction
+itself is the share, so `nav: 0.9` for Bitbucket is a near-full match and
+`profile: 0.5` is half of one.
+
+Three cells are stated as ❌ on the repo's own evidence rather than by fraction:
+Bitbucket's menu is flat, so it gets no GitLab group headings under any skin
+(`docs/UX-PARITY.md`, "Skins"); no skin swaps a Gerrit mark, because Gerrit's
+chrome is reached through root custom properties rather than markup; and Gerrit
+takes no `g`-combo shortcuts, since it has neither the keyboard contract nor a
+`#`/`!` reference marker.
+
+| Source → | GitHub | GitHub | GitLab | GitLab | Bitbucket | Bitbucket | Gitea / Forgejo | Gitea / Forgejo | Gitea / Forgejo | Gerrit | Gerrit | Gerrit | |
+| | Bitbucket UI | GitLab UI | Bitbucket UI | GitHub UI | GitHub UI | GitLab UI | Bitbucket UI | GitHub UI | GitLab UI | Bitbucket UI | GitHub UI | GitLab UI | |
+| --- | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | :--: | --- |
+| Colour tokens | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | |
+| Own mark in the palette | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | |
+| Copy — `PHRASES` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | |
+| Control labels — `LABELS` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | |
+| Account/menu chrome | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | |
+| No-counterpart markers | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | |
+| Nav labels — `NAV` | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | |
+| Nav reorder — `NAV_RULES` | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | |
+| Nav groups — `GROUPS` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | |
+| Repo-tab whitelist — `KEEP` | ✅ | ❌ | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ | ❌ | ⚠️ | ⚠️ | ❌ | |
+| Nav orientation | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | |
+| Top-bar source words | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | |
+| Project tab strip | ✅ | ❌ | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ | ❌ | ⚠️ | ⚠️ | ❌ | |
+| Project metadata block | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | |
+| Activity graph palette | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | |
+| Profile menu / rail | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ⚠️ | |
+| Unavailable features — `UNAVAILABLE` | ❌ | ❌ | ❌ | ✅ | ⚠️ | ❌ | ❌ | ⚠️ | ❌ | ❌ | ⚠️ | ❌ | |
+| References — `refMarker` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | |
+| Shortcuts — `SHORTCUTS` | ❌ | ✅ | ❌ | ✅ | ⚠️ | ⚠️ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | |
+| One skin at a time | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | |
+
+A source shown with its own UI is the native pair and is not a column here, for
+the same reason as above: no skin is painted, so every row is satisfied.
+
+
 **Codeberg (Forgejo)** and **gitea.com (Gitea)** are a third source product,
 `gitea`. They are GitHub-flavoured, so they can wear either UI: under the GitLab
 UI the repo tabs are rebuilt as a grouped sidebar, and under the GitHub UI as
