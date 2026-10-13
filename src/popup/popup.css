@@ -85,6 +85,76 @@ main {
   overflow-y: auto;
 }
 
+/* ------------------------------------------------------------------ why -- */
+
+/* The first-open intro. Sized as the shortest block in the popup, because it
+   sits directly above the controls it exists to get people to: every pixel it
+   costs is a pixel of the skin picker pushed below the fold. */
+.why {
+  margin: 4px 4px 8px;
+  padding: 9px 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.why__title {
+  margin: 0 0 3px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.why__body {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--fg-muted);
+}
+
+/* The three words the value proposition turns on, against the muted body. */
+.why__body b {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* Trust line and the dismiss share a row: the button's own line would cost as
+   much height again, and height here is the skin picker's. */
+.why__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.why__trust {
+  margin: 0;
+  font-size: 10.5px;
+  color: var(--fg-muted);
+}
+
+.why__dismiss {
+  flex: none;
+  padding: 4px 11px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--accent);
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.why__dismiss:hover {
+  filter: brightness(0.94);
+}
+
+.why__dismiss:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ------------------------------------------------------------------ add -- */
 
 /* Serves both jobs: classifying the host you are on, and adding one you are
@@ -596,6 +666,15 @@ kbd {
   .head__mark {
     width: 34px;
     height: 34px;
+  }
+
+  /* Touch target: the intro's only control reaches 44px, like every other. */
+  .why__dismiss {
+    padding: 11px 14px;
+    font-size: 13px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   main {

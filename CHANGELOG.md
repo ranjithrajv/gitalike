@@ -34,6 +34,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The popup explains itself on the first open.** Most installs never configure
+  an extension, so the first open is the only audience the popup is guaranteed:
+  a short "Why GitAlike?" panel now says what the extension is for before the
+  popup asks for a decision, and is dismissed for good with one click. The flag
+  is written on the click rather than on open, so a popup someone opened and
+  closed without reading shows the intro again rather than recording it as read.
+  The panel is sized against the controls beneath it — an intro that buries the
+  skin picker would defeat its own purpose — which is why the trust line and the
+  dismiss button share a row.
 - **Each skin answers forced-colors mode.** Windows High Contrast forces
   `color`/`background-color` to system colours but leaves background images
   alone, so the replaced brand mark — a gradient drawn for the dark header — could
