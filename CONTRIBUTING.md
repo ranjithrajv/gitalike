@@ -5,7 +5,9 @@ rest is straightforward. If you only read one section, read
 [Ground rules](#ground-rules).
 
 Looking for what the extension does and how to install it? That is the
-[README](README.md).
+[README](README.md). Looking for where the project is headed? That is the
+[Roadmap](ROADMAP.md), and the [Feature status](FEATURE-STATUS.md) tracks each
+capability — complete, partial or not built.
 
 ## Ground rules
 
