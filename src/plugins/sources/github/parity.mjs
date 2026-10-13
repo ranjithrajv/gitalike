@@ -24,6 +24,7 @@ export default {
     project: {
       url: 'https://github.com/git/git',
       ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
+      signedOut: false,
       header: ['header[role="banner"]', '.AppHeader'],
       nav: [
         // The list by shape. `ul.UnderlineNav-body` is dead — GitHub deleted it
@@ -38,6 +39,7 @@ export default {
     profile: {
       url: 'https://github.com/torvalds',
       ready: 'nav[aria-label="User profile"]',
+      signedOut: false,
       header: ['header[role="banner"]', '.AppHeader'],
       nav: [
         'main [data-turbo-frame="user-profile-frame"] nav[aria-label="User profile"]',

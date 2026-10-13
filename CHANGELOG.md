@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **GitAlike is positioned as a cognitive accessibility tool.** The README gains
+  a new section — "A cognitive accessibility tool" — that frames the reciprocal
+  reskinning as an accessibility feature: developers who think in one forge's
+  mental model can work across all forges without re-learning each interface,
+  reducing cognitive load for developers with ADHD, autism, or other cognitive
+  differences who benefit from consistent UIs. The market positioning note adds
+  the same angle to the one-liner and a new strategic recommendation.
+
 ### Added
 
 - **Each skin answers forced-colors mode.** Windows High Contrast forces
@@ -209,10 +219,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   is rendered inert with a `≠ <source>` badge rather than linked to a page that
   is not there — GitHub's user Packages on a GitLab profile, and Wiki/Security on
   a GitLab project that has them disabled.
-- **GitAlike is on the Chrome Web Store.** The Chrome listing is live; the
-  Firefox listing is in review on addons.mozilla.org. Both links are in the
-  README and the site's Install section (the Firefox one goes live when it
-  clears review).
+- **GitAlike is on the Chrome Web Store and addons.mozilla.org.** Both
+  listings are live. The links are in the README and the site's Install
+  section.
 - **A plugin's compare recipes and token map live in its folder.** Each source
   and skin now carries a Node-only `parity.mjs` (the live capture, the
   style-parity selectors, the reviewed target vocabulary), and each source that

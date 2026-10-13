@@ -358,6 +358,46 @@ const gotoLive = (page, url) =>
     page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }),
   );
 
+// Dismiss a consent surface (cookie banner, etc.) before reading chrome, so a
+// consent prompt does not change what `first(headerSels)` resolves to or what
+// the body reads. Scoped to the known hosts; rejects when a reject control is
+// present, otherwise clicks the last button (usually "accept all"). Waits for
+// the surface to detach so the read is clean.
+const CONSENT_SELECTORS = [
+  '[role="dialog"]',
+  '[aria-label*="cookie" i]',
+  '[aria-label*="consent" i]',
+  '[class*="cookie" i]',
+  '[class*="consent" i]',
+  '[id*="cookie" i]',
+  '[id*="consent" i]',
+];
+
+const dismissConsent = async (page) => {
+  for (const sel of CONSENT_SELECTORS) {
+    const surface = page.locator(sel).first();
+    if (!(await surface.isVisible().catch(() => false))) continue;
+    const text = (await surface.innerText().catch(() => '')) || '';
+    if (!/cookie|consent|gdpr|tracking/i.test(text)) continue;
+    // Prefer a reject/necessary-only control over accept.
+    const rejectBtn = surface
+      .getByRole('button', {
+        name: /reject|decline|necessary only|essential only|deny|refuse/i,
+      })
+      .first();
+    const acceptBtn = surface.getByRole('button').last();
+    const target = (await rejectBtn.isVisible().catch(() => false))
+      ? rejectBtn
+      : acceptBtn;
+    if (await target.isVisible().catch(() => false)) {
+      await target.click({ timeout: 5000 }).catch(() => {});
+      await surface
+        .waitFor({ state: 'detached', timeout: 5000 })
+        .catch(() => {});
+    }
+  }
+};
+
 const rows = [];
 
 try {
@@ -375,6 +415,10 @@ try {
         await tab
           .waitForSelector(source.ready, { timeout: 30000 })
           .catch(() => {});
+        // Dismiss any consent surface before reading chrome, so a cookie banner
+        // does not change what `first(headerSels)` resolves to or what the body
+        // reads. Scoped to the known hosts in the tool, not in the product.
+        await dismissConsent(tab);
         await waitForTheme(tab, skin).catch(() => {});
         // Gerrit's PolyGerrit re-renders its shell in stages; give the layout
         // pass time to reorient the nav before measuring (a shorter wait read
@@ -437,6 +481,7 @@ try {
           page: page.type,
           source: source.key,
           cell: `${source.key} → ${skin}`,
+          variant: { signedOut: source.signedOut ?? false },
           score,
           dims,
           chrome,

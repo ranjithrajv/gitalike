@@ -104,6 +104,10 @@ const CONTENT_JS = [
   ...PLUGIN_FILES.js,
   ...LIB_JS,
   'content/theme.js',
+  // The Gerrit shadow opener must run before the UX scripts so PolyGerrit's
+  // shadow roots are already open when the UX pass queries them. It is a no-op
+  // on non-Gerrit pages (it checks `data-gsSource` and returns early).
+  'content/gerrit-shadow-open.js',
   // The UX scripts load in this order: the core builds the runtime, each pass
   // group registers into it (and the order they are listed is the order they
   // run, so a pass that reads what an earlier one wrote comes after it), and

@@ -52,6 +52,29 @@ is set up on; a self-hosted instance is granted one origin at a time from the
 popup (see [Why it matches every site](#why-it-matches-every-site)). Adding
 another permission needs a very good argument.
 
+## Good first issue
+
+New to the project? These are the easiest ways to make a first contribution:
+
+1. **Add a label translation** — the smallest possible change. Add an entry to
+   `PHRASES`, `NAV`, `LABELS` or `UNMAPPED` in a skin's plugin file under
+   `src/plugins/skins/`, then add a matching case in `tests/ux.test.mjs`. See
+   [Add a label translation](#add-a-label-translation).
+
+2. **Fix a spot the skin misses** — find an element whose colour is off, add a
+   token mapping or a scoped CSS rule. The change is a few lines in
+   `as-<name>.css`. See [Fix a spot the skin misses](#fix-a-spot-the-skin-misses).
+
+3. **Add a Gitea-flavoured forge** — classify a self-hosted-friendly forge by
+   creating a source plugin. The vocabulary work is minimal (the GitLab skin
+   already applies); the judgement is in the markup hooks and canary page. See
+   [A forge that already speaks one of the two dialects](#a-forge-that-already-speaks-one-of-the-two-dialects).
+
+Each of these is a self-contained change you can make in a single pull request.
+The pre-commit gate runs the full test suite, so
+`npm test && npm run lint && npm run lint:js && npm run fmt:check` passing locally
+means CI will pass.
+
 ## Getting set up
 
 ```sh
@@ -323,6 +346,36 @@ in `themes/ux-nav.css`.
 - **L→G** makes GitLab's sidebar horizontal, but GitLab's page is a grid
   (`.layout-page.page-with-super-sidebar`), so that grid is collapsed to one
   column first — otherwise the content keeps the narrow column.
+
+## Contributing a plugin
+
+A plugin is a self-contained folder under `src/plugins/` — either a **skin** (a
+target UI) or a **source** (a forge's markup). Here's the shortest path from idea
+to merged pull request:
+
+1. **Scaffold it.** `node tools/new-plugin.mjs skin <name>` (or `source <name>`)
+   writes the folder, the test stubs and the parity recipes, then regenerates the
+   registry. You get a working, contract-complete starting point.
+
+2. **Fill in the definition.** A skin's `index.js` needs its vocabulary tables
+   and capabilities; a source's `index.js` needs its `kind`, `hosts`, `selectors`,
+   `canary` pages and `compare` values. The scaffold marks every TODO.
+
+3. **Write the tests.** Each plugin's own `<name>.test.mjs` sits beside its
+   definition and is discovered by `npm test`. Extend it as the plugin grows —
+   the shared invariants stay in `tests/ux.test.mjs`.
+
+4. **Satisfy the contract.** `tests/contracts.test.mjs` is the checklist — it
+   derives the expected plugin list and fails by name with anything still
+   missing. Run `npm test` after each edit.
+
+5. **Hold 100% coverage.** The coverage gate (`tools/plugin-coverage.mjs`)
+   requires every line, branch and function under `src/plugins/` to be covered.
+   A half-added branch is a red gate, not a follow-up.
+
+For the full walkthrough, see
+[Adding another forge — contributions welcome](#adding-another-forge--contributions-welcome).
+The API contract is in [docs/PLUGIN-API.md](docs/PLUGIN-API.md).
 
 ## Adding another forge — contributions welcome
 
@@ -640,6 +693,43 @@ read.
   keep that up, it is how the next person avoids re-breaking it.
 - CSS: `!important` is expected here, because we are overriding a live site.
   Never write a rule without the `html.gs-theme-*` scope.
+
+## Plugin maintainer
+
+A plugin maintainer is the person who reviews contributions to a specific plugin
+and keeps it current as the upstream site evolves.
+
+**Becoming a maintainer.** There is no formal application — express interest in
+a pull request or issue, and the project maintainer will tag you for review on
+future changes to that plugin. If a plugin has no active maintainer,
+contributions are reviewed by the project maintainer.
+
+**Review process for plugin contributions.** Every plugin contribution follows
+the same path:
+
+- The pre-commit gate runs the full test suite (`npm test`), lint
+  (`npm run lint`, `npm run lint:js`) and format check (`npm run fmt:check`).
+- `tests/contracts.test.mjs` verifies the plugin is complete — all required
+  files, tables and capabilities present.
+- The coverage gate (`tools/plugin-coverage.mjs`) ensures `src/plugins/**`
+  holds 100% line, branch and function coverage.
+- The registry check (`npm run registry:check`) confirms `plugins.json`,
+  `PLUGINS.md` and the site are in step with the plugin folders.
+- For visible changes, the contributor regenerates screenshots with
+  `npm run screenshots`.
+
+A reviewer checks that the change respects the ground rules: inert when the skin
+is off, nothing leaving the browser, no new permissions, no vendor artwork.
+
+**The canary system.** The daily selector canary (`npm run canary`,
+`tools/compare/selector-canary.mjs`) fetches each source's `CANARY_PAGES` and
+asserts the `SELECTORS` hooks are still present in the served HTML. When a forge
+renames a class or restructures a page, the canary fails and automatically opens
+(or refreshes) a GitHub issue, so the drift is owned rather than just red. The
+canary reads the same `SELECTORS` and `CANARY_PAGES` tables the content script
+reads, so a rename in the plugin file is one edit that both the skin and the
+canary pick up. The canary runs on a schedule, not on every pull request, so an
+upstream change is caught without making every PR depend on the forges' markup.
 
 ## Pull requests
 

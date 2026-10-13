@@ -29,6 +29,7 @@ export default {
     project: {
       url: 'https://bitbucket.org/atlassian/atlassian-connect-express/src/master/',
       ready: '[data-testid="ref-selector-trigger"]',
+      signedOut: true,
       header: ['header[data-layout-slot="true"]', 'header'],
       nav: [
         '[data-gs-bb-nav]',
@@ -41,6 +42,7 @@ export default {
     profile: {
       url: 'https://bitbucket.org/tutorials/workspace/repositories/',
       ready: '[data-testid="profile-repository-row"]',
+      signedOut: true,
       header: ['header[data-layout-slot="true"]', 'header'],
       nav: [
         '[data-gs-bb-nav]',

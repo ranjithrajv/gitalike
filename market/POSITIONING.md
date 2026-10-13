@@ -19,6 +19,12 @@ but *"use any forge, keep your muscle memory."* My research could not find any
 established product doing this in either direction, let alone both. That is the
 category to name before someone else names it.
 
+There is also an accessibility angle worth naming. Developers who think in one
+forge's mental model — particularly those with ADHD, autism, or other cognitive
+differences who benefit from consistent interfaces — can work across all forges
+without re-learning each one. This is a genuine accessibility use case, not a
+marketing afterthought: the muscle memory transfer is the product.
+
 ## 2. Where it sits
 
 Two independent axes define the field:
@@ -163,6 +169,11 @@ moves the muscle memory.*
    tables are the durable asset; keep them the focus as forges grow.
 8. **Fund it like infrastructure.** GitHub Sponsors / OpenCollective, and a
    ForgeFed-adjacent NLnet NGI Zero application framed as reducing forge lock-in.
+9. **Position as a cognitive accessibility tool.** The README now frames
+   GitAlike as an accessibility tool for developers who benefit from consistent
+   interfaces — ADHD, autism, and cross-forge cognitive load. This is a genuine
+   differentiator: no competitor owns the accessibility framing, and it aligns
+   with the "reduce forge lock-in" grant narrative.
 
 ## 7. Sources
 

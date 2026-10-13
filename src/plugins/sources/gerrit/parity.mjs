@@ -32,6 +32,7 @@ export default {
     project: {
       url: 'https://gerrit-review.googlesource.com/q/status:open',
       ready: 'gr-app#pg-app',
+      signedOut: true,
       header: ['gr-main-header'],
       nav: ['gr-main-header nav', 'nav'],
       link: ['main a[href]', 'a[href]'],
@@ -42,6 +43,7 @@ export default {
     profile: {
       url: 'https://gerrit-review.googlesource.com/q/owner:david.ostrovsky@gmail.com',
       ready: 'gr-user-header',
+      signedOut: true,
       header: ['gr-main-header'],
       nav: ['gr-main-header nav', 'nav'],
       link: ['main a[href]', 'a[href]'],

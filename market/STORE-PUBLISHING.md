@@ -49,8 +49,11 @@ Vivaldi, Arc, Chromium (CWS/Edge or sideload); LibreWolf, Floorp, Zen, Waterfox
   sideload.
 - **Safari is a separate project.** `safari-web-extension-converter` + Xcode +
   App Store review; MV3 support differs. Do not list it as supported.
-- **Mobile:** Firefox Android is covered by AMO. Chromium Android does **not**
-  support extensions, so no mobile claim for Chromium.
+- **Mobile:** Firefox Android is covered by AMO — the popup is touch-friendly
+  (44px targets, full-width layout on narrow viewports). **Kiwi** and other
+  Chromium-based Android browsers that support Chrome extensions can sideload
+  the Chromium ZIP. Chromium Android does **not** support extensions, so no
+  mobile claim for stock Chromium.
 
 ## What each store needs (submission copy)
 

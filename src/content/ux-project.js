@@ -993,9 +993,16 @@
       'min-width:0 !important;}' +
       '[data-gs-gerrit-view]>gr-change-list,' +
       '[data-gs-gerrit-view]>nav:not([data-gs-gerrit-profile-nav]){display:none !important;}' +
-      '[data-gs-gerrit-content]>nav[data-gs-gerrit-profile-nav]{display:flex !important;' +
-      'flex-wrap:wrap !important;gap:4px !important;' +
-      'border-bottom:1px solid var(--gs-border) !important;margin:0 0 24px !important;}' +
+      // The profile nav follows the applied layout: a strip for GitHub (row +
+      // wrap + bottom border), a vertical list for the column layouts. Same
+      // decision `paintGerritNav` makes for the header nav.
+      (t === 'github'
+        ? '[data-gs-gerrit-content]>nav[data-gs-gerrit-profile-nav]{display:flex !important;' +
+          'flex-direction:row !important;flex-wrap:wrap !important;gap:4px !important;' +
+          'border-bottom:1px solid var(--gs-border) !important;margin:0 0 24px !important;}'
+        : '[data-gs-gerrit-content]>nav[data-gs-gerrit-profile-nav]{display:flex !important;' +
+          'flex-direction:column !important;align-items:stretch !important;gap:2px !important;' +
+          'margin:0 0 24px !important;}') +
       `[data-gs-gerrit-content]>nav[data-gs-gerrit-profile-nav] ${tabs}` +
       '.gs-gerrit-tab{display:inline-flex !important;align-items:center !important;}' +
       '.gs-gerrit-count{background:var(--gs-canvas-subtle) !important;' +

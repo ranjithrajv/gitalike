@@ -80,6 +80,7 @@ and watch each site wear every skin it can.
 - [Use](#use)
 - [Adding a self-hosted instance](#adding-a-self-hosted-instance-github-enterprise-gitlab-bitbucket-gerrit)
 - [UX parity](#ux-parity)
+- [A cognitive accessibility tool](#a-cognitive-accessibility-tool)
 - [Known limitations](#known-limitations)
 - [Privacy](#privacy)
 - [Contributing](#contributing)
@@ -109,10 +110,15 @@ off.
 <a href="https://chromewebstore.google.com/detail/gitalike-%E2%80%94-any-git-platfo/gomhflonjeoojpdhmbbmmncmgjaomlla"><img alt="Get GitAlike on the Chrome Web Store" src="https://img.shields.io/badge/Chrome%20Web%20Store-Get%20GitAlike-4285F4?logo=googlechrome&amp;logoColor=white"></a>
 <a href="https://addons.mozilla.org/en-US/firefox/addon/gitalike/"><img alt="Get GitAlike on addons.mozilla.org" src="https://img.shields.io/badge/Firefox%20Add--ons-Get%20GitAlike-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
 
-GitAlike is live on the **Chrome Web Store**. The Firefox listing is **in review
-on addons.mozilla.org** — the link above goes live once it clears review. Until
-then (or for a manual install), download the ZIP for your browser below and
-follow the steps to load it yourself.
+GitAlike is live on the **Chrome Web Store** and on
+**addons.mozilla.org** (Firefox). Download the ZIP for your browser below for a
+manual install.
+
+**Mobile browsers:** GitAlike works on **Firefox Android** (install from
+[addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/gitalike/) —
+the popup is touch-friendly with 44px targets). **Kiwi** and other
+Chromium-based Android browsers that support Chrome extensions can sideload
+the Chromium ZIP.
 
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-chromium.zip"><img alt="Download GitAlike for Chromium" src="https://img.shields.io/badge/Download-Chromium-4285F4?logo=googlechrome&amp;logoColor=white"></a>
 <a href="https://github.com/ranjithrajv/gitalike/releases/latest/download/gitalike-firefox.zip"><img alt="Download GitAlike for Firefox" src="https://img.shields.io/badge/Download-Firefox-FF7139?logo=firefoxbrowser&amp;logoColor=white"></a>
@@ -138,8 +144,7 @@ wherever that folder lives — so do not move or delete it afterwards.
 that track it (LibreWolf, Floorp, Zen, …). It is unsigned, so Firefox will only
 load it **temporarily** — it is gone when the browser restarts. A permanent
 install comes from
-[addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/gitalike/)
-(where the listing is in review).
+[addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/gitalike/).
 
 1. Go to `about:debugging#/runtime/this-firefox`
 2. **Load Temporary Add-on…** → choose `gitalike-firefox.zip` itself; it does not
@@ -275,6 +280,32 @@ change is recorded, and undone exactly when the skin is switched off.
 
 The full status matrix — what each direction covers, and the few things that are
 deliberately one-way — is in [docs/UX-PARITY.md](docs/UX-PARITY.md).
+
+## A cognitive accessibility tool
+
+GitAlike is built on a simple observation: a developer who learned one forge's UI
+has already invested years in that interface's mental model — where things are,
+what they are called, how to navigate them. Switching to another forge means
+re-learning all of that, and the cognitive cost is real.
+
+GitAlike removes that cost. A developer who thinks in GitLab's mental model can
+work on GitHub without re-learning the interface. A team can standardize on one
+way of working regardless of which forge each project lives on. The muscle memory
+you already have transfers directly — that is the core value.
+
+This matters most for developers who benefit from consistent interfaces:
+developers with ADHD who rely on predictable layouts to reduce distractions,
+autistic developers who thrive on routine and pattern recognition, and anyone
+who finds that context-switching between different UIs is a genuine cognitive
+burden. For these developers, GitAlike is not a convenience — it is an
+accessibility tool that makes cross-forge work possible without the overhead of
+maintaining multiple mental models.
+
+The same mechanism helps teams. When a team standardizes on one forge's UI
+across all their projects — whether those projects are on GitHub, GitLab,
+Bitbucket or a self-hosted instance — every developer works in the same
+interface. Onboarding is faster, code review is more consistent, and the team's
+collective knowledge about "where things live" applies everywhere.
 
 ## Known limitations
 

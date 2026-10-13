@@ -25,6 +25,7 @@ export default {
     project: {
       url: 'https://codeberg.org/forgejo/forgejo',
       ready: '.repo-header, overflow-menu, [data-gs-gitea-nav]',
+      signedOut: true,
       header: ['#navbar'],
       nav: ['[data-gs-gitea-nav]', 'overflow-menu .overflow-menu-items'],
       link: ['#readme a[href]', '.markdown a[href]', 'main a[href]'],
@@ -32,6 +33,7 @@ export default {
     profile: {
       url: 'https://codeberg.org/forgejo',
       ready: '.user.profile, .profile-header, .ui.container',
+      signedOut: true,
       header: ['#navbar'],
       nav: [
         '.ui.tabular.menu',

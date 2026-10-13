@@ -28,6 +28,7 @@ export default {
     project: {
       url: 'https://gitlab.com/gitlab-org/gitlab',
       ready: '.super-sidebar, [data-testid="project-header"]',
+      signedOut: false,
       header: ['header', '.header-content'],
       nav: [
         '[data-gs-project-tabs]',
@@ -39,6 +40,7 @@ export default {
     profile: {
       url: 'https://gitlab.com/dzaporozhets',
       ready: '.super-sidebar, .user-profile-header',
+      signedOut: false,
       header: ['header', '.header-content'],
       nav: ['.super-sidebar .gl-scroll-scrim ul', '.super-sidebar ul'],
       link: [

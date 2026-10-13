@@ -577,3 +577,101 @@ kbd {
     transition: transform 120ms ease-out;
   }
 }
+
+/* --------------------------------------------------------------- mobile -- */
+
+/* Narrow viewports (Firefox Android, Kiwi): the popup fills the screen, so
+   it goes full-width and every touch target grows to at least 44px tall
+   (WCAG 2.2 target size). */
+@media (max-width: 360px) {
+  body {
+    width: 100vw;
+    font-size: 14px;
+  }
+
+  .head {
+    padding: 12px 12px 10px;
+  }
+
+  .head__mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  main {
+    padding: 4px;
+  }
+
+  /* Touch targets: every interactive element reaches 44px tall. */
+  .add__toggle {
+    padding: 12px 12px;
+    font-size: 13px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .add__input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .add__button {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .row {
+    padding: 12px;
+    min-height: 44px;
+  }
+
+  .row__site {
+    font-size: 14px;
+  }
+
+  .skin__option {
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .skin__label {
+    font-size: 14px;
+  }
+
+  .site__option span {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .open-other {
+    padding: 12px;
+    font-size: 13px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .report {
+    padding: 12px;
+    font-size: 12px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .site__reset {
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .foot {
+    padding: 12px;
+  }
+}
