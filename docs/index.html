@@ -824,6 +824,10 @@
       table.terms th.col-bitbucket,
       table.terms th.col-gitea,
       table.terms th.col-gerrit { color: var(--fg); }
+      /* A cell the extension has no word for is not a feature list, so it is
+         dimmed and centred — but it stays in the table, because leaving it out
+         would let the table imply every forge has every concept. */
+      table.terms td.no { color: var(--muted); text-align: center; }
       .terms-note {
         margin: 14px 0 0;
         color: var(--muted);
@@ -831,6 +835,13 @@
         max-width: 92ch;
       }
       .terms-note b { color: var(--fg); }
+      /* Five columns do not fit a phone at 14px. */
+      @media (max-width: 620px) {
+        table.terms { font-size: 12px; }
+        table.terms th,
+        table.terms td { padding: 7px 6px; }
+        .swatch { margin-right: 4px; }
+      }
       @media (max-width: 560px) {
         .words { padding: 16px 16px 10px; }
       }
@@ -1588,7 +1599,7 @@
             </p>
           </div>
 
-          <div class="words" id="words-table">
+            <div class="words" id="words-table">
             <div class="words-head">
               <p>
                 The mapping lives in each skin's own plugin file under
@@ -1601,22 +1612,36 @@
                 <thead>
                   <tr>
                     <th scope="col">Concept</th>
-                    <th scope="col" class="col-github"><span class="swatch github"></span>GitHub UI</th>
-                    <th scope="col" class="col-gitlab"><span class="swatch gitlab"></span>GitLab UI</th>
-                    <th scope="col" class="col-bitbucket"><span class="swatch bitbucket"></span>Bitbucket UI</th>
+                    <th scope="col" class="col-github"><span class="swatch github"></span>GitHub</th>
+                    <th scope="col" class="col-gitlab"><span class="swatch gitlab"></span>GitLab</th>
+                    <th scope="col" class="col-bitbucket"><span class="swatch bitbucket"></span>Bitbucket</th>
+                    <th scope="col" class="col-gitea"><span class="swatch gitea"></span>Gitea / Forgejo</th>
+                    <th scope="col" class="col-gerrit"><span class="swatch gerrit"></span>Gerrit</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>Code review</td><td>Pull request</td><td>Merge request</td><td>Pull request</td></tr>
-                  <tr><td>Continuous integration</td><td>Actions</td><td>CI/CD</td><td>Pipelines</td></tr>
-                  <tr><td>Source tab</td><td>Code</td><td>Repository</td><td>Source</td></tr>
-                  <tr><td>Issue tracking</td><td>Issues</td><td>Work items</td><td>Jira issues</td></tr>
-                  <tr><td>Insights</td><td>Insights</td><td>Analytics</td><td>Insights</td></tr>
-                  <tr><td>File finder</td><td>Go to file</td><td>Find file</td><td>Go to file</td></tr>
-                  <tr><td>Snippets</td><td>Gists</td><td>Snippets</td><td>Snippets</td></tr>
-                  <tr><td>Reference marker</td><td><code>#42</code></td><td><code>!42</code></td><td><code>#42</code></td></tr>
+                  <tr><td>Source tab</td><td>Code</td><td>Repository</td><td>Source</td><td>Code</td><td>Browse</td></tr>
+                  <tr><td>Issue tracking</td><td>Issues</td><td>Work items</td><td>Jira issues</td><td>Issues</td><td class="no">—</td></tr>
+                  <tr><td>Code review</td><td>Pull requests</td><td>Merge requests</td><td>Pull requests</td><td>Pull requests</td><td>Changes</td></tr>
+                  <tr><td>Continuous integration</td><td>Actions</td><td>CI/CD</td><td>Pipelines</td><td>Actions</td><td class="no">—</td></tr>
+                  <tr><td>Insights</td><td>Insights</td><td>Analytics</td><td class="no">—</td><td>Insights</td><td class="no">—</td></tr>
+                  <tr><td>File finder</td><td>Go to file</td><td>Find file</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+                  <tr><td>Snippets</td><td>Gists</td><td>Snippets</td><td>Snippets</td><td>Snippets</td><td class="no">—</td></tr>
+                  <tr><td>Project boards</td><td>Projects</td><td>Issue boards</td><td class="no">—</td><td>Projects</td><td class="no">—</td></tr>
+                  <tr><td>Reference marker</td><td><code>#42</code></td><td><code>!42</code></td><td><code>#42</code></td><td><code>#42</code></td><td class="no">change no.</td></tr>
                 </tbody>
               </table>
+              <p class="terms-note">
+                A dash is one of two very different things, and the table does not
+                pretend otherwise. <b>Bitbucket has no insights page at all</b> —
+                issues live in Jira, and it keeps no snippets on a repository.
+                <b>Bitbucket, Gitea and Gerrit have no modelled file-finder
+                label</b>: the extension only translates a word it has an entry
+                for, so a blank there means "not mapped", not "does not exist".
+                Every cell above is read from a plugin's own
+                <code>nav</code> / <code>phrases</code> table, so the page cannot
+                claim a word the extension does not actually swap.
+              </p>
             </div>
           </div>
         </div>
