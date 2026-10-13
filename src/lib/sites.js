@@ -126,17 +126,30 @@
     const settings = plainObject(stored?.[SETTINGS_KEY])
       ? { ...stored[SETTINGS_KEY] }
       : {};
-    // Exactly one skin is active at a time: the popup writes the chosen skin to
-    // every kind, so two kinds holding different skins is a state from the
-    // older per-kind model. Collapse it here, deterministically, to the first
-    // kind's skin, so every reader (background, content script, popup) agrees
+    // Exactly one skin is active at a time, and it is the *same* skin on every
+    // source: the popup writes the chosen skin to every kind, so a map where
+    // the kinds do not all say the same thing is a state from the older
+    // per-kind model. Collapse it here, deterministically, to the skin a kind
+    // already names, so every reader (background, content script, popup) agrees
     // instead of each picking whichever key it happens to read first. Cloned,
     // not written back: storage is only normalised on read.
+    //
+    // The comparison is between the kinds' *effective* skins, not between the
+    // values present, and that is the whole of the fix. A check that filtered
+    // the map down to `THEMES` values first treated `{ github: 'off', gitlab:
+    // 'gitlab' }` as holding exactly one skin, left it alone, and so left
+    // `github.com` switched off while `globalSkin` reported `gitlab` — the
+    // picker ticked GitLab UI and nothing was skinned anywhere. A partial map
+    // hid the same way: an absent kind is off, not "whatever the others say".
+    // A map that names no skin at all is already uniform and is left as it is.
     const chosen = Object.keys(kinds)
       .map((kind) => settings[kind])
       .filter((value) => THEMES.includes(value));
-    if (new Set(chosen).size > 1) {
-      for (const kind of Object.keys(kinds)) settings[kind] = chosen[0];
+    if (chosen.length) {
+      const [skin] = chosen;
+      if (Object.keys(kinds).some((kind) => settings[kind] !== skin)) {
+        for (const kind of Object.keys(kinds)) settings[kind] = skin;
+      }
     }
     return {
       settings,

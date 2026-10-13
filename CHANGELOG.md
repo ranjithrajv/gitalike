@@ -320,6 +320,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The skin you pick now applies to every source, not just the kinds a stored
+  map happened to mention.** The one-skin rule is enforced on read, and its
+  check compared the map's `THEMES` values *after filtering `'off'` out* — so
+  `{ github: 'off', gitlab: 'gitlab' }` looked like it held a single skin and
+  was left alone. `globalSkin` then reported `gitlab` while `themeFor` returned
+  null for every host: the picker ticked **GitLab UI and nothing was skinned
+  anywhere**. A partial map diverged the same way, most visibly on an added
+  Gerrit instance, which ignored the choice being displayed. The comparison is
+  now between the kinds' effective skins, so any map that names a skin names it
+  for every kind — which is the shape the popup writes and the shape every
+  reader assumes. Reachable only from the older per-kind model, not from
+  current writes; `stateFrom` normalises in memory and never writes back. A map
+  that names no skin at all is already uniform and is still left as it is.
 - **The popup's dismiss button clears WCAG AA in dark mode.** The first-open
   intro's "Got it" button paired a hardcoded `color: #ffffff` with
   `background: var(--accent)`, and `--accent` flips between the palettes — 5.19:1

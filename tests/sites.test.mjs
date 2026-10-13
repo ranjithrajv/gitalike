@@ -358,7 +358,11 @@ describe('stateFrom', () => {
       [HOST_SETTINGS_KEY]: { 'gh.acme.com': 'off' },
     };
     assert.deepEqual(stateFrom(stored), {
-      settings: { github: 'gitlab' },
+      // The settings arrive filled in: a map that names any skin names it for
+      // every kind, because that is what the popup writes and what every
+      // reader assumes. `instances` and `hostSettings` are read as stored —
+      // they are per-host by nature, so there is nothing to make uniform.
+      settings: settingsForSkin('gitlab'),
       instances: { 'gh.acme.com': 'github' },
       hostSettings: { 'gh.acme.com': 'off' },
     });
@@ -366,7 +370,7 @@ describe('stateFrom', () => {
 
   test('tolerates one map present and the others absent', () => {
     assert.deepEqual(stateFrom({ [SETTINGS_KEY]: { github: 'gitlab' } }), {
-      settings: { github: 'gitlab' },
+      settings: settingsForSkin('gitlab'),
       instances: {},
       hostSettings: {},
     });
@@ -379,26 +383,84 @@ describe('stateFrom', () => {
     assert.deepEqual(
       stateFrom({ [SETTINGS_KEY]: { github: 'gitlab', gitlab: 'github' } })
         .settings,
-      {
-        github: 'gitlab',
-        gitlab: 'gitlab',
-        bitbucket: 'gitlab',
-        gerrit: 'gitlab',
-      },
+      settingsForSkin('gitlab'),
     );
   });
 
-  test('leaves a state whose kinds agree alone', () => {
+  test('collapses a state that names a skin beside kinds that are off', () => {
+    // The shape the first version of the rule missed. It filtered the map down
+    // to `THEMES` values before comparing, so `'off'` was invisible to it and
+    // `{ github: 'off', gitlab: 'gitlab' }` looked like one skin. It was left
+    // alone — and then `globalSkin` reported `gitlab` while `themeFor`
+    // returned null for every host, so the picker ticked GitLab UI with nothing
+    // skinned anywhere. Which key is off does not matter; both orders collapse.
+    for (const stored of [
+      { github: 'off', gitlab: 'gitlab' },
+      { github: 'gitlab', gitlab: 'off' },
+    ]) {
+      assert.deepEqual(
+        stateFrom({ [SETTINGS_KEY]: stored }).settings,
+        settingsForSkin('gitlab'),
+        JSON.stringify(stored),
+      );
+    }
+  });
+
+  test('fills a partial state from the one skin it names', () => {
+    // A kind the map does not mention is off, not "whatever the others say".
+    // Left alone, an absent kind is a source that silently ignores the choice
+    // the picker is showing — an added Gerrit instance, most often.
     assert.deepEqual(
       stateFrom({
         [SETTINGS_KEY]: { github: 'bitbucket', gitlab: 'bitbucket' },
       }).settings,
-      { github: 'bitbucket', gitlab: 'bitbucket' },
+      settingsForSkin('bitbucket'),
     );
+  });
+
+  test('leaves a uniform state, and a state naming no skin, alone', () => {
+    // The collapse must not fire on state that is already uniform — including
+    // the fresh install, whose empty map means "off everywhere" and is left
+    // empty rather than rewritten to four explicit `off`s.
+    const uniform = settingsForSkin('gitlab');
+    assert.deepEqual(stateFrom({ [SETTINGS_KEY]: uniform }).settings, uniform);
+    assert.deepEqual(stateFrom({ [SETTINGS_KEY]: {} }).settings, {});
     assert.deepEqual(
-      stateFrom({ [SETTINGS_KEY]: { github: 'gitlab' } }).settings,
-      { github: 'gitlab' },
+      stateFrom({ [SETTINGS_KEY]: { github: 'off', gitlab: 'off' } }).settings,
+      { github: 'off', gitlab: 'off' },
     );
+  });
+
+  test('the picker and every source agree after normalising', () => {
+    // The property the whole rule exists for, stated as the user sees it: after
+    // reading, the skin the picker ticks is the skin every source wears — for
+    // every legacy shape, on every host, not just the kinds the map mentions.
+    const hosts = ['github.com', 'gitlab.com', 'bitbucket.org', 'codeberg.org'];
+    const legacy = [
+      {},
+      { github: 'off' },
+      { github: 'off', gitlab: 'gitlab' },
+      { github: 'gitlab', gitlab: 'off' },
+      { github: 'gitlab' },
+      { github: 'gitlab', gitlab: 'bitbucket' },
+      { github: 'bitbucket', gitlab: 'bitbucket' },
+    ];
+    for (const stored of legacy) {
+      const { settings } = stateFrom({ [SETTINGS_KEY]: stored });
+      const picked = globalSkin(settings);
+      for (const host of hosts) {
+        const worn = themeFor(host, settings, {}, {});
+        // A source wearing its own UI resolves to null, which is what the
+        // picker naming that product means too.
+        const expected =
+          picked === 'off' || picked === sourceFor(host, {}) ? null : picked;
+        assert.equal(
+          worn,
+          expected,
+          `${JSON.stringify(stored)} -> picker ${picked}, ${host} wears ${worn}`,
+        );
+      }
+    }
   });
 
   test('does not mutate the stored settings while normalising', () => {
