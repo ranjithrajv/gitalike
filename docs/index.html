@@ -789,13 +789,10 @@
         );
         box-shadow: var(--shadow);
       }
+      /* The framing line inside the panel, not a heading: the section's heading
+         is above it, so this must not compete with it. */
       .words-head { max-width: 66ch; margin: 0 0 18px; }
-      .words-head h3 {
-        font-size: clamp(19px, 2.5vw, 25px);
-        letter-spacing: -0.015em;
-        margin: 0 0 8px;
-      }
-      .words-head p { margin: 0; color: var(--muted); font-size: 14px; }
+      .words-head p { margin: 0; color: var(--muted); font-size: 15px; }
       .words-head code {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -896,6 +893,7 @@
           <a href="#see">See it</a>
           <a href="#how">How</a>
           <a href="#features">Features</a>
+          <a href="#words">Words</a>
           <a href="#forges">Forges</a>
           <a href="#plugins">Plugins</a>
           <a href="#privacy">Privacy</a>
@@ -1517,14 +1515,46 @@
             </div>
           </div>
 
-          <div class="words" id="words">
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="words">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>The same page, in each product's words</h2>
+            <p class="lede">
+              Same repository, same commits, same history. Only the words on the
+              screen change.
+            </p>
+            <p>
+              GitAlike does not gloss the page with a dictionary. It <b>swaps the
+              navigation</b> for the applied product's own menu — that product's
+              vocabulary, that product's order, that product's words for the
+              things the two forges name differently. What you are reading is
+              that product's UI, not a translation of yours, and the page keeps
+              every commit, branch, file and review it always had.
+            </p>
+            <p>
+              So one open code review is a
+              <b class="gitlab">merge request</b> under the GitLab UI, a
+              <b class="github">pull request</b> under the GitHub UI, and a
+              <b class="bitbucket">pull request</b> under Bitbucket's — and its
+              reference marker changes with it, <code>!42</code> ⇄
+              <code>#42</code>. A feature the applied product simply has no page
+              for is never renamed into nothing: it stays where it is, marked
+              <code>≠ GitLab</code>, so the page says so instead of pretending.
+            </p>
+          </div>
+
+          <div class="words" id="words-table">
             <div class="words-head">
-              <h3>The same page, in each product's words</h3>
               <p>
-                The vocabulary is the point: the same action, named the way the
-                applied product names it. The mapping comes from the skin's own
-                plugin file under <code>src/plugins/skins/</code>, so a label
-                cannot drift from the skin it belongs to.
+                The mapping lives in each skin's own plugin file under
+                <code>src/plugins/skins/</code>, so a label cannot drift from the
+                skin it belongs to — and adding a skin is adding one folder.
               </p>
             </div>
             <div class="table-wrap">
@@ -1552,6 +1582,7 @@
           </div>
         </div>
       </section>
+    </section>
 
       <!-- ----------------------------------------------------------- forges -->
       <section id="forges">
