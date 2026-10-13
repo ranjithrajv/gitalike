@@ -8,6 +8,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The popup says one thing per decision.** The per-site skin picker was built
+  from the same `THEMES` list as the global one, so a host the extension knew
+  rendered eight radio inputs for four distinct choices: the same four rows,
+  twice, told apart only by the word "this". The override is the exception, so
+  it now discloses — collapsed, with its resolved state in the summary
+  ("This site: GitLab UI", or that it follows the global skin), and it opens
+  itself when the host actually carries an override, the one case the summary
+  cannot state in full. The global picker's sub-labels were three near-identical
+  lines of the same four hostnames — 170 characters, a quarter of the popup —
+  and are now a count ("4 sites"), which answers the same question in a fifth of
+  the room. `Off` carries no gloss, its label being the whole of it. Net effect
+  on the default view: 652 visible characters and 8 radios, down to **358 and
+  4**, with no control removed. `tests/popup-content.test.mjs` holds both halves:
+  the list is disclosed rather than deleted, and no sub-label may go back to
+  joining hostnames.
 - **GitAlike is positioned as a cognitive accessibility tool.** The README gains
   a new section — "A cognitive accessibility tool" — that frames the reciprocal
   reskinning as an accessibility feature: developers who think in one forge's

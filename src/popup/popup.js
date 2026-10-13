@@ -31,7 +31,9 @@
 
   const skinOptions = document.getElementById('skin-options');
   const siteWrap = document.getElementById('site');
-  const siteHost = document.getElementById('site-host');
+  const siteToggle = document.getElementById('site-toggle');
+  const siteBody = document.getElementById('site-body');
+  const siteSummary = document.getElementById('site-summary');
   const siteOptions = document.getElementById('site-options');
   const siteReset = document.getElementById('site-reset');
   const addToggle = document.getElementById('add-toggle');
@@ -211,9 +213,16 @@
       const value = option.dataset.skin;
       option.querySelector('input').checked = value === current;
       const hosts = SITES.hostsForSkin(value, instances);
-      option.querySelector('.skin__hosts').textContent = hosts.length
-        ? hosts.join(', ')
-        : 'Nothing is repainted';
+      // A count, not the hostnames. The list was three near-identical lines of
+      // the same four domains — a quarter of the popup's text — and it answered
+      // a question the count answers in a fifth of the room: how much would
+      // change. `Off` is named by its own label and needs no gloss.
+      option.querySelector('.skin__hosts').textContent =
+        value === 'off'
+          ? ''
+          : hosts.length
+            ? `${hosts.length} site${hosts.length === 1 ? '' : 's'}`
+            : 'No sites change';
       option.classList.toggle(
         'skin__option--current',
         Boolean(host) && hosts.includes(host),
@@ -221,9 +230,9 @@
     }
   }
 
-  // The per-site skin picker, shown only for a host the extension knows. The
-  // global skin above is the broad default; this picks *this* host's skin, or
-  // `off`, or back to following the global choice.
+  // The per-site skin picker, disclosed under a summary that states the state
+  // it would otherwise take a click to read. It opens itself only when the host
+  // carries an override, so the collapsed default is the common case.
   function renderSite(currentKind) {
     const known = Boolean(currentKind);
     siteWrap.hidden = !known;
@@ -238,11 +247,29 @@
     // unrepainted, but the choice is still what the user asked for.)
     const selected = chosen === 'off' ? 'off' : chosen || fallback || 'off';
 
-    siteHost.textContent = host;
     for (const input of siteOptions.querySelectorAll('input')) {
       input.checked = input.value === selected;
     }
     siteReset.hidden = chosen === null;
+
+    // The summary carries the whole state when collapsed: what this host shows,
+    // and whether that is its own choice or the global one it inherits.
+    const label =
+      selected === 'off' ? 'its own UI' : `${SITES.skins[selected].product} UI`;
+    siteSummary.textContent =
+      chosen === null
+        ? 'This site: follows the global skin'
+        : `This site: ${label}`;
+
+    // An override is the one thing the summary cannot say in full, so the body
+    // opens for it — the same rule `Add a site` follows for a host it does not
+    // know. A host following the global skin stays collapsed.
+    setSiteOpen(chosen !== null);
+  }
+
+  function setSiteOpen(open) {
+    siteToggle.setAttribute('aria-expanded', String(open));
+    siteBody.hidden = !open;
   }
 
   // Built once from the shared `skins` table: Off, then one radio per skin.
@@ -356,6 +383,7 @@
     hint(insecure ? HINT_INSECURE(hostname) : HINT_DEFAULT, false);
   }
 
+  siteToggle.addEventListener('click', () => setSiteOpen(siteBody.hidden));
   addToggle.addEventListener('click', () => setOpen(addBody.hidden));
 
   for (const button of kindButtons) {

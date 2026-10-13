@@ -30,8 +30,8 @@
         <h2 class="why__title">Why GitAlike?</h2>
         <p class="why__body">
           A theme recolours a page. GitAlike also translates the
-          <b>words</b>, the <b>navigation</b> and the <b>shortcuts</b> — GitHub
-          shown as GitLab and back, reverted when you switch it off.
+          <b>words</b>, <b>navigation</b> and <b>shortcuts</b> — and undoes it
+          all when you switch it off.
         </p>
         <div class="why__foot">
           <p class="why__trust">
@@ -112,18 +112,35 @@
       <!-- Only for a host the extension knows: pick which skin *this* host wears,
            independent of the global skin. The options are generated from the
            shared `skins` table, so a new skin appears here automatically. -->
-      <div class="site" id="site" hidden>
-        <p class="site__title">Show <b id="site-host">this site</b> with</p>
-        <div
-          class="site__options"
-          id="site-options"
-          role="radiogroup"
-          aria-label="Skin for this site"
-        ></div>
-        <button type="button" class="site__reset" id="site-reset" hidden>
-          Follow the global skin
+      <!-- The per-site override is the exception, and the global picker above
+           already offers the same four choices — so this one discloses instead
+           of putting a second copy of that list on screen. It opens itself when
+           the host carries an override, which is the only case where it has
+           something the collapsed summary cannot say. -->
+      <section class="site" id="site" hidden>
+        <button
+          type="button"
+          class="site__toggle"
+          id="site-toggle"
+          aria-expanded="false"
+          aria-controls="site-body"
+        >
+          <span id="site-summary">This site</span>
+          <span class="site__chevron" aria-hidden="true">＋</span>
         </button>
-      </div>
+
+        <div class="site__body" id="site-body" hidden>
+          <div
+            class="site__options"
+            id="site-options"
+            role="radiogroup"
+            aria-label="Skin for this site"
+          ></div>
+          <button type="button" class="site__reset" id="site-reset" hidden>
+            Follow the global skin
+          </button>
+        </div>
+      </section>
 
       <button type="button" class="open-other" id="open-other" hidden></button>
 
