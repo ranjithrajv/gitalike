@@ -7,6 +7,11 @@
   --accent: #0969da;
   --gitlab: #7759c2;
   --danger: #cf222e;
+  /* The label that sits on `--accent`, declared per mode for the same reason
+     the skins declare `--gs-on-*`: `--accent` flips between the palettes, so a
+     white label is only legible in one of them. The dark value is the dark
+     canvas ink, which is what every `--gs-on-*` in the skins resolves to. */
+  --on-accent: #ffffff;
   color-scheme: light;
 }
 
@@ -20,6 +25,7 @@
     --accent: #2f81f7;
     --gitlab: #9c8ad8;
     --danger: #f85149;
+    --on-accent: #0d1117;
     color-scheme: dark;
   }
 }
@@ -139,7 +145,7 @@ main {
   font: inherit;
   font-size: 11px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--on-accent);
   background: var(--accent);
   border: 0;
   border-radius: 6px;

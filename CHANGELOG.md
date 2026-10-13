@@ -305,6 +305,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The popup's dismiss button clears WCAG AA in dark mode.** The first-open
+  intro's "Got it" button paired a hardcoded `color: #ffffff` with
+  `background: var(--accent)`, and `--accent` flips between the palettes — 5.19:1
+  in light, 3.75:1 in dark, on 11px text. It is the same defect the skins were
+  fixed for below, in the one surface that fix did not reach because the suite
+  behind it is scoped to `--gs-*`. The popup now declares `--on-accent` per mode
+  (the dark value is the dark canvas ink, matching every `--gs-on-*` in the
+  skins), and `tests/popup-contrast.test.mjs` holds the pair to AA in both modes
+  and fails on a literal label.
 - **Primary and confirm buttons clear WCAG AA in dark mode.** The label was a
   hardcoded `#ffffff` over a fill that comes from a token, so the pair held in
   light mode and failed in dark mode in every skin — 2.30:1 to 3.39:1, worst on
