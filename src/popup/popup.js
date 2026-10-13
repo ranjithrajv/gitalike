@@ -163,8 +163,11 @@
   }
 
   // One radio per skin, plus off, built from the shared `skins` table. Both the
-  // global group and the per-site group use this; only the classes, the radio
-  // name and the off position differ.
+  // global group and the per-site group use this — they are the same choice in
+  // two scopes, so they draw the same row and differ only in the radio name,
+  // the off position, and whether the host count is shown under the label. The
+  // container says which scope a group is, which is why nothing else is keyed
+  // here.
   function buildRadios(
     container,
     name,
@@ -180,23 +183,23 @@
 
     for (const { value, label } of choices) {
       const option = document.createElement('label');
-      option.className = withHosts ? 'skin__option' : 'site__option';
-      if (withHosts) option.dataset.skin = value;
+      option.className = 'skin__option';
+      // Always set, so the product's own colour reaches both groups' labels.
+      option.dataset.skin = value;
       const input = document.createElement('input');
       input.type = 'radio';
       input.name = name;
       input.value = value;
       const text = document.createElement('span');
+      text.className = 'skin__text';
+      const labelEl = document.createElement('span');
+      labelEl.className = 'skin__label';
+      labelEl.textContent = label;
+      text.append(labelEl);
       if (withHosts) {
-        text.className = 'skin__text';
-        const labelEl = document.createElement('span');
-        labelEl.className = 'skin__label';
-        labelEl.textContent = label;
         const hostsEl = document.createElement('span');
         hostsEl.className = 'skin__hosts';
-        text.append(labelEl, hostsEl);
-      } else {
-        text.textContent = label;
+        text.append(hostsEl);
       }
       option.append(input, text);
       container.append(option);

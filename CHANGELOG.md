@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Both skin lists are drawn as the same control.** They were already the same
+  `<input type="radio">` from one builder, but only the global list looked like
+  it: the per-site group hid its radios under `opacity: 0` and painted pills, so
+  the same widget read as two different kinds of thing. The per-site list now
+  draws the radio rows the global one does — same row, same column, same focus
+  ring — and keeps its own `name`, so the two groups stay independent and arrow
+  keys move within one. The pill rules are deleted rather than left behind. The
+  disclosed list is a little taller for it, which is what the disclosure makes
+  affordable.
 - **The popup says one thing per decision.** The per-site skin picker was built
   from the same `THEMES` list as the global one, so a host the extension knew
   rendered eight radio inputs for four distinct choices: the same four rows,

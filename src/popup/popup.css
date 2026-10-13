@@ -407,7 +407,10 @@ main {
   color: var(--fg-muted);
 }
 
-.skin__options {
+/* One list, two scopes: the global group and the per-site group draw the same
+   rows, so these are shared rather than duplicated. */
+.skin__options,
+.site__options {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -484,49 +487,6 @@ main {
 
 .site__body {
   padding: 0 8px 6px;
-}
-
-.site__options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.site__option {
-  position: relative;
-}
-
-/* The real control stays in the accessibility tree; the pill is decoration. */
-.site__option input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.site__option span {
-  display: inline-block;
-  padding: 4px 10px;
-  font-size: 12px;
-  color: var(--fg);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.site__option input:checked + span {
-  color: var(--accent);
-  border-color: var(--accent);
-  font-weight: 600;
-}
-
-.site__option input:focus-visible + span {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
 }
 
 .site__reset {
@@ -735,11 +695,6 @@ kbd {
 
   .skin__label {
     font-size: 14px;
-  }
-
-  .site__option span {
-    padding: 10px 14px;
-    font-size: 13px;
   }
 
   .open-other {
