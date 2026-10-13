@@ -45,8 +45,10 @@
       root.classList.toggle(`gs-theme-${name}`, name === theme);
     }
     // A layout class as well, so structural CSS shared by two skins that have
-    // the same shape (GitHub and Bitbucket are both top bar + tab row) can be
-    // written once, against the layout, instead of per theme.
+    // the same shape (GitLab and Bitbucket are both a left sidebar; GitHub is
+    // the top bar + tab row) can be written once, against the layout, instead
+    // of per theme. `LAYOUTS` is derived from the skins table above, so a new
+    // layout needs no edit here.
     const layout =
       (theme && SITES.skins[theme] && SITES.skins[theme].layout) || null;
     for (const name of LAYOUTS) {

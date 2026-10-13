@@ -127,7 +127,6 @@ main {
   flex: none;
   font-size: 13px;
   line-height: 1;
-  transition: transform 120ms ease;
 }
 
 /* the plus becomes a cross */
@@ -282,7 +281,6 @@ main {
   height: 20px;
   border-radius: 999px;
   background: var(--border);
-  transition: background 120ms ease;
 }
 
 .switch__knob {
@@ -293,7 +291,6 @@ main {
   border-radius: 50%;
   background: #ffffff;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
-  transition: transform 120ms ease;
 }
 
 .row:has(.switch:checked) .switch__track {
@@ -561,4 +558,22 @@ kbd {
   font-weight: 400;
   font-style: italic;
   border-bottom-width: 1px;
+}
+
+/* Motion is an enhancement, not the message: the popup's three transitions
+   (the add-host chevron, the theme switch's track and knob) run only for
+   users who have not asked for reduced motion, they stay under 200ms, and they
+   animate compositor properties only. */
+@media (prefers-reduced-motion: no-preference) {
+  .add__chevron {
+    transition: transform 120ms ease-out;
+  }
+
+  .switch__track {
+    transition: background-color 120ms ease-out;
+  }
+
+  .switch__knob {
+    transition: transform 120ms ease-out;
+  }
 }

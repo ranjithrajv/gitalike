@@ -19,12 +19,13 @@
  *   link    2.0  a content link uses the target product's link / accent
  *   vocab   2.0  the navigation carries the target's words
  *
- * A colour dimension scores `1 - distance/scale`, so a near-match is near-full
- * credit rather than a fail. The expected colours come from the reviewed
- * `tests/fixtures/target-chrome.json`, NOT the applied theme's own `--gs-*`
- * variables, so the score measures fidelity to the product rather than
- * self-consistency; `tests/compare/target-chrome.test.mjs` pins the skins to the
- * fixture offline.
+ * The expected colours come from the reviewed `tests/fixtures/target-chrome.json`
+ * rather than the applied theme's own `--gs-*` variables, so the score measures
+ * fidelity to the product rather than self-consistency. The colour dimensions
+ * use the same OKLab tolerances as `color-parity.mjs` — shared from that module
+ * so the live and offline halves cannot drift — and the offline half of that
+ * gate, `tests/compare/color-parity.test.mjs`, pins the skins to the same
+ * fixture.
  *
  *   node tools/compare/style-parity.mjs            graded table
  *   node tools/compare/style-parity.mjs --checks   the per-dimension detail
@@ -34,10 +35,6 @@
  * has no bundled host, so the run grants it one for the duration.
  */
 
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { launch, retry, waitForTheme } from './harness.mjs';
 import { SOURCES as CAPTURE_SOURCES } from './captures.mjs';
 import {
@@ -46,9 +43,12 @@ import {
   PROJECT_VOCAB,
   PROFILE_VOCAB,
 } from './style-recipes.mjs';
+// The reviewed reference, and the OKLab tolerances the colour dimensions are
+// scored against. Shared with `color-parity.mjs` so the live half and the
+// offline half of the colour gate cannot drift apart.
+import { REFERENCE, compare } from './color-parity.mjs';
 import '../plugins.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const PLUGINS = globalThis.GITALIKE_PLUGINS;
 const SITES = globalThis.GITALIKE;
 
@@ -68,11 +68,17 @@ const instances = Object.fromEntries(
 // The reviewed, skin-independent reference: the target products' real chrome
 // colours. Scoring against these — not the applied skin's own `--gs-*`
 // variables — is what makes the score a fidelity measure rather than a
-// self-consistency check. `tests/compare/target-chrome.test.mjs` pins the skins'
-// light palettes to the same fixture offline.
-const TARGET_CHROME = JSON.parse(
-  readFileSync(join(root, 'tests/fixtures/target-chrome.json'), 'utf8'),
-).products;
+// self-consistency check. `tests/compare/color-parity.test.mjs` pins the skins to
+// the same fixture offline, in both modes.
+const TARGET_CHROME = Object.fromEntries(
+  Object.entries(REFERENCE.products).map(([product, entry]) => [
+    product,
+    // This tool reads the light palette: a capture is taken in the mode the
+    // browser is in, and every committed capture is light. `color-parity.mjs`
+    // scores both modes from the same fixture.
+    entry.modes.light,
+  ]),
+);
 
 // Words that mark a container as the repository navigation, whichever product
 // the source or target is, so the right `<ul>` is found without keying on a
@@ -167,38 +173,32 @@ const WEIGHTS = {
   vocab: 2,
 };
 
-const parseColor = (value) => {
+// The page hands back a computed value, which is `rgb()` or `rgba()` — or a
+// token reference if the element never resolved. Converted to hex so the shared
+// OKLab compare in `color-parity.mjs` can score it; null when there is no colour
+// at all, so the caller drops the dimension rather than scoring a false zero.
+const asHex = (value) => {
   if (!value) return null;
   const rgb = /rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/.exec(value);
-  if (rgb) return [+rgb[1], +rgb[2], +rgb[3]];
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value.trim());
-  if (!hex) return null;
-  const h = hex[1];
-  const full =
-    h.length === 3
-      ? h
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : h;
-  return [
-    parseInt(full.slice(0, 2), 16),
-    parseInt(full.slice(2, 4), 16),
-    parseInt(full.slice(4, 6), 16),
-  ];
+  if (rgb) {
+    return `#${rgb
+      .slice(1, 4)
+      .map((c) => (+c).toString(16).padStart(2, '0'))
+      .join('')}`;
+  }
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
+    ? value.trim()
+    : null;
 };
 
-const colorDist = (a, b) =>
-  Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
-
-// A near-match earns near-full credit; `scale` is the distance at which the
-// dimension is worth nothing. Returns null when a colour is missing, so the
-// caller can drop the dimension rather than score a false zero.
-const colorFraction = (got, want, scale = 96) => {
-  const a = parseColor(got);
-  const b = parseColor(want);
+// A near-match earns near-full credit. Graded on the same OKLab distance and
+// the same VOID as `color-parity.mjs`, so a dimension here and a region there
+// cannot disagree about how far apart two colours are.
+const colorFraction = (got, want) => {
+  const a = asHex(got);
+  const b = asHex(want);
   if (!a || !b) return null;
-  return Math.max(0, Math.min(1, 1 - colorDist(a, b) / scale));
+  return Math.max(0, Math.min(1, 1 - compare(a, b).delta / 0.35));
 };
 
 // Runs in the page: read the chrome's computed styles and vocabulary. Selector
@@ -417,7 +417,7 @@ try {
         const dims = {
           theme: chrome.theme === `gs-theme-${skin}` ? 1 : 0,
           layout: (horizontal ? 'row' : 'column') === target.layout ? 1 : 0,
-          header: colorFraction(chrome.headerBg, expect.header),
+          header: colorFraction(chrome.headerBg, expect['header-bg']),
           body: colorFraction(chrome.canvasBg, expect.canvas),
           link: linkFractions.length ? Math.max(...linkFractions) : null,
           vocab,

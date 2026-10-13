@@ -14,7 +14,12 @@ const { source: SOURCE, SELECTORS, CANARY_PAGES } = await loadSource('github');
 
 test('github registers its Primer hooks', () => {
   assert.ok(SOURCE, 'the source registered');
-  assert.match(SELECTORS.github.repoNavList, /UnderlineNav-body/);
+  // The tab list is matched by shape, never by a Primer class name: GitHub
+  // deleted `ul.UnderlineNav-body` when it moved the nav to its `prc-*`
+  // components, which took the whole GitLab-skin sidebar with it. A test that
+  // pins the class would pass while the page had no navigation.
+  assert.match(SELECTORS.github.repoNavList, /ul:has\(> li\)$/);
+  assert.ok(!/\.(UnderlineNav|prc-)/.test(SELECTORS.github.repoNavList));
   assert.equal(typeof SELECTORS.github.appHeader, 'string');
   assert.equal(typeof SELECTORS.github.metadataSidebar, 'string');
 });

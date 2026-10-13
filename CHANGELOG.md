@@ -8,6 +8,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Each skin answers forced-colors mode.** Windows High Contrast forces
+  `color`/`background-color` to system colours but leaves background images
+  alone, so the replaced brand mark — a gradient drawn for the dark header — could
+  sit on a forced light background and disappear. Each stylesheet now carries one
+  `@media (forced-colors: active)` block that gives the mark a system background
+  and opts just it out of the forced adjustment; the palette is deliberately not
+  re-declared there, because the forced palette is what the user asked for. A
+  contract test fails a skin that ships without one
+  (`tests/contracts.test.mjs`).
+- **Colour parity is measured in three independent layers**, replacing a token
+  check that could only prove a skin agrees with itself and a screenshot scale
+  that mapped every comparison into the top 30% of its range: declared
+  `--gs-*` tokens against the reviewed reference per token *and* per mode, then
+  rendered pixels, then a summary. `npm run color-parity` runs it.
+  `npm run preview` opens the built extension against the real sites in a real
+  browser, or captures to a scratch directory without one, for a look before
+  committing captures.
+- **`tests/skin-contrast.test.mjs`** parses each skin's palette block and asserts
+  the accessible-contrast floor for button labels and text tiers, that no rule
+  writes a literal label over a token fill, and that no theme file reaches for
+  the disabled tier. Every assertion was proven to fail by reintroducing the
+  defect it describes.
+
 - **A profile's activity section is relabelled to the applied product.** GitHub
   heads its profile timeline "Contribution activity" (and its summary "Activity
   overview") with a "Show more activity" control; GitLab and Bitbucket just say
@@ -161,6 +184,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **A token tier that claims a distinction now delivers one.** The GitLab and
+  Bitbucket radius scales declared three steps with the two smallest equal, so
+  `--gl-border-radius-sm` and `-base` resolved to the same value; the equal step
+  is now declared as an alias, which is what the file always meant. The GitHub
+  muted border was a solid copy of `--gs-border`, so `--gl-border-color-subtle`,
+  `--color-timeline` and `--color-expand-button` had no distinction from the
+  default; it now takes Primer's alpha form. A contract test fails a skin that
+  reintroduces either.
+- **The reviewed target fixture records the values the products actually serve.**
+  `github.com` serves `#000000` for its header, not Primer's `#25292e`, and
+  GitLab's light header is `#ececef` rather than `#fbfafd`; the skins and
+  `tests/fixtures/target-chrome.json` now agree with the served pages, so the
+  fixture measures the products rather than the skins' assumptions.
+
 - **A feature with no counterpart is marked on the page, not hidden.** The
   `≠ GitLab` / `≠ GitHub` badge now takes precedence over the skin's `hide` list
   and `keep` whitelist — `paintNavHide` leaves any label `noEquivalentFor` names
@@ -233,6 +270,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   unchanged.
 
 ### Fixed
+
+- **Primary and confirm buttons clear WCAG AA in dark mode.** The label was a
+  hardcoded `#ffffff` over a fill that comes from a token, so the pair held in
+  light mode and failed in dark mode in every skin — 2.30:1 to 3.39:1, worst on
+  hover, where the fill lightens while the label does not. Each fill now has a
+  sibling label token (`--gs-on-accent` / `--gs-on-success`) declared per mode,
+  so the label follows the mode the fill does.
+- **Injected text clears WCAG AA.** The "no counterpart" badge, the "not available
+  on <source>" notes and the nav group headings were coloured with
+  `--gs-fg-subtle` — the tier the source bridges map to disabled and placeholder
+  text, where AA does not apply — and measured 3.24:1 to 4.12:1. They now read
+  `--gs-fg-muted`, which clears 4.5:1 on canvas and canvas-subtle in every skin
+  and mode. `--gs-fg-subtle` keeps its one job.
+- **GitHub pages keep their navigation under the sidebar skins.** GitHub moved the
+  repo nav to its `prc-*` components, which renamed `ul.UnderlineNav-body` out of
+  existence and re-nested the nav from `main > div > nav` to a deeper path, so the
+  layouts keyed on either stopped matching and the page shipped with no
+  navigation at all. The rules and both skins' reorder containers now select the
+  list by shape — `nav[aria-label="Repository"] ul:has(> li)` — against the
+  accessible name GitHub keeps rather than the class names it does not, and the
+  source's `repoNavList` carries the same hedge so a skin cannot drift from it.
+- **The popup's motion honours `prefers-reduced-motion`.** Its three transitions
+  now run only under `no-preference`, the one that animated a paint property
+  animates the colour alone, and the curves are `ease-out`. A reader who asks for
+  reduced motion gets the state change with no movement.
 
 - Gerrit's header navigation stays reoriented wherever PolyGerrit renders it —
   the rule was scoped to `gr-main-header`, which the nav is not always inside,

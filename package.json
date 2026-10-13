@@ -19,6 +19,8 @@
     "parity": "node tools/compare/parity-score.mjs",
     "parity:write": "node tools/compare/parity-score.mjs --write",
     "parity:judge": "node tools/compare/parity-judge.mjs",
+    "color-parity": "node tools/compare/color-parity.mjs",
+    "preview": "node tools/compare/preview.mjs",
     "style-parity": "node tools/compare/style-parity.mjs",
     "layout-parity": "node tools/compare/layout-parity.mjs",
     "test": "node tools/plugin-coverage.mjs",

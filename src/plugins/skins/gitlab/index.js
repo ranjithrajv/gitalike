@@ -121,7 +121,10 @@
     navRules: [
       {
         source: 'github',
-        container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
+        // The list by shape, not by class: GitHub deleted `ul.UnderlineNav-body`
+        // when it moved the nav to its `prc-*` components. See the same note in
+        // `sources/github/index.js`.
+        container: 'nav[aria-label="Repository"] ul:has(> li)',
         item: 'li',
       },
       {

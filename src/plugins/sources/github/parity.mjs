@@ -26,7 +26,11 @@ export default {
       ready: '.UnderlineNav-item, .prc-components-UnderlineItem',
       header: ['header[role="banner"]', '.AppHeader'],
       nav: [
-        'nav[aria-label="Repository"] ul.UnderlineNav-body',
+        // The list by shape. `ul.UnderlineNav-body` is dead — GitHub deleted it
+        // with the `prc-*` components — so the shape is the first candidate and
+        // a bare `ul` is kept as a fallback for a page whose nav has not
+        // rendered its items yet.
+        'nav[aria-label="Repository"] ul:has(> li)',
         'nav[aria-label="Repository"] ul',
       ],
       link: ['#readme a[href]', '.markdown-body a[href]', 'main a[href]'],

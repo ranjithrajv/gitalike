@@ -110,6 +110,101 @@ describe('skin contract', () => {
       'ux-markers.css should target any gs-theme-* class',
     );
   });
+
+  test('a scale declares its steps, and a tier that repeats says so', () => {
+    // A step pair that carries the same literal declares a distinction the
+    // skin does not deliver: `--gl-border-radius-sm` and `-base` resolved to
+    // the same value in two skins, and `--gs-border-muted` equalled
+    // `--gs-border` in a third while `--gl-border-color-subtle`,
+    // `--color-timeline` and `--color-expand-button` read it. A skin that
+    // genuinely has one step must alias it (`var(--…-md)`), so the file says
+    // "one step" rather than "two steps that happen to match".
+    const TIERS = ['sm', 'md', 'lg', 'xl'];
+    const problems = [];
+    for (const skin of THEMES) {
+      const css = file(`src/plugins/skins/${skin}/as-${skin}.css`);
+      for (const mode of ['light', 'dark']) {
+        const block = css.match(
+          new RegExp(
+            `html\\.gs-theme-${skin}${mode === 'dark' ? '\\.gs-dark' : ''}\\s*\\{([\\s\\S]*?)\\}`,
+          ),
+        );
+        assert.ok(block, `${skin} ${mode} has no palette block`);
+        const tokens = {};
+        for (const [, name, value] of block[1].matchAll(
+          /(--gs-[\w-]+)\s*:\s*([^;]+);/g,
+        )) {
+          tokens[name] = value.replace(/\s*!important\s*$/, '').trim();
+        }
+
+        for (const name of Object.keys(tokens)) {
+          const tier = TIERS.find((step) => name.endsWith(`-${step}`));
+          if (!tier) continue;
+          const family = name.slice(0, -tier.length - 1);
+          const next = TIERS[TIERS.indexOf(tier) + 1];
+          if (!next || !(`${family}-${next}` in tokens)) continue;
+          const [here, there] = [tokens[name], tokens[`${family}-${next}`]];
+          if (here !== there) continue;
+          // The alias is the permitted form: one step declared, not two equal.
+          const alias =
+            /^var\((--gs-[\w-]+)\)$/.exec(here) ||
+            /^var\((--gs-[\w-]+)\)$/.exec(there);
+          if (alias) continue;
+          problems.push(
+            `${skin} ${mode}: ${family}-${tier} and ${family}-${next} are both ${here}`,
+          );
+        }
+
+        for (const name of Object.keys(tokens)) {
+          if (!name.endsWith('-muted')) continue;
+          const base = name.slice(0, -'-muted'.length);
+          if (!(base in tokens)) continue;
+          const isAlpha = (v) => /^#[0-9a-f]{8}$/i.test(v);
+          if (
+            tokens[name] === tokens[base] &&
+            !isAlpha(tokens[name]) &&
+            !isAlpha(tokens[base])
+          ) {
+            problems.push(`${skin} ${mode}: ${name} equals ${base}`);
+          }
+        }
+      }
+    }
+    assert.deepEqual(
+      problems,
+      [],
+      `collapsed token tiers:\n  - ${problems.join('\n  - ')}`,
+    );
+  });
+
+  test('every skin survives forced-colors mode', () => {
+    // These stylesheets carry no other `@media` at all, so a full-page re-skin
+    // has to say what happens in Windows High Contrast: the palette is forced
+    // to system colours, but the replaced mark is a background image, which
+    // forced-colors does *not* force, so it can vanish on a forced header. One
+    // block per skin, scoped to that skin, opting the mark out.
+    const problems = [];
+    for (const skin of THEMES) {
+      const css = file(`src/plugins/skins/${skin}/as-${skin}.css`);
+      const blocks =
+        css.match(/@media \(forced-colors: active\) \{[\s\S]*?\n\}/g) ?? [];
+      if (blocks.length !== 1) {
+        problems.push(`${skin}: ${blocks.length} forced-colors blocks, not 1`);
+        continue;
+      }
+      if (!/html\.gs-(theme|layout)-\w+[^{]*\{/.test(blocks[0])) {
+        problems.push(`${skin}: the block is scoped to no skin class`);
+      }
+      if (!blocks[0].includes('forced-color-adjust: none')) {
+        problems.push(`${skin}: the block does not opt the mark out`);
+      }
+    }
+    assert.deepEqual(
+      problems,
+      [],
+      `incomplete forced-colors blocks:\n  - ${problems.join('\n  - ')}`,
+    );
+  });
 });
 
 describe('source contract', () => {

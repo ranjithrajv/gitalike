@@ -114,7 +114,12 @@
     },
     // GitHub's markup (Primer).
     selectors: {
-      repoNavList: 'nav[aria-label="Repository"] ul.UnderlineNav-body', // css
+      // The repo tab list, by shape rather than by class. GitHub moved the nav
+      // to its `prc-*` components, which deleted `ul.UnderlineNav-body` and its
+      // `li.UnderlineNav-item`s outright (verified against a live page: no match
+      // anywhere in the document); the `<ul>` of `<li>`s is the part that has
+      // stayed true across every version so far.
+      repoNavList: 'nav[aria-label="Repository"] ul:has(> li)', // css
       appHeader: 'header[role="banner"], .AppHeader', // css
       metadataSidebar: '[class*="CodeViewSidebar-"]',
       metadataPane: '[class*="PageLayoutContent-"]', // css

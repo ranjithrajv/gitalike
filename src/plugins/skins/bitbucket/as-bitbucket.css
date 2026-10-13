@@ -36,6 +36,7 @@ html.gs-theme-bitbucket {
 
   --gs-link: #0052cc;
   --gs-accent: #0052cc;
+  --gs-on-accent: #ffffff;
   --gs-accent-hover: #0065ff;
   --gs-accent-subtle: #deebff;
 
@@ -51,7 +52,10 @@ html.gs-theme-bitbucket {
   --gs-header-bg: #0049b0;
   --gs-header-fg: #ffffff;
 
-  --gs-radius-sm: 3px;
+  /* Two steps, not three: Atlassian's smallest control radius is the same as
+     its base one, so `sm` aliases `md` rather than pretending to a third
+     value. `--gs-radius-lg` is the step that differs. */
+  --gs-radius-sm: var(--gs-radius-md);
   --gs-radius-md: 3px;
   --gs-radius-lg: 8px;
 
@@ -84,6 +88,7 @@ html.gs-theme-bitbucket.gs-dark {
 
   --gs-link: #579dff;
   --gs-accent: #579dff;
+  --gs-on-accent: #1d2125;
   --gs-accent-hover: #85b8ff;
   --gs-accent-subtle: #1c2b41;
 
@@ -255,7 +260,7 @@ html.gs-theme-bitbucket :is(
   ) {
   background-color: var(--gs-accent) !important;
   border-color: transparent !important;
-  color: #ffffff !important;
+  color: var(--gs-on-accent) !important;
 }
 
 /* Tabs: Bitbucket underlines the active tab in its blue. */
@@ -409,4 +414,27 @@ html.gs-theme-bitbucket[data-gs-source="gitlab"]
 
 html.gs-theme-bitbucket[data-gs-source="github"] .js-yearly-contributions {
   display: none !important;
+}
+
+/* --------------------------------------------------- forced colours -- */
+
+/* The mark is a background image, and forced-colors mode forces
+   `color`/`background-color` to system colours but *not* background images.
+   Both mark sites — the source-agnostic logo list and Gitea's
+   `#navbar-logo .branding` — give the mark a system background and opt out of
+   the forced adjustment, so it stays legible on a forced header. Everything
+   else is left to the forced palette. */
+@media (forced-colors: active) {
+  html.gs-theme-bitbucket
+    :is(
+      .octicon-mark-github,
+      .tanuki-logo,
+      .tanuki-logo-svg,
+      .gl-logo,
+      [data-testid="tanuki-logo"]
+    ),
+    html.gs-theme-bitbucket[data-theme] #navbar-logo .branding {
+    background-color: Canvas;
+    forced-color-adjust: none;
+  }
 }

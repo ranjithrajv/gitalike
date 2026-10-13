@@ -81,6 +81,10 @@ It is a coverage estimate, not a quality judgement, and it says nothing about
 the source's own features — only how closely the applied UI reads as the product
 it is pretending to be.
 
+**Colour is scored separately**, by `npm run color-parity`, because it is the
+one dimension the coverage rubric above cannot see. See
+[Colour match](#colour-match) below.
+
 The score is derived from the tables in `src/plugins/skins/` and the pass gating in
 `src/content/ux-*.js`, not measured. Each page type has its own rubric, a set of
 weighted dimensions; a cell is the sum of (weight × share reproduced), rounded
@@ -146,6 +150,134 @@ declares a navigation and profile capability, so every pair is gated; a future
 source that declares none is reported `n/a` rather than failed, since there is
 nothing to reorient. It prints a pass rate (`24/24 pairs passing — layout parity
 100%`) and exits non-zero on any failure.
+
+## Colour match
+
+`npm run color-parity` scores the *colours*, which the coverage rubric above
+cannot see. It runs offline against the skins' stylesheets and the committed
+screenshots, and it is a gate: `tests/compare/color-parity.test.mjs` fails the
+build on a colour that is out of tolerance, and so does the command.
+
+Three layers, each independent, so a mistake in one is visible in the others:
+
+| Layer | Compares | Catches |
+| --- | :--: | --- |
+| `tokens` | each skin's declared `--gs-*` palette against `tests/fixtures/target-chrome.json`, **both modes** | a token that is not the product's value |
+| `pixels` | the skinned screenshot against the real product's own screenshot, region by region | a skin that *declares* a right colour and never paints it |
+| `reference` | the fixture against the real product's screenshot | a fixture that has gone stale |
+
+The `pixels` layer is the one that earns its keep. `tokens` alone scores the
+GitLab skin's rail 10/10: `--gs-canvas-inset` is `#ececef`, GitLab's real rail
+grey, and it is correct. But the skin binds it only to Primer tokens, which do
+not exist on a GitHub page, so the rail renders `#fbfafd` — and only measuring
+the pixels finds it. It compares only the source a skin *rebuilds* the
+product's chrome on (GitLab for the GitHub skin, GitHub for the GitLab skin),
+declared as `compareOn` in the fixture, because comparing a source the skin only
+restyles would be measuring that source's layout — Gitea's own light header, a
+Bitbucket cookie banner over the app bar, PolyGerrit's shadow-DOM shell.
+`compareOn: []` is allowed, and has to say why.
+
+**The scale is ΔE in OKLab, per axis, not one combined cutoff.** Uniformity is
+why OKLab rather than sRGB; the per-axis split is because a single threshold
+cannot tell a wrong surface from a wrong brand hue. On the combined distance,
+GitHub's accent blue against GitLab's (0.0431) lands within 0.0003 of the wrong
+rail grey (0.0428) — so one cutoff either passes a visibly wrong surface or fails
+two entirely different brand blues. So the three axes are held apart
+(`TOLERANCE` in the tool, and in the fixture so a reader of the fixture can see
+what a match means):
+
+| Axis | Tolerance | Forgives | Catches |
+| --- | :--: | --- | --- |
+| lightness | 0.030 | a step in a neutral ramp | a header a shade of grey instead of black |
+| chroma | 0.015 | a one-unit border difference | one brand hue swapped for another |
+| hue | 5° | — (only judged where both colours are chromatic) | a red for a green |
+
+A colour over any axis fails. Grades are reported on the **worst** token or
+region, not the mean: these are published hex values on named surfaces, so one
+wrong token is one visibly wrong surface, and a mean would let a correct ramp
+average away a black header painted `#25292e`.
+
+One known over-sensitivity, documented rather than smoothed over: OKLab lightness
+is not uniform at the dark end, so `#000000` against `#010409` — a one-step
+difference nobody can see — scores ΔL 0.104 and fails. It cannot fire in
+practice, because the reference is read per mode and no two tokens in one mode
+are that close; GitHub's `#000000` light header and its `#010409` dark header are
+never compared to each other.
+
+`style-parity.mjs` imports the fixture and the tolerances from this tool, so the
+live browser measurement and the offline gate cannot drift apart.
+
+### Open colour failures
+
+None. The three defects this gate was built to expose are fixed:
+
+- **The GitHub skin's header** was `#25292e`, a stale Primer token, while github.com
+  serves `#000000` across the application bar. ΔL 0.279 — the largest colour error
+  any of the skins carried, and invisible to the old gate, which compared the skin
+  against a fixture that said the same stale value. Now `#000000`.
+- **The GitLab skin's header** was `#fbfafd`; the real super-topbar is `#ececef`,
+  the same gray GitLab uses for its rail. Now `#ececef`.
+- **The GitLab skin never painted GitLab's rail**, which is its most recognisable
+  layout cue. `--gs-canvas-inset` was declared correctly but bound to the wrong
+  token where the rebuilt sidebar is painted, so the rail rendered `#fbfafd`. Now
+  bound to `--gs-canvas-inset`.
+
+The reference values were confirmed against live pages rather than inferred from
+the stored captures, which are up to three weeks old: github.com's bar, GitLab's
+bar *and* rail, and all three canvases matched at ΔE 0.0000 on a live run.
+
+## Live preview
+
+`npm run preview` renders the built extension in a Chromium window against the
+live sites, so a change can be watched rather than inferred from committed
+screenshots. It shows the two reference directions, each with the extension off
+beside it; `--shots` captures to a scratch directory instead of holding a window,
+and `--only=<name>` narrows it to one frame. It never writes to `docs/` — those
+are `color-parity`'s evidence, and `npm run screenshots:projects` is what
+refreshes them.
+
+This is what found the GitHub nav regression below. Both of its failures were
+invisible to every test in the repo, because each test compared the extension
+against itself: the capture that looked fine was three weeks old, and
+`layout-parity` — which drives live pages and would have caught it — needs
+network, so it does not run in CI.
+
+### The GitHub nav regression, and the lesson in the selector
+
+github.com moved its repo tab bar to Primer's `prc-*` components, which deleted
+`ul.UnderlineNav-body`, `li.UnderlineNav-item` and `.UnderlineNav` outright —
+verified against a live page, zero matches in the document — and re-nested the
+nav from `main > div > nav` to `main > react-partial > div > header > nav`.
+
+Two selectors were keyed on both, so both stopped matching, silently:
+
+- `NAV_RULES` named the dead class as its reorder container, so the repo tab
+  order stopped being rebuilt for the GitLab and Bitbucket skins on a GitHub
+  source.
+- `ux-nav.css` gated the whole sidebar grid on `main:has(> div > nav[...])`,
+  which no longer matched. The grid was never applied, the tab bar collapsed to
+  0x0 under GitHub's own `max-height: 48px; overflow: hidden`, and nothing took
+  its place — so the GitLab and Bitbucket skins served a GitHub page with *no
+  navigation at all*.
+
+The test that pinned the container asserted `/UnderlineNav-body/`, so it stayed
+green throughout. It was not wrong about the selector; it was wrong to assert on
+a class name. The selectors now select on shape and on the nav's accessible name,
+which is a contract GitHub keeps:
+
+    nav[aria-label="Repository"] ul:has(> li)      the list, by shape
+    main:has(nav[aria-label="Repository"])        the grid, by presence
+
+and the tests assert the shape rather than a class, with a comment on why. The
+lesson is worth stating plainly, because it is the failure mode this repo is most
+exposed to: **keying on a target site's class name is a test that passes while
+the product is broken.** An attribute that names a thing outlives a class that
+styles it.
+
+One more thing the live render surfaced: GitHub sizes the horizontal bar to one
+line, so the wrapper carries `max-height: 48px; overflow: hidden`. In a vertical
+sidebar that clips the list to a single row — which reads as a skin that dropped
+the navigation rather than one that moved it. The re-orientation resets both.
 
 ### Where the points are lost
 

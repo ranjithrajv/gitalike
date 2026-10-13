@@ -36,6 +36,9 @@ import {
 // The parity rubrics publish the source and skin tables; reuse them so this
 // report's columns and row labels cannot drift from the rubric table's.
 import { SKINS, SOURCES } from './parity-score.mjs';
+// The OKLab distance and the scale it is graded against, shared with
+// `color-parity.mjs` so both tools report a colour score on one scale.
+import { VOID, deltaE } from './color-parity.mjs';
 import { decodePng, lumaGrid, ssim } from './png.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -214,12 +217,15 @@ function accentColor(png) {
     : [128, 128, 128];
 }
 
-const colorDist = (a, b) =>
-  Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
-const MAX_DIST = Math.sqrt(3 * 255 ** 2);
-
 // Palette similarity: the target's chrome surface and brand accent against the
 // result's. Content-independent, so it measures the design language directly.
+//
+// Scored on the same OKLab distance and the same scale as `color-parity.mjs`,
+// so a "colour score" means one thing across the repo. The previous sRGB form
+// — `1 - distance/441` — could not separate a good skin from a wrong one: the
+// GitHub skin's header at `#25292e` against github.com's `#000000` scored 8.4,
+// and a blue that is visibly not the product scored 7.2, because an sRGB
+// euclidean distance spends its range on lightness steps the eye forgives.
 function paletteJobs(jobs, references) {
   const pngs = new Map();
   const png = (file) => {
@@ -228,6 +234,9 @@ function paletteJobs(jobs, references) {
     }
     return pngs.get(file);
   };
+  // The median and the accent are 0-255 RGB triples; OKLab wants hex.
+  const asHex = (rgb) =>
+    `#${rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
   const rows = [];
   for (const job of jobs) {
     const source = SOURCE_BY_PREFIX[job.base.split('-')[0]];
@@ -239,15 +248,15 @@ function paletteJobs(jobs, references) {
       const file = skin.key === source.key ? job.base : overs.get(skin.key);
       if (!reference || !file) continue;
       const crop = CHROME[skin.key];
-      const chrome = colorDist(
-        regionMedian(png(reference), crop),
-        regionMedian(png(file), crop),
+      const chrome = deltaE(
+        asHex(regionMedian(png(reference), crop)),
+        asHex(regionMedian(png(file), crop)),
       );
-      const accent = colorDist(
-        accentColor(png(reference)),
-        accentColor(png(file)),
+      const accent = deltaE(
+        asHex(accentColor(png(reference))),
+        asHex(accentColor(png(file))),
       );
-      const similarity = 1 - (0.5 * chrome + 0.5 * accent) / MAX_DIST;
+      const similarity = 1 - (0.5 * chrome + 0.5 * accent) / VOID;
       cells[skin.key] = Math.max(0, Math.round(similarity * 100) / 10);
     }
     rows.push({ label: source.label, cells });
@@ -284,6 +293,12 @@ if (process.argv.includes('--json')) {
   render(projectPalette);
   console.log('\nProfile pages — design tokens vs the imitated product\n');
   render(profilePalette);
+  console.log(
+    '\nCoarse: one chrome median and one most-saturated pixel per page, the latter\n' +
+      'picked off whatever content happens to be on screen. For the authoritative\n' +
+      'colour read use `npm run color-parity`, which scores named regions against\n' +
+      'the product and holds the same OKLab scale.\n',
+  );
 } else if (chromeOnly) {
   console.log(
     '\nProject pages — fidelity to the imitated product (chrome band)\n',

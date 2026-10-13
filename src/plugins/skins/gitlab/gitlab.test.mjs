@@ -66,7 +66,10 @@ test('gitlab maps its two-key combos onto the source site’s', () => {
 
 test('gitlab rules GitHub’s tab bar and shares Gitea’s order', () => {
   const github = NAV_RULES.gitlab.find((rule) => rule.source === 'github');
-  assert.match(github.container, /UnderlineNav-body/);
+  assert.match(
+    github.container,
+    /^nav\[aria-label="Repository"\] ul:has\(> li\)$/,
+  );
   const gitea = NAV_RULES.gitlab.find((rule) => rule.source === 'gitea');
   assert.equal(gitea.order, github.order);
   // The order ranks the *displayed* labels: "Issues" is shown as "Work items".

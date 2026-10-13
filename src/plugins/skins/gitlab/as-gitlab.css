@@ -32,6 +32,7 @@ html.gs-theme-gitlab {
 
   --gs-link: #1068bf;
   --gs-accent: #1f75cb;
+  --gs-on-accent: #ffffff;
   --gs-accent-hover: #0b5cad;
   --gs-accent-subtle: #e9f3fc;
 
@@ -45,12 +46,15 @@ html.gs-theme-gitlab {
   --gs-attention: #ab6100;
   --gs-attention-subtle: #fdf1dd;
 
-  --gs-header-bg: #fbfafd;
+  --gs-header-bg: #ececef;
   --gs-header-fg: #28272d;
 
   --gs-shadow: 0 1px 2px rgb(31 30 36 / 0.1);
 
-  --gs-radius-sm: 4px;
+  /* Two steps, not three: GitLab's smallest control radius is the same as its
+     base one, so `sm` aliases `md` rather than pretending to a third value.
+     `--gs-radius-lg` is the step that differs. */
+  --gs-radius-sm: var(--gs-radius-md);
   --gs-radius-md: 4px;
   --gs-radius-lg: 8px;
 
@@ -86,6 +90,7 @@ html.gs-theme-gitlab.gs-dark {
 
   --gs-link: #7fb8f0;
   --gs-accent: #428fdc;
+  --gs-on-accent: #1f1e24;
   --gs-accent-hover: #6fb0f0;
   --gs-accent-subtle: #22303f;
 
@@ -353,7 +358,7 @@ html.gs-layout-gitlab :is(.Box, .Box--condensed, .border.rounded-2, .flash) {
 html.gs-layout-gitlab :is(.Button--primary, .btn-primary) {
   background-color: var(--gs-accent) !important;
   border-color: transparent !important;
-  color: #ffffff !important;
+  color: var(--gs-on-accent) !important;
 }
 
 html.gs-layout-gitlab :is(.Button--primary, .btn-primary):hover {
@@ -459,3 +464,17 @@ html.gs-theme-gitlab[data-theme] #navbar-logo .branding img {
   visibility: hidden !important;
 }
 
+
+/* --------------------------------------------------- forced colours -- */
+
+/* The mark is a background image; forced-colors forces colour but not
+   background images, so the header takes a system colour while the mark keeps
+   its palette. A system background plus opting the mark out of the forced
+   adjustment keeps it legible. The rest of the page is deliberately left to
+   the forced palette. */
+@media (forced-colors: active) {
+  html.gs-layout-gitlab .octicon-mark-github {
+    background-color: Canvas;
+    forced-color-adjust: none;
+  }
+}

@@ -1,27 +1,196 @@
 {
-  "note": "The target products' real chrome colours, reviewed by hand — the independent reference `tools/compare/style-parity.mjs` scores a skinned page against, instead of the applied skin's own `--gs-*` variables. `tests/compare/target-chrome.test.mjs` pins each skin's light palette to this table, so a token edit without a fixture update fails in CI. Update this file (and its asOf date) when a product's design system moves, and say where the value came from in `provenance`.",
-  "asOf": "2026-09-21",
+  "asOf": "2026-10-13",
+  "note": "The target products' real chrome, in their own token names, for both modes. This is the independent reference the colour layers in tools/compare/color-parity.mjs score against — not the applied skin's own --gs-* variables — so a score measures fidelity to the product rather than self-consistency. A value marked `measured` was read out of the committed screenshot in docs/ by the same code that scores the skins, so it is the product's rendered value and not a claim about it; the `reference` layer re-checks every `measured` value on every run, and a product that moves fails there instead of quietly lowering everyone's score. Update a value (and its `asOf`) when a product's design system moves, and say where it came from.",
+  "jnd": {
+    "lightness": 0.03,
+    "chroma": 0.015,
+    "hue": 5,
+    "note": "ΔE in OKLab, per axis, not one combined cutoff — see TOLERANCE in tools/compare/color-parity.mjs for why a single threshold cannot separate a wrong surface from a wrong brand hue, and for the calibration these numbers come from. A colour over any axis is out of tolerance and fails. They are recorded here as well as in the module so a reviewer reading only the fixture can see what 'a match' means."
+  },
   "products": {
     "github": {
-      "header": "#25292e",
-      "canvas": "#ffffff",
-      "link": "#0969da",
-      "accent": "#0969da",
-      "provenance": "Primer — header dark surface, canvas-default, and the accent blue (fgColor-accent)"
+      "provenance": "Primer (github/primer) for the ramps; the header surface is `measured` — Primer's published header token no longer describes what github.com serves. Dark values are from the design system: the committed captures are light-mode only, so nothing dark is measured here.",
+      "captures": {
+        "project": "github-default.png"
+      },
+      "compareOn": ["gitlab"],
+      "compareOnNote": "Only the GitLab source. The GitHub skin rebuilds GitLab's super-sidebar as GitHub's horizontal tab row, so a region-for-region compare means the same thing on both sides. Gitea's own light header and PolyGerrit's shell are left as they are — measuring those against github.com's black bar would be measuring the source's layout, which the UX rubric already accounts for through each source's `compare` capabilities.",
+      "regions": {
+        "header": {
+          "box": [300, 2, 1000, 66],
+          "token": "header-bg",
+          "note": "The dark application bar above the repo header. `measured`: the capture is #000000 across this box at 96%, so the skin's #25292e is a stale Primer token, not a product value."
+        },
+        "tabs": {
+          "box": [300, 132, 880, 180],
+          "token": "canvas-subtle",
+          "note": "The repository tab row, which GitHub paints canvas-subtle rather than canvas. `measured`: #f6f8fa at 89%."
+        },
+        "content": {
+          "box": [300, 400, 900, 700],
+          "token": "canvas",
+          "note": "The content canvas. `measured`: #ffffff at 88%."
+        }
+      },
+      "modes": {
+        "light": {
+          "canvas": "#ffffff",
+          "canvas-subtle": "#f6f8fa",
+          "canvas-inset": "#f6f8fa",
+          "canvas-overlay": "#ffffff",
+          "fg": "#1f2328",
+          "fg-muted": "#59636e",
+          "fg-subtle": "#818b98",
+          "border": "#d1d9e0",
+          "link": "#0969da",
+          "accent": "#0969da",
+          "accent-hover": "#0550ae",
+          "success": "#1a7f37",
+          "danger": "#cf222e",
+          "attention": "#9a6700",
+          "header-bg": "#000000",
+          "header-fg": "#f0f6fc"
+        },
+        "dark": {
+          "canvas": "#0d1117",
+          "canvas-subtle": "#151b23",
+          "canvas-inset": "#010409",
+          "canvas-overlay": "#151b23",
+          "fg": "#f0f6fc",
+          "fg-muted": "#9198a1",
+          "fg-subtle": "#6e7681",
+          "border": "#3d444d",
+          "link": "#2f81f7",
+          "accent": "#2f81f7",
+          "accent-hover": "#4493f8",
+          "success": "#3fb950",
+          "danger": "#f85149",
+          "attention": "#d29922",
+          "header-bg": "#010409",
+          "header-fg": "#f0f6fc"
+        }
+      }
     },
     "gitlab": {
-      "header": "#fbfafd",
-      "canvas": "#ffffff",
-      "link": "#1068bf",
-      "accent": "#1f75cb",
-      "provenance": "Pajamas — header surface, canvas-default, and GitLab's link / accent blue"
+      "provenance": "Pajamas (gitlab-org/gitlab-svgs / the Pajamas design tokens) for the ramps; the header and the navigation rail are `measured` — GitLab paints both with its gray-100, #ececef, which is the colour the product uses for the rail and not a distinct header surface. Dark values are from the design system: the committed captures are light-mode only.",
+      "captures": {
+        "project": "gitlab-default.png"
+      },
+      "compareOn": ["github"],
+      "compareOnNote": "Only the GitHub source, for the same reason: the GitLab skin rebuilds GitHub's UnderlineNav as GitLab's own grouped sidebar, so both sides of a region are laid out the product's way. Gitea is a full rebuild too and would be comparable, but its capture is a different repository on a different design system, so it is left to the UX rubric rather than read as a colour-fidelity number here.",
+      "regions": {
+        "header": {
+          "box": [250, 2, 1270, 44],
+          "token": "canvas-inset",
+          "note": "The super-topbar, which starts at x=240 beside the rail. `measured`: #ececef at 63%, and it is the same gray the rail uses — so the reference is canvas-inset, not a separate header value."
+        },
+        "rail": {
+          "box": [8, 60, 272, 880],
+          "token": "canvas-inset",
+          "note": "The project navigation rail, GitLab's most recognisable layout cue: a gray column against a white content canvas. `measured`: #ececef at 80%."
+        },
+        "content": {
+          "box": [300, 700, 900, 890],
+          "token": "canvas",
+          "note": "The content canvas. `measured`: #ffffff at 70%."
+        }
+      },
+      "modes": {
+        "light": {
+          "canvas": "#ffffff",
+          "canvas-subtle": "#fbfafd",
+          "canvas-inset": "#ececef",
+          "canvas-overlay": "#ffffff",
+          "fg": "#28272d",
+          "fg-muted": "#737278",
+          "fg-subtle": "#89888d",
+          "border": "#dcdcde",
+          "link": "#1068bf",
+          "accent": "#1f75cb",
+          "accent-hover": "#0b5cad",
+          "success": "#108548",
+          "danger": "#dd2b0e",
+          "attention": "#ab6100",
+          "header-bg": "#ececef",
+          "header-fg": "#28272d"
+        },
+        "dark": {
+          "canvas": "#1f1e24",
+          "canvas-subtle": "#28272d",
+          "canvas-inset": "#18171d",
+          "canvas-overlay": "#2e2c33",
+          "fg": "#ececef",
+          "fg-muted": "#a4a3aa",
+          "fg-subtle": "#8b8a91",
+          "border": "#3d3b44",
+          "link": "#7fb8f0",
+          "accent": "#428fdc",
+          "accent-hover": "#6fb0f0",
+          "success": "#91d4a8",
+          "danger": "#f2a29a",
+          "attention": "#e9be74",
+          "header-bg": "#28272d",
+          "header-fg": "#ececef"
+        }
+      }
     },
     "bitbucket": {
-      "header": "#0049b0",
-      "canvas": "#ffffff",
-      "link": "#0052cc",
-      "accent": "#0052cc",
-      "provenance": "Atlassian — the archived bitbucket.org theme-color bar with the accent blue; live pages now serve a cookie banner ahead of the app bar (see README known limitations)"
+      "provenance": "Atlassian design tokens (--ds-*) for the ramps. The header is the archived bitbucket.org theme-color, which the live product no longer serves, so it is the one value here that is neither measured nor current — see `docs/LIMITATIONS.md`. Bitbucket has no `header` region: the committed capture is of a 2024 archived repository and its top ~100px is a cookie banner, so nothing in it is the application bar and there is nothing honest to measure.",
+      "captures": {
+        "project": "bitbucket-default.png"
+      },
+      "compareOn": [],
+      "compareOnNote": "No comparable skinned capture. Bitbucket is a target only and is applied as a palette over a source's own chrome — it never rebuilds a layout — and the one committed Bitbucket capture is of a 2024 archived repository whose top ~100px is a cookie banner, so the regions below it do not line up with a capture that has no banner. The `tokens` layer is the meaningful one for this skin; the `pixels` layer reports n/a rather than a number that would mean nothing.",
+      "regions": {
+        "rail": {
+          "box": [8, 110, 272, 880],
+          "token": "canvas",
+          "note": "Below the cookie banner. `measured`: #ffffff at 93% — live Bitbucket Cloud is white-on-white, with no tinted rail."
+        },
+        "content": {
+          "box": [300, 300, 900, 700],
+          "token": "canvas",
+          "note": "The content canvas. `measured`: #ffffff at 94%."
+        }
+      },
+      "modes": {
+        "light": {
+          "canvas": "#ffffff",
+          "canvas-subtle": "#f4f5f7",
+          "canvas-inset": "#ebecf0",
+          "canvas-overlay": "#ffffff",
+          "fg": "#172b4d",
+          "fg-muted": "#5e6c84",
+          "fg-subtle": "#7a869a",
+          "border": "#dfe1e6",
+          "link": "#0052cc",
+          "accent": "#0052cc",
+          "accent-hover": "#0065ff",
+          "success": "#00875a",
+          "danger": "#de350b",
+          "attention": "#974f0c",
+          "header-bg": "#0049b0",
+          "header-fg": "#ffffff"
+        },
+        "dark": {
+          "canvas": "#1d2125",
+          "canvas-subtle": "#22272b",
+          "canvas-inset": "#161a1d",
+          "canvas-overlay": "#22272b",
+          "fg": "#b6c2cf",
+          "fg-muted": "#9fadbc",
+          "fg-subtle": "#8c9bab",
+          "border": "#454f59",
+          "link": "#579dff",
+          "accent": "#579dff",
+          "accent-hover": "#85b8ff",
+          "success": "#7ee2b8",
+          "danger": "#f87168",
+          "attention": "#f5cd47",
+          "header-bg": "#101214",
+          "header-fg": "#b6c2cf"
+        }
+      }
     }
   }
 }

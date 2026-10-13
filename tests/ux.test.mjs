@@ -417,7 +417,13 @@ describe('NAV_RULES', () => {
 
   test('the GitHub rule targets the flat repo tab list', () => {
     const rule = NAV_RULES.gitlab[0];
-    assert.match(rule.container, /UnderlineNav-body/);
+    // Shape, never a Primer class name. GitHub deleted `ul.UnderlineNav-body`
+    // when the nav moved to its `prc-*` components, and a test pinning the class
+    // would have stayed green while the whole GitLab sidebar disappeared.
+    assert.match(
+      rule.container,
+      /^nav\[aria-label="Repository"\] ul:has\(> li\)$/,
+    );
     assert.ok(Array.isArray(rule.order) && rule.order.length >= 2);
   });
 
@@ -1130,7 +1136,8 @@ describe('SELECTORS / CANARY_PAGES', () => {
     }
     // The nav rules key their containers off the same strings, so the canary
     // and the reorder cannot drift.
-    assert.ok(SELECTORS.github.repoNavList.includes('UnderlineNav-body'));
+    assert.match(SELECTORS.github.repoNavList, /ul:has\(> li\)$/);
+    assert.ok(!/\.(UnderlineNav|prc-)/.test(SELECTORS.github.repoNavList));
     assert.ok(SELECTORS.gitea.repoNavList.includes('overflow-menu'));
   });
 
@@ -1149,15 +1156,14 @@ describe('SELECTORS / CANARY_PAGES', () => {
 
   test('the nav rules and the selector table name the same containers', () => {
     // NAV_RULES spells its containers out before SELECTORS exists; this keeps
-    // the two from drifting apart.
-    const githubRule = NAV_RULES.gitlab.find((r) =>
-      r.container.includes('UnderlineNav'),
-    );
+    // the two from drifting apart. Located by source rather than by matching an
+    // implementation detail in the container string — which is what went
+    // unnoticed when GitHub renamed it.
+    const githubRule = NAV_RULES.gitlab.find((r) => r.source === 'github');
+    assert.ok(githubRule, 'the GitLab skin has a GitHub rule');
     assert.equal(githubRule.container, SELECTORS.github.repoNavList);
     for (const theme of ['gitlab', 'github']) {
-      const giteaRule = NAV_RULES[theme].find((r) =>
-        r.container?.includes('overflow-menu'),
-      );
+      const giteaRule = NAV_RULES[theme].find((r) => r.source === 'gitea');
       assert.equal(giteaRule.container, SELECTORS.gitea.repoNavList);
     }
   });

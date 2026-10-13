@@ -134,7 +134,7 @@
       },
       {
         source: 'github',
-        container: 'nav[aria-label="Repository"] ul.UnderlineNav-body',
+        container: 'nav[aria-label="Repository"] ul:has(> li)',
         item: 'li',
       },
       {

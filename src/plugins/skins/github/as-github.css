@@ -28,7 +28,11 @@ html.gs-theme-github {
   --gs-fg-subtle: #818b98;
 
   --gs-border: #d1d9e0;
-  --gs-border-muted: #d1d9e0;
+  /* Primer's `border.muted`: the same hue at reduced alpha, which is what
+     makes it read as the subtler tier. A solid copy of `--gs-border` left
+     `--gl-border-color-subtle`, `--color-timeline` and `--color-expand-button`
+     with no distinction from the default border. */
+  --gs-border-muted: #d1d9e0b3;
 
   --gs-link: #0969da;
   --gs-accent: #0969da;
@@ -36,13 +40,14 @@ html.gs-theme-github {
   --gs-accent-subtle: #ddf4ff;
 
   --gs-success: #1a7f37;
+  --gs-on-success: #ffffff;
   --gs-success-subtle: #dafbe1;
   --gs-danger: #cf222e;
   --gs-danger-subtle: #ffebe9;
   --gs-attention: #9a6700;
   --gs-attention-subtle: #fff8c5;
 
-  --gs-header-bg: #25292e;
+  --gs-header-bg: #000000;
   --gs-header-fg: #f0f6fc;
 
   --gs-radius-sm: 4px;
@@ -77,7 +82,8 @@ html.gs-theme-github.gs-dark {
   --gs-fg-subtle: #6e7681;
 
   --gs-border: #3d444d;
-  --gs-border-muted: #3d444d;
+  /* Primer's `border.muted`, the alpha form — see the light block. */
+  --gs-border-muted: #3d444db3;
 
   --gs-link: #2f81f7;
   --gs-accent: #2f81f7;
@@ -85,6 +91,7 @@ html.gs-theme-github.gs-dark {
   --gs-accent-subtle: #121d2f;
 
   --gs-success: #3fb950;
+  --gs-on-success: #0d1117;
   --gs-success-subtle: #12261e;
   --gs-danger: #f85149;
   --gs-danger-subtle: #25171c;
@@ -135,7 +142,7 @@ html.gs-theme-github :is(
   ) {
   background-color: var(--gs-success) !important;
   border-color: transparent !important;
-  color: #ffffff !important;
+  color: var(--gs-on-success) !important;
 }
 
 /* --------------------------------------------------------- structural -- */
@@ -376,7 +383,7 @@ html.gs-theme-github[data-theme]
   :is(.ui.primary.button, .ui.primary.buttons .button, button.primary) {
   background-color: var(--gs-success) !important;
   border-color: transparent !important;
-  color: #ffffff !important;
+  color: var(--gs-on-success) !important;
 }
 
 /* GitHub underlines the active repo tab in orange, with a hairline under the
@@ -436,3 +443,25 @@ html.gs-theme-github[data-theme] .ui.tabs.divider {
   border-bottom: 1px solid var(--gs-border) !important;
 }
 
+
+/* --------------------------------------------------- forced colours -- */
+
+/* The mark is a background image, and forced-colors mode forces
+   `color`/`background-color` to system colours but *not* background images. So
+   the header becomes a system colour while the mark keeps its dark-header
+   palette, which can leave a light gradient on a light background. Giving the
+   mark a system background and opting it out of the forced adjustment keeps it
+   legible; everything else on the page is left to the forced palette on
+   purpose — re-declaring the `--gs-*` values here would only fight it. */
+@media (forced-colors: active) {
+  html.gs-theme-github
+    :is(
+      .tanuki-logo,
+      .tanuki-logo-svg,
+      .gl-logo,
+      [data-testid="tanuki-logo"]
+    ) {
+    background-color: Canvas;
+    forced-color-adjust: none;
+  }
+}

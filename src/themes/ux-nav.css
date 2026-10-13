@@ -10,8 +10,15 @@
                              `--gs-*` variables each skin defines in its own
                              as-*.css, so a rule stays layout-scoped and still
                              resolves per skin. Bitbucket reuses the GitLab
-                             layout that way, and the GitHub/Bitbucket pair
-                             shares the github layout.
+                             layout that way; GitHub is the only skin on the
+                             github layout.
+
+    Colour: injected text uses `--gs-fg-muted` (or `--gs-fg`), which clears
+    WCAG AA on `--gs-canvas` and `--gs-canvas-subtle` in every skin and mode.
+    `--gs-fg-subtle` is the disabled / placeholder / tertiary tier — the source
+    bridges map it to `--gl-text-color-disabled`, `--ds-text-disabled`,
+    `--color-placeholder-text` — and AA exempts those, so it must never colour
+    text a user has to read. `tests/skin-contrast.test.mjs` enforces both.
 
    Sections below, in file order:
 
@@ -35,7 +42,21 @@
 
 /* ------------------------------------------------------------- as-gitlab -- */
 
-html.gs-layout-gitlab main:has(> div > nav[aria-label="Repository"]) {
+/* Every rule in this block selects on `nav[aria-label="Repository"]` and asks
+   only that it is *somewhere inside* `main` — never on a fixed child path, and
+   never on one of GitHub's class names.
+ *
+ * Both were tried and both broke the page silently. GitHub moved the repo tab
+   bar to its `prc-*` components, which renamed `ul.UnderlineNav-body` and
+   `.UnderlineNav-item` out of existence (verified: zero matches in the
+   document) and re-nested the nav from `main > div > nav` to
+   `main > react-partial > div > header > nav`. A layout keyed on
+   `main:has(> div > nav[...])` then stopped matching altogether, so the grid
+   was never applied and the page shipped with *no navigation at all* — the tab
+   bar collapsed to 0x0 and no sidebar took its place. An accessible name is a
+   contract GitHub keeps; its class names are not. */
+
+html.gs-layout-gitlab main:has(nav[aria-label="Repository"]) {
   display: grid;
   grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
   align-items: start;
@@ -43,39 +64,31 @@ html.gs-layout-gitlab main:has(> div > nav[aria-label="Repository"]) {
   padding-left: 16px;
 }
 
-/* Lift the repo header and the tab bar out of their shared wrapper so the grid
-   can place them independently. */
-html.gs-layout-gitlab main:has(> div > nav[aria-label="Repository"]) > div {
-  display: contents;
-}
-
-/* Repo header (title, Notifications / Fork / Star): top of the right column. */
-html.gs-layout-gitlab
-  main:has(> div > nav[aria-label="Repository"])
-  > div
-  > div:first-child {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-/* The empty spacer GitHub keeps between the header and the tabs. */
-html.gs-layout-gitlab
-  main:has(> div > nav[aria-label="Repository"])
-  > div
-  > div:nth-child(2) {
-  display: none;
+/* Dissolve the wrappers between `main` and the nav, so the repo header and the
+   tab bar become grid items that can be placed in different columns. The nav
+   is placed explicitly (below); everything else auto-flows into column 2,
+   which is what puts the repo header back at the top of the content. */
+html.gs-layout-gitlab main:has(nav[aria-label="Repository"]) react-partial,
+html.gs-layout-gitlab main:has(nav[aria-label="Repository"]) react-partial > div,
+html.gs-layout-gitlab main:has(nav[aria-label="Repository"]) react-partial > div > header {
+  display: contents !important;
 }
 
 /* The tab bar, now a sidebar spanning both rows. */
-html.gs-layout-gitlab
-  main:has(> div > nav[aria-label="Repository"])
-  > div
-  > nav[aria-label="Repository"] {
+html.gs-layout-gitlab main:has(nav[aria-label="Repository"]) nav[aria-label="Repository"] {
   grid-column: 1;
   grid-row: 1 / span 2;
   display: block !important;
   padding: 8px;
-  background-color: var(--gs-canvas-subtle);
+  /* GitHub sizes the horizontal bar to one line and clips it — the wrapper
+     carries `max-height: 48px; overflow: hidden` from the tab form. Left alone,
+     the sidebar is clipped to a single row, which reads as a skin that dropped
+     the navigation rather than one that moved it. */
+  max-height: none !important;
+  overflow: visible !important;
+  /* GitLab's rail is its gray-100, not a tint off white — the same colour as
+     the super-topbar, so `--gs-canvas-inset` and not `--gs-canvas-subtle`. */
+  background-color: var(--gs-canvas-inset);
   border: 1px solid var(--gs-border);
   border-radius: var(--gs-radius-lg, 8px);
   /* Stay in view while the (very long) content scrolls, like GitLab's. */
@@ -83,25 +96,22 @@ html.gs-layout-gitlab
   top: 16px;
 }
 
-/* Content: right column, below the header. */
-html.gs-layout-gitlab
-  main:has(> div > nav[aria-label="Repository"])
-  > turbo-frame {
-  grid-column: 2;
-  grid-row: 2;
-  min-width: 0;
-}
-
-/* The list becomes a vertical column of GitLab-style rows. */
-html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body {
+/* The list becomes a vertical column of GitLab-style rows. Selected by shape —
+   a `<ul>` of `<li>`s — because the class GitHub puts on it is hashed and
+   changes with their release train. */
+html.gs-layout-gitlab nav[aria-label="Repository"] ul:has(> li) {
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
   gap: 2px !important;
   width: 100%;
+  /* The list is clipped in the horizontal form too; a vertical column of rows
+     has to be allowed to be as tall as it is. */
+  max-height: none !important;
+  overflow: visible !important;
 }
 
-html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul:has(> li) > li {
   display: block !important;
   width: 100%;
 }
@@ -109,14 +119,14 @@ html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li {
 /* GitHub's responsive tab bar hides items and clones them into an overflow menu
    once they stop fitting the bar. In a vertical sidebar we want the real rows,
    so they are forced back on. */
-html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body > li,
-html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul:has(> li) > li,
+html.gs-layout-gitlab nav[aria-label="Repository"] ul:has(> li) a {
   visibility: visible !important;
 }
 
 /* A row: icon and label side by side. GitHub keeps the icon and label as
    separate block children, so the row layout has to be restored here. */
-html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul:has(> li) a {
   display: flex !important;
   align-items: center;
   gap: 8px;
@@ -128,13 +138,13 @@ html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a {
   color: var(--gs-fg) !important;
 }
 
-html.gs-layout-gitlab nav[aria-label="Repository"] ul.UnderlineNav-body a:hover {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul:has(> li) a:hover {
   background-color: var(--gs-canvas) !important;
 }
 
 html.gs-layout-gitlab
   nav[aria-label="Repository"]
-  ul.UnderlineNav-body
+  ul:has(> li)
   a[aria-current="page"] {
   background-color: var(--gs-accent-subtle) !important;
   color: var(--gs-accent) !important;
@@ -142,11 +152,12 @@ html.gs-layout-gitlab
 }
 
 /* GitHub positions the counter absolutely for the horizontal tab; in a row it
-   belongs at the end of the flex line, inside the panel. */
+   belongs at the end of the flex line, inside the panel. Selected by role, not
+   by the `.Counter` class that carried it. */
 html.gs-layout-gitlab
   nav[aria-label="Repository"]
-  .UnderlineNav-item
-  .Counter {
+  ul:has(> li)
+  :is([aria-label*="Count"], [class*="ounter"]) {
   position: static !important;
   float: none !important;
   margin-left: auto !important;
@@ -154,12 +165,12 @@ html.gs-layout-gitlab
 
 /* The active-tab underline belongs to the horizontal form; the tint above
    replaces it. */
-html.gs-layout-gitlab nav[aria-label="Repository"] .UnderlineNav-item::after {
+html.gs-layout-gitlab nav[aria-label="Repository"] ul:has(> li) > li::after {
   display: none !important;
 }
 
 /* The "additional navigation options" menu trails the rows. */
-html.gs-layout-gitlab nav[aria-label="Repository"] > .UnderlineNav-actions {
+html.gs-layout-gitlab nav[aria-label="Repository"] > :is(div, summary, button) {
   margin-top: 4px;
 }
 
@@ -280,7 +291,7 @@ html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] a.active svg {
 html.gs-layout-gitlab[data-theme] [data-gs-gitea-nav] .gs-nav-group {
   margin: 10px 0 2px;
   padding: 0 10px;
-  color: var(--gs-fg-subtle);
+  color: var(--gs-fg-muted);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -694,7 +705,7 @@ html.gs-layout-github .super-sidebar a {
 html.gs-layout-github .super-sidebar [data-gs-unavailable] {
   display: inline-block !important;
   padding: 4px 8px !important;
-  color: var(--gs-fg-subtle, #8b8a91) !important;
+  color: var(--gs-fg-muted, #737278) !important;
   white-space: nowrap !important;
   cursor: default !important;
 }
@@ -1040,7 +1051,7 @@ html.gs-layout-github
   display: inline-flex !important;
   align-items: center !important;
   padding: 8px 8px 6px !important;
-  color: var(--gs-fg-subtle, #8b8a91) !important;
+  color: var(--gs-fg-muted, #737278) !important;
   font-size: 14px !important;
   white-space: nowrap !important;
   cursor: default !important;
@@ -1228,7 +1239,7 @@ html.gs-layout-gitlab [data-gs-bb-nav] .gs-nav-group {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--gs-fg-subtle);
+  color: var(--gs-fg-muted);
 }
 
 /* Gitea/Forgejo profile: the header (avatar, name, bio, website) becomes the

@@ -3,6 +3,11 @@
    Injected everywhere; inert until content/ux.js appends a .gs-no-equiv badge
    to a feature that the product being imitated does not have. It says so
    instead of leaving the feature looking native.
+
+   Text here is coloured with `--gs-fg-muted`, the tier that clears WCAG AA on
+   `--gs-canvas` and `--gs-canvas-subtle` in every skin and mode. Never
+   `--gs-fg-subtle`: that is the disabled / placeholder tier the source bridges
+   map to, and AA exempts it. `tests/skin-contrast.test.mjs` enforces this.
    ===================================================================== */
 
 /* The badge rides whatever skin is active — the class is on <html> only while a
@@ -17,7 +22,7 @@ html[class*="gs-theme-"] .gs-no-equiv {
   line-height: 15px;
   white-space: nowrap;
   vertical-align: middle;
-  color: var(--gs-fg-subtle, #8b8a91);
+  color: var(--gs-fg-muted, #737278);
   border: 1px solid currentColor;
   border-radius: 999px;
   /* A marker, not a control: never intercept the nav click, never get copied. */
