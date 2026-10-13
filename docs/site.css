@@ -1,0 +1,929 @@
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --fg: #1f2328;
+        --muted: #59636e;
+        --border: #d1d9e0;
+        --surface: #f6f8fa;
+        --surface-2: #ffffff;
+        --accent: #0969da;
+        --accent-fg: #ffffff;
+        --gitlab: #7759c2;
+        --github: #0969da;
+        --bitbucket: #0052cc;
+        --gitea: #609926;
+        --gerrit: #d97706;
+        --shadow: 0 1px 3px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.06);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117;
+          --fg: #f0f6fc;
+          --muted: #9198a1;
+          --border: #3d444d;
+          --surface: #151b23;
+          --surface-2: #161b22;
+          --accent: #2f81f7;
+          --accent-fg: #0d1117;
+          --gitlab: #9c8ad8;
+          --github: #2f81f7;
+          --bitbucket: #579dff;
+          --gitea: #8ab945;
+          --gerrit: #e8a33d;
+          --shadow: 0 1px 3px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.35);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+      body {
+        margin: 0;
+        font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Noto Sans", Helvetica, Arial, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: var(--accent); }
+      .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+      /* Defer layout and paint of the long, below-the-fold sections until they
+         are scrolled near, so the hero is not competing with ten capture
+         galleries. The hero stays eager so its LCP image is not postponed. */
+      main > section:not(.hero) {
+        content-visibility: auto;
+        contain-intrinsic-size: auto 1400px;
+      }
+      .skip {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        background: var(--accent);
+        color: var(--accent-fg);
+        padding: 8px 14px;
+        border-radius: 0 0 8px 0;
+        z-index: 20;
+      }
+      .skip:focus { left: 0; }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+      /* ---------------------------------------------------------------- nav -- */
+      .site {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--bg);
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: saturate(1.4) blur(8px);
+        border-bottom: 1px solid var(--border);
+      }
+      .site .wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 60px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        color: var(--fg);
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+      .brand svg { width: 28px; height: 28px; border-radius: 7px; }
+      .site nav { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+      .site nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .navicon { width: 16px; height: 16px; display: block; flex: none; }
+      .site nav a:hover { color: var(--fg); }
+      .site nav a.is-active { color: var(--fg); }
+      .site nav .btn { color: var(--accent-fg); }
+      /* The menu toggle is a phone affordance only; on a wider screen the nav
+         is always in the header. */
+      .menu-btn { display: none; }
+      @media (max-width: 980px) {
+        /* The primary nav carries ten links — the nine sections plus Source —
+           so a single row stops fitting well before phone width. Brand and
+           button keep one row and the nav wraps to a second instead of pushing
+           the page wide. */
+        .site .wrap {
+          height: auto;
+          flex-wrap: wrap;
+          row-gap: 4px;
+          padding-top: 10px;
+          padding-bottom: 10px;
+        }
+        .site nav {
+          flex-basis: 100%;
+          margin-left: 0;
+          gap: 14px;
+          flex-wrap: wrap;
+        }
+        .site nav a { font-size: 13px; }
+      }
+      @media (max-width: 640px) {
+        /* Ten links wrapping to two rows is a poor phone nav, so the header
+           collapses to a toggle and the links open as a vertical list. */
+        .site .wrap { flex-wrap: nowrap; align-items: center; }
+        .menu-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin-left: auto;
+          padding: 7px 12px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--surface-2);
+          color: var(--fg);
+          font: inherit;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .site nav {
+          display: none;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 2px;
+          flex-basis: 100%;
+          margin: 10px 0 2px;
+        }
+        .site.nav-open nav { display: flex; }
+        .site nav a { padding: 9px 2px; font-size: 15px; }
+        .site nav .btn { justify-content: center; margin-top: 6px; }
+      }
+
+      /* --------------------------------------------------------------- buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+        background: var(--accent);
+        color: var(--accent-fg);
+        transition: transform 0.06s ease, filter 0.15s ease;
+      }
+      .btn:hover { filter: brightness(1.08); }
+      .btn:active { transform: translateY(1px); }
+      .btn.secondary {
+        background: var(--surface-2);
+        color: var(--fg);
+        border-color: var(--border);
+      }
+      .btn.secondary:hover { filter: none; border-color: var(--muted); }
+      .btn.ghost { background: transparent; color: var(--fg); border-color: var(--border); }
+      .btn.small { padding: 7px 12px; font-size: 13px; }
+
+      /* ---------------------------------------------------------------- hero -- */
+      .hero { padding: 56px 0 8px; }
+      .hero .wrap {
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        gap: 40px;
+        align-items: center;
+      }
+      @media (max-width: 860px) {
+        .hero .wrap { grid-template-columns: 1fr; gap: 28px; }
+      }
+
+      /* ---------------------------------------------------------------- demo -- */
+      /* The hero's interactive swipe carries the before/after on a wide screen,
+         so this video stands in for it on a phone only. */
+      .demo { padding: 0 0 48px; text-align: center; display: none; }
+      .demo video {
+        max-width: 480px;
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        vertical-align: middle;
+      }
+      @media (max-width: 640px) {
+        .demo { display: block; }
+        /* The video replaces the (now-stacked) swipe on a phone. */
+        .swipe--hero { display: none; }
+      }
+
+      .eyebrow {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--gitlab);
+        margin: 0 0 12px;
+      }
+      h1 {
+        font-size: clamp(28px, 4.4vw, 44px);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        margin: 0 0 14px;
+      }
+      .lede { font-size: 18px; color: var(--muted); margin: 0 0 22px; max-width: 46ch; }
+      .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+      .trust {
+        margin: 18px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+      }
+      .trust span { display: inline-flex; align-items: center; gap: 6px; }
+      .trust span::before { content: "✓"; color: var(--accent); font-weight: 700; }
+
+      /* -------------------------------------------------------------- swipes -- */
+      .swipe {
+        --x: 50%;
+        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        touch-action: pan-y;
+        user-select: none;
+      }
+      .swipe img {
+        display: block;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+      }
+      .swipe .over { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--x)); }
+      .swipe .divider {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--x);
+        width: 2px;
+        margin-left: -1px;
+        background: var(--accent);
+        pointer-events: none;
+      }
+      .swipe .knob {
+        position: absolute;
+        top: 50%;
+        left: var(--x);
+        width: 34px;
+        height: 34px;
+        margin: -17px 0 0 -17px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: var(--accent-fg);
+        font-size: 15px;
+        line-height: 34px;
+        text-align: center;
+        pointer-events: none;
+        box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+      }
+      .swipe input[type="range"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: ew-resize;
+      }
+      /* The range input is transparent, so a focus ring on it would be
+         invisible; show it on the knob instead. */
+      .swipe:has(input[type="range"]:focus-visible) .knob {
+        box-shadow:
+          0 0 0 2px #fff, 0 0 0 5px var(--accent),
+          0 2px 8px rgb(0 0 0 / 0.35);
+      }
+      .swipe .tag {
+        position: absolute;
+        bottom: 10px;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        color: #fff;
+        background: rgb(0 0 0 / 0.62);
+        pointer-events: none;
+      }
+      .swipe .tag.left { left: 10px; }
+      .swipe .tag.right { right: 10px; }
+      /* The <picture> wrappers must not add a box, so the two captures keep
+         overlaying exactly as before. */
+      picture { display: contents; }
+      @media (max-width: 640px) {
+        /* A 1280px capture at phone width is unreadable side-by-side, so the
+           two captures stack instead of overlaying. */
+        .swipe .over { position: static; clip-path: none; }
+        .swipe .divider,
+        .swipe .knob,
+        .swipe input[type="range"],
+        .swipe .tag { display: none; }
+      }
+
+      /* ------------------------------------------------ multi-skin comparison -- */
+      .multi { margin: 0; }
+      .multi-stage {
+        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--surface);
+        box-shadow: var(--shadow), inset 0 0 0 1px var(--border);
+        touch-action: pan-y;
+        user-select: none;
+      }
+      .multi-layer { display: block; width: 100%; height: auto; pointer-events: none; }
+      .multi-layer:not([data-i="0"]) { position: absolute; inset: 0; }
+      .multi-handle {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        margin-left: -1.5px;
+        background: currentColor;
+        color: var(--accent);
+        cursor: ew-resize;
+        touch-action: none;
+        /* A hairline ring keeps the line legible on a light or dark capture. */
+        box-shadow: 0 0 0 1px rgb(255 255 255 / 0.75);
+      }
+      .multi-handle::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 26px;
+        height: 26px;
+        margin: -13px 0 0 -13px;
+        border-radius: 50%;
+        background: currentColor;
+        /* The white ring separates the knob from whatever is behind it. */
+        box-shadow: 0 0 0 2px #fff, 0 2px 8px rgb(0 0 0 / 0.45);
+      }
+      .multi-handle[data-skin="gitlab"] { color: var(--gitlab); }
+      .multi-handle[data-skin="github"] { color: var(--github); }
+      .multi-handle[data-skin="bitbucket"] { color: var(--bitbucket); }
+      /* While dragging, the active divider rises above its neighbours. */
+      .multi-handle.is-dragging { z-index: 3; cursor: grabbing; }
+      .multi-handle.is-dragging::after { transform: scale(1.15); }
+      /* The stage clips overflow, so the ring is drawn as a shadow rather than
+         an outline that would be cut off at the edges. */
+      .multi-handle:focus-visible { outline: none; }
+      .multi-handle:focus-visible::after {
+        box-shadow: 0 0 0 2px #fff, 0 0 0 5px var(--accent), 0 2px 8px rgb(0 0 0 / 0.45);
+      }
+      .multi-handle.is-nudging { animation: gs-nudge 1.2s ease-in-out 2; }
+      @keyframes gs-nudge {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(7px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .multi-handle.is-nudging { animation: none; }
+      }
+      .multi-hint {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        padding: 4px 11px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #fff;
+        background: rgb(0 0 0 / 0.62);
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+      }
+      .multi-hint.is-gone { opacity: 0; }
+      /* The skin name rides with each divider. */
+      .multi-tag {
+        position: absolute;
+        top: 10px;
+        z-index: 2;
+        transform: translateX(10px);
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        color: #fff;
+        background: rgb(0 0 0 / 0.62);
+        pointer-events: none;
+      }
+      .multi-tag.is-flipped { transform: translateX(calc(-100% - 10px)); }
+      .multi-label { display: none; }
+      .multi-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .multi-legend .key { display: inline-flex; align-items: center; gap: 6px; }
+      .multi-legend .key::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: var(--muted);
+      }
+      .multi-legend .key[data-skin="gitlab"]::before { background: var(--gitlab); }
+      .multi-legend .key[data-skin="github"]::before { background: var(--github); }
+      .multi-legend .key[data-skin="bitbucket"]::before { background: var(--bitbucket); }
+      .multi-actions {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .multi-reset,
+      .multi-open {
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .multi-reset:hover,
+      .multi-open:hover { text-decoration: underline; }
+      .multi-tabs { display: none; }
+      .multi-radio {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      @media (max-width: 640px) {
+        /* One capture at a time on a phone, chosen by the tabs, rather than
+           stacking every layer into a very tall widget. The switching is pure
+           CSS: :has() reads the checked radio and shows the matching layer. */
+        .multi-layer {
+          position: static;
+          clip-path: none !important;
+          display: none;
+        }
+        .multi:has(.multi-radio[data-i="0"]:checked) .multi-layer[data-i="0"],
+        .multi:has(.multi-radio[data-i="1"]:checked) .multi-layer[data-i="1"],
+        .multi:has(.multi-radio[data-i="2"]:checked) .multi-layer[data-i="2"],
+        .multi:has(.multi-radio[data-i="3"]:checked) .multi-layer[data-i="3"] {
+          display: block;
+        }
+        .multi-handle,
+        .multi-tag,
+        .multi-label,
+        .multi-hint { display: none; }
+        .multi-tabs {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin: 10px 0 0;
+        }
+        .multi-tab {
+          display: inline-flex;
+          align-items: center;
+          padding: 6px 12px;
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--muted);
+          cursor: pointer;
+        }
+        .multi-tab::before {
+          content: "";
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          margin-right: 6px;
+          background: var(--muted);
+        }
+        .multi-tab[data-skin="gitlab"]::before { background: var(--gitlab); }
+        .multi-tab[data-skin="github"]::before { background: var(--github); }
+        .multi-tab[data-skin="bitbucket"]::before { background: var(--bitbucket); }
+        .multi-radio:checked + .multi-tab {
+          color: var(--fg);
+          background: var(--surface);
+          border-color: var(--muted);
+        }
+        .multi-radio:focus-visible + .multi-tab {
+          outline: 2px solid var(--accent);
+          outline-offset: 2px;
+        }
+        .multi-legend .key { display: none; }
+        .multi-actions { margin-left: 0; }
+      }
+
+      /* ------------------------------------------------------------ sections -- */
+      section { padding: 48px 0; }
+      .section-head { max-width: 60ch; margin: 0 0 24px; }
+      h2 { font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.015em; margin: 0 0 8px; }
+      .section-head p { color: var(--muted); margin: 0; font-size: 16px; }
+
+      /* The comparison picker: one source forge × one page kind. Switching the
+         pair swaps the one visible card, so the section stays a single capture
+         tall instead of seven stacked captures. */
+      .see-tabs {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin: 24px 0 20px;
+      }
+      .see-tabs__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 3px;
+        padding: 4px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-2);
+      }
+      .see-tab {
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        background: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 5px 12px;
+        cursor: pointer;
+      }
+      .see-tab:hover { color: var(--fg); }
+      .see-tab[aria-pressed="true"] {
+        color: var(--fg);
+        background: var(--surface);
+        box-shadow: inset 0 0 0 1px var(--border);
+      }
+      .see-tab:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      /* A forge tab carries the colour of the divider it stands for. */
+      .see-tab[data-forge] {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .see-tab[data-forge]::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+      .see-tab[data-forge="gitlab"]::before { background: var(--gitlab); }
+      .see-tab[data-forge="github"]::before { background: var(--github); }
+      .see-tab[data-forge="bitbucket"]::before { background: var(--bitbucket); }
+      /* Last, so it beats the inline-flex above for a forge tab that sits out. */
+      .see-tab[hidden] { display: none; }
+      @media (max-width: 620px) {
+        .card[id] { scroll-margin-top: 168px; }
+      }
+
+      .demos { display: grid; gap: 28px; }
+      .card[id] { scroll-margin-top: 132px; }
+      /* A nav link scrolls its section to the top of the viewport, where the
+         sticky header sits over it. `.card[id]` below already carries a
+         scroll-margin for the same reason; the sections needed one too, and
+         without it every entry in the primary nav landed its heading under the
+         bar. Sized to the sticky header's height plus a little. */
+      section[id] { scroll-margin-top: 84px; }
+      /* Only the selected comparison is shown; the rest keep their place. */
+      .card[hidden] { display: none; }
+      /* Skip rendering the demos until they scroll near the viewport. */
+      .card { content-visibility: auto; contain-intrinsic-size: auto 820px; }
+      .card h3 { font-size: 16px; margin: 0 0 4px; }
+      .card .sub { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+      .card .sub b.gitlab { color: var(--gitlab); }
+      .card .sub b.github { color: var(--github); }
+      .card .sub b.bitbucket { color: var(--bitbucket); }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+      .feature {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px;
+      }
+      .feature h3 { margin: 0 0 6px; font-size: 15px; }
+      .feature p { margin: 0; color: var(--muted); font-size: 14px; }
+      .feature .ico { font-size: 20px; display: block; margin-bottom: 8px; }
+
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+      .chip {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        border-radius: 999px;
+        padding: 6px 13px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .chip.skin {
+        border-color: var(--gitlab);
+        border-color: color-mix(in srgb, var(--gitlab) 45%, var(--border));
+      }
+      .chips-note { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+
+      .split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+      @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+      .panel {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 22px;
+      }
+      .panel h3 { margin: 0 0 10px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+      .blogo { display: block; width: 18px; height: 18px; flex: none; }
+      .btn .blogo {
+        width: 16px;
+        height: 16px;
+        background: #fff;
+        border-radius: 50%;
+        padding: 2px;
+        box-sizing: content-box;
+      }
+      .panel .blogo { width: 20px; height: 20px; }
+      .panel ul.browsers {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+        margin: 14px 0 0;
+        padding: 0;
+      }
+      .panel ul.browsers li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .panel ul.browsers img { display: block; width: 18px; height: 18px; flex: none; }
+      .panel ol, .panel ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+      .panel li { margin: 4px 0; }
+      .panel li b { color: var(--fg); }
+      .panel pre {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        overflow-x: auto;
+        font: 12.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        margin: 10px 0 0;
+      }
+      .note { font-size: 13px; color: var(--muted); margin: 12px 0 0; }
+
+      /* --------------------------------------------------------------- terms -- */
+      .table-wrap { overflow-x: auto; margin-top: 10px; }
+      table.terms { width: 100%; border-collapse: collapse; font-size: 14px; }
+      table.terms th,
+      table.terms td {
+        text-align: left;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      table.terms th { color: var(--muted); font-weight: 600; font-size: 13px; }
+      table.terms td:first-child { color: var(--muted); }
+      table.terms code {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 12.5px;
+      }
+      /* The vocabulary table is the payoff of "not just a theme", so it sits in
+         its own raised panel rather than trailing the feature grid. */
+      .words {
+        margin-top: 40px;
+        padding: 26px 26px 18px;
+        border: 1px solid var(--border);
+        border-top: 3px solid var(--accent);
+        border-radius: 14px;
+        background: linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--accent) 8%, var(--surface-2)) 0%,
+          var(--surface-2) 62%
+        );
+        box-shadow: var(--shadow);
+      }
+      /* The framing line inside the panel, not a heading: the section's heading
+         is above it, so this must not compete with it. */
+      .words-head { max-width: 66ch; margin: 0 0 18px; }
+      .words-head p { margin: 0; color: var(--muted); font-size: 15px; }
+      .words-head code {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 12.5px;
+      }
+      .swatch {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        margin-right: 7px;
+        vertical-align: middle;
+      }
+      .swatch.github { background: var(--github); }
+      .swatch.gitlab { background: var(--gitlab); }
+      .swatch.bitbucket { background: var(--bitbucket); }
+      .swatch.gitea { background: var(--gitea); }
+      .swatch.gerrit { background: var(--gerrit); }
+      table.terms th.col-github,
+      table.terms th.col-gitlab,
+      table.terms th.col-bitbucket,
+      table.terms th.col-gitea,
+      table.terms th.col-gerrit { color: var(--fg); }
+      /* A cell the extension has no word for is not a feature list, so it is
+         dimmed and centred — but it stays in the table, because leaving it out
+         would let the table imply every forge has every concept. */
+      table.terms td.no { color: var(--muted); text-align: center; }
+      .terms-note {
+        margin: 14px 0 0;
+        color: var(--muted);
+        font-size: 13.5px;
+        max-width: 92ch;
+      }
+      .terms-note b { color: var(--fg); }
+      @media (max-width: 620px) {
+        table.terms { font-size: 12px; }
+        table.terms th,
+        table.terms td { padding: 7px 6px; }
+        .swatch { margin-right: 4px; }
+      }
+      /* --------------------------------------------------- comparison grid -- */
+      /* The axes table: how deep a tool reaches, times which way it points.
+         The point of the section is the cell, so the table is laid out as the
+         two axes it means and not as a ranked list. */
+      table.axes { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      table.axes th,
+      table.axes td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+        font-size: 14px;
+      }
+      table.axes thead th { background: var(--surface); color: var(--fg); font-size: 13px; }
+      table.axes thead th small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+      table.axes tbody th {
+        background: var(--surface);
+        color: var(--fg);
+        font-weight: 600;
+        width: 22%;
+      }
+      table.axes tbody th small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+      table.axes td { color: var(--muted); }
+      /* The cell GitAlike occupies. Weighted so the row of it is the one the eye
+         lands on, since that is the whole claim. */
+      table.axes td.self {
+        background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+        color: var(--fg);
+        font-weight: 600;
+      }
+      table.axes td.empty { text-align: center; color: var(--muted); }
+      /* Capability matrix: same legend as the terms table, centred columns. */
+      table.cmp { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+      table.cmp th,
+      table.cmp td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+      table.cmp thead th { color: var(--fg); font-size: 13px; white-space: nowrap; }
+      table.cmp tbody tr:last-child td { border-bottom: 0; }
+      table.cmp td:not(:first-child),
+      table.cmp thead th:not(:first-child) { text-align: center; }
+      table.cmp td:first-child { color: var(--muted); }
+      /* A row GitAlike does not win is kept, and kept visible. */
+      table.cmp tr.gitalike-loses td { background: color-mix(in srgb, var(--danger, #cf222e) 6%, transparent); }
+      table.cmp tr.gitalike-loses td:first-child { color: var(--fg); }
+      .mark { font-size: 15px; }
+      .mark.yes { color: #1a7f37; }
+      .mark.part { color: #9a6700; }
+      .mark.no { color: var(--muted); }
+      .cmp-note { margin: 12px 0 0; color: var(--muted); font-size: 13.5px; max-width: 92ch; }
+      .cmp-note b { color: var(--fg); }
+      /* Per-tool notes. Not a sales pitch for any of them — each one is the
+         right answer for a different question. */
+      .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+      @media (max-width: 760px) { .tools { grid-template-columns: 1fr; } }
+      .tool { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+      .tool h3 { margin: 0 0 4px; font-size: 15px; }
+      .tool h3 a { color: var(--fg); }
+      .tool .role { color: var(--muted); font-size: 12.5px; margin: 0 0 10px; }
+      .tool p { margin: 0; color: var(--muted); font-size: 13.5px; }
+      .tool p + p { margin-top: 8px; }
+      .tool p b { color: var(--fg); }
+      .tool.wrong-for { border-style: dashed; }
+      @media (max-width: 560px) {
+        .words { padding: 16px 16px 10px; }
+      }
+
+      /* The design-system table reuses the vocabulary table's idiom, but its
+         cells are phrases rather than single words, so they wrap instead of
+         marching off the right edge, and its first column names a factor. */
+      table.terms.systems { min-width: 940px; }
+      table.terms.systems th,
+      table.terms.systems td { white-space: normal; vertical-align: top; }
+      table.terms.systems td:first-child {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      /* A group row labels a block of factors rather than naming one, so it
+         spans the table and reads as a quiet heading, not a cell. */
+      table.terms tr.terms-group th {
+        padding: 20px 12px 7px;
+        color: var(--fg);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      table.terms tbody:first-child tr.terms-group th { padding-top: 0; }
+
+      /* ----------------------------------------------------------------- faq -- */
+      .faq { display: grid; gap: 10px; max-width: 74ch; }
+      .faq details {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0 16px;
+      }
+      .faq summary {
+        cursor: pointer;
+        padding: 14px 0;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .faq summary::-webkit-details-marker { display: none; }
+      .faq summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+      .faq details[open] summary::after { content: "–"; }
+      .faq p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+
+      /* -------------------------------------------------------------- footer -- */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 0 56px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer .wrap { display: grid; gap: 12px; }
+      footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+      footer a { color: var(--accent); text-decoration: none; }
+      footer a:hover { text-decoration: underline; }
+      footer .fine { font-size: 12.5px; max-width: 80ch; }
+
+      .to-top {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 15;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--fg);
+        font-size: 18px;
+        text-decoration: none;
+        box-shadow: var(--shadow);
+      }
+      .to-top[hidden] { display: none; }
+      .to-top:hover { border-color: var(--muted); }
