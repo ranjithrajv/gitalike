@@ -141,6 +141,8 @@
         --gitlab: #7759c2;
         --github: #0969da;
         --bitbucket: #0052cc;
+        --gitea: #609926;
+        --gerrit: #d97706;
         --shadow: 0 1px 3px rgb(0 0 0 / 0.08), 0 8px 24px rgb(0 0 0 / 0.06);
       }
       @media (prefers-color-scheme: dark) {
@@ -156,6 +158,8 @@
           --gitlab: #9c8ad8;
           --github: #2f81f7;
           --bitbucket: #579dff;
+          --gitea: #8ab945;
+          --gerrit: #e8a33d;
           --shadow: 0 1px 3px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.35);
         }
       }
@@ -227,9 +231,11 @@
       .site nav a:hover { color: var(--fg); }
       .site nav a.is-active { color: var(--fg); }
       .site nav .btn { color: var(--accent-fg); }
-      @media (max-width: 620px) {
-        /* Keep every link reachable on a phone: brand on one row, the nav wraps
-           to a second row instead of hiding. */
+      @media (max-width: 980px) {
+        /* The primary nav carries ten links — the nine sections plus Source —
+           so a single row stops fitting well before phone width. Brand and
+           button keep one row and the nav wraps to a second instead of pushing
+           the page wide; it wraps internally on a phone. */
         .site .wrap {
           height: auto;
           flex-wrap: wrap;
@@ -811,12 +817,46 @@
       .swatch.github { background: var(--github); }
       .swatch.gitlab { background: var(--gitlab); }
       .swatch.bitbucket { background: var(--bitbucket); }
+      .swatch.gitea { background: var(--gitea); }
+      .swatch.gerrit { background: var(--gerrit); }
       table.terms th.col-github,
       table.terms th.col-gitlab,
-      table.terms th.col-bitbucket { color: var(--fg); }
+      table.terms th.col-bitbucket,
+      table.terms th.col-gitea,
+      table.terms th.col-gerrit { color: var(--fg); }
+      .terms-note {
+        margin: 14px 0 0;
+        color: var(--muted);
+        font-size: 13.5px;
+        max-width: 92ch;
+      }
+      .terms-note b { color: var(--fg); }
       @media (max-width: 560px) {
         .words { padding: 16px 16px 10px; }
       }
+
+      /* The design-system table reuses the vocabulary table's idiom, but its
+         cells are phrases rather than single words, so they wrap instead of
+         marching off the right edge, and its first column names a factor. */
+      table.terms.systems { min-width: 940px; }
+      table.terms.systems th,
+      table.terms.systems td { white-space: normal; vertical-align: top; }
+      table.terms.systems td:first-child {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      /* A group row labels a block of factors rather than naming one, so it
+         spans the table and reads as a quiet heading, not a cell. */
+      table.terms tr.terms-group th {
+        padding: 20px 12px 7px;
+        color: var(--fg);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      table.terms tbody:first-child tr.terms-group th { padding-top: 0; }
 
       /* ----------------------------------------------------------------- faq -- */
       .faq { display: grid; gap: 10px; max-width: 74ch; }
@@ -894,6 +934,7 @@
           <a href="#how">How</a>
           <a href="#features">Features</a>
           <a href="#words">Words</a>
+          <a href="#systems">Design</a>
           <a href="#forges">Forges</a>
           <a href="#plugins">Plugins</a>
           <a href="#privacy">Privacy</a>
@@ -1577,6 +1618,199 @@
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------- systems -->
+      <section id="systems">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>The design systems behind the UIs</h2>
+            <p class="lede">
+              Layout, palette, type and interaction are what make a forge <em>feel</em>
+              like itself — and what your hands learn. These are the pieces a skin
+              has to reproduce.
+            </p>
+            <p>
+              The words table above shows what each product calls a thing. This one
+              shows how each product <b>builds</b> it: the shape its navigation takes,
+              the colour it owns, the type it sets and the muscle memory it teaches.
+              A skin that only recolours gets one row of this table and drops the
+              rest — which is why GitAlike re-points the palette, re-orients the
+              navigation and re-labels the controls, then reverts all of it.
+            </p>
+          </div>
+          <div class="table-wrap">
+            <table class="terms systems">
+              <thead>
+                <tr>
+                  <th scope="col">Factor</th>
+                  <th scope="col" class="col-github"><span class="swatch github"></span>GitHub</th>
+                  <th scope="col" class="col-gitlab"><span class="swatch gitlab"></span>GitLab</th>
+                  <th scope="col" class="col-bitbucket"><span class="swatch bitbucket"></span>Bitbucket</th>
+                  <th scope="col" class="col-gitea"><span class="swatch gitea"></span>Gitea / Forgejo</th>
+                  <th scope="col" class="col-gerrit"><span class="swatch gerrit"></span>Gerrit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="terms-group"><th colspan="6" scope="colgroup">Layout &amp; structure</th></tr>
+                <tr>
+                  <td>Design system</td>
+                  <td>Primer</td>
+                  <td>Pajamas</td>
+                  <td>Atlassian Design System (ADS)</td>
+                  <td>Gitea's own, Bootstrap-derived</td>
+                  <td>PolyGerrit, Material Design</td>
+                </tr>
+                <tr>
+                  <td>Navigation shape</td>
+                  <td>Horizontal repo tab row</td>
+                  <td>Vertical, grouped super-sidebar</td>
+                  <td>Vertical, flat sidebar</td>
+                  <td>Horizontal tab row (<code>overflow-menu</code>)</td>
+                  <td>Header views and query tabs; no repo tabs</td>
+                </tr>
+                <tr>
+                  <td>Page frame</td>
+                  <td>Dark app bar → tab row → content beside an <b>About</b> rail</td>
+                  <td>Light super-topbar → left rail → one wide content column</td>
+                  <td>Dark blue app bar → left sidebar → card content</td>
+                  <td>Top bar → tab row → bordered cards</td>
+                  <td>Header → change list → info panel per change</td>
+                </tr>
+                <tr>
+                  <td>Landing page</td>
+                  <td>File table, README, About rail</td>
+                  <td>README-first, then <b>Project information</b></td>
+                  <td>Card overview with its own navigation</td>
+                  <td>File table, then README</td>
+                  <td>Change list / query results</td>
+                </tr>
+                <tr>
+                  <td>Metadata lives</td>
+                  <td>In a right-hand <b>About</b> rail</td>
+                  <td>Full-width <b>Project information</b> block</td>
+                  <td>Sidebar and header badges</td>
+                  <td>Repo header, then sidebar</td>
+                  <td>Change info panel</td>
+                </tr>
+              </tbody>
+              <tbody>
+                <tr class="terms-group"><th colspan="6" scope="colgroup">Colour</th></tr>
+                <tr>
+                  <td>Accent</td>
+                  <td>Blue <code>#0969da</code></td>
+                  <td>Blue <code>#1f75cb</code>, purple <code>#7759c2</code></td>
+                  <td>Atlassian blue <code>#0052cc</code></td>
+                  <td>Green <code>#609926</code></td>
+                  <td>Material blue links on grey; no brand hue at rest</td>
+                </tr>
+                <tr>
+                  <td>Header surface</td>
+                  <td>Near-black <code>#000000</code> app bar</td>
+                  <td>Light grey <code>#ececef</code> — the rail's own grey</td>
+                  <td>Dark blue <code>#0049b0</code> bar</td>
+                  <td>Its own bar (<code>--color-nav-bg</code>)</td>
+                  <td>Header drawn from the applied skin</td>
+                </tr>
+                <tr>
+                  <td>Primary action</td>
+                  <td>Green <b>Code</b> / <b>Merge</b></td>
+                  <td>Blue <b>Code</b> / <b>Merge</b></td>
+                  <td>Blue <b>Clone</b> / <b>Merge</b></td>
+                  <td>Green primary button</td>
+                  <td>Material blue button</td>
+                </tr>
+                <tr>
+                  <td>Dark theme</td>
+                  <td>Canvas <code>#0d1117</code></td>
+                  <td>Canvas <code>#1f1e24</code></td>
+                  <td>Canvas <code>#1d2125</code></td>
+                  <td>Its own <code>[data-theme]</code> dark mode</td>
+                  <td>PolyGerrit's root properties, dark</td>
+                </tr>
+              </tbody>
+              <tbody>
+                <tr class="terms-group"><th colspan="6" scope="colgroup">Typography</th></tr>
+                <tr>
+                  <td>Sans stack</td>
+                  <td>System UI — <code>-apple-system</code>, Segoe UI, Noto Sans</td>
+                  <td><b>GitLab Sans</b> (Inter-based)</td>
+                  <td><b>Atlassian Sans</b> (Inter-derived); Charlie for brand</td>
+                  <td>System UI stack</td>
+                  <td><b>Roboto</b></td>
+                </tr>
+                <tr>
+                  <td>Mono stack</td>
+                  <td><code>ui-monospace</code> — SF Mono, Menlo, Consolas</td>
+                  <td><b>GitLab Mono</b> (JetBrains Mono-based)</td>
+                  <td><b>Atlassian Mono</b></td>
+                  <td>System mono stack</td>
+                  <td><b>Roboto Mono</b></td>
+                </tr>
+                <tr>
+                  <td>Type character</td>
+                  <td>Dense and tabular, ~14px base</td>
+                  <td>Airier and documentation-like, ~14px base</td>
+                  <td>Medium density, ~14px base</td>
+                  <td>Compact and utilitarian, ~14px base</td>
+                  <td>Material, dense list, ~14px base</td>
+                </tr>
+              </tbody>
+              <tbody>
+                <tr class="terms-group"><th colspan="6" scope="colgroup">Interaction &amp; muscle memory</th></tr>
+                <tr>
+                  <td>Corner radius</td>
+                  <td>4 / 6 / 8px, three steps</td>
+                  <td>4 / 8px, two steps</td>
+                  <td>3 / 8px, two steps</td>
+                  <td>3–4px controls</td>
+                  <td>Small, Material radius</td>
+                </tr>
+                <tr>
+                  <td>Elevation</td>
+                  <td>Hairline borders, faint shadow</td>
+                  <td>Flat, hairline borders</td>
+                  <td>Flat with borders, occasional shadow</td>
+                  <td>Bordered cards, minimal shadow</td>
+                  <td>Material elevation — shadowed cards</td>
+                </tr>
+                <tr>
+                  <td>Icons</td>
+                  <td>Octicons</td>
+                  <td>Pajamas / GitLab SVGs</td>
+                  <td>Atlassian icons</td>
+                  <td>Gitea's own SVGs</td>
+                  <td>Material icons</td>
+                </tr>
+                <tr>
+                  <td>Keyboard</td>
+                  <td><code>g p</code> pull requests, <code>g b</code> projects, <code>g n</code> notifications; <code>t</code> file finder, <code>/</code> search</td>
+                  <td><code>g m</code> merge requests, <code>g p</code> projects, <code>g t</code> todos; <code>/</code> search</td>
+                  <td>No <code>g</code>-combos; its own shortcut set is small</td>
+                  <td>Ships no <code>g</code>-combos of its own</td>
+                  <td>No <code>g</code>-combos; a change view is navigated with single keys</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="terms-note">
+              Every cell is the product's own choice, not GitAlike's: the palette
+              values are the ones the colour gate scores in
+              <code>tests/fixtures/target-chrome.json</code>, the radius and type
+              stacks are the skins' <code>--gs-*</code> declarations, and the
+              layout, landing page and navigation rows are the anatomy in
+              <a href="FORGE-UX.md">FORGE-UX.md</a>. The keyboard row is the
+              muscle memory itself — and the one a skin can hand across forges:
+              GitAlike replays the applied product's <code>g</code>-combos on a
+              site that honours synthetic keys and delivers them as trusted
+              clicks where it does not, so the combos you know keep working after
+              the UI changes. Bitbucket reuses GitLab's layout pass, so a
+              Bitbucket skin is GitHub's or GitLab's shape in Atlassian's palette.
+              Gitea ships none of these combos of its own, so the applied
+              product's are delivered as clicks on its own navigation links, and
+              the Bitbucket skin maps none at all.
+            </p>
           </div>
         </div>
       </section>
