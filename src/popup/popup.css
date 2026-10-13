@@ -173,8 +173,7 @@ main {
   overflow: hidden;
 }
 
-.add__toggle,
-.site__toggle {
+.add__toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -191,8 +190,7 @@ main {
   cursor: pointer;
 }
 
-.add__toggle:hover,
-.site__toggle:hover {
+.add__toggle:hover {
   color: var(--accent);
 }
 
@@ -205,16 +203,14 @@ main {
   overflow-wrap: anywhere;
 }
 
-.add__chevron,
-.site__chevron {
+.add__chevron {
   flex: none;
   font-size: 13px;
   line-height: 1;
 }
 
 /* the plus becomes a cross */
-.add__toggle[aria-expanded="true"] .add__chevron,
-.site__toggle[aria-expanded="true"] .site__chevron {
+.add__toggle[aria-expanded="true"] .add__chevron {
   transform: rotate(45deg);
 }
 
@@ -409,8 +405,7 @@ main {
 
 /* One list, two scopes: the global group and the per-site group draw the same
    rows, so these are shared rather than duplicated. */
-.skin__options,
-.site__options {
+.skin__options {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -461,52 +456,7 @@ main {
   color: var(--accent);
 }
 
-.skin__hosts {
-  font-size: 11px;
-  color: var(--fg-muted);
-  overflow-wrap: anywhere;
-}
-
 .skin__option input:focus-visible + .skin__text {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* ------------------------------------------------------- per-site skin -- */
-
-/* Which skin this host wears, one host at a time. Set apart from the global
-   skin control so it reads as "this site", not another global choice — and
-   disclosed, because it offers the same four choices the global picker does. */
-.site {
-  margin: 2px 4px 8px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.site__body {
-  padding: 0 8px 6px;
-}
-
-.site__reset {
-  display: block;
-  margin: 8px 0 0 2px;
-  padding: 0;
-  font: inherit;
-  font-size: 11px;
-  color: var(--fg-muted);
-  background: none;
-  border: 0;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.site__reset:hover {
-  color: var(--accent);
-}
-
-.site__reset:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -602,8 +552,7 @@ kbd {
    users who have not asked for reduced motion, they stay under 200ms, and they
    animate compositor properties only. */
 @media (prefers-reduced-motion: no-preference) {
-  .add__chevron,
-  .site__chevron {
+  .add__chevron {
     transition: transform 120ms ease-out;
   }
 
@@ -658,14 +607,6 @@ kbd {
     -webkit-tap-highlight-color: transparent;
   }
 
-  .site__toggle {
-    padding: 12px 12px;
-    font-size: 13px;
-    min-height: 44px;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
   .add__input {
     padding: 10px 12px;
     font-size: 14px;
@@ -707,14 +648,6 @@ kbd {
 
   .report {
     padding: 12px;
-    font-size: 12px;
-    min-height: 44px;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .site__reset {
-    padding: 10px 12px;
     font-size: 12px;
     min-height: 44px;
     touch-action: manipulation;

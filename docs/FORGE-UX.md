@@ -22,7 +22,8 @@ A source product wears the *other* product's UI by default (GitHub ⇄ GitLab);
 Gitea is GitHub-flavoured and can wear either; Bitbucket is both a source and a
 target — a Bitbucket host wears the GitHub or GitLab UI, and any source can be
 chosen for the Bitbucket UI. Gerrit is a source only, added one instance at a
-time. The popup picks one skin at a time, with a per-site override — see
+time. The popup picks one skin at a time, and the choice covers every source;
+`Alt` + `Shift` + `G` takes a single host out of it — see
 [UX-PARITY.md](UX-PARITY.md#skin-selection).
 
 ## Directions

@@ -59,12 +59,12 @@ it stops short of a perfect reskin — the detail behind the short list in the
   original theme; it is the only store readable synchronously at
   `document_start`. Being origin storage, the page can read or overwrite it, but
   `storage.sync` is reconciled immediately afterwards and wins.
-- **The global skin covers every host it applies to at once, unless you choose a
-  skin per host.** The **Show the web with** radio sets one skin for the whole
-  extension. The popup's **Show *this site* with** picker (and
-  `Alt` + `Shift` + `G`) chooses the skin for a single host, which is how an
-  enterprise instance is skinned without `github.com`; there is no bulk per-host
-  list beyond that.
+- **The global skin covers every host it applies to at once.** The **Show the
+  web with** radio sets one skin for the whole extension, and there is
+  deliberately no per-site list — a second list of the same four choices earned
+  nothing. `Alt` + `Shift` + `G` switches a single host off and on, which is how
+  an enterprise instance is taken out of the global skin; there is no way to give
+  one host a *different* skin from the global one.
 - **The Bitbucket skin is verified from a capture, not live.** Bitbucket no
   longer serves public repository pages, so its palette and repo-tab set were
   taken from an archived Bitbucket repository page (Atlassian's `#0049B0` bar,

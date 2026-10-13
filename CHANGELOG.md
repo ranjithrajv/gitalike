@@ -8,6 +8,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The popup asks one question.** The per-site skin picker is gone. A skin
+  applies to every source — `settingsForSkin` writes the choice to every kind —
+  so a second list of the same four options had nothing to say that the first had
+  not, and it is off the popup entirely rather than merely collapsed. The one
+  part of a per-site choice that does not need a list survives: `Alt` + `Shift` +
+  `G` still switches a single host off and on, which is how an enterprise
+  instance is taken out of the global skin. Docs that described the picker
+  (README, FORGE-UX, LIMITATIONS, UX-PARITY) say what the popup does now.
+- **The options name what you get, not the interface it comes from.** The four
+  radio labels read **GitHub Alike**, **GitLab Alike**, **Bitbucket Alike** and
+  **Off**, in place of "… UI". The product buttons in **Add a site** keep their
+  plain names: they say which product a host *is*, which is a different
+  question from which UI it is shown with.
 - **Both skin lists are drawn as the same control.** They were already the same
   `<input type="radio">` from one builder, but only the global list looked like
   it: the per-site group hid its radios under `opacity: 0` and painted pills, so
@@ -24,14 +37,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   it now discloses — collapsed, with its resolved state in the summary
   ("This site: GitLab UI", or that it follows the global skin), and it opens
   itself when the host actually carries an override, the one case the summary
-  cannot state in full. The global picker's sub-labels were three near-identical
-  lines of the same four hostnames — 170 characters, a quarter of the popup —
-  and are now a count ("4 sites"), which answers the same question in a fifth of
-  the room. `Off` carries no gloss, its label being the whole of it. Net effect
-  on the default view: 652 visible characters and 8 radios, down to **358 and
-  4**, with no control removed. `tests/popup-content.test.mjs` holds both halves:
-  the list is disclosed rather than deleted, and no sub-label may go back to
-  joining hostnames.
+  cannot state in full. The global picker's sub-labels are gone: they were the
+  hosts each skin would change, three near-identical lines naming the same four
+  domains — 170 characters and a quarter of the popup — and a row is now the
+  product's name and nothing else. The host list is still consulted, to decide
+  the marker a row carries, which is a question a border answers better than a
+  sentence. Net effect on the default view: 652 visible characters and 8 radios,
+  down to **140 and 4**, enough that the popup no longer scrolls at all — with
+  no control removed. `tests/popup-content.test.mjs` holds both halves: the list
+  is disclosed rather than deleted, and a row may not grow a sub-label back.
 - **GitAlike is positioned as a cognitive accessibility tool.** The README gains
   a new section — "A cognitive accessibility tool" — that frames the reciprocal
   reskinning as an accessibility feature: developers who think in one forge's

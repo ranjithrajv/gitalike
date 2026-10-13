@@ -54,9 +54,9 @@ from the popup, which asks for that one site's access.
 GitAlike starts with the two big forges, GitHub and GitLab, and grows from
 there. The GitHub-flavoured **Codeberg** (Forgejo) and **gitea.com** (Gitea) are
 bundled too — they speak GitHub's dialect, so by default they are shown with the
-GitLab UI, and the per-site picker can show them with the GitHub or Bitbucket UI
-instead. **Bitbucket** is a source as well as a target: a Bitbucket host can be
-shown with the GitHub or GitLab UI. **Gerrit** is a source too, added by
+GitLab UI, and the Bitbucket UI shows them as Bitbucket instead. **Bitbucket** is
+a source as well as a target: a Bitbucket host can be shown with the GitHub or
+GitLab UI. **Gerrit** is a source too, added by
 instance. Sourcehut is the next candidate. A forge that already speaks one of the
 two dialects needs only to be classified as that kind of site; until then, any
 instance works today through the popup's **Add a site** flow. If you would like
@@ -197,18 +197,13 @@ time. Each option lists the hosts it covers:
 It starts on **Off**. A choice applies to every host it covers at once, and the
 option covering the site you are on is highlighted.
 
-When you are on a site GitAlike knows, a **Show *this site* with** picker below
-lets you choose the skin for that one host — **Off**, **GitHub UI**,
-**GitLab UI** or **Bitbucket UI** — so one enterprise instance can wear a
-different skin (or none) without changing `github.com`. Choosing a site's own UI
-(`github.com` shown as GitHub, `gitlab.com` shown as GitLab) is the same as
-**Off**, because GitAlike does not repaint a site as itself. Bitbucket is never
-a site's own UI — no forge is Bitbucket's markup — so it always paints.
-**Follow the global skin** clears the per-site choice.
+A skin applies to **every forge at once** — there is no per-site list, because a
+second one could only repeat the four choices above. To take one host out of it,
+`Alt` + `Shift` + `G` switches that host off and on.
 
-**Keyboard:** `Alt` + `Shift` + `G` toggles the current site (the same per-site
-choice). It can only toggle a site that is already set up — telling GitHub from
-GitLab is a choice, so the first time has to go through the popup.
+**Keyboard:** `Alt` + `Shift` + `G` toggles the current site. It can only toggle
+a site that is already set up — telling GitHub from GitLab is a choice, so the
+first time has to go through the popup.
 `Alt` + `Shift` + `O` opens the current page on the other host (the two public
 forges only). Rebind either at `chrome://extensions/shortcuts` (Firefox:
 `about:addons` → gear → *Manage Extension Shortcuts*).
@@ -254,8 +249,8 @@ Anything that is not a web address is refused rather than stored, including
 (`github.com`, `gitlab.com`, `codeberg.org`, `gitea.com`, `bitbucket.org`) are
 refused too — they are already set up and cannot be removed.
 
-To undo, open the popup on that host and choose **Remove**. That also clears any
-per-site skin choice on it.
+To undo, open the popup on that host and choose **Remove**. That also drops the
+host's own on/off choice, if `Alt` + `Shift` + `G` had set one.
 
 ## UX parity
 
@@ -348,8 +343,8 @@ capture, the Codeberg/Gitea partial pass, the mark’s provenance and the
 ## Privacy
 
 GitAlike collects no data and makes no network requests. It stores only your
-on/off choices — including any per-site skin choices — and the list of instances
-you add, in the browser's own synced extension storage, and caches the per-site
+on/off choices — including any per-host ones — and the list of instances
+you add, in the browser's own synced extension storage, and caches the per-host
 decision in the page's `localStorage` so a repeat visit does not flash the
 original theme.
 Nothing read from a page is stored or sent anywhere. The full policy is at

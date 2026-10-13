@@ -618,10 +618,11 @@ The popup chooses **one skin for the whole extension**: a single **Show the web
 with** radio group — **GitLab UI**, **GitHub UI** or **Off** — so the two skins
 can never both be active. The choice is mapped onto the per-kind settings the
 background, badge and content scripts already read (only one kind is ever on),
-and a state stored with both skins on is reduced to one when the popup opens. A
-per-site picker can still override a single host with **Off**, **GitHub UI** or
-**GitLab UI**, stored in the `gitSameHostSettings` map; choosing a site's own UI
-is treated as off (`popup/`, `lib/sites.js`).
+and a state stored with both skins on is reduced to one when the popup opens.
+A per-host choice still exists in the data — `Alt` + `Shift` + `G` writes
+**Off** or the product's default to the `gitSameHostSettings` map, and choosing
+a site's own UI is treated as off — but the popup no longer offers a list for it:
+the global radio already covers every source (`popup/`, `lib/sites.js`).
 
 ## References
 

@@ -109,39 +109,6 @@
         ></div>
       </section>
 
-      <!-- Only for a host the extension knows: pick which skin *this* host wears,
-           independent of the global skin. The options are generated from the
-           shared `skins` table, so a new skin appears here automatically. -->
-      <!-- The per-site override is the exception, and the global picker above
-           already offers the same four choices — so this one discloses instead
-           of putting a second copy of that list on screen. It opens itself when
-           the host carries an override, which is the only case where it has
-           something the collapsed summary cannot say. -->
-      <section class="site" id="site" hidden>
-        <button
-          type="button"
-          class="site__toggle"
-          id="site-toggle"
-          aria-expanded="false"
-          aria-controls="site-body"
-        >
-          <span id="site-summary">This site</span>
-          <span class="site__chevron" aria-hidden="true">＋</span>
-        </button>
-
-        <div class="site__body" id="site-body" hidden>
-          <div
-            class="site__options"
-            id="site-options"
-            role="radiogroup"
-            aria-label="Skin for this site"
-          ></div>
-          <button type="button" class="site__reset" id="site-reset" hidden>
-            Follow the global skin
-          </button>
-        </div>
-      </section>
-
       <button type="button" class="open-other" id="open-other" hidden></button>
 
       <!-- Opens a prefilled issue, so a skin miss is reported with the context

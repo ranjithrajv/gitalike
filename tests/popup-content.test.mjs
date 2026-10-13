@@ -1,17 +1,18 @@
 /**
  * Popup content shape.
  *
- * The popup offers one decision — which UI a page wears — and it used to offer
- * it twice: the global picker and the per-site picker were built from the same
- * `THEMES` list, so a host the extension knows rendered eight radio inputs for
- * four distinct choices, and the global picker's sub-labels were three
- * near-identical lines of the same four hostnames (170 characters, a quarter of
- * everything the popup said).
+ * The popup asks one question — which UI a page wears — and it used to ask it
+ * twice: a global picker and a per-site picker, both built from the same
+ * `THEMES` list, so a host the extension knew rendered eight radio inputs for
+ * four distinct choices. The global picker's sub-labels were three
+ * near-identical lines naming the same four hostnames (170 characters, a
+ * quarter of everything the popup said), reduced to a count, and now gone.
  *
- * The per-site override is the exception, so it discloses; and it stays in the
- * mark-up — it is `hidden`, not removed, and the tests below hold that line
- * rather than asserting the list is gone. What must not come back is the
- * *duplication on screen* and the hostname list, which is what these assert.
+ * The per-site picker was disclosed, then dropped outright: a skin applies to
+ * every source, `settingsForSkin` writes it to every kind, so there is nothing
+ * for a second list to say that the first has not. What a per-site choice still
+ * affords — switching one host off and on — is `Alt`+`Shift`+`G`, which does not
+ * need a list of four to do it.
  *
  * `tests/popup-contrast.test.mjs` covers the other half of the audit.
  *
@@ -29,75 +30,95 @@ const read = (name) =>
   );
 
 const HTML = read('popup.html');
+const CSS = read('popup.css');
 const JS = read('popup.js');
 
-/** The `disabled`-style attribute on an element, matched by its id. */
-const opensWith = (id) =>
+/** The opening tag of the element with this id. */
+const tagFor = (id) =>
   new RegExp(`<[^>]*id="${id}"[^>]*>`).exec(HTML)?.[0] ?? '';
 
 describe('popup content', () => {
-  test('the per-site picker is disclosed, not shown beside the global one', () => {
-    // The whole point: the same four choices must not be on screen twice. The
-    // body carries `hidden` in the mark-up, so the first paint has one list.
-    assert.match(
-      opensWith('site-body'),
-      /\bhidden\b/,
-      '#site-body starts hidden, so the option list is not duplicated on screen',
-    );
-  });
+  test('the skin is chosen once, not once per scope', () => {
+    // The requirement in one assertion: one radio group in the popup, offering
+    // every skin. A second group is the regression this file exists to stop.
+    const groups = [...HTML.matchAll(/role="radiogroup"/g)].length;
+    assert.equal(groups, 1, 'the popup has exactly one radio group');
 
-  test('the disclosure is announced, and its target exists', () => {
-    const toggle = opensWith('site-toggle');
-    assert.match(toggle, /aria-expanded="false"/, 'collapsed on first paint');
-    assert.match(
-      toggle,
-      /aria-controls="site-body"/,
-      'names the body it opens',
-    );
-    assert.match(opensWith('site-body'), /id="site-body"/, 'the target exists');
-  });
-
-  test('both disclosures are wired to a real target', () => {
-    // `aria-controls` pointing at nothing is a control that lies to assistive
-    // tech. Cheap to check, so every one in the file is.
-    const controls = [...HTML.matchAll(/aria-controls="([^"]+)"/g)].map(
-      (match) => match[1],
-    );
-    assert.ok(controls.length >= 2, 'the file has disclosures');
-    for (const id of controls) {
-      assert.match(
-        HTML,
-        new RegExp(`id="${id}"`),
-        `aria-controls="${id}" resolves to an element`,
+    // And the builder is called for that one group only. The definition is
+    // removed first so the count is of call sites, not of `function`.
+    const calls =
+      JS.replace(/function buildRadios\([^)]*\)/, '').match(/buildRadios\(/g) ??
+      [];
+    assert.equal(calls.length, 1, 'buildRadios is called once');
+    assert.match(JS, /buildRadios\(skinOptions/, 'for the one group');
+    for (const name of ['gs-site-skin', 'site__options', 'site-toggle']) {
+      assert.doesNotMatch(
+        `${HTML}${CSS}${JS}`,
+        new RegExp(name),
+        `${name} is gone`,
       );
     }
   });
 
-  test('the global picker names a count, not the hostnames', () => {
-    // The list was the single largest block of text in the popup. A count
-    // answers the same question — how much would change — in a fifth of it.
-    assert.doesNotMatch(
-      JS,
-      /hosts\.join\(/,
-      'the skin sub-label no longer joins the hostnames',
+  test('the group renders the off choice last, after every skin', () => {
+    // Built from the shared `table`, so a new skin reaches it without an edit
+    // here — and `Off` is appended rather than written into the list, which is
+    // what kept it last when the per-site group wanted it first.
+    assert.match(JS, /SITES\.THEMES\.map/, 'the skins come from the registry');
+    assert.match(JS, /choices\.push\(\{ value: 'off'/, 'Off is appended last');
+  });
+
+  test('every disclosure is wired to a real target', () => {
+    // `aria-controls` pointing at nothing is a control that lies to assistive
+    // tech. One disclosure is left (`Add a site`), and it is checked.
+    const controls = [...HTML.matchAll(/aria-controls="([^"]+)"/g)].map(
+      (match) => match[1],
     );
+    assert.deepEqual(
+      controls,
+      ['add-body'],
+      'the add disclosure is the one left',
+    );
+    for (const id of controls) {
+      assert.match(
+        HTML,
+        new RegExp(`id="${id}"`),
+        `aria-controls="${id}" resolves`,
+      );
+    }
     assert.match(
-      JS,
-      /skin__hosts['"]\)\.textContent/,
-      'the sub-label is still written from the host list',
+      tagFor('add-toggle'),
+      /aria-expanded="false"/,
+      'and starts collapsed',
     );
   });
 
-  test('the per-site picker still exists, and still offers every skin', () => {
-    // Guarding the other direction: "not duplicated" must not have been
-    // achieved by deleting the override. Both groups are built from the one
-    // shared table, so a new skin reaches both without an edit here.
-    assert.match(JS, /buildRadios\(skinOptions/, 'the global group is built');
-    assert.match(JS, /buildRadios\(siteOptions/, 'the per-site group is built');
+  test('an option row is the product name, and nothing else', () => {
+    // The sub-label here has been through two shapes: the hosts the skin would
+    // change, spelled out, then a count of them. Both answered "how much would
+    // this change" and neither earned a second line, so the row is the name.
+    // The host list still decides the marker a row carries — a separate
+    // question, answered by a border rather than by prose.
+    for (const [name, source] of [
+      ['popup.js', JS],
+      ['popup.css', CSS],
+      ['popup.html', HTML],
+    ]) {
+      assert.doesNotMatch(
+        source,
+        /skin__hosts/,
+        `${name} has no host sub-label`,
+      );
+    }
+    assert.doesNotMatch(
+      JS,
+      /hosts\.join\(/,
+      'hostnames are not joined anywhere',
+    );
     assert.match(
-      opensWith('site-options'),
-      /role="radiogroup"/,
-      'the per-site group keeps its role',
+      JS,
+      /hosts\.includes\(host\)/,
+      'the host list still decides the marker',
     );
   });
 });

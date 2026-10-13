@@ -30,12 +30,6 @@
   const INTRO_KEY = 'gitSameIntroSeen';
 
   const skinOptions = document.getElementById('skin-options');
-  const siteWrap = document.getElementById('site');
-  const siteToggle = document.getElementById('site-toggle');
-  const siteBody = document.getElementById('site-body');
-  const siteSummary = document.getElementById('site-summary');
-  const siteOptions = document.getElementById('site-options');
-  const siteReset = document.getElementById('site-reset');
   const addToggle = document.getElementById('add-toggle');
   const addSummary = document.getElementById('add-summary');
   const addBody = document.getElementById('add-body');
@@ -159,32 +153,29 @@
     const currentKind = SITES.kindFor(host, instances);
     renderSkin();
     renderAdd(currentKind);
-    renderSite(currentKind);
   }
 
-  // One radio per skin, plus off, built from the shared `skins` table. Both the
-  // global group and the per-site group use this — they are the same choice in
-  // two scopes, so they draw the same row and differ only in the radio name,
-  // the off position, and whether the host count is shown under the label. The
-  // container says which scope a group is, which is why nothing else is keyed
-  // here.
-  function buildRadios(
-    container,
-    name,
-    { offFirst = false, withHosts = false } = {},
-  ) {
+  // One radio per skin, plus off, built from the shared `skins` table. There is
+  // one of these, for the whole extension: a skin applies to every source, and
+  // `settingsForSkin` writes it to every kind, so the popup asks the question
+  // once. A per-site picker sat here and offered the same four choices a second
+  // time; the `Alt`+`Shift`+`G` command still switches a single host on and off,
+  // which is the part of a per-site choice that does not need a list.
+  //
+  // A row is the product's name and nothing else. It carried the hosts the skin
+  // would change as a sub-label once, spelled out as a list and then reduced to
+  // a count; both answered "how much would this change", and neither earned the
+  // second line in a panel this size.
+  function buildRadios(container, name) {
     const choices = SITES.THEMES.map((theme) => ({
       value: theme,
-      label: `${SITES.skins[theme].product} UI`,
+      label: `${SITES.skins[theme].product} Alike`,
     }));
-    const off = { value: 'off', label: 'Off' };
-    if (offFirst) choices.unshift(off);
-    else choices.push(off);
+    choices.push({ value: 'off', label: 'Off' });
 
     for (const { value, label } of choices) {
       const option = document.createElement('label');
       option.className = 'skin__option';
-      // Always set, so the product's own colour reaches both groups' labels.
       option.dataset.skin = value;
       const input = document.createElement('input');
       input.type = 'radio';
@@ -196,18 +187,13 @@
       labelEl.className = 'skin__label';
       labelEl.textContent = label;
       text.append(labelEl);
-      if (withHosts) {
-        const hostsEl = document.createElement('span');
-        hostsEl.className = 'skin__hosts';
-        text.append(hostsEl);
-      }
       option.append(input, text);
       container.append(option);
     }
   }
 
   function buildSkinOptions() {
-    buildRadios(skinOptions, 'gs-skin', { withHosts: true });
+    buildRadios(skinOptions, 'gs-skin');
   }
 
   function renderSkin() {
@@ -216,68 +202,13 @@
       const value = option.dataset.skin;
       option.querySelector('input').checked = value === current;
       const hosts = SITES.hostsForSkin(value, instances);
-      // A count, not the hostnames. The list was three near-identical lines of
-      // the same four domains — a quarter of the popup's text — and it answered
-      // a question the count answers in a fifth of the room: how much would
-      // change. `Off` is named by its own label and needs no gloss.
-      option.querySelector('.skin__hosts').textContent =
-        value === 'off'
-          ? ''
-          : hosts.length
-            ? `${hosts.length} site${hosts.length === 1 ? '' : 's'}`
-            : 'No sites change';
+      // The host list is still what decides the marker below; it is no longer
+      // written out as a sub-label.
       option.classList.toggle(
         'skin__option--current',
         Boolean(host) && hosts.includes(host),
       );
     }
-  }
-
-  // The per-site skin picker, disclosed under a summary that states the state
-  // it would otherwise take a click to read. It opens itself only when the host
-  // carries an override, so the collapsed default is the common case.
-  function renderSite(currentKind) {
-    const known = Boolean(currentKind);
-    siteWrap.hidden = !known;
-    if (!known) return;
-
-    const chosen = SITES.hostSkinFor(host, hostSettings);
-    const fallback = SITES.kindOn(currentKind, settings)
-      ? settings[currentKind]
-      : null;
-    // What the group should show selected: the explicit choice, else the
-    // product's default, else off. (A site's own skin and `off` both leave it
-    // unrepainted, but the choice is still what the user asked for.)
-    const selected = chosen === 'off' ? 'off' : chosen || fallback || 'off';
-
-    for (const input of siteOptions.querySelectorAll('input')) {
-      input.checked = input.value === selected;
-    }
-    siteReset.hidden = chosen === null;
-
-    // The summary carries the whole state when collapsed: what this host shows,
-    // and whether that is its own choice or the global one it inherits.
-    const label =
-      selected === 'off' ? 'its own UI' : `${SITES.skins[selected].product} UI`;
-    siteSummary.textContent =
-      chosen === null
-        ? 'This site: follows the global skin'
-        : `This site: ${label}`;
-
-    // An override is the one thing the summary cannot say in full, so the body
-    // opens for it — the same rule `Add a site` follows for a host it does not
-    // know. A host following the global skin stays collapsed.
-    setSiteOpen(chosen !== null);
-  }
-
-  function setSiteOpen(open) {
-    siteToggle.setAttribute('aria-expanded', String(open));
-    siteBody.hidden = !open;
-  }
-
-  // Built once from the shared `skins` table: Off, then one radio per skin.
-  function buildSiteOptions() {
-    buildRadios(siteOptions, 'gs-site-skin', { offFirst: true });
   }
 
   function renderAdd(currentKind) {
@@ -386,7 +317,6 @@
     hint(insecure ? HINT_INSECURE(hostname) : HINT_DEFAULT, false);
   }
 
-  siteToggle.addEventListener('click', () => setSiteOpen(siteBody.hidden));
   addToggle.addEventListener('click', () => setOpen(addBody.hidden));
 
   for (const button of kindButtons) {
@@ -444,22 +374,6 @@
     api.storage.sync.set({
       [SITES.SETTINGS_KEY]: SITES.settingsForSkin(value),
     });
-  });
-
-  // Pick this host's skin, independent of the global skin.
-  siteOptions.addEventListener('change', (event) => {
-    const value = event.target?.value;
-    if (!value) return;
-    api.storage.sync.set({
-      [SITES.HOST_SETTINGS_KEY]: { ...hostSettings, [host]: value },
-    });
-  });
-
-  // Drop the choice so the host follows the global skin again.
-  siteReset.addEventListener('click', () => {
-    const next = { ...hostSettings };
-    delete next[host];
-    api.storage.sync.set({ [SITES.HOST_SETTINGS_KEY]: next });
   });
 
   // The other surfaces (shortcut, another window) can change this underneath us.
@@ -563,7 +477,6 @@
     // `stateFrom` already collapses a pre-one-skin state (both kinds on) to a
     // single skin, so the popup just renders what every other context sees.
     buildSkinOptions();
-    buildSiteOptions();
     render();
     await renderIntro();
     await showShortcut();
