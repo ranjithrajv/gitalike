@@ -217,6 +217,11 @@
       }
       resetProfileMenu(container);
       container.setAttribute('data-gs-profile-menu-signature', signature);
+      // Mark the container itself so the style-parity tool's selector list
+      // finds the rebuilt menu first, the way paintBitbucketNav marks
+      // [data-gs-bb-nav] for Bitbucket. Without this the tool may locate the
+      // source's own nav instead of the rebuilt one.
+      container.setAttribute('data-gs-profile-menu', '');
 
       const anchors = [...container.querySelectorAll('a')];
       const used = new Set();

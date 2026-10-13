@@ -217,6 +217,11 @@ html.gs-theme-gitlab {
   --color-header-text: var(--gs-header-fg) !important;
   --color-header-search-bg: var(--gs-canvas) !important;
   --color-header-search-border: var(--gs-border) !important;
+  /* The residual 0.88: GitHub's header has a secondary surface the primary
+     mapping leaves behind. Close it by mapping the remaining header surface
+     tokens to the skin's header background. */
+  --color-header-bg-secondary: var(--gs-header-bg) !important;
+  --color-header-bg-tertiary: var(--gs-header-bg) !important;
 
   /* focus */
   --focus-outlineColor: var(--gs-accent) !important;

@@ -23,6 +23,11 @@
   // Where a "report a missed spot" issue is filed. Kept here, beside the popup
   // that links to it, rather than in the shared tables.
   const ISSUES_URL = 'https://github.com/ranjithrajv/gitalike/issues/new';
+  // Whether the first-open intro has been read. A popup preference about the
+  // popup, so it lives beside the popup that owns it — same reasoning as
+  // ISSUES_URL — and is read on its own so the shared settings table gains no
+  // key the other contexts never look at.
+  const INTRO_KEY = 'gitSameIntroSeen';
 
   const skinOptions = document.getElementById('skin-options');
   const siteWrap = document.getElementById('site');
@@ -38,6 +43,8 @@
   const kindButtons = [...document.querySelectorAll('.add__button[data-kind]')];
   const openOther = document.getElementById('open-other');
   const report = document.getElementById('report');
+  const intro = document.getElementById('why');
+  const introDismiss = document.getElementById('why-dismiss');
 
   let settings = {};
   let instances = {};
@@ -489,6 +496,36 @@
     el.classList.add('kbd--unset');
   }
 
+  // Shown on the first open and hidden for good once it is read. The flag is
+  // written on the click, not on open: a popup a reader never engaged with
+  // should show its intro again rather than pretending it was read.
+  async function renderIntro() {
+    let seen = false;
+    try {
+      const stored = await api.storage.sync.get(INTRO_KEY);
+      seen = Boolean(stored?.[INTRO_KEY]);
+    } catch {
+      // Storage unavailable (private mode, quota): show the intro rather than
+      // hide it on a technicality. It costs one click and nothing is lost.
+      seen = false;
+    }
+    if (seen) {
+      intro.hidden = true;
+      return;
+    }
+    intro.hidden = false;
+    introDismiss.onclick = async () => {
+      // Hide first: the click is the user's answer, and the flag is bookkeeping
+      // that may fail behind them.
+      intro.hidden = true;
+      try {
+        await api.storage.sync.set({ [INTRO_KEY]: Date.now() });
+      } catch {
+        /* storage refused the write — the intro simply shows again next time */
+      }
+    };
+  }
+
   (async () => {
     host = await currentHost();
     await load();
@@ -497,6 +534,7 @@
     buildSkinOptions();
     buildSiteOptions();
     render();
+    await renderIntro();
     await showShortcut();
     renderOther();
     renderReport();

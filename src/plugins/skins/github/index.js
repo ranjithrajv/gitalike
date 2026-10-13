@@ -48,6 +48,9 @@
       // A Bitbucket source's repository bar.
       Source: 'Code',
       'Jira issues': 'Issues',
+      // Gitea's own nav words — Gitea says "Commits", "Branches" and
+      // "Releases" which are already the same in GitHub's vocabulary, so they
+      // need no entry here.
     },
 
     labels: {

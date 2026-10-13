@@ -72,6 +72,10 @@ countries and regions.
 **Live preview:** <https://ranjithrajv.github.io/gitalike/> — drag the divider
 and watch each site wear every skin it can.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="GitAlike demo: drag the divider to switch between GitHub's default UI and the GitLab skin — same page, two forges" />
+</p>
+
 ## Contents
 
 - [Make GitHub look like GitLab, and back](#make-github-look-like-gitlab-and-back)
@@ -83,6 +87,7 @@ and watch each site wear every skin it can.
 - [A cognitive accessibility tool](#a-cognitive-accessibility-tool)
 - [Known limitations](#known-limitations)
 - [Privacy](#privacy)
+- [Terms of service safety](#terms-of-service-safety)
 - [Contributing](#contributing)
 - [Trademarks](#trademarks)
 - [License](#license)
@@ -350,6 +355,18 @@ original theme.
 Nothing read from a page is stored or sent anywhere. The full policy is at
 <https://ranjithrajv.github.io/gitalike/privacy.html>.
 
+This is a market differentiator, not just a feature. Developers and enterprises
+evaluating forge tooling increasingly weigh data-collection practices — a
+browser extension that reads page content is exactly the kind of software that
+can quietly exfiltrate it. GitAlike's architecture makes that structurally
+impossible: there is no server to send to, no analytics endpoint, no remote code
+to update silently. Both stylesheets ship in the bundle, every logo is an inline
+data URI, and the only data that leaves the machine is `chrome.storage.sync`
+— the browser's own synced extension storage, which the user controls and can
+inspect. For teams standardising on one forge's UI across a mixed environment,
+or for developers who simply do not want their reading habits tracked, that
+guarantee is the product.
+
 ## Contributing
 
 Bug reports and pull requests are welcome. The popup's **Report a missed spot**
@@ -367,6 +384,19 @@ registry is published as [`plugins.json`](plugins.json) and the author catalog a
 [Adding another forge](CONTRIBUTING.md#adding-another-forge--contributions-welcome),
 or [propose one](https://github.com/ranjithrajv/gitalike/issues/new?template=new_plugin.yml).
 The live registry is on the [site](https://ranjithrajv.github.io/gitalike/#plugins).
+
+## Terms of service safety
+
+Because GitAlike makes no network requests and runs entirely in the browser,
+it is difficult to classify as a terms-of-service violation. A forge's ToS
+typically prohibits scraping, automated access, or proxying — none of which
+apply to a local content script that rewrites styles and text on a page the
+user is already viewing. The extension does not bypass authentication, does
+not automate actions, and does not access any API. It changes only what the
+user sees, and reverts every change the moment the skin is switched off. This
+is a structural property of the architecture, not a legal opinion — but it
+means the extension's legal risk profile is fundamentally different from a
+server-side tool or a userscript that makes network requests.
 
 ## Trademarks
 

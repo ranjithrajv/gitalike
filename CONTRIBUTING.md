@@ -504,6 +504,38 @@ no browser. The pure modules are where the logic that can silently break lives
 (address parsing, host classification, vocabulary tables). `npm run test:unit` is
 the same suite without the coverage gate below.
 
+### The parity infrastructure
+
+GitAlike's quality gate is a three-layer parity system that measures how
+faithfully each skin reproduces its target product's UI. Understanding it is
+essential for contributing a new plugin:
+
+1. **Contract tests** (`tests/contracts.test.mjs`) — derive the skin and source
+   lists from the plugin folders and fail with the parts a new plugin is still
+   missing. This is the completeness gate: it tells you exactly what you still
+   need to provide.
+2. **Colour parity** (`tests/compare/color-parity.test.mjs`) — pins each skin's
+   palette to the reviewed `tests/fixtures/target-chrome.json` fixture offline,
+   so a skin cannot drift from the target product's real colours. Run
+   `npm run color-parity` for the live version that measures rendered pixels
+   against the same fixture.
+3. **Style parity** (`tools/compare/style-parity.mjs`) — loads each source page
+   live, applies a skin, and reads the computed styles and vocabulary of the
+   chrome the skin is supposed to have changed. Each (source, skin) cell is
+   scored 0–10 across six weighted dimensions (theme, layout, header, body,
+   link, vocab). This is a scheduled/on-demand check, not a commit gate — live
+   sites are a moving target by design.
+
+The **canary** (`npm run canary`) watches the `SELECTORS` hooks every skin keys
+on against the live pages, so an upstream rename is caught without making every
+PR depend on the forges' markup. When a canary fails it opens (or refreshes) an
+issue, so the drift is owned rather than just red.
+
+A new plugin must satisfy all three layers: the contract test for completeness,
+the colour parity test for palette correctness, and the style parity tool for
+fidelity to the target. The `design-plans/` directory documents the programme
+to bring every cell to a perfect score.
+
 **Add a case for every change to `src/lib/`.** The suite is the safety net for
 exactly the kind of edge case that is easy to miss — a bare host versus a URL, a
 refused `javascript:` string, a host that is unknown rather than merely off.

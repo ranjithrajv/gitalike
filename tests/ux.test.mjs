@@ -1068,7 +1068,15 @@ describe('PROFILE_MENU', () => {
     const menu = PROFILE_MENU.bitbucket('octocat');
     assert.deepEqual(
       menu.map(([label]) => label),
-      ['Overview', 'Repositories', 'Projects', 'Snippets'],
+      [
+        'Overview',
+        'Repositories',
+        'Projects',
+        'Snippets',
+        'Stars',
+        'Followers',
+        'Following',
+      ],
     );
     // The first item reuses the page's own landing anchor.
     assert.equal(menu[0][2], '@first');

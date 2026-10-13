@@ -11,6 +11,9 @@ html[data-theme]:is(
     .gs-theme-bitbucket
   ) {
   /* surfaces */
+  /* The content region's canvas — the surface the tool measures. Gitea paints
+     its body an inset grey and its content panels white (like GitLab), so the
+     content variable must point at the skin's canvas, not the subtle variant. */
   --color-body: var(--gs-canvas) !important;
   --color-card: var(--gs-canvas-subtle) !important;
   --color-box-body: var(--gs-canvas-subtle) !important;
@@ -23,7 +26,11 @@ html[data-theme]:is(
   --color-code-bg: var(--gs-canvas-subtle) !important;
   --color-markup-code-block: var(--gs-canvas-inset) !important;
   --color-markup-code-inline: var(--gs-canvas-inset) !important;
-  --color-header-wrapper: var(--gs-canvas-subtle) !important;
+  /* The header colour is per-skin: the github and bitbucket skins have their
+     own header bar colours, while the gitlab skin uses the subtle canvas. A
+     skin never has to know a source's markup — the source's bridge maps its
+     header variable to the skin's token. */
+  --color-header-wrapper: var(--gs-header-bg) !important;
   --color-diff-inactive: var(--gs-canvas-inset) !important;
 
   /* text */

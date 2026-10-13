@@ -10,6 +10,9 @@
 
 html[data-gs-source="bitbucket"]:is(.gs-theme-github, .gs-theme-gitlab) {
   /* surfaces */
+  /* The content region's canvas — the surface the tool measures. Bitbucket
+     paints its content area white, so the surface variable must point at the
+     skin's canvas, not the subtle variant. */
   --ds-surface: var(--gs-canvas) !important;
   --ds-surface-raised: var(--gs-canvas) !important;
   --ds-surface-overlay: var(--gs-canvas-overlay) !important;
@@ -79,8 +82,10 @@ html[data-gs-source="bitbucket"]:is(.gs-theme-github, .gs-theme-gitlab) {
    white — the one part of a page a viewer reads as "skinned" stays put. Give
    the header the applied layout's bar, the way the Gitea `#navbar` block does,
    and re-point the header-local tokens so the wordmark, icons and search stay
-   legible on it. `data-layout-slot` marks Atlassian's page-layout header. */
-html[data-gs-source="bitbucket"]:is(.gs-theme-github, .gs-theme-gitlab)
+   legible on it. `data-layout-slot` marks Atlassian's page-layout header.
+   The bitbucket skin is included: its own header colour should follow the
+   skin, not Atlassian's blue. */
+html[data-gs-source="bitbucket"]:is(.gs-theme-github, .gs-theme-gitlab, .gs-theme-bitbucket)
   header[data-layout-slot="true"] {
   background-color: var(--gs-header-bg) !important;
   --ds-surface: var(--gs-header-bg);

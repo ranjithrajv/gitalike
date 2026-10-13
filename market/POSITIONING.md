@@ -161,7 +161,10 @@ moves the muscle memory.*
 4. **Build the migration funnel.** Pair "open on the other host" and the docs
    with the official importers — be the muscle-memory half of every migration.
 5. **Press the trust differentiator.** "No network, no remote code, GPL" is
-   verifiable and contrasts directly with GitSkin's CDN adapters.
+   verifiable and contrasts directly with GitSkin's CDN adapters. This is the
+   primary differentiator for privacy-conscious developers and enterprises
+   evaluating forge tooling — lead with it in store copy, the README, and the
+   awesome-list entry.
 6. **Re-examine all-sites access.** `optional_host_permissions` trades one
    install prompt for a cleaner store/privacy story; the current design is
    defensible, but it is the most likely review objection.
@@ -169,6 +172,11 @@ moves the muscle memory.*
    tables are the durable asset; keep them the focus as forges grow.
 8. **Fund it like infrastructure.** GitHub Sponsors / OpenCollective, and a
    ForgeFed-adjacent NLnet NGI Zero application framed as reducing forge lock-in.
+9. **Position as a cognitive accessibility tool.** No competitor owns this
+   framing — "use any forge, keep your muscle memory" is a genuine
+   accessibility claim, not marketing. It aligns with the grant narrative and
+   broadens the addressable audience beyond developers who happen to work on
+   multiple forges.
 9. **Position as a cognitive accessibility tool.** The README now frames
    GitAlike as an accessibility tool for developers who benefit from consistent
    interfaces — ADHD, autism, and cross-forge cognitive load. This is a genuine

@@ -21,6 +21,9 @@ html:is(.gs-theme-github, .gs-theme-bitbucket) {
   --gl-text-color-tertiary: var(--gs-fg-subtle) !important;
 
   /* surfaces */
+  /* The content region's canvas — the surface the tool measures. GitLab paints
+     its content area white, so the background variable must point at the skin's
+     canvas, not the subtle variant. */
   --gl-background-color-default: var(--gs-canvas) !important;
   --gl-background-color-subtle: var(--gs-canvas-subtle) !important;
   --gl-background-color-strong: var(--gs-canvas-subtle) !important;

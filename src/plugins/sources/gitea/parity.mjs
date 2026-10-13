@@ -36,6 +36,7 @@ export default {
       signedOut: true,
       header: ['#navbar'],
       nav: [
+        '[data-gs-profile-menu]',
         '.ui.tabular.menu',
         '.ui.secondary.pointing.menu',
         'nav',

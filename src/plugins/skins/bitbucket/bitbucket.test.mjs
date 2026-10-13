@@ -73,7 +73,15 @@ test('bitbucket builds its own tab set and profile menu', () => {
   );
   assert.deepEqual(
     PROFILE_MENU.bitbucket('octocat').map(([label]) => label),
-    ['Overview', 'Repositories', 'Projects', 'Snippets'],
+    [
+      'Overview',
+      'Repositories',
+      'Projects',
+      'Snippets',
+      'Stars',
+      'Followers',
+      'Following',
+    ],
   );
 });
 

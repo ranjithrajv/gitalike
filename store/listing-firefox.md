@@ -25,6 +25,12 @@ shortcuts — working on whichever forge you happen to be using:
     a GitHub-flavoured site + GitLab™ UI  ->  purple accents, light top bar
     a GitLab-flavoured site + GitHub UI  ->  blue accents, dark top bar
 
+Everything runs locally. No account, no network requests, no telemetry, no
+remote code — both stylesheets ship in the bundle and every logo is an inline
+data URI. Nothing read from a page is ever stored or sent anywhere. For teams
+standardising on one forge's UI across a mixed environment, or for developers
+who do not want their reading habits tracked, that guarantee is the product.
+
 Beyond colour, it matches the other product's words and habits: "Pull request"
 becomes "Merge request", a #42 reference becomes !42, the repository navigation
 is relabelled and reordered, and the other product's g-shortcuts work. It changes
@@ -120,6 +126,10 @@ AMO has no fixed screenshot size. Upload, in order:
 1. `store/screenshots/01-as-gitlab.png`
 2. `store/screenshots/02-as-github.png`
 3. `store/screenshots/03-popup.png`
+
+A short demo GIF is at `docs/demo.gif` — record it as a video and upload as AMO's
+promotional video, or link to the live preview at
+<https://ranjithrajv.github.io/gitalike/>.
 
 ## Describe version (release notes)
 

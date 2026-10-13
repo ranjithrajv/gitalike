@@ -15,6 +15,10 @@ html[data-gs-source="gerrit"][class*="gs-theme-"] {
   --border-color: var(--gs-border) !important;
   --header-background: var(--gs-header-bg) !important;
   --header-text-color: var(--gs-header-fg) !important;
+  /* PolyGerrit's header surface — the bar the tool measures. Custom properties
+     inherit across the shadow boundary, so this reaches the header the same way
+     the palette entries above do. */
+  --header-background-color: var(--gs-header-bg) !important;
   --selection-background-color: var(--gs-accent-subtle) !important;
   --hover-background-color: var(--gs-canvas-subtle) !important;
   --info-background: var(--gs-accent-subtle) !important;

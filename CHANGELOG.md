@@ -15,6 +15,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   reducing cognitive load for developers with ADHD, autism, or other cognitive
   differences who benefit from consistent UIs. The market positioning note adds
   the same angle to the one-liner and a new strategic recommendation.
+- **Privacy-first architecture is now a market differentiator.** The README
+  Privacy section explicitly names the market opportunity: developers and
+  enterprises evaluating forge tooling increasingly weigh data-collection
+  practices, and GitAlike's no-network architecture makes exfiltration
+  structurally impossible. The store listing copy leads with the privacy
+  guarantee, and the positioning note strengthens recommendation #5.
+- **Terms-of-service safety is documented.** A new README section — "Terms of
+  service safety" — explains why the no-network, local-only architecture makes
+  the extension difficult to classify as a ToS violation: it does not bypass
+  authentication, automate actions, or access any API. This is a structural
+  property of the architecture, not a legal opinion.
+- **The parity infrastructure is documented for plugin authors.** CONTRIBUTING.md
+  gains a "The parity infrastructure" section explaining the three-layer quality
+  gate (contract tests, colour parity, style parity) and the canary system, so
+  contributors understand how quality is maintained as the plugin ecosystem
+  scales.
 
 ### Added
 

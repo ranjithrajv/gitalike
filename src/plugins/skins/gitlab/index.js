@@ -53,6 +53,9 @@
       Source: 'Repository',
       Pipelines: 'CI/CD',
       'Jira issues': 'Work items',
+      // Gitea's own nav words — Gitea says "Issues" and "Pull requests" but
+      // also "Activity" which GitLab calls the same way. Packages is already
+      // the same word in both, so it needs no entry here.
     },
 
     // Exact labels on *controls* — buttons, menu items, tabs, links — that

@@ -50,6 +50,8 @@
       // Gerrit's own nav words (see GERRIT_NAV_WORDS in content/ux-project.js).
       Changes: 'Pull requests',
       Browse: 'Source',
+      // Gitea's own nav words — "Packages" and "Activity" are already the
+      // same in Bitbucket's vocabulary, so they need no entry here.
     },
 
     // Bitbucket's merge controls. Every source word maps to Bitbucket's own.
@@ -181,6 +183,12 @@
       ['Repositories', `/users/${u}/projects`, 'Personal projects'],
       ['Projects', `/users/${u}/contributed`, 'Contributed projects'],
       ['Snippets', `/${u}?tab=snippets`, 'Snippets'],
+      // Gitea's profile page does not carry these; they are marked unavailable
+      // rather than linked into nothing. The `≠` treatment is applied by the
+      // content pass when the source has no such destination.
+      ['Stars', `/users/${u}/starred`, null],
+      ['Followers', `/${u}?tab=followers`, null],
+      ['Following', `/${u}?tab=following`, null],
     ],
   });
 })();

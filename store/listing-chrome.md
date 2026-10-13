@@ -187,7 +187,7 @@ the page's own text, labels and CSS tokens locally.
 | Screenshots (1–5, at least 1 required) | 1280×800 (or 640×400), JPEG or 24-bit PNG (no alpha) | `store/screenshots/01-as-gitlab.png`, `02-as-github.png`, `04-popup-1280x800.png` |
 | Small promo tile (**required**) | 440×280 PNG or JPEG | **not yet produced** — see below |
 | Marquee promo tile (optional) | 1400×560 PNG or JPEG | — |
-| YouTube video (optional) | a video URL | — |
+| YouTube video (optional) | a video URL | — (record the demo GIF at https://ranjithrajv.github.io/gitalike/demo.gif and upload) |
 
 `03-popup.png` is the true 322px-wide popup and does **not** meet the 1280×800
 requirement, so it is not uploaded to Chrome — it is there for AMO and the

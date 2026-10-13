@@ -6,9 +6,16 @@
     <title>GitAlike — use any forge, keep your muscle memory</title>
     <meta
       name="description"
-      content="Use any forge, keep your muscle memory. GitAlike re-skins GitHub, GitLab, Gitea, Bitbucket and Gerrit with the UI you know best — locally, reversibly."
+      content="Use any forge, keep your muscle memory. GitAlike makes GitHub look like GitLab — and GitLab look like GitHub — with colour, words, navigation, reference markers and keyboard shortcuts. No network, no telemetry."
     />
+    <meta
+      name="keywords"
+      content="github as gitlab, gitlab theme, github ui skin, cross-forge accessibility, github gitlab reskin, developer tools, browser extension, muscle memory, forge ui, github theme, gitlab ui, bitbucket theme, gerrit ui, self-hosted gitlab, github enterprise"
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="Ranjith Raj" />
     <link rel="canonical" href="https://ranjithrajv.github.io/gitalike/" />
+    <link rel="preload" as="image" href="demo.gif" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="icon" href="icon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="icon-128.png" />
@@ -29,13 +36,13 @@
     <meta property="og:image:type" content="image/png" />
     <meta
       property="og:image:alt"
-      content="GitAlike — GitHub, GitLab and Bitbucket interfaces for any forge"
+      content="GitAlike drag-divider demo: GitHub on the left, GitLab UI on the right — the same page, two forges"
     />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="GitAlike — use any forge, keep your muscle memory" />
     <meta
       name="twitter:description"
-      content="Any forge, any skin. Nothing else makes GitHub read like GitLab — and back. Repaint GitHub, GitLab, Bitbucket or Gerrit as the UI you know best, with no network access."
+      content="The only extension that makes GitHub look like GitLab — and GitLab look like GitHub. Colour, words, navigation, shortcuts. No network, no telemetry."
     />
     <meta name="twitter:image" content="https://ranjithrajv.github.io/gitalike/og.png" />
     <script type="application/ld+json">
@@ -60,7 +67,8 @@
           "url": "https://github.com/ranjithrajv"
         },
         "downloadUrl": "https://github.com/ranjithrajv/gitalike/releases/latest",
-        "screenshot": "https://ranjithrajv.github.io/gitalike/github-gitlab.png"
+        "screenshot": "https://ranjithrajv.github.io/gitalike/github-gitlab.png",
+        "demoUrl": "https://ranjithrajv.github.io/gitalike/demo.gif"
       }
     </script>
     <script type="application/ld+json">
@@ -289,6 +297,18 @@
       @media (max-width: 860px) {
         .hero .wrap { grid-template-columns: 1fr; gap: 28px; }
       }
+
+      /* ---------------------------------------------------------------- demo -- */
+      .demo { padding: 0 0 48px; text-align: center; }
+      .demo img {
+        max-width: 480px;
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
       .eyebrow {
         display: inline-block;
         font-size: 12px;
@@ -669,6 +689,12 @@
 
       .demos { display: grid; gap: 28px; }
       .card[id] { scroll-margin-top: 132px; }
+      /* A nav link scrolls its section to the top of the viewport, where the
+         sticky header sits over it. `.card[id]` below already carries a
+         scroll-margin for the same reason; the sections needed one too, and
+         without it every entry in the primary nav landed its heading under the
+         bar. Sized to the sticky header's height plus a little. */
+      section[id] { scroll-margin-top: 84px; }
       /* Only the selected comparison is shown; the rest keep their place. */
       .card[hidden] { display: none; }
       /* Skip rendering the demos until they scroll near the viewport. */
@@ -835,13 +861,73 @@
         max-width: 92ch;
       }
       .terms-note b { color: var(--fg); }
-      /* Five columns do not fit a phone at 14px. */
       @media (max-width: 620px) {
         table.terms { font-size: 12px; }
         table.terms th,
         table.terms td { padding: 7px 6px; }
         .swatch { margin-right: 4px; }
       }
+      /* --------------------------------------------------- comparison grid -- */
+      /* The axes table: how deep a tool reaches, times which way it points.
+         The point of the section is the cell, so the table is laid out as the
+         two axes it means and not as a ranked list. */
+      table.axes { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      table.axes th,
+      table.axes td {
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+        font-size: 14px;
+      }
+      table.axes thead th { background: var(--surface); color: var(--fg); font-size: 13px; }
+      table.axes thead th small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+      table.axes tbody th {
+        background: var(--surface);
+        color: var(--fg);
+        font-weight: 600;
+        width: 22%;
+      }
+      table.axes tbody th small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+      table.axes td { color: var(--muted); }
+      /* The cell GitAlike occupies. Weighted so the row of it is the one the eye
+         lands on, since that is the whole claim. */
+      table.axes td.self {
+        background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+        color: var(--fg);
+        font-weight: 600;
+      }
+      table.axes td.empty { text-align: center; color: var(--muted); }
+      /* Capability matrix: same legend as the terms table, centred columns. */
+      table.cmp { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+      table.cmp th,
+      table.cmp td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+      table.cmp thead th { color: var(--fg); font-size: 13px; white-space: nowrap; }
+      table.cmp tbody tr:last-child td { border-bottom: 0; }
+      table.cmp td:not(:first-child),
+      table.cmp thead th:not(:first-child) { text-align: center; }
+      table.cmp td:first-child { color: var(--muted); }
+      /* A row GitAlike does not win is kept, and kept visible. */
+      table.cmp tr.gitalike-loses td { background: color-mix(in srgb, var(--danger, #cf222e) 6%, transparent); }
+      table.cmp tr.gitalike-loses td:first-child { color: var(--fg); }
+      .mark { font-size: 15px; }
+      .mark.yes { color: #1a7f37; }
+      .mark.part { color: #9a6700; }
+      .mark.no { color: var(--muted); }
+      .cmp-note { margin: 12px 0 0; color: var(--muted); font-size: 13.5px; max-width: 92ch; }
+      .cmp-note b { color: var(--fg); }
+      /* Per-tool notes. Not a sales pitch for any of them — each one is the
+         right answer for a different question. */
+      .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+      @media (max-width: 760px) { .tools { grid-template-columns: 1fr; } }
+      .tool { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+      .tool h3 { margin: 0 0 4px; font-size: 15px; }
+      .tool h3 a { color: var(--fg); }
+      .tool .role { color: var(--muted); font-size: 12.5px; margin: 0 0 10px; }
+      .tool p { margin: 0; color: var(--muted); font-size: 13.5px; }
+      .tool p + p { margin-top: 8px; }
+      .tool p b { color: var(--fg); }
+      .tool.wrong-for { border-style: dashed; }
       @media (max-width: 560px) {
         .words { padding: 16px 16px 10px; }
       }
@@ -946,6 +1032,7 @@
           <a href="#features">Features</a>
           <a href="#words">Words</a>
           <a href="#systems">Design</a>
+          <a href="#compare">Compare</a>
           <a href="#forges">Forges</a>
           <a href="#plugins">Plugins</a>
           <a href="#privacy">Privacy</a>
@@ -1015,6 +1102,20 @@
             <span class="knob">↔</span>
             <input type="range" min="0" max="100" value="45" aria-label="Swipe: GitHub project page skinned as GitLab" />
           </div>
+        </div>
+      </section>
+
+      <!-- -------------------------------------------------------------- demo -- -->
+      <section class="demo" aria-label="Demo: drag the divider to switch between GitHub and GitLab skins">
+        <div class="wrap">
+          <img
+            src="demo.gif"
+            alt="GitAlike demo: drag the divider to switch between GitHub's default UI and the GitLab skin — same page, two forges"
+            width="480"
+            height="300"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </section>
 
@@ -1836,6 +1937,166 @@
               product's are delivered as clicks on its own navigation links, and
               the Bitbucket skin maps none at all.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------------- compare -->
+
+      <section id="compare">
+        <div class="wrap">
+          <div class="section-head">
+            <h2>How it compares</h2>
+            <p class="lede">
+              Most tools here answer <em>make this site nicer</em> or
+              <em>make this site work better</em>. Only one answers
+              <em>make one forge read like another</em>.
+            </p>
+            <p>
+              Most browser tools for GitHub and GitLab answer one question:
+              <b>make this site look nicer</b>. A smaller set answers a second:
+              <b>make this site work better</b>. Neither is what GitAlike does.
+              GitAlike answers a third — <b>make one forge read like another,
+              and back</b> — which is the one no other tool is built for.
+            </p>
+            <p>
+              Two axes separate them: <b>how deep</b> a tool reaches (colour →
+              words and navigation → behaviour), and <b>which way it points</b>
+              (one product, or two of them reciprocally).
+            </p>
+          </div>
+
+          <table class="axes">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">One-way <small>one product, on its own terms</small></th>
+                <th scope="col">Reciprocal <small>two products read as each other</small></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Colour <small>the palette</small></th>
+                <td>GitSkin · userstyles</td>
+                <td class="self">GitAlike</td>
+              </tr>
+              <tr>
+                <th scope="row">Words &amp; navigation <small>labels, menu order, markers, keys</small></th>
+                <td class="empty">—</td>
+                <td class="self">GitAlike</td>
+              </tr>
+              <tr>
+                <th scope="row">Behaviour <small>workflow, API</small></th>
+                <td>Refined GitHub · Octotree</td>
+                <td class="empty">—</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="cmp-note">
+            Every other tool here lives in the left-hand column. <b>GitAlike is
+            the only one of them that works reciprocally</b> — it is the only one
+            that can show a GitHub page as GitLab <em>and</em> a GitLab page as
+            GitHub, from the same install. That is the cell it occupies, and it
+            is not the same cell as any of the others.
+          </p>
+
+          <div class="words" id="compare-table">
+            <div class="words-head">
+              <p>
+                Shaded rows are ones GitAlike does <b>not</b> win. It is a skin:
+                it changes how a page reads, not what the site does, and it ships
+                three built-in skins rather than a marketplace.
+              </p>
+            </div>
+            <div class="table-wrap">
+              <table class="cmp">
+                <thead>
+                  <tr>
+                    <th scope="col">Capability</th>
+                    <th scope="col">GitAlike</th>
+                    <th scope="col">GitSkin</th>
+                    <th scope="col">Userstyles</th>
+                    <th scope="col">Refined GitHub</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Repaints the palette</td><td><span class="mark yes">●</span></td><td><span class="mark yes">●</span></td><td><span class="mark yes">●</span></td><td><span class="mark part">◐</span></td></tr>
+                  <tr><td>Renames the product's words</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td></tr>
+                  <tr><td>Rebuilds navigation</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark part">◐</span></td></tr>
+                  <tr><td>Swaps reference markers (<code>#42</code> ⇄ <code>!42</code>)</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td></tr>
+                  <tr><td>Delivers the other product's <code>g</code>-shortcuts</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark part">◐</span></td></tr>
+                  <tr><td>Works in both directions</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td></tr>
+                  <tr><td>Covers GitLab as well as GitHub</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span></td><td><span class="mark part">◐</span></td><td><span class="mark no">○</span></td></tr>
+                  <tr class="gitalike-loses"><td>Community themes / a marketplace</td><td><span class="mark no">○</span></td><td><span class="mark yes">●</span></td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span></td></tr>
+                  <tr class="gitalike-loses"><td>Improves a forge's own UX rather than translating it</td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark yes">●</span></td></tr>
+                  <tr class="gitalike-loses"><td>Unifies the API or CLI across forges</td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td><td><span class="mark no">○</span></td></tr>
+                  <tr><td>Survives upstream DOM churn</td><td><span class="mark part">◐</span> pinned selectors + daily canary</td><td><span class="mark part">◐</span> network adapters</td><td><span class="mark no">○</span> often breaks</td><td><span class="mark part">◐</span> active team</td></tr>
+                  <tr><td>No network requests, no remote code</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span> CDN adapters</td><td><span class="mark yes">●</span></td><td><span class="mark yes">●</span></td></tr>
+                  <tr><td>Works on self-hosted / enterprise instances</td><td><span class="mark yes">●</span></td><td><span class="mark no">○</span> GitHub-only</td><td><span class="mark yes">●</span></td><td><span class="mark yes">●</span></td></tr>
+                </tbody>
+              </table>
+              <p class="cmp-note">
+                <b>●</b> does it · <b>◐</b> partial or adjacent · <b>○</b> does
+                not. "Survives upstream DOM churn" is partial for everybody that
+                touches the DOM: no skin is immune to a site rebuilding its
+                markup, and each tool answers it differently — GitAlike pins every
+                selector and runs a daily canary against the live sites, which
+                catches a change instead of silently shipping a broken page. It
+                does not prevent the change. Where no tool does something, the row
+                says so rather than being left out.
+              </p>
+            </div>
+          </div>
+
+          <div class="tools">
+            <div class="tool">
+              <h3><a href="https://gitsk.in/" target="_blank" rel="noopener">GitSkin</a></h3>
+              <p class="role">The closest neighbour — one-way</p>
+              <p>
+                The most sophisticated approach to the same hard problem: themes
+                target abstract components, resolved to GitHub's DOM by adapters,
+                with a marketplace and a five-level scale from Primer tokens up to
+                global CSS. It is <b>GitHub-only</b>, and its adapters are
+                delivered from a CDN, so a theme needs network requests. It
+                answers <em>make GitHub look like anything</em>.
+              </p>
+            </div>
+            <div class="tool">
+              <h3><a href="https://github.com/openstyles/stylus" target="_blank" rel="noopener">Userstyles</a> <span style="font-weight:400;color:var(--muted)">(Stylus, GitHub-Dark, …)</span></h3>
+              <p class="role">The DIY substitute — one-way</p>
+              <p>
+                A large free ecosystem that recolours a site and stops. CSS cannot
+                rename what a button says, reorder a menu, or swap a reference
+                marker, and a style that reaches into a page's structure tends to
+                break when the site changes. That is not a knock — for a dark
+                theme it is the better tool, and the community that moved off
+                Stylish onto Stylus for its privacy is exactly this audience.
+              </p>
+            </div>
+            <div class="tool">
+              <h3><a href="https://github.com/refined-github/refined-github" target="_blank" rel="noopener">Refined GitHub</a></h3>
+              <p class="role">The benchmark — one-way</p>
+              <p>
+                The strongest answer to <em>make GitHub itself better</em>: a
+                large, org-backed, MIT extension that has shipped so many good
+                ideas GitHub absorbed dozens of them. It is not a reskin and it
+                does not translate GitHub into anything — it improves GitHub on
+                GitHub's own terms, which is a different job from the one here.
+              </p>
+            </div>
+            <div class="tool wrong-for">
+              <h3>GitAlike</h3>
+              <p class="role">The other cell — reciprocal</p>
+              <p>
+                Not a theme and not an enhancer: a <b>translation between two
+                products</b>. Same repository, same commits, same history — read in
+                the UI you already know, in either direction, and reverted the
+                moment you switch it off. If the question is <em>make GitHub
+                nicer</em>, use Refined GitHub. If it is <em>a dark theme</em>, use
+                Stylus. If it is <em>I work on both and keep hitting the wrong
+                muscle memory</em>, that is the one here.
+              </p>
+            </div>
           </div>
         </div>
       </section>
